@@ -12,8 +12,13 @@
 //!
 //! Renders via the shared `dialog_theme` renderer (rounded cyan border —
 //! listing/inspection, like the role banner accent).
+//!
+//! TUI-112: `Component::handle_event` (keys → `handle_key`, left-clicks
+//! → R2 button commit) lives in
+//! `super::session_worktrees_dialog_dispatch` so this file stays under
+//! the 300-LoC ceiling.
 
-use crossterm::event::{Event, KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
@@ -22,10 +27,11 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use codelet_rpc_types::SessionWorktreeInfo;
 
+use crate::components::dialog_button_hits::{separated_button_layout, LastLayout};
 use crate::components::dialog_theme::{
     render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
 };
-use crate::components::{Action, Callback, Component, EventResult, Priority};
+use crate::components::Action;
 
 /// Outcome of routing a single key event through the SessionWorktreesDialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -49,6 +55,12 @@ pub struct SessionWorktreesDialog {
     rows: Vec<SessionWorktreeInfo>,
     focused: usize,
     action_tx: Option<UnboundedSender<Action>>,
+    /// TUI-112: the most recent emitted action, stashed for tests
+    /// (drained via `take_pending_action`) when no `action_tx` is set.
+    pending_action: Option<Action>,
+    /// TUI-112: last-rendered button-row geometry for left-click
+    /// hit-testing (R2: a click on a button returns that outcome).
+    last_layout: LastLayout,
 }
 
 impl SessionWorktreesDialog {
@@ -59,6 +71,8 @@ impl SessionWorktreesDialog {
             rows,
             focused: 0,
             action_tx: None,
+            pending_action: None,
+            last_layout: LastLayout::new(),
         }
     }
 
@@ -79,6 +93,18 @@ impl SessionWorktreesDialog {
         self.focused
     }
 
+    /// TUI-112: test accessor — the last-rendered button-row geometry
+    /// (frame rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
+    }
+
+    /// Test-only: drain the most recent emitted action stashed by
+    /// `handle_event` when no `action_tx` was attached.
+    pub fn take_pending_action(&mut self) -> Option<Action> {
+        self.pending_action.take()
+    }
+
     fn focus_prev(&mut self) {
         if self.focused == 0 {
             self.focused = 1;
@@ -95,7 +121,9 @@ impl SessionWorktreesDialog {
         }
     }
 
-    fn outcome_for_index(&self, idx: usize) -> SessionWorktreesDialogOutcome {
+    /// TUI-112: the outcome a button index maps to (shared by the Enter
+    /// key path and the left-click path).
+    pub(crate) fn outcome_for_index(&self, idx: usize) -> SessionWorktreesDialogOutcome {
         match idx {
             0 => SessionWorktreesDialogOutcome::Prune,
             _ => SessionWorktreesDialogOutcome::Cancel,
@@ -142,16 +170,13 @@ impl SessionWorktreesDialog {
         }
     }
 
-    fn emit_action(&self, action: Action) {
+    /// TUI-112: emit an action on the App's channel (when attached) and
+    /// stash it for tests.
+    pub(crate) fn emit_action(&mut self, action: &Action) {
         if let Some(tx) = self.action_tx.as_ref() {
-            let _ = tx.send(action);
+            let _ = tx.send(action.clone());
         }
-    }
-
-    fn remove_callback(&self) -> Callback {
-        Box::new(|compositor| {
-            let _ = compositor.remove(SESSION_WORKTREES_DIALOG_ID);
-        })
+        self.pending_action = Some(action.clone());
     }
 
     fn build_worktree_rows(&self) -> Vec<DialogRow> {
@@ -209,7 +234,7 @@ impl SessionWorktreesDialog {
     }
 
     /// Render the dialog as a centred overlay inside `area`.
-    pub fn render(&self, area: Rect, buf: &mut Buffer) {
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
         let spacer = DialogRow {
             spans: vec![Span::raw(String::new())],
             selectable: false,
@@ -226,47 +251,12 @@ impl SessionWorktreesDialog {
             min_width: 50,
             query_row: None,
         };
+        // TUI-112: cache the button-row geometry (the LAST content row)
+        // for left-click hit-testing, derived from the SAME descriptor
+        // that is painted so the rects line up with the pixels.
+        let labels = ["Prune", "Cancel"];
+        let button_row_index = dialog.rows.len() - 1;
+        self.last_layout = separated_button_layout(area, &dialog, button_row_index, &labels);
         render_dialog(area, buf, &dialog);
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Component impl so the dialog can be pushed onto the App's compositor
-// with a stable id and Foreground priority (mirrors MergeConfirmDialog).
-// ─────────────────────────────────────────────────────────────────────
-
-impl Component for SessionWorktreesDialog {
-    fn id(&self) -> &str {
-        SESSION_WORKTREES_DIALOG_ID
-    }
-
-    fn priority(&self) -> Priority {
-        Priority::Foreground
-    }
-
-    fn handle_event(&mut self, event: &Event) -> EventResult {
-        let key = match event {
-            Event::Key(k) => *k,
-            _ => return EventResult::ignored(),
-        };
-        if key.kind != crossterm::event::KeyEventKind::Press {
-            return EventResult::ignored();
-        }
-        match self.handle_key(key.code, key.modifiers) {
-            SessionWorktreesDialogOutcome::Prune => {
-                self.emit_action(Action::PruneLeakedWorktrees);
-                EventResult::Consumed(Some(self.remove_callback()))
-            }
-            SessionWorktreesDialogOutcome::Cancel => {
-                self.emit_action(Action::CancelWorktreesDialog);
-                EventResult::Consumed(Some(self.remove_callback()))
-            }
-            SessionWorktreesDialogOutcome::Continued => EventResult::consumed(),
-            SessionWorktreesDialogOutcome::Ignored => EventResult::ignored(),
-        }
-    }
-
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        SessionWorktreesDialog::render(self, area, buf);
     }
 }

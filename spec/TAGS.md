@@ -587,6 +587,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@triggers` | CI/CD trigger configuration |
 | `@truncation` | Output truncation and limit handling |
 | `@ts-parity` | Feature requires parity with the TypeScript Ink reference implementation |
+| `@tui-112` | Work unit TUI-112 — left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.) |
 | `@turn-selection` | Scenarios testing turn-based selection in conversation |
 | `@turn-sequence` | Message turn sequence scenarios |
 | `@turns` | Turn boundary scenarios |
@@ -661,6 +662,7 @@ Tags tracking development status of features.
 | `@bug-194` | Work unit identifier for BUG-194 — mux thinking indicator must keep animating when focus moves off a running agent pane (per-session transition state) |
 | `@bug-195` | Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op |
 | `@bug-197` | Work unit identifier for BUG-197 — menu bar click-away must de-select a focused item/chip on all 3 surfaces (board/agent/mux) and a stale ring focus must never leave a chip highlighted after view flips: the 'leave the bar' gesture (MenuDismissBar / in-view clear_focus) runs on every off-bar-row left click and on empty bar-row space, and chip activation / OpenAgentView flips drop the board store's ring focus |
+| `@bug-199` | Work unit BUG-199 — agent-bar Zone C button semantics: 'New Agent' mounts the CreateSessionDialog (start a new agent, board-button parity) instead of re-entering the current session; 'Close Agent' shows the Esc exit-confirmation cascade (Exit Session dialog / interrupt / clear) instead of the direct Close Session teardown; the button label reads 'Close Agent [esc]' |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -684,6 +686,8 @@ Tags tracking development status of features.
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |
 | `@menu-003` | Work unit MENU-003 — agent view surface: 2-zone bar row under the SessionHeader (menu_row flag) + empty-input left-arrow entry with GUI dropdown tracking |
+| `@menu-009` | Work unit MENU-009 — menu bar Zone C: right-aligned New Agent / Close Agent action buttons on the board + agent bars (mux paints none); the buttons reuse existing bus actions, join the unified ring focus with inverse-video highlight parity, and drop before Zone B content under truncation |
+| `@menu-010` | Work unit MENU-010 — the chip selected-highlight is scoped to its surface: the store's current-session chip highlight paints only in the Agent view (and the mux top bar while an Agent pane is focused); on the board bar only the ring selector may highlight a chip |
 | `@mux-002` | Work unit MUX-002 — multiple agent panes with grouped agent-view cycling (agent window over open sessions, right-edge prompt, no left-edge wrap) |
 | `@mux-004` | Work unit MUX-004 — mux configuration dialog + /mux slash-popup entry (bare /mux opens the MuxConfigDialog; layout-only scope) |
 | `@mux-006` | Work unit MUX-006 — mux focus flash: a 350ms dark-purple background scan (1-row-high full-width strip, bottom-to-top — MUX-008) over the focused pane, re-armed on every focus change, live-only (never persisted) |
@@ -819,4 +823,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-06T02:11:15.113Z_
+_Last updated: 2026-10-07T07:56:13.526Z_

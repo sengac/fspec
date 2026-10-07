@@ -16,7 +16,7 @@
 //! `Accent::Cyan` — mirroring the cyan role banner accent used by
 //! `RoleBanner` (`views/agent/role_banner.rs`).
 
-use crossterm::event::{Event, KeyCode, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyModifiers, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::Style;
@@ -26,6 +26,7 @@ use tui_textarea::{Input, TextArea};
 
 use codelet_rpc_types::SessionId;
 
+use super::dialog_button_hits::{row_list_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR};
 use super::{Action, Callback, Component, EventResult, Priority};
 
@@ -44,6 +45,9 @@ pub struct RoleDialog {
     textarea: TextArea<'static>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
+    /// TUI-112: last-rendered row geometry for left-click hit-testing
+    /// (R3: a click on the draft row saves the role, one-click).
+    last_layout: LastLayout,
 }
 
 impl RoleDialog {
@@ -67,6 +71,7 @@ impl RoleDialog {
             textarea,
             action_tx: None,
             pending_action: None,
+            last_layout: LastLayout::new(),
         }
     }
 
@@ -88,6 +93,12 @@ impl RoleDialog {
     /// Test-only accessor — drain the stashed pending action.
     pub fn take_pending_action(&mut self) -> Option<Action> {
         self.pending_action.take()
+    }
+
+    /// TUI-112: test accessor — the last-rendered row geometry (frame
+    /// rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
     }
 
     fn emit_action(&mut self, action: Action) {
@@ -161,6 +172,24 @@ impl Component for RoleDialog {
                 .insert_str(crate::text_normalize::normalize_line_endings(s));
             return EventResult::consumed();
         }
+        // TUI-112 (R3): a left-click on the draft row saves the role
+        // (the same action Enter emits) and closes the dialog —
+        // one-click. A click anywhere else inside the frame (title,
+        // border, footer) or outside it is Ignored (R4/R5) so it
+        // bubbles.
+        if let Event::Mouse(m) = event {
+            if matches!(m.kind, MouseEventKind::Down(MouseButton::Left)) {
+                let layout = self.last_layout.clone();
+                if !layout.contains(m.column, m.row) {
+                    return EventResult::ignored();
+                }
+                return match layout.hit(m.column, m.row) {
+                    Some(0) => self.save(),
+                    _ => EventResult::ignored(),
+                };
+            }
+            return EventResult::ignored();
+        }
         EventResult::ignored()
     }
 
@@ -190,6 +219,10 @@ impl Component for RoleDialog {
             min_width: 60,
             query_row: None,
         };
+        // TUI-112: cache the single draft row's geometry for left-click
+        // hit-testing, derived from the SAME descriptor that is painted
+        // so the rect lines up with the pixels.
+        self.last_layout = row_list_layout(area, &dialog, 1);
         render_dialog(area, buf, &dialog);
     }
 }

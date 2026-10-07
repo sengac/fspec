@@ -20,7 +20,7 @@ use ratatui::layout::Rect;
 
 use super::scroll_viewport::{WheelDirection, WheelVelocity};
 use super::work_unit_search_dialog::WorkUnitSearchDialog;
-use super::EventResult;
+use super::{Action, EventResult};
 use crate::mouse::rect_contains;
 use crate::mouse::scrollbar_drag::ScrollbarGeometry;
 
@@ -83,6 +83,22 @@ impl WorkUnitSearchDialog {
         ) {
             let total = self.matches.len();
             let visible = self.visible_rows();
+            // TUI-112 (R3): a left-click on a VISIBLE result row commits
+            // that match (the same action Enter emits for it) and closes
+            // the dialog — one-click, no double-click. Drag/Up never
+            // commit (they belong to the scrollbar state machine).
+            if matches!(ev.kind, MouseEventKind::Down(MouseButton::Left))
+                && !self.in_scrollbar_gutter(ev.column, ev.row)
+            {
+                return match self
+                    .last_row_rects
+                    .iter()
+                    .position(|r| rect_contains(*r, ev.column, ev.row))
+                {
+                    Some(i) => self.commit_row(self.scroll_offset + i),
+                    None => EventResult::ignored(),
+                };
+            }
             let Some(sb_rect) = self.last_scrollbar_rect else {
                 return EventResult::ignored();
             };
@@ -128,6 +144,28 @@ impl WorkUnitSearchDialog {
             }
             _ => EventResult::ignored(),
         }
+    }
+
+    /// TUI-112: whether `(col, row)` is inside the scrollbar gutter (the
+    /// 1-column rightmost body area). Gutter clicks belong to the drag
+    /// state machine, never to a result row.
+    pub(super) fn in_scrollbar_gutter(&self, col: u16, row: u16) -> bool {
+        match self.last_scrollbar_rect {
+            Some(gutter) => rect_contains(gutter, col, row),
+            None => false,
+        }
+    }
+
+    /// TUI-112: commit `match_index` (the same action the Enter key
+    /// emits) and pop the dialog. No-op-Consumed when the index is out
+    /// of range (defensive — the rect math cannot produce it).
+    pub(super) fn commit_row(&mut self, match_index: usize) -> EventResult {
+        if let Some(m) = self.matches.get(match_index) {
+            self.selected = match_index;
+            self.emit_and_stash(Action::SelectWorkUnit(m.id.clone()));
+            return EventResult::Consumed(Some(self.remove_callback()));
+        }
+        EventResult::ignored()
     }
 }
 

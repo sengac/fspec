@@ -5,11 +5,27 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "250-306",
+          "lines": "253-308",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
               "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
                 83,
                 84,
                 85,
@@ -19,25 +35,7 @@
                 89,
                 90,
                 91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110
+                92
               ]
             }
           ]
@@ -45,23 +43,15 @@
       ]
     },
     {
-      "name": "In mux mode the active session's chip paints the blue background while view labels keep their styling",
+      "name": "The board view does not carry the current session's chip highlight (superseded by MENU-010)",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "340-405",
+          "lines": "201-249",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
                 46,
                 47,
                 48,
@@ -70,40 +60,21 @@
                 51,
                 52,
                 53,
-                54
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The active session's chip paints the selected-item blue background without ring focus",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "194-247",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
-              "lines": [
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
               ]
             }
           ]
@@ -115,7 +86,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
-          "lines": "307-338",
+          "lines": "312-340",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/menu_bar/chips.rs",
@@ -177,6 +148,68 @@
           ]
         }
       ]
+    },
+    {
+      "name": "In mux mode the focused Agent pane's session chip paints the blue background while view labels keep their styling",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs",
+          "lines": "344-428",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
@@ -187,10 +220,11 @@
       "rust/fspec-tui/tests/menu006_active_session_chip_highlight.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
       "rust/fspec-tui/src/views/board/menu_snapshot.rs",
-      "rust/fspec-tui/src/components/menu_bar/chips.rs"
+      "rust/fspec-tui/src/components/menu_bar/chips.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs"
     ],
-    "totalLinesCovered": 323
+    "totalLinesCovered": 147
   }
 }

@@ -119,6 +119,17 @@ fn chip_x(buf: &Buffer, n: usize) -> u16 {
     })
 }
 
+/// The x of a Zone C button label ("New Agent" / "Close Agent") on the
+/// agent bar row (MENU-009).
+fn zone_c_button_x(buf: &Buffer, label: &str) -> u16 {
+    find_x(buf, AGENT_BAR_ROW, label).unwrap_or_else(|| {
+        panic!(
+            "the Zone C button '{label}' must paint on the agent bar row:\n{}",
+            row_text(buf, AGENT_BAR_ROW)
+        )
+    })
+}
+
 /// Seed `n` open sessions (s-1..s-n, Idle by default) and focus s-1.
 async fn seed_sessions(app: &mut App, n: usize) {
     for i in 1..=n {
@@ -295,7 +306,8 @@ async fn scenario_the_agent_ring_wraps_from_board_view_through_the_chips_and_bac
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE)); // Item(0) = 'Board View'
     drain_pending(&mut app).await;
 
-    // @step When I press Right three times
+    // @step When I press Right five times
+    // (MENU-009: 2 chips + 2 Zone C buttons = 4 stops after the item.)
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     drain_pending(&mut app).await;
     use codelet_fspec_tui::components::menu_bar::MenuFocus;
@@ -313,23 +325,37 @@ async fn scenario_the_agent_ring_wraps_from_board_view_through_the_chips_and_bac
     );
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     drain_pending(&mut app).await;
+    assert_eq!(
+        app.navigator().agent.menu_focus(),
+        Some(MenuFocus::ZoneC(0)),
+        "3rd Right must land on the 'New Agent' button (MENU-009)"
+    );
+    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
+    assert_eq!(
+        app.navigator().agent.menu_focus(),
+        Some(MenuFocus::ZoneC(1)),
+        "4th Right must land on the 'Close Agent' button (MENU-009)"
+    );
+    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
 
-    // @step Then the focus lands on chip #1 then chip #2 and finally back on 'Board View'
+    // @step Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
     assert_eq!(
         app.navigator().agent.menu_focus(),
         Some(MenuFocus::Item(0)),
-        "3rd Right must wrap back to 'Board View'"
+        "5th Right must wrap back to 'Board View'"
     );
 }
 
-/// Scenario: Left from 'Board View' wraps to the last chip
+/// Scenario: Left from 'Board View' wraps to the last Zone C button
 #[tokio::test]
 async fn scenario_left_from_board_view_wraps_to_the_last_chip() {
     // @step Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     let (mut app, _mock) = fresh_app();
     seed_sessions(&mut app, 3).await;
     enter_agent_view(&mut app, "s-1").await;
-    render_app(&mut app); // cache the bar geometry (chip count)
+    render_app(&mut app); // cache the bar geometry (chip count + Zone C rects)
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE)); // Item(0) = 'Board View'
     drain_pending(&mut app).await;
 
@@ -338,12 +364,19 @@ async fn scenario_left_from_board_view_wraps_to_the_last_chip() {
     drain_pending(&mut app).await;
     let buf = render_app(&mut app);
 
-    // @step Then chip #3 paints inverse-video
-    let x = chip_x(&buf, 3);
+    // @step Then the 'Close Agent' button paints inverse-video (MENU-009:
+    // the left wrap lands on the LAST Zone C button, not the last chip)
+    use codelet_fspec_tui::components::menu_bar::MenuFocus;
+    assert_eq!(
+        app.navigator().agent.menu_focus(),
+        Some(MenuFocus::ZoneC(1)),
+        "Left from 'Board View' must wrap to the last Zone C button"
+    );
+    let x = zone_c_button_x(&buf, "Close Agent");
     assert_eq!(
         buf[(x, AGENT_BAR_ROW)].bg,
         Color::Cyan,
-        "Left from 'Board View' must wrap to the last chip"
+        "'Close Agent' must paint inverse-video"
     );
 }
 

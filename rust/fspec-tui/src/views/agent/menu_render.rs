@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use ratatui::buffer::Buffer;
 
-use crate::components::menu_bar::items::MenuCategory;
-use crate::components::menu_bar::{paint_menu_bar, MenuSnapshot};
+use crate::components::menu_bar::items::{MenuAction, MenuCategory};
+use crate::components::menu_bar::{paint_menu_bar, MenuSnapshot, ZoneCButton};
 use crate::store::AgentViewStore;
 use crate::theme::Theme;
 
@@ -34,6 +34,23 @@ pub(crate) const AGENT_ZONE_A: &[MenuCategory] = &[MenuCategory {
     label: "Board View",
     entries: &[],
 }];
+
+/// MENU-009 R1: the agent bar's Zone C — the two right-aligned action
+/// buttons: `New Agent` (BUG-199: start a NEW agent — the Create
+/// Session dialog, board-button parity) then `Close Agent [esc]`
+/// (BUG-199 R3: the `[esc]` hint tells the user the Esc cascade —
+/// `Action::AgentEscPressed` — is the same exit gesture; R2).
+/// `&'static` (the `AGENT_ZONE_A` precedent).
+pub(crate) const AGENT_ZONE_C: &[ZoneCButton] = &[
+    ZoneCButton {
+        label: "New Agent",
+        action: MenuAction::NewAgent,
+    },
+    ZoneCButton {
+        label: "Close Agent [esc]",
+        action: MenuAction::CloseAgent,
+    },
+];
 
 /// The wall clock in ms since the epoch — drives the Running chip's
 /// braille frame (MENU-003, parity with the board bar).
@@ -53,15 +70,23 @@ fn agent_bar_snapshot(
     open_menu: Option<(usize, usize)>,
     clock_ms: u64,
 ) -> MenuSnapshot {
-    let active = crate::views::board::menu_snapshot::active_menu_session_ids(store);
-    let (zone_b, chips) =
-        crate::views::board::menu_snapshot::zone_b_and_chips(store, &active, clock_ms);
+    use crate::views::board::menu_snapshot;
+    let active = menu_snapshot::active_menu_session_ids(store);
+    let (zone_b, mut chips) = menu_snapshot::zone_b_and_chips(store, &active, clock_ms);
+    // MENU-010 R1: on the Agent surface the store's CURRENT session's
+    // chip carries the selected-item (inverse-video) highlight —
+    // independent of the ring focus (the MENU-006 behavior, kept).
+    if let Some(current) = store.current_session() {
+        menu_snapshot::mark_active_chip(&mut chips, &active, current);
+    }
     MenuSnapshot {
         zone_a: AGENT_ZONE_A,
         focus,
         open_menu,
         zone_b,
         chips,
+        // MENU-009: the agent bar's two right-aligned action buttons.
+        zone_c: AGENT_ZONE_C,
         clock_ms,
     }
 }
@@ -105,6 +130,10 @@ impl AgentView {
             .map(|(cell, rect)| (*cell, *rect))
             .collect();
         self.menu_state.set_cells(Some(cells));
+        // MENU-009: cache the Zone C button rects (right-aligned) —
+        // the mouse arm's hit-test target. `layout` is dropped right
+        // after this, so the field is MOVED (no clone).
+        self.menu_state.set_zone_c_rects(Some(layout.zone_c_rects));
         // MENU-007: the agent bar is dropdown-free — the open-panel
         // cache stays empty (the overlay painter is a no-op).
         self.menu_state.set_open_panel(None);

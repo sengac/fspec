@@ -174,6 +174,13 @@ fn board_view_x(buf: &Buffer) -> u16 {
         .expect("the 'Board View' item must paint on the bar row")
 }
 
+/// The x of the first occurrence of `needle` on the bar row (MENU-009
+/// Zone C buttons: "New Agent" / "Close Agent").
+fn zone_c_button_x(buf: &Buffer, needle: &str) -> u16 {
+    find_x(buf, menu_row(buf), needle)
+        .unwrap_or_else(|| panic!("the Zone C button '{needle}' must paint on the bar row"))
+}
+
 /// The x of chip `n` (1-based) on the bar row.
 fn chip_x(buf: &Buffer, n: usize) -> u16 {
     find_x(buf, menu_row(buf), &format!("#{n}")).expect("chip #{n} must paint on the bar row")
@@ -355,27 +362,28 @@ fn scenario_bare_right_never_enters_the_bar() {
     assert!(view.input.is_empty(), "the draft must stay empty");
 }
 
-/// Scenario: The ring walks items then chips then wraps to the first item
+/// Scenario: The ring walks items then chips then the Zone C buttons then wraps to the first item
 #[test]
 fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() {
     // @step Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
     let (mut view, store, _rx) = harness();
     seed_sessions(&store, 2);
-    render_agent(&mut view, &store); // the bar's paint caches the chip count
+    render_agent(&mut view, &store); // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut view);
 
-    // @step When I press Right three times
-    for _ in 0..3 {
+    // @step When I press Right five times
+    for _ in 0..5 {
         view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
 
-    // @step Then the focus lands on chip #1 then chip #2 and finally back on 'Board View'
+    // @step Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
     // The walk is observed step-by-step: re-run the sequence and check
     // every landing (MENU-007: one item, so Right #1 already leaves the
-    // item — there is no second item to land on).
+    // item — MENU-009 R3: the two Zone C buttons are the ring's last
+    // stops).
     let (mut v2, s2, _rx2) = harness();
     seed_sessions(&s2, 2);
-    render_agent(&mut v2, &s2); // the bar's paint caches the chip count
+    render_agent(&mut v2, &s2); // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut v2);
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
@@ -389,8 +397,18 @@ fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() {
     );
     v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     assert!(
+        v2.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(0)),
+        "3rd Right must land on the 'New Agent' Zone C button (MENU-009)"
+    );
+    v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    assert!(
+        v2.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(1)),
+        "4th Right must land on the 'Close Agent' Zone C button (MENU-009)"
+    );
+    v2.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    assert!(
         v2.menu_focus().as_ref() == Some(&MenuFocus::Item(0)),
-        "3rd Right must wrap back to 'Board View'"
+        "5th Right must wrap back to 'Board View'"
     );
     // And the primary walk ended at 'Board View' too:
     assert!(
@@ -399,30 +417,34 @@ fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_item() {
     );
 }
 
-/// Scenario: The ring wraps left from the first item to the last chip
+/// Scenario: The ring wraps left from the first item to the last Zone C button
 #[test]
 fn scenario_the_ring_wraps_left_from_the_first_item_to_the_last_chip() {
     // @step Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     let (mut view, store, _rx) = harness();
     seed_sessions(&store, 3);
-    render_agent(&mut view, &store); // the bar's paint caches the chip count
+    render_agent(&mut view, &store); // the bar's paint caches the chip count + Zone C rects
     focus_first_item(&mut view);
 
     // @step When I press Left once
     view.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
 
-    // @step Then chip #3 paints inverse-video
+    // @step Then the 'Close Agent' button paints inverse-video (MENU-009:
+    // the left wrap lands on the LAST Zone C button, not the last chip)
     assert!(
-        view.menu_focus().as_ref()
-            == Some(&codelet_fspec_tui::components::menu_bar::MenuFocus::ZoneB(
-                2
-            )),
-        "Left from Item(0) must wrap to the last chip (chip #3)"
+        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(1)),
+        "Left from Item(0) must wrap to the last Zone C button ('Close Agent')"
     );
     let buf = render_agent(&mut view, &store);
     assert!(
-        is_inverse(&buf, chip_x(&buf, 3), menu_row(&buf)),
-        "chip #3 must paint inverse-video"
+        is_inverse(&buf, zone_c_button_x(&buf, "Close Agent"), menu_row(&buf)),
+        "'Close Agent' must paint inverse-video"
+    );
+    // And Left once more lands on the 'New Agent' button:
+    view.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
+    assert!(
+        view.menu_focus().as_ref() == Some(&MenuFocus::ZoneC(0)),
+        "Left from 'Close Agent' must land on the 'New Agent' button"
     );
 }
 
@@ -663,6 +685,7 @@ fn scenario_the_bar_omits_the_separator_and_chips_when_no_sessions_are_open() {
 }
 
 /// Scenario: With no chips the ring wraps from the item to itself
+/// (MENU-009: through the two Zone C buttons)
 #[test]
 fn scenario_with_no_chips_the_ring_wraps_from_the_item_to_itself() {
     // @step Given the agent pane has no open sessions and the menu bar is focused on the 'Board View' item
@@ -675,14 +698,19 @@ fn scenario_with_no_chips_the_ring_wraps_from_the_item_to_itself() {
         "the 'Board View' item must be focused first"
     );
 
-    // @step When I press Right once
-    view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    // @step When I press Right three times
+    // (MENU-009: with no chips the ring is 1 item + 2 Zone C buttons —
+    // 'New Agent' → 'Close Agent' → wrap back to 'Board View'.)
+    for _ in 0..3 {
+        view.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    }
 
-    // @step Then the 'Board View' item is focused again
+    // @step Then the 'Board View' item is focused again (the walk passed through both Zone C buttons)
     assert!(
         view.menu_focus()
             .as_ref()
             .is_some_and(|f| matches!(f, MenuFocus::Item(0))),
-        "with no chips the ring must wrap from the item back to itself (MENU-007: one item)"
+        "with no chips the ring must wrap from the item through the \
+         Zone C buttons back to itself (MENU-009)"
     );
 }

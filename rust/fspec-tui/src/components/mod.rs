@@ -17,6 +17,7 @@ pub mod attachment_picker_dialog;
 pub mod board_exit_confirmation_dialog;
 pub mod checkpoint_restore_dialog;
 pub mod create_session_dialog;
+pub mod dialog_button_hits;
 pub mod dialog_theme;
 pub mod dialog_theme_paint;
 pub mod dialog_theme_rows;
@@ -41,6 +42,7 @@ pub mod scroll_viewport;
 pub mod spinner;
 pub mod status_dialog;
 pub mod thinking_level_dialog;
+pub mod three_button_dialog;
 pub mod work_unit_search_dialog;
 pub mod work_unit_search_dialog_accessors;
 pub mod work_unit_search_dialog_mouse;
@@ -1393,6 +1395,18 @@ pub enum Action {
     /// panes need different resolution (chips activate a session,
     /// panes move the mux focus).
     MenuFocusPane(usize),
+    /// MENU-009: Enter / left click on a Zone C button (index into the
+    /// surface's `zone_c` slice — board: `[New Agent]`, agent:
+    /// `[New Agent, Close Agent [esc]]`, mux: none). The `App`
+    /// dispatch resolves it per surface: the board's `New Agent`
+    /// reuses the `.`-key target (selected unit's session, R8
+    /// substitution); the agent's buttons (BUG-199) — `New Agent`
+    /// mounts the CreateSessionDialog (start a new agent) and
+    /// `Close Agent [esc]` runs the `AgentEscPressed` cascade.
+    /// A single token keeps the dispatch arm readable and avoids
+    /// overloading the Zone A item index (the design doc's Q-free
+    /// choice).
+    MenuZoneCActivate(usize),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

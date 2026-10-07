@@ -146,6 +146,14 @@ fn is_inverse(buf: &Buffer, x: u16, y: u16) -> bool {
     buf[(x, y)].bg == Color::Cyan
 }
 
+/// The cell x of the first occurrence of `needle` on row `y`
+/// (the row's multibyte-safe char index).
+fn find_x(buf: &Buffer, y: u16, needle: &str) -> Option<u16> {
+    let row = row_text(buf, y);
+    let byte_idx = row.find(needle)?;
+    Some(row[..byte_idx].chars().count() as u16)
+}
+
 fn make_unit(id: &str, status: &str) -> WorkUnitInfo {
     WorkUnitInfo {
         id: id.to_string(),
@@ -239,7 +247,7 @@ fn dropdown_row_y(buf: &Buffer, needle: &str) -> u16 {
 // Scenarios
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: Left from the first column focuses the last chip
+/// Scenario: Left from the first column focuses the New Agent button
 #[tokio::test]
 async fn scenario_left_from_the_first_column_focuses_the_last_chip() {
     // @step Given the board has 3 open sessions and the first column (backlog) is focused
@@ -257,12 +265,58 @@ async fn scenario_left_from_the_first_column_focuses_the_last_chip() {
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 
-    // @step Then chip #3 paints inverse-video
+    // @step Then the New Agent button paints inverse-video
+    // (MENU-009 R3: the right-aligned Zone C button is now the ring's
+    // LAST stop — Left from the first column lands on it, not the
+    // last chip; Right from it lands on the last chip.)
     use codelet_fspec_tui::components::menu_bar::MenuFocus;
     assert_eq!(
         app.board_store().menu_focus(),
+        Some(MenuFocus::ZoneC(0)),
+        "Left from the first column lands on the New Agent button (the ring's last stop)"
+    );
+    let buf = render_app(&mut app);
+    let y = bar_row(&buf);
+    // The 'New Agent' button's rightmost cell (its last char, 't')
+    // paints inverse-video.
+    let na_x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
+    let na_last = na_x + 8; // "New Agent".len() - 1
+    assert!(
+        is_inverse(&buf, na_last, y),
+        "the New Agent button's last cell must paint inverse-video on row {y}:\n{}",
+        row_text(&buf, y)
+    );
+    // And the first column stays the focused column (its header is the
+    // grid focus the ring returns to).
+    assert_eq!(app.board_store().focused_column_index(), 0);
+}
+
+/// Scenario: Left from the New Agent button focuses the last chip
+#[tokio::test]
+async fn scenario_left_from_the_new_agent_button_focuses_the_last_chip() {
+    // @step Given the board has 3 open sessions and the ring is focused on the New Agent button
+    let (mut app, _mock) = fresh_app();
+    seed_sessions(&mut app, 3).await;
+    seed_units(&mut app).await;
+    focus_column(&mut app, "backlog");
+    app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
+    use codelet_fspec_tui::components::menu_bar::MenuFocus;
+    assert_eq!(
+        app.board_store().menu_focus(),
+        Some(MenuFocus::ZoneC(0)),
+        "Left from the first column must land on the New Agent button"
+    );
+
+    // @step When I press Left once
+    app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
+
+    // @step Then chip #3 paints inverse-video (the button's Left lands on the last chip — the pre-MENU-009 last stop)
+    assert_eq!(
+        app.board_store().menu_focus(),
         Some(MenuFocus::ZoneB(2)),
-        "Left from the first column lands on the last chip"
+        "Left from the New Agent button must land on the last chip (chip #3)"
     );
     let buf = render_app(&mut app);
     let y = bar_row(&buf);
@@ -273,9 +327,6 @@ async fn scenario_left_from_the_first_column_focuses_the_last_chip() {
         "chip #3 cell must paint inverse-video on row {y}:\n{}",
         row_text(&buf, y)
     );
-    // And the first column stays the focused column (its header is the
-    // grid focus the ring returns to).
-    assert_eq!(app.board_store().focused_column_index(), 0);
 }
 
 /// Scenario: Enter on an open dropdown executes the highlighted row
@@ -368,11 +419,13 @@ async fn scenario_up_and_down_from_the_bar_drop_focus_back_into_the_focused_colu
     drain_pending(&mut app).await;
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
     drain_pending(&mut app).await;
+    app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
     use codelet_fspec_tui::components::menu_bar::MenuFocus;
     assert_eq!(
         app.board_store().menu_focus(),
         Some(MenuFocus::ZoneB(0)),
-        "Left x3 from the first column must land on chip #1 (items in between)"
+        "Left x4 from the first column must land on chip #1 (New Agent + items in between — MENU-009)"
     );
     let before = app.board_store().selected_index_for("backlog");
 
@@ -397,14 +450,16 @@ async fn scenario_up_and_down_from_the_bar_drop_focus_back_into_the_focused_colu
     );
     let buf = render_app(&mut app);
     let y = bar_row(&buf);
-    // MENU-006: the focused session's chip (s-3 here — the last appended
-    // session, chip #3 at x57-60) keeps its active highlight even with
-    // the ring cleared; every OTHER cell must be unhighlighted.
+    // MENU-010: the board never carries the current session's chip
+    // highlight — with the ring cleared, NO cell on the bar row may
+    // paint inverse-video (pre-MENU-010 the focused session's chip,
+    // #3 here, kept its active highlight).
     for x in 0..buf.area.width {
         assert!(
-            !is_inverse(&buf, x, y) || (CHIP1_X + 12..CHIP1_X + 16).contains(&x),
-            "no inverse cell left on the bar row {y} except the active \
-             session's chip (#3)"
+            !is_inverse(&buf, x, y),
+            "no inverse cell may remain on the bar row {y} (MENU-010: \
+             the board never highlights the current session's chip):\n{}",
+            row_text(&buf, y)
         );
     }
 }
@@ -445,7 +500,7 @@ async fn scenario_enter_on_a_menu_item_opens_its_dropdown_at_row_0() {
     );
 }
 
-/// Scenario: The ring walks items then chips then wraps to the first column
+/// Scenario: The ring walks items then chips then the New Agent button then wraps to the first column
 #[tokio::test]
 async fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_column() {
     // @step Given the board has 1 open session and the last column (blocked) is focused
@@ -455,17 +510,21 @@ async fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_column
     focus_column(&mut app, "blocked");
     let _ = render_app(&mut app);
 
-    // @step When I press Right six times
-    for _ in 0..6 {
+    // @step When I press Right seven times
+    // (MENU-009: the ring is now 7 columns + 4 items + 1 chip + 1 Zone C
+    // button = 13 stops — 7 Rights from the last column walk through
+    // Kanban, Tools, Settings, Help, chip #1, the New Agent button,
+    // and wrap back to the first column.)
+    for _ in 0..7 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     }
     drain_pending(&mut app).await;
 
-    // @step Then the focus lands on Kanban, Tools, Settings, Help then chip #1 and finally back on the first column (backlog)
+    // @step Then the focus lands on Kanban then Tools then Settings then Help then chip #1 then the 'New Agent' button and finally back on the first column (backlog) and no cell on the bar row paints inverse-video (the ring wrapped off the bar and the board carries no current-session chip highlight — MENU-010)
     use codelet_fspec_tui::components::menu_bar::MenuFocus;
     assert!(
         app.board_store().menu_focus().is_none(),
-        "after 6 Right presses the focus must have wrapped back to a column"
+        "after 7 Right presses the focus must have wrapped back to a column"
     );
     assert_eq!(
         app.board_store().focused_column_index(),
@@ -474,14 +533,17 @@ async fn scenario_the_ring_walks_items_then_chips_then_wraps_to_the_first_column
     );
     let buf = render_app(&mut app);
     let y = bar_row(&buf);
-    // MENU-006: the focused session's chip (s-1 — the only session,
-    // chip #1 at x45-48) keeps its active highlight even with the ring
-    // cleared; every OTHER cell must be unhighlighted.
+    // MENU-010: the board never carries the current session's chip
+    // highlight — after the ring wrapped off the bar onto the
+    // first column, NO cell on the bar row may paint inverse-video
+    // (pre-MENU-010 the focused session's chip, #1 here, kept its
+    // active highlight).
     for x in 0..buf.area.width {
         assert!(
-            !is_inverse(&buf, x, y) || (CHIP1_X..CHIP1_X + 4).contains(&x),
-            "the ring highlight must be cleared (only the active session's \
-             chip keeps its MENU-006 highlight)"
+            !is_inverse(&buf, x, y),
+            "no inverse cell may remain on the bar row {y} (MENU-010: \
+             the board never highlights the current session's chip):\n{}",
+            row_text(&buf, y)
         );
     }
     // The intermediate stops are pinned: 5 Right presses must sit ON
@@ -707,12 +769,33 @@ async fn scenario_with_no_open_sessions_the_ring_wraps_from_the_last_item_to_the
         "with no chips, Right x3 from Kanban must land on Help"
     );
 
-    // @step When I press Right once
+    // @step When I press Right twice
+    // (MENU-009: with no chips the ring is 7 columns + 4 items + 1 Zone C
+    // button — Right from Help lands on the 'New Agent' button; a second
+    // Right wraps back to the first column.)
+    app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+    drain_pending(&mut app).await;
+    assert_eq!(
+        app.board_store().menu_focus(),
+        Some(MenuFocus::ZoneC(0)),
+        "Right from Help must land on the New Agent button (the last ring stop)"
+    );
+    let buf = render_app(&mut app);
+    let y = bar_row(&buf);
+    let na_x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
+    assert!(
+        is_inverse(&buf, na_x + 8, y),
+        "the New Agent button must paint inverse-video on row {y}:\n{}",
+        row_text(&buf, y)
+    );
     app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 
     // @step Then the first column (backlog) is focused again and the bar highlight clears
-    assert!(app.board_store().menu_focus().is_none());
+    assert!(
+        app.board_store().menu_focus().is_none(),
+        "the second Right must wrap back to a column"
+    );
     assert_eq!(app.board_store().focused_column_index(), 0);
     let buf = render_app(&mut app);
     let y = bar_row(&buf);

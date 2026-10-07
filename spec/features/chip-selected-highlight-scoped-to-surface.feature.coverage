@@ -1,0 +1,302 @@
+{
+  "scenarios": [
+    {
+      "name": "The board view does not highlight the current session's chip after flipping back from the Agent view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "227-271",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring selector highlights a chip on the board view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "275-317",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Agent view highlights the current session's chip without a ring focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "321-366",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring selector highlights a chip on the Agent view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "370-427",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mux: the focused Agent pane's session chip is highlighted",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "431-484",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mux: no chip is highlighted while a non-Agent pane is focused",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs",
+          "lines": "488-539",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu010_chip_highlight_scoped.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs"
+    ],
+    "totalLinesCovered": 118
+  }
+}

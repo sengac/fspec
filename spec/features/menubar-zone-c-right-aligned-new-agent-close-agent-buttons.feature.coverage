@@ -1,0 +1,547 @@
+{
+  "scenarios": [
+    {
+      "name": "The board bar paints a right-aligned \"New Agent\" button and no \"Close Agent\"",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "338-378",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The mux bar paints no Zone C buttons — the row is byte-identical to pre-MENU-009",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "421-448",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the board's \"New Agent\" button activates the \".\"-key semantics",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "452-487",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A left click on the board's \"New Agent\" button activates it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "491-524",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A focused Zone C button carries the inverse-video ring highlight",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "683-712",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring walks last chip -> \"New Agent\" -> columns on the board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "716-774",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_menu.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The ring wraps through both Zone C buttons on the agent bar",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "778-837",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone C drops before Zone B content when the row cannot afford it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "841-882",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The Zone C truncation bound holds for any width and chip count (proptest)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "883-915",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Zone C click with an open dropdown does NOT fire the click-away dismiss",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "923-981",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With no open sessions the agent bar still shows both Zone C buttons",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "985-1009",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar paints \"New Agent\" then \"Close Agent [esc]\" right-aligned",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "371-407",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the agent's \"New Agent\" button starts a new agent (BUG-199 R1)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "519-563",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the agent's \"Close Agent [esc]\" shows the same exit confirmation as Esc (BUG-199 R2)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "569-623",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A left click on the agent's \"Close Agent [esc]\" shows the same exit confirmation as Esc (BUG-199 R2)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu009_zone_c_buttons.rs",
+          "lines": "629-669",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu009_zone_c_buttons.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/views/multiplex/menu_snapshot.rs",
+      "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+      "rust/fspec-tui/src/views/board/menu_mouse.rs",
+      "rust/fspec-tui/src/store/board_menu.rs",
+      "rust/fspec-tui/src/views/agent/menu_keys.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/fspec-tui/src/views/agent/menu_mouse.rs"
+    ],
+    "totalLinesCovered": 908
+  }
+}

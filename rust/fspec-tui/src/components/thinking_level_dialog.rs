@@ -8,13 +8,14 @@
 //! yellow accent. Adds the missing 'D Set Default' keybinding that
 //! the TS reference has (ThinkingLevelDialog.tsx lines 93–96).
 
-use crossterm::event::{Event, KeyCode, MouseEventKind};
+use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use codelet_rpc_types::{SessionId, ThinkingLevel};
 
+use super::dialog_button_hits::{row_list_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::dialog_theme_rows::label_description_default_row;
 use super::{Action, Callback, Component, EventResult, Priority};
@@ -41,6 +42,9 @@ pub struct ThinkingLevelDialog {
     default_index: Option<usize>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
+    /// TUI-112: last-rendered row geometry for left-click hit-testing
+    /// (R3: a click on a row selects AND commits it, one-click).
+    last_layout: LastLayout,
 }
 
 impl ThinkingLevelDialog {
@@ -58,6 +62,7 @@ impl ThinkingLevelDialog {
             default_index: None,
             action_tx: None,
             pending_action: None,
+            last_layout: LastLayout::new(),
         }
     }
 
@@ -88,6 +93,12 @@ impl ThinkingLevelDialog {
     /// when no `action_tx` was attached.
     pub fn take_pending_action(&mut self) -> Option<Action> {
         self.pending_action.take()
+    }
+
+    /// TUI-112: test accessor — the last-rendered row geometry (frame
+    /// rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
     }
 
     fn move_up(&mut self) {
@@ -166,6 +177,31 @@ impl Component for ThinkingLevelDialog {
         // to it.
         if let Event::Mouse(m) = event {
             match m.kind {
+                // TUI-112 (R3): a left-click on a row selects AND
+                // commits it (one-click) — the same action the Enter
+                // key would emit for that row. A click off every row or
+                // outside the frame is Ignored (R4/R5) so it bubbles.
+                MouseEventKind::Down(MouseButton::Left) => {
+                    let layout = self.last_layout.clone();
+                    if !layout.contains(m.column, m.row) {
+                        return EventResult::ignored();
+                    }
+                    return match layout.hit(m.column, m.row) {
+                        Some(idx) if idx < LEVELS.len() => {
+                            self.selected_index = idx;
+                            let level = LEVELS[idx].0;
+                            let action =
+                                Action::ThinkingLevelSelected(self.session_id.clone(), level);
+                            self.emit_action(action);
+                            let id = self.id.clone();
+                            let callback: Callback = Box::new(move |compositor| {
+                                let _ = compositor.remove(&id);
+                            });
+                            EventResult::Consumed(Some(callback))
+                        }
+                        _ => EventResult::ignored(),
+                    };
+                }
                 MouseEventKind::ScrollUp => {
                     self.move_up();
                     return EventResult::consumed();
@@ -201,6 +237,10 @@ impl Component for ThinkingLevelDialog {
             min_width: 50,
             query_row: None,
         };
+        // TUI-112: cache the row geometry (4 level rows) for left-click
+        // hit-testing, derived from the SAME descriptor that is painted
+        // so the rects line up with the pixels.
+        self.last_layout = row_list_layout(area, &dialog, LEVELS.len());
         render_dialog(area, buf, &dialog);
     }
 }

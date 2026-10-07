@@ -273,98 +273,6 @@
       ]
     },
     {
-      "name": "The ring walks items then chips then wraps to the first item",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "360-402",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
-              "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "The ring wraps left from the first item to the last chip",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu003_agent_surface.rs",
-          "lines": "404-429",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
-              "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Enter on a chip jumps to that session in the agent view",
       "testMappings": [
         {
@@ -760,12 +668,20 @@
           ]
         }
       ]
+    },
+    {
+      "name": "The ring walks items then chips then the Zone C buttons then wraps to the first item",
+      "testMappings": []
+    },
+    {
+      "name": "The ring wraps left from the first item to the last Zone C button",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 18,
-    "coveredScenarios": 18,
-    "coveragePercent": 100,
+    "coveredScenarios": 16,
+    "coveragePercent": 89,
     "testFiles": [
       "rust/fspec-tui/tests/menu003_agent_surface.rs"
     ],

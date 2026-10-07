@@ -14,7 +14,7 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. R2: The board's kanban navigation becomes the front half of one continuous wrap-around ring walked by Left/Right (h/l) and wheel ScrollLeft/ScrollRight: the 7 kanban columns, then the menu items, then the session chips, then back to the first column. Right on the last column lands on the first menu item (dropdown closed, item highlighted); left on the first column lands on the last chip. Columns, items and chips each occupy exactly one ring stop.
+  #   1. R2: The board's kanban navigation becomes the front half of one continuous wrap-around ring walked by Left/Right (h/l) and wheel ScrollLeft/ScrollRight: the 7 kanban columns, then the menu items, then the session chips, then the right-aligned Zone C 'New Agent' button (MENU-009), then back to the first column. Right on the last column lands on the first menu item (dropdown closed, item highlighted); left on the first column lands on the 'New Agent' button; right from the 'New Agent' button wraps to the first column; left from it lands on the last chip (the last item when no chips). Columns, items, chips and the button each occupy exactly one ring stop.
   #   2. R1: The board header's row-3 'u Actions' chord is replaced by the live 2-zone MenuBar (Zone A menu items + Zone B session chips, chips-only in non-mux mode) painted into the same right-column rect; the 'u Actions' chord string no longer renders on the board header.
   #   3. R3: Up/Down (k/j) from a menu item or chip focus drops focus back into the board grid: the focused column is re-focused, its selection is unchanged, and the bar highlight clears. Up/Down on a column behaves exactly as before (SelectPrev/Next card).
   #   4. R5: Enter on a focused session chip jumps to that session by emitting Action::OpenAgentView(Some(session_id)), flipping the active view to the Agent view via App::dispatch. A chip exists if and only if its session is open, so chip activation always jumps to an existing session; creating a new agent remains the '.'/New Agent menu entry.
@@ -27,10 +27,10 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
   #   11. R11: The board footer hint and the board help (u) content rows are updated in this unit where they describe the old navigation: Left/Right now reads 'Cycle columns -> menu items -> chips' and an 'Enter on menu item opens dropdown / Enter on chip opens session' row is added (the full help-dialog content migration itself is MENU-005's scope).
   #
   # EXAMPLES:
-  #   1. With 3 open sessions, at the last column (BLOCKED) pressing Right lands on the 'Actions' item (inverse-video, dropdown closed); Right again lands on 'Help'; Right again lands on chip #1; Right again on chip #2; Right again on chip #3; Right wraps back into the first column (BACKLOG). With ONE open session the walk is Actions → Help → chip #1 → back to the first column. Left from the first column (backlog) always lands on the LAST chip (or the last item when no chips).
+  #   1. With 3 open sessions, at the last column (BLOCKED) pressing Right lands on 'Kanban' (inverse-video, dropdown closed); Right again 'Tools'; 'Settings'; 'Help'; chip #1; chip #2; chip #3; the 'New Agent' button; then Right wraps back into the first column (BACKLOG). With ONE open session the walk is Kanban → Tools → Settings → Help → chip #1 → New Agent → back to the first column. Left from the first column (backlog) always lands on the 'New Agent' button (the last chip when Zone C is absent).
   #   2. Clicking chip '#2' (a Running session) immediately flips the active view to that session's Agent view (same path as pressing Enter on the chip); clicking the 'Help' item opens its 2-row dropdown; clicking anywhere on a kanban cell with the dropdown open closes the dropdown and also performs the normal column/card selection.
   #   3. Focused on 'Actions', pressing Enter opens the dropdown under the item (cursor on row 0); pressing Enter again executes row 0 ('.' New Agent — the session-target snapshot is substituted at open time) and closes the dropdown; pressing Up/Down then Left from the bar returns focus to the last column with the previous card selection intact.
-  #   4. With zero open sessions the bar shows only 'Actions Help' (no separator, no chips); the ring then is columns + items only and wraps from the last item straight back to the first column; clicking the bar's item area still works.
+  #   4. With zero open sessions the bar shows only 'Kanban Tools Settings Help' plus the right-aligned 'New Agent' button (no separator, no chips); the ring is columns + items + the button and wraps from 'Help' onto 'New Agent' and from 'New Agent' back to the first column; clicking the bar's item area still works.
   #   5. Scrolling the wheel right while on the last column focuses the first menu item exactly like the Right key does; wheel left from the first column focuses the last chip; wheel over the bar with the dropdown closed is ignored (no ring movement), and wheel up/down over an open dropdown moves the cursor row by row.
   #
   # ========================================
@@ -39,10 +39,15 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
     I want to navigate the board via a continuous column→menu-item→chip ring rendered as the live 2-zone menu bar in the header's row 3
     So that the board's 'u Actions' chord becomes a discoverable, clickable, wheel-driven GUI menu bar wired to the existing actions and sessions
 
-  Scenario: Left from the first column focuses the last chip
+  Scenario: Left from the first column focuses the New Agent button
     Given the board has 3 open sessions and the first column (backlog) is focused
     When I press Left once
-    Then chip #3 paints inverse-video
+    Then the 'New Agent' Zone C button paints inverse-video (MENU-009: the ring's last stop)
+
+  Scenario: Left from the New Agent button focuses the last chip
+    Given the board has 3 open sessions and the ring is focused on the New Agent button
+    When I press Left once
+    Then the last chip (chip #3) paints inverse-video (the pre-MENU-009 last stop)
 
   Scenario: Enter on an open dropdown executes the highlighted row
     Given the Tools dropdown is open with the cursor on row 1 (Checkpoints)
@@ -65,10 +70,10 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
     When I press Enter once
     Then the Actions dropdown panel paints under the item with its cursor on row 0 (New Agent)
 
-  Scenario: The ring walks items then chips then wraps to the first column
+  Scenario: The ring walks items then chips then the New Agent button then wraps to the first column
     Given the board has 1 open session and the last column (blocked) is focused
-    When I press Right four times
-    Then the focus lands on Actions then Help then chip #1 and finally back on the first column (backlog)
+    When I press Right seven times
+    Then the focus lands on Kanban then Tools then Settings then Help then chip #1 then the 'New Agent' button and finally back on the first column (backlog) and no cell on the bar row paints inverse-video (the ring wrapped off the bar and the board carries no current-session chip highlight — MENU-010)
 
   Scenario: The board header row 3 paints the 2-zone menu bar instead of the u Actions chord
     Given the board has 2 open sessions (one running, one idle)
@@ -78,7 +83,7 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
   Scenario: Right from the last column focuses the first menu item
     Given the board has no open sessions and the last column (blocked) is focused
     When I press Right once
-    Then the Actions item paints inverse-video with its dropdown closed
+    Then the Kanban item paints inverse-video with its dropdown closed
 
   Scenario: The board footer hint describes the ring
     Given the board has 3 open sessions
@@ -102,8 +107,8 @@ Feature: Board surface — header row replaced by the 2-zone bar + column→menu
 
   Scenario: With no open sessions the ring wraps from the last item to the first column
     Given the board has no open sessions and the menu bar is focused on the last menu item (Help)
-    When I press Right once
-    Then the first column (backlog) is focused again and the bar highlight clears
+    When I press Right twice
+    Then the first 'New Agent' press focuses the New Agent button (inverse-video) and the second press focuses the first column (backlog) again with the bar highlight cleared (MENU-009: the button is the last ring stop)
 
   Scenario: While a dropdown is open all other keys are swallowed and Up Down move the cursor
     Given the Actions dropdown is open with the cursor on row 2 (Checkpoints)

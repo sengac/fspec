@@ -672,9 +672,16 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - BUG-196 added 9 lines (`MenuDismissBar` variant + an 8-line
     //     doc stanza — the click-away 'close + de-select' bus token) —
     //     the assertion tracks the measured file (1433).
+    //   - MENU-009 added 12 lines (`MenuZoneCActivate` variant + an
+    //     11-line doc stanza — the right-aligned Zone C action button
+    //     token) — the assertion tracks the measured file (1445).
+    //   - TUI-112 added 2 lines (`pub mod dialog_button_hits;` +
+    //     `pub mod three_button_dialog;` — the shared click hit-test
+    //     geometry + the three-button paint/hit builder modules) —
+    //     the assertion tracks the measured file (1447).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1433,
-        "components/mod.rs has {n_components} lines — measured ceiling 1433 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant)"
+        n_components <= 1447,
+        "components/mod.rs has {n_components} lines — measured ceiling 1447 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant + MENU-009 MenuZoneCActivate variant + TUI-112 2 dialog hit-test module lines)"
     );
 }

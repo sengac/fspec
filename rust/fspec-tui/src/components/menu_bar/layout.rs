@@ -13,6 +13,13 @@
 //!   2 — fold chips beyond the 3rd into a single dim `+N` marker
 //!   3 — drop non-active view labels (mux)
 //!   4 — absolute minimum: Zone A only (no separator, no Zone B)
+//!
+//! MENU-009 (R5): Zone C (the right-aligned New Agent / Close Agent
+//! buttons) is the OPTIONAL convenience zone — it is right-aligned at
+//! the row's edge and drops BEFORE any Zone B ladder step: the
+//! pre-MENU-009 level is computed first, and the buttons are painted
+//! only when the row still affords their width at that level. Once
+//! dropped, the row is byte-identical to pre-MENU-009.
 
 use ratatui::layout::Rect;
 use unicode_width::UnicodeWidthStr;
@@ -20,6 +27,11 @@ use unicode_width::UnicodeWidthStr;
 use super::chips::index_prefix;
 use super::MenuSnapshot;
 use super::ZoneBCell;
+
+/// MENU-009 R5: the gap (cells) between the left-anchored Zone A/B block
+/// and the right-aligned Zone C buttons, and between two Zone C buttons
+/// (visual parity with the Zone B 2-cell inter-cell gap).
+pub const ZONE_C_GAP: usize = 2;
 
 /// One PAINTABLE Zone B cell (post-fold) paired with the original
 /// `zone_b` index it covers — focus (which addresses original indices)
@@ -57,6 +69,10 @@ pub struct MenuLayout {
     pub cells: Vec<DisplayCell>,
     /// The Zone B cell rects, aligned with `cells`.
     pub cell_rects: Vec<Rect>,
+    /// MENU-009 (R5): the painted Zone C button rects (right-aligned,
+    /// `snap.zone_c` order). Empty when the row dropped the zone (or
+    /// the surface carries no buttons — mux, Q1).
+    pub zone_c_rects: Vec<Rect>,
 }
 
 /// The geometry pass: pick the truncation level that fits `area` and
@@ -87,11 +103,22 @@ pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {
     }
     // R6: the most detailed level that fits. A level with no Zone B
     // cells costs zero width (no separator, no cells — R6: "the
-    // separator and Zone B are omitted entirely").
+    // separator and Zone B are omitted entirely"). The ladder itself
+    // is UNCHANGED by MENU-009 (R5: Zone C drops before it, never
+    // shifts it).
     let level = (0..=4)
         .find(|l| zone_b_width(snap, *l) + zone_a_width(snap) <= inner.width as usize)
         .unwrap_or(4);
     let cells = display_cells(snap, level);
+
+    // MENU-009 R5: Zone C is right-aligned at the inner right edge and
+    // the OPTIONAL zone — it paints only when the row still affords
+    // `ZONE_C_GAP + its width` after the left-anchored block at the
+    // selected level. Dropped ⇒ byte-identical row to pre-MENU-009.
+    let left_width = zone_a_width(snap) + zone_b_width(snap, level);
+    let zone_c_width = zone_c_width(snap);
+    let zone_c_fits =
+        zone_c_width > 0 && left_width + ZONE_C_GAP + zone_c_width <= inner.width as usize;
 
     let mut x = inner.x;
     let mut item_rects = Vec::with_capacity(snap.zone_a.len());
@@ -128,12 +155,31 @@ pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {
             x = x.saturating_add(w + 2); // 2-cell gap between cells
         }
     }
+
+    // MENU-009 R1/R5: the right-aligned Zone C buttons, laid out
+    // left-to-right from the inner right edge (2-cell gaps, Zone B
+    // visual parity).
+    let mut zone_c_rects: Vec<Rect> = Vec::with_capacity(snap.zone_c.len());
+    if zone_c_fits {
+        let mut cx = inner.x + inner.width - zone_c_width as u16;
+        for button in snap.zone_c.iter() {
+            let w = button.label.width() as u16;
+            zone_c_rects.push(Rect {
+                x: cx,
+                y: inner.y,
+                width: w,
+                height: 1,
+            });
+            cx = cx.saturating_add(w + ZONE_C_GAP as u16);
+        }
+    }
     Some(MenuLayout {
         level,
         item_rects,
         separator,
         cells,
         cell_rects,
+        zone_c_rects,
     })
 }
 
@@ -141,6 +187,14 @@ pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {
 fn zone_a_width(snap: &MenuSnapshot) -> usize {
     let items = snap.zone_a;
     items.iter().map(|c| c.label.width()).sum::<usize>() + items.len().saturating_sub(1)
+}
+
+/// MENU-009: Zone C's natural width: the button labels joined by the
+/// [`ZONE_C_GAP`] gap (zero when the surface carries no buttons).
+fn zone_c_width(snap: &MenuSnapshot) -> usize {
+    let buttons = snap.zone_c;
+    buttons.iter().map(|b| b.label.width()).sum::<usize>()
+        + buttons.len().saturating_sub(1) * ZONE_C_GAP
 }
 
 /// Zone B width at `level` (level 4, or no cells at all = 0 — the

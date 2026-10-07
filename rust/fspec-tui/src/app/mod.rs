@@ -42,6 +42,7 @@ pub mod dispatch_history_recall;
 pub mod dispatch_hitl_prompt;
 pub mod dispatch_isolation_toggle; // WT-009: /isolation state toggle
 pub mod dispatch_menu; // MENU-002: board 2-zone menu bar + ring Action arms
+pub mod dispatch_menu_zone_c; // MENU-009: Zone C button activation arm
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
 pub mod dispatch_model_thinking_dialogs;

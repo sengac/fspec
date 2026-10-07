@@ -25,8 +25,9 @@ Feature: Agent view menu bar — single 'Board View' item instead of board-only 
   Zone B is UNCHANGED in the agent view: one chip per open session, and
   chip activation (click / Enter) still switches to that session's pane
   (BUG-195 behavior). The agent ring is now 'Board View' → chip #1 →
-  … → chip #N → wrap; bare Left on an empty input still enters at
-  Item(0), which is now 'Board View'.
+  … → chip #N → 'New Agent' → 'Close Agent' → wrap (MENU-009: the two
+  Zone C buttons are the ring's last stops); bare Left on an empty input
+  still enters at Item(0), which is now 'Board View'.
 
   The board bar (MENU-002) and the mux bar (MENU-004) are UNCHANGED —
   they keep their Zone A items + dropdowns ('Kanban'/'Tools'/'Settings'/'Help' after MENU-008, was 'Actions'/'Help'). The change is
@@ -84,13 +85,13 @@ Feature: Agent view menu bar — single 'Board View' item instead of board-only 
 
   Scenario: The agent ring wraps from 'Board View' through the chips and back
     Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
-    When I press Right three times
-    Then the focus lands on chip #1 then chip #2 and finally back on 'Board View'
+    When I press Right five times
+    Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
 
-  Scenario: Left from 'Board View' wraps to the last chip
+  Scenario: Left from 'Board View' wraps to the last Zone C button
     Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     When I press Left once
-    Then chip #3 paints inverse-video
+    Then the 'Close Agent' button paints inverse-video (the ring's last stop — MENU-009)
 
   Scenario: Chip activation in the agent view is unchanged
     Given the App is in the Agent view with 3 open sessions

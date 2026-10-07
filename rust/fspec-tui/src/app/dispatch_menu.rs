@@ -34,11 +34,23 @@ impl App {
     /// MENU-004 R8: the mux bar's fed ring (`menu_chips`) gets the same
     /// count in lockstep (the board `set_menu_ring_size` mirror) so the
     /// mux key-time ring math agrees with the bar's paint.
+    /// MENU-009 R3: the board store's Zone C stop count is fed in the
+    /// same lockstep — `1` when the board's OWN bar is painted (the
+    /// single Board view: the right-aligned `New Agent` button is the
+    /// ring's last stop), `0` in Mux (the board pane's bar is
+    /// suppressed, MENU-004 R-SUPPRESS — its ring walk has no Zone C
+    /// stop, byte-identical to pre-MENU-009).
     pub(crate) fn feed_menu_ring_size(&mut self) {
         let chips =
             crate::views::board::menu_snapshot::active_menu_session_ids(&self.agent_view_store)
                 .len();
         self.board_store.set_menu_ring_size(chips);
+        self.board_store
+            .set_menu_zone_c(if self.navigator.active_view == ViewMode::Mux {
+                0
+            } else {
+                1
+            });
         self.navigator
             .mux
             .refresh_menubar_ring(&self.agent_view_store);
@@ -58,6 +70,7 @@ impl App {
                 | Action::MenuChipActivate(_)
                 | Action::MenuMoveToItem(_)
                 | Action::MenuFocusPane(_)
+                | Action::MenuZoneCActivate(_)
         )
     }
 
@@ -148,6 +161,9 @@ impl App {
                 };
                 self.dispatch(menu_action.to_action(target));
             }
+            // MENU-009 Q1: the mux bar paints NO Zone C — the token is
+            // unreachable on this surface (defensive no-op).
+            Action::MenuZoneCActivate(_) => {}
             _ => {}
         }
     }
@@ -260,6 +276,7 @@ impl App {
                 }
             }
             Action::MenuMoveToItem(index) => self.board_store.set_menu_focus_item(*index),
+            Action::MenuZoneCActivate(index) => self.dispatch_menu_zone_c(*index),
             _ => {}
         }
     }

@@ -51,6 +51,10 @@ pub struct BoardStore {
     pub(super) menu_open: Option<(usize, usize)>,
     /// R8: the dispatch-fed chip count; `0` until first refresh.
     pub(super) menu_chips: usize,
+    /// MENU-009: dispatch-fed Zone C stop count (board `New Agent`
+    /// button) — `1` in the single Board view, `0` in Mux (MENU-004
+    /// R-SUPPRESS: the mux board pane paints no bar).
+    pub(super) menu_zone_c: usize,
     pub(super) selected_index_per_column: HashMap<String, usize>,
     /// RPC-016: per-column scroll offset — the index of the first
     /// work unit in the column-content viewport. `0` for every
@@ -60,11 +64,8 @@ pub struct BoardStore {
     session_attachments: HashMap<String, SessionId>,
     last_changed_id: Option<String>,
     /// RPC-015: aggregate manual + auto checkpoint counts populated by
-    /// `App::bootstrap` via `Action::CheckpointCountsLoaded`. The
-    /// BoardView header reads this on every render to paint
-    /// `Checkpoints: None` or `Checkpoints: N Manual, M Auto`. Defaults
-    /// to `{0,0}` so the empty state paints `Checkpoints: None` until
-    /// the bootstrap RPC returns.
+    /// `App::bootstrap` via `Action::CheckpointCountsLoaded`; the
+    /// BoardView header reads it every render (`Checkpoints: N ...`).
     checkpoint_counts: CheckpointCounts,
 }
 

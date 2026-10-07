@@ -13,20 +13,29 @@
 //! bold yellow inner title, opaque black background, inverse highlight
 //! on the focused button) for consistency with the other RPC-026 /
 //! RPC-027 confirmation overlays.
+//!
+//! TUI-112: mouse + outcome routing (the `Component::handle_event`
+//! override, click hit-testing, and Action emission) lives in
+//! `super::merge_confirm_dialog_dispatch` so this file stays under the
+//! 300-LoC ceiling.
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
+use tokio::sync::mpsc::UnboundedSender;
 
 use codelet_rpc_types::{SessionChangesSummary, SessionId};
 
+use crate::components::dialog_button_hits::{separated_button_layout, LastLayout};
 use crate::components::dialog_theme::{
     render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
 };
+use crate::components::Action;
 
-/// Outcome of routing a single key event through the MergeConfirmDialog.
+/// Outcome of routing a single event (key or TUI-112 left-click) through
+/// the MergeConfirmDialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MergeConfirmDialogOutcome {
     /// User activated the Merge button (default focus).
@@ -35,9 +44,9 @@ pub enum MergeConfirmDialogOutcome {
     Discard { session_id: SessionId },
     /// User activated the Cancel button or pressed Esc.
     Cancel,
-    /// Dialog handled the key internally (focus navigation).
+    /// Dialog handled the event internally (focus navigation).
     Continued,
-    /// Dialog ignored the key — caller may route it elsewhere.
+    /// Dialog ignored the event — caller may route it elsewhere.
     Ignored,
 }
 
@@ -51,6 +60,19 @@ pub struct MergeConfirmDialog {
     session_id: SessionId,
     summary: SessionChangesSummary,
     focused: usize,
+    /// TUI-112: the `area` the dialog was last rendered into — cached so
+    /// a later left-click can be hit-tested against the painted pixels
+    /// (R4). The dialog is pushed onto the Compositor behind a
+    /// `Box<dyn Component>`, so hit-testing is done through
+    /// `handle_click` (see merge_confirm_dialog_dispatch).
+    last_render_area: std::cell::Cell<Option<Rect>>,
+    /// TUI-112: the App's action channel — commit outcomes (Merge /
+    /// Discard / Cancel) are emitted here so `App::dispatch`
+    /// (dispatch_merge_worktree) routes them end-to-end.
+    pub(crate) action_tx: Option<UnboundedSender<Action>>,
+    /// TUI-112: the most recent terminal outcome stashed by
+    /// `handle_event` for tests + the (future) App-level router.
+    pub(crate) pending_outcome: Option<MergeConfirmDialogOutcome>,
 }
 
 impl MergeConfirmDialog {
@@ -60,7 +82,17 @@ impl MergeConfirmDialog {
             session_id,
             summary,
             focused: 0,
+            last_render_area: std::cell::Cell::new(None),
+            action_tx: None,
+            pending_outcome: None,
         }
+    }
+
+    /// TUI-112: builder — wire the App's action channel so commit
+    /// outcomes reach `App::dispatch`.
+    pub fn with_action_tx(mut self, action_tx: UnboundedSender<Action>) -> Self {
+        self.action_tx = Some(action_tx);
+        self
     }
 
     /// Read-only accessor for the wrapped session id.
@@ -79,6 +111,25 @@ impl MergeConfirmDialog {
         self.focused
     }
 
+    /// TUI-112: the last-rendered button-row geometry (`None` frame
+    /// rect before the first render — nothing to hit-test yet, R4).
+    pub fn last_layout(&self) -> LastLayout {
+        let Some(area) = self.last_render_area.get() else {
+            return LastLayout::new();
+        };
+        separated_button_layout(
+            area,
+            &self.build_descriptor(),
+            2,
+            &["Merge", "Discard", "Cancel"],
+        )
+    }
+
+    /// TUI-112: test-only accessor — drain the stashed pending outcome.
+    pub fn take_pending_outcome(&mut self) -> Option<MergeConfirmDialogOutcome> {
+        self.pending_outcome.take()
+    }
+
     fn focus_prev(&mut self) {
         if self.focused == 0 {
             self.focused = 2;
@@ -95,7 +146,7 @@ impl MergeConfirmDialog {
         }
     }
 
-    fn outcome_for_index(&self, idx: usize) -> MergeConfirmDialogOutcome {
+    pub(crate) fn outcome_for_index(&self, idx: usize) -> MergeConfirmDialogOutcome {
         match idx {
             0 => MergeConfirmDialogOutcome::Merge {
                 session_id: self.session_id.clone(),
@@ -140,6 +191,25 @@ impl MergeConfirmDialog {
             }
             KeyCode::Enter => self.outcome_for_index(self.focused),
             _ => MergeConfirmDialogOutcome::Ignored,
+        }
+    }
+
+    /// The paint descriptor for the current summary — shared by
+    /// `render` and the TUI-112 hit-test so the geometry always matches
+    /// the painted pixels.
+    fn build_descriptor(&self) -> FspecDialog<'_> {
+        let spacer = DialogRow {
+            spans: vec![Span::raw(String::new())],
+            selectable: false,
+            selected: false,
+        };
+        FspecDialog {
+            accent: Accent::Yellow,
+            title: "Merge Worktree",
+            rows: vec![self.build_summary_row(), spacer, self.build_button_row()],
+            footer: "Tab / ←→: focus  Enter: confirm  Esc: cancel",
+            min_width: 50,
+            query_row: None,
         }
     }
 
@@ -197,43 +267,10 @@ impl MergeConfirmDialog {
     /// shared dialog_theme renderer for the rounded yellow border +
     /// black background + bold inner title.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let spacer = DialogRow {
-            spans: vec![Span::raw(String::new())],
-            selectable: false,
-            selected: false,
-        };
-        let dialog = FspecDialog {
-            accent: Accent::Yellow,
-            title: "Merge Worktree",
-            rows: vec![self.build_summary_row(), spacer, self.build_button_row()],
-            footer: "Tab / ←→: focus  Enter: confirm  Esc: cancel",
-            min_width: 50,
-            query_row: None,
-        };
+        // TUI-112: cache the rendered area so a later left-click can be
+        // hit-tested against the exact pixels painted (R4).
+        self.last_render_area.set(Some(area));
+        let dialog = self.build_descriptor();
         render_dialog(area, buf, &dialog);
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Component impl so the dialog can be pushed onto the App's compositor
-// with a stable id and Foreground priority. The dialog's `handle_key`
-// is invoked from the App's keyboard-routing layer (dispatch_merge_worktree);
-// here we expose only the id/priority/render shape that the
-// `Compositor` cares about.
-// ─────────────────────────────────────────────────────────────────────
-
-use crate::components::{Component, Priority};
-
-impl Component for MergeConfirmDialog {
-    fn id(&self) -> &str {
-        MERGE_CONFIRM_DIALOG_ID
-    }
-
-    fn priority(&self) -> Priority {
-        Priority::Foreground
-    }
-
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        MergeConfirmDialog::render(self, area, buf);
     }
 }

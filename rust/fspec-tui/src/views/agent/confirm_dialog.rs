@@ -13,6 +13,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 
+use crate::components::dialog_button_hits::{separated_button_layout, LastLayout};
 use crate::components::dialog_theme::{
     render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
 };
@@ -40,6 +41,11 @@ pub struct ConfirmDialog {
     body: String,
     buttons: Vec<String>,
     focused: usize,
+    /// TUI-112: the `area` the dialog was last rendered into (cached so
+    /// `handle_click` can hit-test against the painted pixels; the
+    /// dialog is embedded behind `&` in the view scaffolds, hence the
+    /// interior-mutability `Cell`).
+    last_render_area: std::cell::Cell<Option<Rect>>,
 }
 
 impl ConfirmDialog {
@@ -65,6 +71,7 @@ impl ConfirmDialog {
             body: body.into(),
             buttons,
             focused: 0,
+            last_render_area: std::cell::Cell::new(None),
         }
     }
 
@@ -82,6 +89,55 @@ impl ConfirmDialog {
 
     pub fn focused(&self) -> usize {
         self.focused
+    }
+
+    /// TUI-112: the last-rendered button-row geometry (`None` frame rect
+    /// before the first render — nothing to hit-test yet, R4).
+    pub fn last_layout(&self) -> LastLayout {
+        let Some(area) = self.last_render_area.get() else {
+            return LastLayout::new();
+        };
+        let labels: Vec<&str> = self.buttons.iter().map(String::as_str).collect();
+        separated_button_layout(area, &self.build_descriptor(), 2, &labels)
+    }
+
+    /// TUI-112: route a left-button press (R2). A click on a button
+    /// returns the SAME outcome as Left/Right + Enter on that button;
+    /// a click off every button or outside the frame is `Ignored`
+    /// (R4/R5 — the caller may route it elsewhere).
+    pub fn handle_click(&self, col: u16, row: u16) -> ConfirmDialogOutcome {
+        let layout = self.last_layout();
+        if !layout.contains(col, row) {
+            return ConfirmDialogOutcome::Ignored;
+        }
+        match layout.hit(col, row) {
+            Some(idx) => self.outcome_for_index(idx),
+            None => ConfirmDialogOutcome::Ignored,
+        }
+    }
+
+    /// The paint descriptor for the current title/body/buttons — shared
+    /// by `render` and the TUI-112 hit-test so the geometry always
+    /// matches the painted pixels.
+    fn build_descriptor(&self) -> FspecDialog<'_> {
+        let body_row = DialogRow {
+            spans: vec![Span::raw(self.body.clone())],
+            selectable: false,
+            selected: false,
+        };
+        let spacer = DialogRow {
+            spans: vec![Span::raw(String::new())],
+            selectable: false,
+            selected: false,
+        };
+        FspecDialog {
+            accent: Accent::Yellow,
+            title: &self.title,
+            rows: vec![body_row, spacer, self.build_button_row()],
+            footer: "",
+            min_width: 40,
+            query_row: None,
+        }
     }
 
     pub fn primary_label(&self) -> &str {
@@ -194,24 +250,10 @@ impl ConfirmDialog {
     /// shared dialog_theme renderer for the rounded yellow border +
     /// black background + bold inner title; appends a button row.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let body_row = DialogRow {
-            spans: vec![Span::raw(self.body.clone())],
-            selectable: false,
-            selected: false,
-        };
-        let spacer = DialogRow {
-            spans: vec![Span::raw(String::new())],
-            selectable: false,
-            selected: false,
-        };
-        let dialog = FspecDialog {
-            accent: Accent::Yellow,
-            title: &self.title,
-            rows: vec![body_row, spacer, self.build_button_row()],
-            footer: "",
-            min_width: 40,
-            query_row: None,
-        };
+        // TUI-112: cache the rendered area so a later left-click can be
+        // hit-tested against the exact pixels painted (R4).
+        self.last_render_area.set(Some(area));
+        let dialog = self.build_descriptor();
         render_dialog(area, buf, &dialog);
     }
 }

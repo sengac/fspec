@@ -25,13 +25,14 @@
 //!
 //! Card: MUX-004.
 
-use crossterm::event::{Event, KeyCode, MouseEventKind};
+use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::views::multiplex::{MuxConfig, MuxOrientation, MuxPaneKind};
 
+use super::dialog_button_hits::{row_list_layout, LastLayout};
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::mux_config_dialog_rows::{
     build_rows, MUX_CONFIG_DIALOG_FOOTER, MUX_CONFIG_DIALOG_TITLE,
@@ -55,6 +56,10 @@ pub struct MuxConfigDialog {
     cursor: usize,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
+    /// TUI-112: last-rendered row geometry for left-click hit-testing
+    /// (R3: a click on a row lands the cursor on it AND applies the
+    /// draft — one-click).
+    last_layout: LastLayout,
 }
 
 impl MuxConfigDialog {
@@ -68,6 +73,7 @@ impl MuxConfigDialog {
             cursor: 0,
             action_tx: None,
             pending_action: None,
+            last_layout: LastLayout::new(),
         }
     }
 
@@ -97,6 +103,12 @@ impl MuxConfigDialog {
     /// Test-only: drain any pending action stashed by `handle_event`.
     pub fn take_pending_action(&mut self) -> Option<Action> {
         self.pending_action.take()
+    }
+
+    /// TUI-112: test accessor — the last-rendered row geometry (frame
+    /// rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
     }
 
     fn emit_action(&mut self, action: Action) {
@@ -258,6 +270,24 @@ impl Component for MuxConfigDialog {
         // R4: mouse wheel scrolls the cursor like Up/Down.
         if let Event::Mouse(m) = event {
             match m.kind {
+                // TUI-112 (R3): a left-click on a row lands the cursor
+                // on that row AND applies the draft config (the same
+                // action Enter emits) — one-click. A click off every
+                // row or outside the frame is Ignored (R4/R5) so it
+                // bubbles.
+                MouseEventKind::Down(MouseButton::Left) => {
+                    let layout = self.last_layout.clone();
+                    if !layout.contains(m.column, m.row) {
+                        return EventResult::ignored();
+                    }
+                    return match layout.hit(m.column, m.row) {
+                        Some(idx) if idx < self.row_count() => {
+                            self.cursor = idx;
+                            self.apply(false)
+                        }
+                        _ => EventResult::ignored(),
+                    };
+                }
                 MouseEventKind::ScrollUp => {
                     self.move_up();
                     return EventResult::consumed();
@@ -282,6 +312,10 @@ impl Component for MuxConfigDialog {
             min_width: 46,
             query_row: None,
         };
+        // TUI-112: cache the row geometry (2 + n_panes rows) for
+        // left-click hit-testing, derived from the SAME descriptor that
+        // is painted so the rects line up with the pixels.
+        self.last_layout = row_list_layout(area, &dialog, self.row_count());
         render_dialog(area, buf, &dialog);
     }
 }

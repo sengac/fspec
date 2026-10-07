@@ -78,6 +78,13 @@ pub struct WorkUnitSearchDialog {
     /// BUG-162: cached scrollbar gutter rect from the last render
     /// (`None` when the matches fit in the visible rows).
     pub(super) last_scrollbar_rect: Option<Rect>,
+    /// TUI-112 (R3): full-body-width rects of the VISIBLE result rows
+    /// from the last render (content-row order, i.e. `scroll_offset`
+    /// is applied) — a left-click on one commits that match.
+    pub(super) last_row_rects: Vec<Rect>,
+    /// TUI-112: the most recent action stashed for tests (drained via
+    /// `take_pending_action`) when no `action_tx` is attached.
+    pub(super) pending_action: Option<Action>,
 }
 
 impl WorkUnitSearchDialog {
@@ -118,7 +125,17 @@ impl WorkUnitSearchDialog {
         }
     }
 
-    fn remove_callback(&self) -> Callback {
+    /// TUI-112: emit + stash (the stash powers `take_pending_action`
+    /// in unit tests that have no `action_tx`). `pub(super)` so the
+    /// BUG-112 mouse module can reuse the exact same path.
+    pub(super) fn emit_and_stash(&mut self, action: Action) {
+        self.emit(action.clone());
+        self.pending_action = Some(action);
+    }
+
+    /// `pub(super)` so the TUI-112 mouse module can request the
+    /// self-removal callback after a row commit.
+    pub(super) fn remove_callback(&self) -> Callback {
         let id = self.id.clone();
         Box::new(move |compositor| {
             let _ = compositor.remove(&id);
@@ -208,7 +225,7 @@ impl Component for WorkUnitSearchDialog {
             KeyCode::Enter => {
                 // Zero matches → no-op (dialog stays open).
                 if let Some(m) = self.matches.get(self.selected) {
-                    self.emit(Action::SelectWorkUnit(m.id.clone()));
+                    self.emit_and_stash(Action::SelectWorkUnit(m.id.clone()));
                     return EventResult::Consumed(Some(self.remove_callback()));
                 }
                 EventResult::consumed()
@@ -270,6 +287,21 @@ impl Component for WorkUnitSearchDialog {
         } else {
             self.last_scrollbar_rect = None;
         }
+        // TUI-112 (R3): cache the full-body-width rect of every VISIBLE
+        // result row so a left-click can commit it (content rows start
+        // after the title + gap + pinned query row — the same math
+        // `render_dialog_at` uses).
+        let footer_h = crate::components::dialog_button_hits::footer_line_count(FOOTER);
+        let painted_rows = self.matches.len().min(vr);
+        let mut row_rects = Vec::with_capacity(painted_rows);
+        for i in 0..painted_rows {
+            if let Some(rr) =
+                crate::components::dialog_button_hits::content_row_rect(rect, footer_h, true, i)
+            {
+                row_rects.push(rr);
+            }
+        }
+        self.last_row_rects = row_rects;
     }
 }
 

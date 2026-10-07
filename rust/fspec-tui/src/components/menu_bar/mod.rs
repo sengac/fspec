@@ -59,6 +59,21 @@ pub enum MenuFocus {
     /// A Zone B display cell — index into [`MenuSnapshot::zone_b`]
     /// (a view label in mux mode, or a chip everywhere).
     ZoneB(usize),
+    /// A Zone C action button — index into [`MenuSnapshot::zone_c`]
+    /// (MENU-009: the right-aligned New Agent / Close Agent buttons).
+    ZoneC(usize),
+}
+
+/// One Zone C action button (MENU-009, R1): a right-aligned button the
+/// surface paints at the row's right edge. Each surface picks its own
+/// `&'static` slice (the `AGENT_ZONE_A` precedent, MENU-007) — the
+/// shared painter stays surface-agnostic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ZoneCButton {
+    /// The label painted as the button (e.g. `"New Agent"`).
+    pub label: &'static str,
+    /// The action the button executes (Enter / left click).
+    pub action: items::MenuAction,
 }
 
 /// One Zone B cell, in display order (R3). Mux mode interleaves view
@@ -90,6 +105,12 @@ pub struct MenuSnapshot {
     pub zone_b: Vec<ZoneBCell>,
     /// The global chip list (addressed by [`ZoneBCell::Chip`]).
     pub chips: Vec<MenuChip>,
+    /// MENU-009: the Zone C action buttons, right-aligned (R1). The
+    /// surface picks its `&'static` slice — board: `[New Agent]`,
+    /// agent: `[New Agent, Close Agent]`, mux: `&[]` (empty ⇒ the
+    /// ring / layout / paint arms are all byte-identical to
+    /// pre-MENU-009).
+    pub zone_c: &'static [ZoneCButton],
     /// Frame clock driving the Running braille frame (R4).
     pub clock_ms: u64,
 }
@@ -103,23 +124,29 @@ impl Default for MenuSnapshot {
             open_menu: None,
             zone_b: Vec::new(),
             chips: Vec::new(),
+            zone_c: &[],
             clock_ms: 0,
         }
     }
 }
 
 impl MenuSnapshot {
-    /// R3 ring math: advance the focus by `delta` (+1 right, -1 left)
-    /// around items → Zone B cells (display order) → wrap. A `None`
-    /// focus has not entered the ring yet: `+1` enters at the first
-    /// item, `-1` enters at the LAST cell (the "runs out of menu items
-    /// → view switcher" edge, and its mirror). Every subsequent step
-    /// is a `rem_euclid` walk, so `+1` from the last Zone B cell lands
-    /// on the first item and `-1` from the first item lands on the
-    /// last Zone B cell.
+    /// R3 ring math (MENU-009: items → Zone B → Zone C → wrap):
+    /// advance the focus by `delta` (+1 right, -1 left) around the
+    /// ring. A `None` focus has not entered the ring yet: `+1` enters
+    /// at the first item, `-1` enters at the LAST cell (the "runs out
+    /// of menu items → view switcher" edge, and its mirror — now the
+    /// last Zone C button when the surface carries one). Every
+    /// subsequent step is a `rem_euclid` walk, so `+1` from the last
+    /// stop (Zone C button or last Zone B cell when `zone_c` is
+    /// empty) lands on the first item and `-1` from the first item
+    /// lands on the last stop. An empty `zone_c` (mux) keeps the
+    /// pre-MENU-009 walk byte-identical.
     pub fn advance(&self, focus: Option<MenuFocus>, delta: i32) -> MenuFocus {
         let items = self.zone_a.len();
-        let len = items + self.zone_b.len();
+        let zone_b = self.zone_b.len();
+        let zone_c = self.zone_c.len();
+        let len = items + zone_b + zone_c;
         if len == 0 {
             return MenuFocus::Item(0);
         }
@@ -136,14 +163,20 @@ impl MenuSnapshot {
                 ((pos + delta).rem_euclid(len as i32)) as usize
             }
             Some(MenuFocus::ZoneB(i)) => {
-                let pos = (items + i.min(self.zone_b.len().saturating_sub(1))) as i32;
+                let pos = (items + i.min(zone_b.saturating_sub(1))) as i32;
+                ((pos + delta).rem_euclid(len as i32)) as usize
+            }
+            Some(MenuFocus::ZoneC(i)) => {
+                let pos = (items + zone_b + i.min(zone_c.saturating_sub(1))) as i32;
                 ((pos + delta).rem_euclid(len as i32)) as usize
             }
         };
         if next < items {
             MenuFocus::Item(next)
-        } else {
+        } else if next < items + zone_b {
             MenuFocus::ZoneB(next - items)
+        } else {
+            MenuFocus::ZoneC(next - items - zone_b)
         }
     }
 

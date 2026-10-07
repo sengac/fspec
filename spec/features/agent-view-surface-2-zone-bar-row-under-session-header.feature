@@ -18,7 +18,7 @@ Feature: Agent view surface — 2-zone bar row under SessionHeader (menu_row fla
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. R4 (ring): Left/Right (h/l) while bar-focused walk the unified ring: the 'Board View' item (MENU-007 supersession) then session chips, wrapping from the last chip back to Item(0) — no columns in the agent view (unlike the board).
+  #   1. R4 (ring): Left/Right (h/l) while bar-focused walk the unified ring: the 'Board View' item (MENU-007 supersession) then session chips, then the right-aligned Zone C buttons 'New Agent' / 'Close Agent' (MENU-009), wrapping from the last Zone C button back to Item(0); Left from Item(0) wraps to the LAST Zone C button ('Close Agent') — no columns in the agent view (unlike the board). When the bar row's width drops the Zone C buttons (MENU-009 R5) they hold no ring stops.
   #   2. R3 (entry): with the input draft EMPTY, a bare Left arrow (h) enters the bar with focus on Item(0) (the first menu item — Zone A is the primary zone); bare arrows on a NON-EMPTY draft stay the text cursor; Shift+Left/Right session cycling is untouched. Right arrow does NOT enter the bar (entry is Left-only).
   #   3. R2: Non-mux Zone B is chips only — one chip per open session (index = open-sessions index, 1-based display), no view labels; with zero open sessions the bar shows 'Board View' with no separator and no chips.
   #   4. R1: The agent pane gains a 1-row MenuBar strip directly BELOW the SessionHeader (pane layout = Header, MenuBar, RoleBanner, Scrollback, Footer, Input), gated by a `menu_row: bool` flag on `PaneSession`; when the flag is off the pinned 5-constraint `pane_layout_constraints` list stays byte-identical (rpc013-source-shape keeps passing). Single-view mode sets the flag; mux agent panes set it false (MENU-004 paints the mux-level bar). ChromeAreas gains `menu: Rect` (height 0 when off; painters no-op on zero height).
@@ -34,7 +34,7 @@ Feature: Agent view surface — 2-zone bar row under SessionHeader (menu_row fla
   #
   # EXAMPLES:
   #   1. With zero open sessions the agent bar paints 'Board View' with no separator and no chips; Left from an empty input still enters the ring at Item(0) and Right from 'Board View' wraps to itself. [MENU-007]
-  #   2. With 2 open sessions and an empty input, pressing bare Left lands on the 'Board View' item (inverse, no dropdown — MENU-007); Right lands on chip #1; Right wraps back to 'Board View'.
+  #   2. With 2 open sessions and an empty input, pressing bare Left lands on the 'Board View' item (inverse, no dropdown — MENU-007); Right lands on chip #1; chip #2; 'New Agent'; 'Close Agent'; Right wraps back to 'Board View'. [MENU-009]
   #   3. Bar-focused on chip #2 (a Running session), pressing Enter jumps the single-view agent pane to that session (same target as Shift+Right from session 1) and clears the bar focus.
   #   4. While typing 'hel' in the input, bare Left moves the text cursor left (does NOT enter the bar); clearing the draft and pressing Left then enters the bar at Item(0).
   #   5. Bar-focused (dropdown closed), pressing 'x' clears the bar focus and types 'x' into the input on the same keystroke.
@@ -85,15 +85,16 @@ Feature: Agent view surface — 2-zone bar row under SessionHeader (menu_row fla
     When I press bare Right once
     Then the menu bar does not gain focus and the text cursor position is unchanged
 
-  Scenario: The ring walks items then chips then wraps to the first item
+  Scenario: The ring walks items then chips then the Zone C buttons then wraps to the first item
     Given the agent pane has 2 open sessions and the menu bar is focused on the 'Board View' item
-    When I press Right three times
-    Then the focus lands on chip #1 then chip #2 and finally back on 'Board View'
+    When I press Right five times
+    Then the focus lands on chip #1 then chip #2 then 'New Agent' then 'Close Agent' and finally back on 'Board View'
 
-  Scenario: The ring wraps left from the first item to the last chip
+  Scenario: The ring wraps left from the first item to the last Zone C button
     Given the agent pane has 3 open sessions and the menu bar is focused on the 'Board View' item
     When I press Left once
-    Then chip #3 paints inverse-video
+    Then the 'Close Agent' button paints inverse-video (the last Zone C button is the ring's last stop — MENU-009)
+    And pressing Left once more focuses the 'New Agent' button
 
   Scenario: Enter on a chip jumps to that session in the agent view
     Given the agent pane has 3 open sessions and the menu bar is focused on chip #2
@@ -161,5 +162,5 @@ Feature: Agent view surface — 2-zone bar row under SessionHeader (menu_row fla
 
   Scenario: With no chips the ring wraps from the item to itself
     Given the agent pane has no open sessions and the menu bar is focused on the 'Board View' item
-    When I press Right once
-    Then the 'Board View' item is focused again
+    When I press Right three times
+    Then the walk passes through 'New Agent' then 'Close Agent' and the 'Board View' item is focused again (MENU-009: the Zone C buttons are the only ring stops besides the item)

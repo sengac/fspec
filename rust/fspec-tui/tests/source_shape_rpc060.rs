@@ -62,8 +62,12 @@ fn create_session_dialog_component_exists() {
     );
 
     // @step And it uses the shared dialog_theme renderer
+    // TUI-112: the three-button dialogs now delegate to
+    // `three_button_dialog::render_three_button_dialog`, which itself
+    // calls `dialog_theme::render_dialog` — either counts as using the
+    // shared renderer (the contract is "no direct Block/Paragraph").
     assert!(
-        source.contains("render_dialog"),
+        source.contains("render_dialog") || source.contains("render_three_button_dialog"),
         "production source must use dialog_theme::render_dialog"
     );
 

@@ -16,13 +16,19 @@
 //! `MenuFocusToColumns` / `MenuOpenDropdown` / `MenuChipActivate` and
 //! never computes positions itself.
 //!
-//! Ring position mapping (0-based, ring order, length = 7 + items + chips):
-//!   0..7               → a column (`menu_focus` None, `focused_column` = pos)
-//!   7..7+items         → a Zone A menu item (`MenuFocus::Item(pos - 7)`)
-//!   7+items..len       → a Zone B chip (`MenuFocus::ZoneB(pos - 7 - items)`)
+//! Ring position mapping (0-based, ring order, length = 7 + items + chips +
+//! zone_c; the dispatched `zone_c` count is 1 on the board, 0 in Mux):
 //!
-//! With no open sessions the ring shrinks to columns + items and wraps from
-//! the last item straight back to the first column.
+//! ```text
+//! 0..7               → a column (`menu_focus` None, `focused_column` = pos)
+//! 7..7+items         → a Zone A menu item (`MenuFocus::Item(pos - 7)`)
+//! 7+items..len-zone_c → a Zone B chip (`MenuFocus::ZoneB(pos - 7 - items)`)
+//! len-zone_c..len    → the Zone C `New Agent` button (`MenuFocus::ZoneC(0)`, board only)
+//! ```
+//!
+//! With no open sessions the ring shrinks to columns + items + the
+//! Zone C button and wraps from the button back to the first column
+//! (MENU-009 R3: the right-aligned button is the ring's LAST stop).
 
 use crate::components::menu_bar::items::{MenuAction, CATEGORIES};
 use crate::components::menu_bar::MenuFocus;
@@ -53,6 +59,14 @@ impl BoardStore {
         self.menu_chips = chips;
     }
 
+    /// MENU-009: dispatch feeds the board bar's Zone C stop count (R8
+    /// lockstep) — `1` when the board's OWN bar is painted (the single
+    /// Board view), `0` in Mux (the board pane's bar is suppressed,
+    /// MENU-004 R-SUPPRESS — its ring walk has no Zone C stop).
+    pub fn set_menu_zone_c(&mut self, zone_c: usize) {
+        self.menu_zone_c = zone_c;
+    }
+
     /// The stored chip count (R8). `0` until the first dispatch-fed refresh.
     pub fn menu_chip_count(&self) -> usize {
         self.menu_chips
@@ -64,6 +78,11 @@ impl BoardStore {
     /// stop (delta<0). Landing in a column slot re-mirrors
     /// `focused_column`; the column's card selection is untouched.
     ///
+    /// MENU-009 R3: the ring's LAST stop is the board's Zone C
+    /// `New Agent` button (the dispatched `menu_zone_c` count — `1`
+    /// when the board's OWN bar is painted, `0` in Mux where the
+    /// board pane's bar is suppressed).
+    ///
     /// BUG-198 R1: the walk re-anchors an open dropdown — landing on a
     /// Zone A item moves the open panel under that item at row 0 (GUI
     /// parity: the dropdown stays open while cycling items with the
@@ -72,13 +91,16 @@ impl BoardStore {
     pub fn menu_move(&mut self, delta: i32) {
         let items = CATEGORIES.len();
         let chips = self.menu_chips;
-        let len = RING_COLUMNS + items + chips;
+        let zone_c = self.menu_zone_c;
+        let len = RING_COLUMNS + items + chips + zone_c;
         let pos = match self.menu_focus {
             None => self.focused_column as i32,
             Some(MenuFocus::Item(i)) => (RING_COLUMNS + i.min(items - 1)) as i32,
             Some(MenuFocus::ZoneB(j)) => {
                 (RING_COLUMNS + items + j.min(chips.saturating_sub(1))) as i32
             }
+            // MENU-009: the board's Zone C stop (when the bar is painted).
+            Some(MenuFocus::ZoneC(_)) => (RING_COLUMNS + items + chips) as i32,
         };
         let next = (pos + delta).rem_euclid(len as i32) as usize;
         self.menu_focus = if next < RING_COLUMNS {
@@ -86,8 +108,11 @@ impl BoardStore {
             None
         } else if next < RING_COLUMNS + items {
             Some(MenuFocus::Item(next - RING_COLUMNS))
-        } else {
+        } else if next < RING_COLUMNS + items + chips {
             Some(MenuFocus::ZoneB(next - RING_COLUMNS - items))
+        } else {
+            // The last stop: the Zone C `New Agent` button (MENU-009).
+            Some(MenuFocus::ZoneC(0))
         };
         // BUG-198 R1: re-anchor the open dropdown under the new focus —
         // an item landing opens (or moves) the panel at row 0; landing

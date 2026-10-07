@@ -1,0 +1,220 @@
+{
+  "scenarios": [
+    {
+      "name": "Enter on the agent's 'New Agent' button mounts the Create Session dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "206-247",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A left click on the agent's 'New Agent' button mounts the Create Session dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "249-284",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' on a running session interrupts the run like the first Esc",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "286-336",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' with a non-empty input clears the draft like Esc level 6",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "338-376",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' on an idle session shows the same exit confirmation as Esc",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "378-424",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar paints 'New Agent' then 'Close Agent [esc]' right-aligned",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "426-452",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board bar still paints a single 'New Agent' button",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs",
+          "lines": "454-487",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug199_agent_bar_zone_c_semantics.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+      "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs"
+    ],
+    "totalLinesCovered": 364
+  }
+}

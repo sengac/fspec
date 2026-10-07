@@ -22,12 +22,15 @@
 //!        leaving the focus intact).
 //!
 //! R3/R4 (stale chip highlight after view flips + the
-//! "chip highlights ONLY when the ring is on it or it is the active
-//! session" invariant) are pinned by asserting the ring-focus holders
-//! (board `BoardStore.menu_focus`, agent `AgentView.menu_focus`, mux
-//! `MultiplexLayout.menu_focus`) are `None` after the flips — the shared
-//! `focused_cell()` painter then only paints ring-on-chip OR the
-//! MENU-006 active-chip highlight.
+//! "chip highlights ONLY when the ring is on it, or the surface's
+//! snapshot builder marked the current-session chip (Agent view /
+//! focused Agent pane in mux — never the board, MENU-010)" invariant)
+//! are pinned by asserting the ring-focus holders (board
+//! `BoardStore.menu_focus`, agent `AgentView.menu_focus`, mux
+//! `MultiplexLayout.menu_focus`) are `None` after the flips — the
+//! shared `focused_cell()` painter then only paints ring-on-chip OR the
+//! per-chip `active` flag (MENU-010: set by the surface's snapshot
+//! builder; the board's builder marks no chip).
 //!
 //! Harness: App + MockBackend (the `bug196_menu_dropdown_row_click.rs` /
 //! `menu002_board_surface.rs` / `menu004_mux_surface.rs` pattern) —
@@ -455,15 +458,15 @@ async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_
          returning to the board shows NO stale chip highlight"
     );
 
-    // @step And the current session's chip still paints the MENU-006 active-chip highlight
+    // @step And no chip's cells paint the inverse-video highlight (the board never carries the current-session highlight — MENU-010)
     // The painter's `focused_cell` ORs the ring focus with
-    // `MenuChip.active`; with the ring cleared, the active (current
-    // session's) chip is the ONLY chip the painter may highlight — the
-    // invariant holds by construction once the stale ring state is
+    // `MenuChip.active`; the board's snapshot builder marks no chip
+    // (MENU-010 R2), so with the ring cleared NO chip may highlight —
+    // the invariant holds by construction once the stale ring state is
     // gone (no ring focus may land on chip #2 either).
     assert!(
         app.board_store().menu_focus().is_none(),
-        "only the MENU-006 active-chip path may paint a chip now"
+        "only the ring selector may paint a chip on the board (MENU-010)"
     );
 }
 
@@ -558,10 +561,10 @@ async fn scenario_agent_view_flipping_back_to_the_board_leaves_no_ring_focused_c
          a lingering chip focus would paint a stale highlight"
     );
 
-    // @step And the current session's chip still paints the MENU-006 active-chip highlight
-    // With the ring cleared, only the active (current session's) chip
-    // may paint (the painter's `focused_cell` ORs ring-on-chip with
-    // `MenuChip.active`).
+    // @step And no chip's cells paint the inverse-video highlight (the board never carries the current-session highlight — MENU-010)
+    // With the ring cleared, the board's snapshot builder marks no
+    // chip (MENU-010 R2), so NO chip may paint (the painter's
+    // `focused_cell` ORs ring-on-chip with `MenuChip.active`).
     let _buf = render_app(&mut app, 120, 24);
     assert!(
         app.board_store().menu_focus().is_none(),

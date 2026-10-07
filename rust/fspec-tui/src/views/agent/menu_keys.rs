@@ -30,7 +30,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::components::menu_bar::MenuFocus;
 use crate::components::EventResult;
 
-use super::menu_render::AGENT_ZONE_A;
+use super::menu_render::{AGENT_ZONE_A, AGENT_ZONE_C};
 use super::AgentView;
 
 /// The outcome of a menu-bar key arm: `Some` = the arm claimed the
@@ -49,33 +49,54 @@ fn bare_char(key: &KeyEvent) -> bool {
 }
 
 impl AgentView {
-    /// The agent ring length: the single 'Board View' item + painted
-    /// chips (MENU-007).
-    fn menu_ring_len(&self) -> usize {
-        AGENT_ZONE_A.len() + self.menu_state.chip_count()
+    /// MENU-009 R3/R5: true iff this view's OWN 2-zone bar painted its
+    /// Zone C buttons this frame (the focused single-view pane,
+    /// `menu_row=true`). The cached `zone_c_rects` is the PAINTED set
+    /// — `None` when the pane has no bar row (the mux agent pane
+    /// suppresses it → `clear_geometry`) and EMPTY when the row's
+    /// width dropped the buttons (R5). Gating on the painted rects —
+    /// not `bar_row` — keeps the ring honest: a truncated bar has no
+    /// Zone C stops. The mux agent pane therefore walks a
+    /// byte-identical pre-MENU-009 ring (the top-row MUX bar — with an
+    /// empty Zone C — is the bar on screen there, walked by
+    /// `App::dispatch_menu_mux`).
+    fn zone_c_active(&self) -> bool {
+        self.menu_state
+            .zone_c_rects()
+            .is_some_and(|rects| !rects.is_empty())
     }
 
     /// R4: walk the ring by `delta` (+1 right, -1 left), wrapping at
     /// both ends. The agent bar is dropdown-free (MENU-007) — a closed
-    /// bar stays closed.
+    /// bar stays closed. MENU-009 R3: the ring order is
+    /// item → chips → Zone C buttons → wrap (the buttons are the ring's
+    /// LAST stops when painted).
     pub(crate) fn walk_menu_ring(&mut self, delta: i32) {
         let items = AGENT_ZONE_A.len();
-        let len = self.menu_ring_len();
+        let chips = self.menu_state.chip_count();
+        let zone_c = if self.zone_c_active() {
+            AGENT_ZONE_C.len()
+        } else {
+            0
+        };
+        let len = items + chips + zone_c;
         if len == 0 {
             return;
         }
         let current = match self.menu_state.focus() {
             Some(MenuFocus::Item(i)) => i.min(items.saturating_sub(1)),
-            Some(MenuFocus::ZoneB(j)) => {
-                items + j.min(self.menu_state.chip_count().saturating_sub(1))
-            }
+            Some(MenuFocus::ZoneB(j)) => items + j.min(chips.saturating_sub(1)),
+            // MENU-009: a Zone C stop (only reachable when painted).
+            Some(MenuFocus::ZoneC(i)) => items + chips + i.min(zone_c.saturating_sub(1)),
             None => return,
         };
         let next = (current as i32 + delta).rem_euclid(len as i32) as usize;
         let focus = if next < items {
             MenuFocus::Item(next)
-        } else {
+        } else if next < items + chips {
             MenuFocus::ZoneB(next - items)
+        } else {
+            MenuFocus::ZoneC(next - items - chips)
         };
         self.menu_state.set_focus(Some(focus));
         // MENU-007: the agent bar never opens a dropdown.
@@ -112,6 +133,17 @@ impl AgentView {
         }
         self.menu_state.clear_focus();
         self.emit(crate::components::Action::MenuChipActivate(j));
+    }
+
+    /// MENU-009 R2/R3: activate Zone C button `index` — clear the bar
+    /// focus (the composer regains the keys, the chip/board-view
+    /// activation parity) and emit `MenuZoneCActivate(index)` (the
+    /// `App::dispatch_menu` arm resolves it per surface: BUG-199 —
+    /// `New Agent` mounts the Create Session dialog, `Close Agent
+    /// [esc]` runs the `AgentEscPressed` cascade).
+    pub(crate) fn activate_menu_zone_c(&mut self, index: usize) {
+        self.menu_state.clear_focus();
+        self.emit(crate::components::Action::MenuZoneCActivate(index));
     }
 
     /// The agent view's menu-bar key arms (see the module docs).
@@ -153,6 +185,11 @@ impl AgentView {
                 MenuFocus::Item(_) => self.activate_board_view_item(),
                 MenuFocus::ZoneB(index) => {
                     self.activate_menu_chip(index);
+                }
+                // MENU-009 R2: a Zone C button activates its `MenuAction`
+                // (New Agent / Close Agent) through the bus.
+                MenuFocus::ZoneC(index) => {
+                    self.activate_menu_zone_c(index);
                 }
             }
             return Some(EventResult::consumed());

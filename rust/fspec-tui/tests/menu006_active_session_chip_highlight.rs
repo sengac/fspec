@@ -7,15 +7,18 @@
 //! arrange-act-assert: exactly one Given setup, one When act, then the
 //! Then + And assertions — no repeated When/Then sequences).
 //!
+//! MENU-010 superseded two of the original four scenarios: the BOARD
+//! scenario now pins the NO-highlight rule (the board never carries the
+//! current-session chip highlight), and the MUX scenario moved to the
+//! MENU-010 feature (`menu010_chip_highlight_scoped.rs` — the mux marks
+//! only the FOCUSED Agent pane's session chip).
+//!
 //! Harnesses:
 //! - App + MockBackend (the `bug195_agent_view_chip_click.rs` pattern)
 //!   for the board / agent SURFACE scenarios — full-App render into a
 //!   TestBackend at 120x24, chip x positions located by row scan.
 //! - `paint_menu_bar` directly for the pure-painter scenarios (no ring
 //!   focus; WU id whole-cell inverse), mirroring the `menu001` pattern.
-//! - `views::multiplex::menu_snapshot::build_snapshot` for the mux-mode
-//!   scenario (the shared builder decides the per-chip `active` flag —
-//!   the painter then ORs it with the ring focus).
 //!
 //! Observation points:
 //! - the active-chip highlight: `buf[(x, y)].bg == Color::Cyan` (the
@@ -193,9 +196,9 @@ fn is_inverse(buf: &Buffer, x: u16, y: u16) -> bool {
 // Scenarios
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: The active session's chip paints the selected-item blue background without ring focus
+/// Scenario: The board view does not carry the current session's chip highlight (superseded by MENU-010)
 #[tokio::test]
-async fn scenario_the_active_session_chip_paints_the_selected_item_blue_background_without_ring_focus(
+async fn scenario_the_board_view_does_not_carry_the_current_sessions_chip_highlight_superseded_by_menu_010(
 ) {
     // @step Given the board has 3 open sessions and session s-2 is the focused session
     let (mut app, _mock) = fresh_app();
@@ -213,22 +216,19 @@ async fn scenario_the_active_session_chip_paints_the_selected_item_blue_backgrou
         "no ring focus — the column owns the input"
     );
 
-    // @step When the bar is rendered
+    // @step When the bar renders with the ring focus cleared
     let buf = render_app(&mut app);
     let y = bar_row(&buf);
 
-    // @step Then chip #2's cells are styled bg Cyan fg Black
+    // @step Then no chip's cells are styled bg Cyan fg Black (the board never carries the current-session highlight — MENU-010)
     let x2 = chip_x(&buf, y, 2);
-    assert!(
-        is_inverse(&buf, x2, y),
-        "chip #2 (the active session) must carry the selected-item highlight:\n{}",
-        row_text(&buf, y)
-    );
-    // the prefix AND the trailing glyph cell (whole cell, not just text)
-    assert!(
-        is_inverse(&buf, x2 + 2, y) && is_inverse(&buf, x2 + 3, y),
-        "the whole #2 cell must be inverse"
-    );
+    for (x, label) in [(x2, "#2"), (x2 + 2, "#2"), (x2 + 3, "#2")] {
+        assert_ne!(
+            buf[(x, y)].bg,
+            Color::Cyan,
+            "chip cell {label}@{x} must NOT be highlighted (MENU-010 R2)"
+        );
+    }
 
     // @step And chips #1 and #3's cells keep the #333333 background
     let x1 = chip_x(&buf, y, 1);
@@ -339,28 +339,47 @@ fn scenario_a_ring_focused_active_chip_with_a_work_unit_id_paints_the_whole_cell
     }
 }
 
-/// Scenario: In mux mode the active session's chip paints the blue background while view labels keep their styling
+/// Scenario: In mux mode the focused Agent pane's session chip paints the blue background while view labels keep their styling
 #[test]
-fn scenario_in_mux_mode_the_active_sessions_chip_paints_the_blue_background_while_view_labels_keep_their_styling(
+fn scenario_in_mux_mode_the_focused_agent_panes_session_chip_paints_the_blue_background_while_view_labels_keep_their_styling(
 ) {
-    // @step Given a MenuSnapshot in mux mode with panes Board and Files, 2 open sessions, and session s-2 is the focused session
+    // @step Given a MenuSnapshot in mux mode with panes Board and Agent, 2 open sessions, and the Agent pane is focused showing session s-1
     let mut layout = MultiplexLayout::new();
-    layout.set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles], None);
-    layout.set_focus(0);
+    layout.set_pane_list(vec![MuxPaneKind::Board, MuxPaneKind::Agent], None);
+    layout.set_focus(1);
     let mut store = AgentViewStore::default();
     store.open_sessions_mut().push(session_ctx("s-1"));
     store.open_sessions_mut().push(session_ctx("s-2"));
-    store.focus_session_index(1);
+    // The agent window is synced onto the live session list the same
+    // way the mux render path does (render.rs `sync_window`).
+    let session_ids: Vec<SessionId> = store.open_sessions().iter().map(|c| c.id.clone()).collect();
+    layout.sync_window(&session_ids);
+    assert_eq!(
+        layout.focused_session_id(),
+        Some(SessionId::new("s-1")),
+        "the focused Agent pane must show session s-1"
+    );
     let snap = menu_snapshot::build_snapshot(&layout, &store, None, None, 0);
     assert!(
-        snap.chips.iter().any(|c| c.active),
-        "the shared mux builder must flag the active session's chip"
+        snap.chips.iter().any(|c| c.active && c.index == (1, 2)),
+        "the mux builder must flag the FOCUSED Agent pane's session chip \
+         (s-1): {:?}",
+        snap.chips
+            .iter()
+            .map(|c| (c.index, c.active))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        snap.chips.iter().filter(|c| c.active).count(),
+        1,
+        "exactly one chip (s-1) must carry the highlight — s-2 (the \
+         store's current session) must NOT leak into the mux bar (MENU-010)"
     );
 
     // @step When the bar is rendered into a 120-column row
     let (buf, painted) = paint_row(&snap, 120);
 
-    // @step Then chip #2's cells are styled bg Cyan fg Black
+    // @step Then chip #1's cells are styled bg Cyan fg Black
     let chip_cells: Vec<usize> = snap
         .zone_b
         .iter()
@@ -368,39 +387,43 @@ fn scenario_in_mux_mode_the_active_sessions_chip_paints_the_blue_background_whil
         .filter(|(_, c)| matches!(c, ZoneBCell::Chip(_)))
         .map(|(i, _)| i)
         .collect();
-    let chip2 = painted
-        .cell_rects
-        .get(chip_cells[1])
-        .expect("chip #2 cell rect");
-    for cx in chip2.x..chip2.x + chip2.width {
-        assert!(
-            is_inverse(&buf, cx, 0),
-            "cell {cx} of chip #2 must be inverse"
-        );
-    }
-
-    // @step And chip #1's cells keep the #333333 background
     let chip1 = painted
         .cell_rects
         .get(chip_cells[0])
         .expect("chip #1 cell rect");
     for cx in chip1.x..chip1.x + chip1.width {
+        assert!(
+            is_inverse(&buf, cx, 0),
+            "cell {cx} of chip #1 must be inverse"
+        );
+    }
+
+    // @step And chip #2's cells keep the #333333 background
+    let chip2 = painted
+        .cell_rects
+        .get(chip_cells[1])
+        .expect("chip #2 cell rect");
+    for cx in chip2.x..chip2.x + chip2.width {
         assert_ne!(
             buf[(cx, 0)].bg,
             Color::Cyan,
-            "chip #1 cell {cx} must stay unhighlighted"
+            "chip #2 (the store's current session) cell {cx} must stay \
+             unhighlighted"
         );
     }
-    // the view labels never carry the inverse highlight (no focus either)
-    for (label, rect) in [("Board", 0usize), ("Files", 1usize)] {
-        let vr = &painted.cell_rects[rect];
-        for cx in vr.x..vr.x + vr.width {
-            assert_ne!(
-                buf[(cx, 0)].bg,
-                Color::Cyan,
-                "view label {label} cell {cx} must stay unhighlighted"
-            );
-        }
+    // the view label never carries the inverse highlight (no focus either)
+    let board_label = snap
+        .zone_b
+        .iter()
+        .position(|c| matches!(c, ZoneBCell::View { label: "Board", .. }))
+        .expect("Board view label");
+    let board_rect = &painted.cell_rects[board_label];
+    for cx in board_rect.x..board_rect.x + board_rect.width {
+        assert_ne!(
+            buf[(cx, 0)].bg,
+            Color::Cyan,
+            "the Board view label cell {cx} must stay unhighlighted"
+        );
     }
 }
 

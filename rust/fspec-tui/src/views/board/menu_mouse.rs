@@ -99,6 +99,15 @@ pub(super) fn handle_menu_mouse(
             .layout
             .item_rects
             .iter()
+            .any(|r| rect_contains(*r, column, row))
+        // MENU-009 R6: the right-aligned Zone C buttons are NOT
+        // "outside" — a left click on one is a normal activation
+        // (the `in_bar_row` branch below claims it), never a
+        // `MenuDismissBar` click-away.
+        && !geometry
+            .layout
+            .zone_c_rects
+            .iter()
             .any(|r| rect_contains(*r, column, row));
     if close_outside {
         view.emit(Action::MenuDismissBar);
@@ -133,6 +142,17 @@ pub(super) fn handle_menu_mouse(
                 for (idx, rect) in geometry.layout.cell_rects.iter().enumerate() {
                     if rect_contains(*rect, column, row) {
                         view.emit(Action::MenuChipActivate(idx));
+                        return Some(EventResult::consumed());
+                    }
+                }
+                // MENU-009 R6: a left click on a right-aligned Zone C
+                // button ACTIVATES it (the board's single `New Agent`
+                // — the `.`-key semantics, R8 substitution at
+                // dispatch). NOT the empty-space de-select below: the
+                // button owns its rect.
+                for (idx, rect) in geometry.layout.zone_c_rects.iter().enumerate() {
+                    if rect_contains(*rect, column, row) {
+                        view.emit(Action::MenuZoneCActivate(idx));
                         return Some(EventResult::consumed());
                     }
                 }

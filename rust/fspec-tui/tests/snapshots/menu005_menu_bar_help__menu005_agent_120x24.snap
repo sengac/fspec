@@ -1,10 +1,9 @@
 ---
 source: fspec-tui/tests/menu005_menu_bar_help.rs
-assertion_line: 662
 expression: buffer_to_rows(&buf120)
 ---
 - " #2: Agent                                                                                           tokens: 0↓ 0↑ [0%] "
-- " Board View  │ #1 ●  #2 ●                                                                                               "
+- " Board View  │ #1 ●  #2 ●                                                                  New Agent  Close Agent [esc] "
 - "                                                                                                                        "
 - "                                                                                                                        "
 - "                                                                                                                        "

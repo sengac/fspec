@@ -14,15 +14,14 @@
 //! - `true`  → "The agent is currently running. Choose how to exit."
 //! - `false` → "Choose how to exit the session."
 
-use crossterm::event::{Event, KeyCode, MouseEventKind};
+use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
-use unicode_width::UnicodeWidthStr;
 
-use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::dialog_button_hits::LastLayout;
+use super::dialog_theme::Accent;
+use super::three_button_dialog::render_three_button_dialog;
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove`.
@@ -76,6 +75,8 @@ pub struct ExitConfirmationDialog {
     selected: ExitChoice,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
+    /// TUI-112: last-rendered button-row geometry for left-click hit-testing.
+    last_layout: LastLayout,
 }
 
 impl ExitConfirmationDialog {
@@ -89,6 +90,29 @@ impl ExitConfirmationDialog {
             selected: ExitChoice::Detach,
             action_tx: None,
             pending_action: None,
+            last_layout: LastLayout::new(),
+        }
+    }
+
+    /// TUI-112: commit a specific choice — the shared path for the Enter
+    /// key and a left-click on a button (R1).
+    fn commit(&mut self, choice: ExitChoice) -> EventResult {
+        self.emit_action(Action::AgentExitChoice { choice });
+        EventResult::Consumed(Some(self.remove_callback()))
+    }
+
+    /// TUI-112: route a left-button press. A click on a button commits
+    /// that button (R1); a click off every button or outside the frame is
+    /// Ignored (R4/R5).
+    fn handle_click(&mut self, col: u16, row: u16) -> EventResult {
+        if !self.last_layout.contains(col, row) {
+            return EventResult::ignored();
+        }
+        match self.last_layout.hit(col, row) {
+            Some(0) => self.commit(ExitChoice::Detach),
+            Some(1) => self.commit(ExitChoice::CloseSession),
+            Some(2) => self.commit(ExitChoice::Cancel),
+            _ => EventResult::ignored(),
         }
     }
 
@@ -122,22 +146,28 @@ impl ExitConfirmationDialog {
         self.pending_action.take()
     }
 
+    /// TUI-112: test accessor — the last-rendered button-row geometry
+    /// (frame rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
+    }
+
     fn move_left(&mut self) {
-        let idx = OPTIONS
-            .iter()
-            .position(|o| *o == self.selected)
-            .unwrap_or(0);
+        let idx = self.selected_index();
         let next = if idx == 0 { OPTIONS.len() - 1 } else { idx - 1 };
         self.selected = OPTIONS[next];
     }
 
     fn move_right(&mut self) {
-        let idx = OPTIONS
+        let next = (self.selected_index() + 1) % OPTIONS.len();
+        self.selected = OPTIONS[next];
+    }
+
+    fn selected_index(&self) -> usize {
+        OPTIONS
             .iter()
             .position(|o| *o == self.selected)
-            .unwrap_or(0);
-        let next = (idx + 1) % OPTIONS.len();
-        self.selected = OPTIONS[next];
+            .unwrap_or(0)
     }
 
     fn emit_action(&mut self, action: Action) {
@@ -190,16 +220,15 @@ impl Component for ExitConfirmationDialog {
                     self.move_right();
                     return EventResult::consumed();
                 }
-                KeyCode::Enter => {
-                    let choice = self.selected;
-                    self.emit_action(Action::AgentExitChoice { choice });
-                    return EventResult::Consumed(Some(self.remove_callback()));
-                }
+                KeyCode::Enter => return self.commit(self.selected),
                 _ => {}
             }
         }
         if let Event::Mouse(m) = event {
             match m.kind {
+                MouseEventKind::Down(MouseButton::Left) => {
+                    return self.handle_click(m.column, m.row);
+                }
                 MouseEventKind::ScrollLeft | MouseEventKind::ScrollUp => {
                     self.move_left();
                     return EventResult::consumed();
@@ -221,81 +250,22 @@ impl Component for ExitConfirmationDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        // EXACT TS Ink parity (src/components/ThreeButtonDialog.tsx):
-        // selected button = bg=Blue/fg=White/bold on " <label> ";
-        // unselected = fg=Gray; centred three-button row; ASCII pipe
-        // footer; NO marker glyphs.
+        // EXACT TS Ink parity (src/components/ThreeButtonDialog.tsx) —
+        // the button row is painted by the shared three-button builder
+        // (super::three_button_dialog) so the painted pixels and the
+        // click hit-test rects come from one source of truth (TUI-112).
         let description_text = self.description_text();
-        let dim_style = Style::default()
-            .add_modifier(Modifier::DIM)
-            .bg(Color::Black);
-        let description_row = DialogRow {
-            spans: vec![Span::styled(description_text.to_string(), dim_style)],
-            selectable: false,
-            selected: false,
-        };
-
-        let selected_style = Style::default()
-            .bg(Color::Blue)
-            .fg(Color::White)
-            .add_modifier(Modifier::BOLD);
-        let unselected_style = Style::default().fg(Color::Gray).bg(Color::Black);
-
-        // Layout mirrors TS marginX={1}: 1 leading space, ` Detach `,
-        // 2 spaces, ` Close Session `, 2 spaces, ` Cancel `, 1 trailing.
-        let mut spans: Vec<Span<'static>> = Vec::new();
-        spans.push(Span::styled(" ".to_string(), dim_style));
-        for (i, opt) in OPTIONS.iter().enumerate() {
-            if i > 0 {
-                spans.push(Span::styled("  ".to_string(), dim_style));
-            }
-            let label = format!(" {} ", option_label(*opt));
-            let style = if *opt == self.selected {
-                selected_style
-            } else {
-                unselected_style
-            };
-            spans.push(Span::styled(label, style));
-        }
-        spans.push(Span::styled(" ".to_string(), dim_style));
-
-        // Centre the button row within the body content width — mirrors
-        // dialog_theme::inner_content_width's max() computation.
-        let raw_w: usize = spans.iter().map(|s| s.content.width()).sum();
-        let body_w = [
-            TITLE.width(),
-            description_text.width(),
-            raw_w,
-            FOOTER.width(),
-            MIN_WIDTH as usize,
-        ]
-        .into_iter()
-        .max()
-        .unwrap_or(MIN_WIDTH as usize);
-        if body_w > raw_w {
-            let pad = (body_w - raw_w) / 2;
-            if pad > 0 {
-                spans.insert(
-                    0,
-                    Span::styled(" ".repeat(pad), Style::default().bg(Color::Black)),
-                );
-            }
-        }
-
-        let button_row = DialogRow {
-            spans,
-            selectable: false,
-            selected: false,
-        };
-
-        let dialog = FspecDialog {
-            accent: ACCENT,
-            title: TITLE,
-            rows: vec![description_row, button_row],
-            footer: FOOTER,
-            min_width: MIN_WIDTH,
-            query_row: None,
-        };
-        render_dialog(area, buf, &dialog);
+        let labels: Vec<&str> = OPTIONS.iter().map(|o| option_label(*o)).collect();
+        self.last_layout = render_three_button_dialog(
+            area,
+            buf,
+            ACCENT,
+            TITLE,
+            description_text,
+            FOOTER,
+            MIN_WIDTH,
+            self.selected_index(),
+            &labels,
+        );
     }
 }

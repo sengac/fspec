@@ -56,6 +56,12 @@ pub enum MenuAction {
     Help,
     /// `Esc` Confirm exiting fspec.
     Exit,
+    /// MENU-009 Zone C: the agent bar's `Close Agent [esc]` button —
+    /// BUG-199: the button IS the Esc gesture, so it runs the
+    /// AgentEscPressed cascade (running → interrupt, draft → clear,
+    /// else the 'Exit Session?' ExitConfirmationDialog — RPC-098 L7)
+    /// instead of the direct `AgentExitChoice{CloseSession}` teardown.
+    CloseAgent,
 }
 
 impl MenuAction {
@@ -74,6 +80,10 @@ impl MenuAction {
             MenuAction::Providers => Action::OpenProviderSettingsView,
             MenuAction::Help => Action::OpenBoardHelp,
             MenuAction::Exit => Action::OpenBoardExitConfirmation,
+            // BUG-199 R2: the agent bar's 'Close Agent [esc]' button is
+            // the Esc gesture — the same cascade `AgentEscPressed` runs
+            // (interrupt / draft-clear / ExitConfirmationDialog).
+            MenuAction::CloseAgent => Action::AgentEscPressed,
         }
     }
 }

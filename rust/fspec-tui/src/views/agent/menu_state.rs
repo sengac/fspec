@@ -49,6 +49,9 @@ pub struct MenuBarState {
     /// The last painted Zone B cells + hit rects (display order) —
     /// refreshed by the focused pane only.
     cells: Option<Vec<(DisplayCell, Rect)>>,
+    /// MENU-009: the last painted Zone C button rects (`AGENT_ZONE_C`
+    /// order, right-aligned) — refreshed by the focused pane only.
+    zone_c_rects: Option<Vec<Rect>>,
     /// The open dropdown's panel rect (if any) — the wheel-cursor
     /// target.
     open_panel: Option<Rect>,
@@ -103,6 +106,16 @@ impl MenuBarState {
         self.cells = cells;
     }
 
+    /// MENU-009: the cached Zone C button rects (right-aligned,
+    /// `AGENT_ZONE_C` order).
+    pub fn zone_c_rects(&self) -> Option<&[Rect]> {
+        self.zone_c_rects.as_deref()
+    }
+
+    pub fn set_zone_c_rects(&mut self, rects: Option<Vec<Rect>>) {
+        self.zone_c_rects = rects;
+    }
+
     pub fn open_panel(&self) -> Option<Rect> {
         self.open_panel
     }
@@ -125,6 +138,7 @@ impl MenuBarState {
         self.bar_row = None;
         self.item_rects = None;
         self.cells = None;
+        self.zone_c_rects = None;
         self.open_panel = None;
     }
 }

@@ -41,6 +41,7 @@ mod menu_mouse;
 pub mod menu_render;
 pub mod menu_state;
 pub mod merge_confirm_dialog;
+pub mod merge_confirm_dialog_dispatch;
 pub mod mode_view_render;
 pub mod mouse_dispatch;
 mod mouse_dispatch_selection;
@@ -67,6 +68,7 @@ pub mod search_history_view_mouse;
 pub mod search_history_view_render;
 pub mod session_transition;
 pub mod session_worktrees_dialog;
+pub mod session_worktrees_dialog_dispatch;
 pub mod slash_command_popup;
 pub mod slash_command_popup_mouse;
 pub mod slash_command_popup_rows;
@@ -81,9 +83,7 @@ pub use confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 pub use file_search_popup::{FilePopupOutcome, FileSearchPopup};
 pub use footer::SessionFooter;
 pub use header::SessionHeader;
-pub use merge_confirm_dialog::{
-    MergeConfirmDialog, MergeConfirmDialogOutcome, MERGE_CONFIRM_DIALOG_ID,
-};
+pub use merge_confirm_dialog::*;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
 pub use reflow_cache::RowReflowCounter;

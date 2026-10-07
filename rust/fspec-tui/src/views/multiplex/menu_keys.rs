@@ -204,6 +204,13 @@ pub(crate) fn classify_bar_key(
                 }
                 return MuxBarKeyOutcome::Swallow;
             }
+            // MENU-009 Q1: the mux bar paints NO Zone C (empty `zone_c`
+            // slice) — a `MenuFocus::ZoneC` is unreachable here, but the
+            // match must stay exhaustive. Swallow it defensively (a
+            // stale focus should not leak into the pane input).
+            crate::components::menu_bar::MenuFocus::ZoneC(_) => {
+                return MuxBarKeyOutcome::Swallow;
+            }
         }
     }
 

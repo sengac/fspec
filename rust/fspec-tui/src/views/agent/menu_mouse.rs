@@ -79,6 +79,19 @@ impl AgentView {
                             }
                         }
                     }
+                    // MENU-009 R2/R6: a left click on a Zone C button
+                    // (New Agent / Close Agent, right-aligned) activates
+                    // it — NOT the empty-space de-select below (the
+                    // button owns its rect; a click on it is never a
+                    // 'leave the bar' gesture).
+                    if let Some(rects) = self.menu_state.zone_c_rects() {
+                        for (idx, rect) in rects.iter().enumerate() {
+                            if rect_contains(*rect, column, row) {
+                                self.activate_menu_zone_c(idx);
+                                return Some(EventResult::consumed());
+                            }
+                        }
+                    }
                     // BUG-197 R2: a bar-row click that hits NO zone (empty
                     // bar space) is the 'leave the bar' gesture — the ring
                     // focus clears (the composer regains the keys) without

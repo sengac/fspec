@@ -97,7 +97,7 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
         .join("\n")
 }
 
-fn render_dialog(dialog: &SessionWorktreesDialog) -> String {
+fn render_dialog(dialog: &mut SessionWorktreesDialog) -> String {
     let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
     term.draw(|frame| {
         dialog.render(frame.area(), frame.buffer_mut());
@@ -147,8 +147,8 @@ async fn slash_worktrees_lists_session_worktrees() {
     .await;
 
     // @step And the dialog lists one row per worktree with the session id and worktree path
-    let dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
-    let text = render_dialog(&dialog);
+    let mut dialog = SessionWorktreesDialog::new(vec![row("w-1", true), row("w-2", false)]);
+    let text = render_dialog(&mut dialog);
     assert!(text.contains("w-1"), "row 1 session id missing:\n{text}");
     assert!(
         text.contains("/tmp/repo/.fspec/worktrees/w-1"),
@@ -190,8 +190,8 @@ async fn slash_worktrees_with_no_worktrees_shows_an_empty_state_row() {
     .await;
 
     // @step And the dialog shows an empty-state row instead of worktree rows
-    let dialog = SessionWorktreesDialog::new(Vec::new());
-    let text = render_dialog(&dialog);
+    let mut dialog = SessionWorktreesDialog::new(Vec::new());
+    let text = render_dialog(&mut dialog);
     assert!(
         text.contains("(no session worktrees)"),
         "empty-state row missing:\n{text}"

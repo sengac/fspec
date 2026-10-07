@@ -39,8 +39,17 @@ pub fn build_snapshot(
     clock_ms: u64,
 ) -> MenuSnapshot {
     let active = crate::views::board::menu_snapshot::active_menu_session_ids(agent_store);
-    let (chips_zone_b, chips) =
+    let (chips_zone_b, mut chips) =
         crate::views::board::menu_snapshot::zone_b_and_chips(agent_store, &active, clock_ms);
+    // MENU-010 R1: the chip of the session rendered in the FOCUSED
+    // Agent pane carries the selected-item highlight (agent-pane
+    // parity with the single Agent view); when the focused pane is
+    // NOT an agent pane (`focused_session_id` = None) no chip is
+    // highlighted — the store's current session must NOT leak into
+    // the mux bar (the "stale" chip the board rule forbids).
+    if let Some(focused) = layout.focused_session_id() {
+        crate::views::board::menu_snapshot::mark_active_chip(&mut chips, &active, &focused);
+    }
     let focus_idx = layout.focus();
     let zone_b = layout
         .effective_panes()
@@ -60,6 +69,11 @@ pub fn build_snapshot(
         open_menu,
         zone_b,
         chips,
+        // MENU-009 Q1: NO Zone C on the mux top bar (the user's
+        // "board view and agent view" directive) — the empty slice
+        // keeps the ring walk / layout / paint byte-identical to
+        // pre-MENU-009 (scenario 13, the regression guard).
+        zone_c: &[],
         clock_ms,
     }
 }

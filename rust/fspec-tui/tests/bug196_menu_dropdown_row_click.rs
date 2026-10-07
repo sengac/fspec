@@ -706,8 +706,14 @@ async fn scenario_esc_still_closes_the_dropdown_and_keeps_the_item_focused() {
          must stay focused (only the click-away path de-selects)"
     );
     let buf = render_app(&mut app, 120, 24);
+    // MENU-009: the bar row now ALWAYS paints the right-aligned 'New
+    // Agent' Zone C button, so 'New Agent' appearing on the bar row is
+    // expected — the panel-closed check must target the dropdown's
+    // first entry row (bar + 2), not the whole buffer.
     assert!(
-        !buf_text(&buf).contains("New Agent"),
-        "the panel must be closed"
+        !row_text(&buf, bar_row(&buf) + 2).contains("New Agent"),
+        "the panel must be closed (its first entry row must not paint \
+         'New Agent'):\n{}",
+        buf_text(&buf)
     );
 }

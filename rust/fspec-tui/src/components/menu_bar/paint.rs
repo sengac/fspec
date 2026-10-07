@@ -64,19 +64,52 @@ pub fn paint_menu_bar(
         };
         paint_text(buf, rect.x, y, category.label, style);
     }
-    // Zone B (separator + cells) when the level keeps it.
+    // Zone B (separator + cells) when the level keeps it. (No separator
+    // = no cells to paint — the pre-MENU-009 early return, now folded
+    // into the `if let` so the Zone C arm below ALWAYS runs.)
     if layout.level < 4 {
-        let Some(sep) = layout.separator else {
-            return Some(layout);
-        };
-        paint_text(buf, sep.x, y, "│", Style::default().fg(theme.dim));
-        for (i, rect) in layout.cell_rects.iter().enumerate() {
-            let Some(cell) = layout.cells.get(i) else {
-                continue;
-            };
-            let focused = focused_cell(snap, cell);
-            paint_cell(buf, snap, cell, rect.x, y, layout.level, theme, focused);
+        if let Some(sep) = layout.separator {
+            paint_text(buf, sep.x, y, "│", Style::default().fg(theme.dim));
+            for (i, rect) in layout.cell_rects.iter().enumerate() {
+                let Some(cell) = layout.cells.get(i) else {
+                    continue;
+                };
+                let focused = focused_cell(snap, cell);
+                paint_cell(buf, snap, cell, rect.x, y, layout.level, theme, focused);
+            }
         }
+    }
+    // MENU-009 R1/R4: the right-aligned Zone C buttons. Plain `theme.fg`
+    // when unfocused (they read as actionable buttons, not chips), the
+    // SAME inverse-video highlight as Zone A items when the ring focus
+    // lands on them (R4). The #333333 row bg (R1) already covers the
+    // area — no extra fill needed.
+    for (i, rect) in layout.zone_c_rects.iter().enumerate() {
+        let Some(button) = snap.zone_c.get(i) else {
+            continue;
+        };
+        let focused = matches!(snap.focus, Some(MenuFocus::ZoneC(f)) if f == i);
+        if focused {
+            // R4: the whole button goes inverse first, then the text
+            // (the focused_cell inverse-first pattern).
+            for cx in rect.x..rect.x.saturating_add(rect.width) {
+                if buf.area.contains(Position::new(cx, y)) {
+                    buf[(cx, y)].set_symbol(" ");
+                    buf[(cx, y)].set_style(inverse_style());
+                }
+            }
+        }
+        paint_text(
+            buf,
+            rect.x,
+            y,
+            button.label,
+            if focused {
+                inverse_style()
+            } else {
+                Style::default().fg(theme.fg)
+            },
+        );
     }
     Some(layout)
 }

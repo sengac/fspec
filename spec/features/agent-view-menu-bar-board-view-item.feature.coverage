@@ -383,52 +383,6 @@
       ]
     },
     {
-      "name": "Left from 'Board View' wraps to the last chip",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
-          "lines": "326-349",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
-              "lines": [
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Chip activation in the agent view is unchanged",
       "testMappings": [
         {
@@ -604,12 +558,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Left from 'Board View' wraps to the last Zone C button",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 9,
-    "coveredScenarios": 9,
-    "coveragePercent": 100,
+    "coveredScenarios": 8,
+    "coveragePercent": 89,
     "testFiles": [
       "rust/fspec-tui/tests/menu007_agent_board_view_item.rs",
       "rust/fspec-tui/tests/menu005_menu_bar_help.rs"

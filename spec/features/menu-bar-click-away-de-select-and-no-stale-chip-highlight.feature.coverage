@@ -151,22 +151,34 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "411-470",
+          "lines": "411-471",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
               ]
             }
           ]
@@ -237,11 +249,18 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
-          "lines": "505-572",
+          "lines": "505-573",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
               "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
                 53,
                 54,
                 55,
@@ -252,7 +271,12 @@
                 60,
                 61,
                 62,
-                63
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
               ]
             }
           ]
@@ -368,6 +392,6 @@
       "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
       "rust/fspec-tui/src/views/navigator_mux_events.rs"
     ],
-    "totalLinesCovered": 589
+    "totalLinesCovered": 719
   }
 }

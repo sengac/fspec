@@ -2250,6 +2250,10 @@
           "description": "Feature requires parity with the TypeScript Ink reference implementation"
         },
         {
+          "name": "@tui-112",
+          "description": "Work unit TUI-112 — left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.)"
+        },
+        {
           "name": "@turn-selection",
           "description": "Scenarios testing turn-based selection in conversation"
         },
@@ -2462,6 +2466,10 @@
           "description": "Work unit identifier for BUG-197 — menu bar click-away must de-select a focused item/chip on all 3 surfaces (board/agent/mux) and a stale ring focus must never leave a chip highlighted after view flips: the 'leave the bar' gesture (MenuDismissBar / in-view clear_focus) runs on every off-bar-row left click and on empty bar-row space, and chip activation / OpenAgentView flips drop the board store's ring focus"
         },
         {
+          "name": "@bug-199",
+          "description": "Work unit BUG-199 — agent-bar Zone C button semantics: 'New Agent' mounts the CreateSessionDialog (start a new agent, board-button parity) instead of re-entering the current session; 'Close Agent' shows the Esc exit-confirmation cascade (Exit Session dialog / interrupt / clear) instead of the direct Close Session teardown; the button label reads 'Close Agent [esc]'"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2552,6 +2560,14 @@
         {
           "name": "@menu-003",
           "description": "Work unit MENU-003 — agent view surface: 2-zone bar row under the SessionHeader (menu_row flag) + empty-input left-arrow entry with GUI dropdown tracking"
+        },
+        {
+          "name": "@menu-009",
+          "description": "Work unit MENU-009 — menu bar Zone C: right-aligned New Agent / Close Agent action buttons on the board + agent bars (mux paints none); the buttons reuse existing bus actions, join the unified ring focus with inverse-video highlight parity, and drop before Zone B content under truncation"
+        },
+        {
+          "name": "@menu-010",
+          "description": "Work unit MENU-010 — the chip selected-highlight is scoped to its surface: the store's current-session chip highlight paints only in the Agent view (and the mux top bar while an Agent pane is focused); on the board bar only the ring selector may highlight a chip"
         },
         {
           "name": "@mux-002",
@@ -3198,7 +3214,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-06T02:11:15.113Z",
+    "lastUpdated": "2026-10-07T07:56:13.526Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

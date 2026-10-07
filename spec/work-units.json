@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-06T04:19:02.583Z",
+    "lastUpdated": "2026-10-07T10:22:26.118Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 198,
+    "BUG": 199,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -83,7 +83,7 @@
     "TOKEN": 3,
     "TOOL": 24,
     "TOOLS": 4,
-    "TUI": 111,
+    "TUI": 112,
     "UX": 2,
     "VAL": 7,
     "VID": 2,
@@ -98,7 +98,7 @@
     "LAYA": 9,
     "AUDIT": 2,
     "RLCD": 4,
-    "MENU": 9
+    "MENU": 10
   },
   "states": {
     "backlog": [
@@ -237,8 +237,7 @@
       "VIZ-003",
       "VIZ-004",
       "WATCH-022",
-      "AUDIT-001",
-      "MENU-009"
+      "AUDIT-001"
     ],
     "specifying": [
       "AGENT-001",
@@ -1754,7 +1753,11 @@
       "MENU-008",
       "BUG-196",
       "BUG-197",
-      "BUG-198"
+      "BUG-198",
+      "MENU-009",
+      "BUG-199",
+      "TUI-112",
+      "MENU-010"
     ],
     "blocked": [
       "QUERY-001",
@@ -236501,15 +236504,115 @@
       "id": "MENU-009",
       "title": "Menu bar Zone C — right-aligned action buttons (New Agent on board+agent, Close Agent on agent only)",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-05T22:12:50.662Z",
-      "updatedAt": "2026-10-05T22:25:54.583Z",
+      "updatedAt": "2026-10-06T09:44:48.528Z",
       "description": "Add a third zone (Zone C) to the shared 2-zone menu bar component: right-aligned action buttons painted at the right edge of the bar row. 'New Agent' appears on the board view and the agent view; 'Close Agent' appears only on the agent view. Both buttons reuse existing bus actions (OpenAgentView / AgentExitChoice{CloseSession}). Mux surface carries an empty Zone C. Buttons join the unified ring focus and gain inverse-video highlight parity; mouse click + Enter both activate.",
       "epic": "menu-bar",
       "children": [],
       "attachments": [
-        "spec/attachments/MENU-009/menu-009-research-zone-c.md"
-      ]
+        "spec/attachments/MENU-009/menu-009-research-zone-c.md",
+        "spec/attachments/MENU-009/ast-research-zone-c-integration.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-06T06:30:20.431Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-06T09:14:18.015Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-06T09:14:24.838Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-06T09:19:45.703Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-06T09:28:39.097Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-06T09:44:33.523Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-06T09:44:48.528Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The board view bar paints exactly one right-aligned Zone C button labeled 'New Agent' at the right edge of the bar row; the agent view bar paints two right-aligned Zone C buttons 'New Agent' then 'Close Agent' (left to right); the mux top bar paints NO Zone C buttons (empty zone)",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:31:58.416Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: Both Zone C buttons reuse EXISTING bus actions — New Agent emits Action::OpenAgentView(target) and Close Agent emits Action::AgentExitChoice { choice: ExitChoice::CloseSession } — no new backend/RPC work",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:32:00.640Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: Zone C buttons join the unified ring focus — ring order is items → Zone B → Zone C → wrap; on the agent view Left from the first item wraps to the last Zone C button, and Right from the last chip lands on New Agent (first Zone C button)",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:33:01.690Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: Zone C buttons carry the SAME inverse-video ring-focus highlight (bg Cyan / fg Black / bold) as Zone A items when MenuFocus::ZoneC(i) is on them",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:33:03.725Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: When the bar row cannot afford Zone C's width, Zone C drops BEFORE Zone B content (Zone B's R6 ladder otherwise unchanged); the painted row never exceeds the area width (proptest bound extended to zone_c_rects)",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:33:07.221Z"
+        },
+        {
+          "id": 5,
+          "text": "R6: A left click on a Zone C button MUST NOT fire MenuDismissBar (the BUG-196/197 'outside' close gesture) and MUST NOT re-open a dropdown — the board's close_outside hit-test excludes the zone_c_rects",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:34:01.991Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "userStory": {
+        "role": "TUI user",
+        "action": "start or close an agent directly from the right-aligned Zone C buttons on the menu bar",
+        "benefit": "the New Agent / Close Agent actions are one keystroke away on every surface without opening a dropdown"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board bar at 120 cols: ' Kanban Tools Settings Help │ #1 ●' then right-aligned 'New Agent' at the row's right edge; no 'Close Agent'",
+          "deleted": false,
+          "createdAt": "2026-10-06T06:34:47.889Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Component layer: MenuSnapshot gains `zone_c: &'static [ZoneCButton]` (Default = &[]), MenuFocus::ZoneC(usize) joins the unified ring (mod.rs advance: items → Zone B → Zone C → wrap); layout.rs right-aligns the buttons at the inner right edge with the ZONE_C_GAP=2 gap and DROPS Zone C before any Zone B ladder step (level computed pre-MENU-009 first, buttons painted only when the row still affords ZONE_C_GAP + width); paint.rs reuses inverse_style() for the focused button. Research doc: spec/attachments/MENU-009/menu-009-research-zone-c.md.",
+          "deleted": false,
+          "createdAt": "2026-10-06T09:13:17.567Z"
+        },
+        {
+          "id": 1,
+          "text": "Surface wiring: per-surface &'static slices (AGENT_ZONE_A precedent) — BOARD_ZONE_C=[New Agent] (views/board/menu_snapshot.rs), AGENT_ZONE_C=[New Agent, Close Agent] (views/agent/menu_render.rs), mux = &[] (views/multiplex/menu_snapshot.rs, Q1). New MenuAction::CloseAgent → Action::AgentExitChoice{CloseSession} (items.rs to_action). Board ring length = 7 columns + items + chips + menu_zone_c (store/board_menu.rs, fed by App::feed_menu_ring_size: 1 in Board, 0 in Mux); agent ring = AGENT_ZONE_A.len() + chip_count + AGENT_ZONE_C.len() gated on PAINTED zone_c_rects (views/agent/menu_keys.rs walk_menu_ring).",
+          "deleted": false,
+          "createdAt": "2026-10-06T09:13:22.769Z"
+        }
+      ],
+      "nextNoteId": 2
     },
     "BUG-197": {
       "id": "BUG-197",
@@ -236711,6 +236814,354 @@
       ],
       "nextNoteId": 1,
       "estimate": 3
+    },
+    "BUG-199": {
+      "id": "BUG-199",
+      "title": "Agent-bar Zone C buttons: New Agent must start a new agent (dialog), Close Agent must show the Esc exit dialog and paint '[esc]'",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-07T00:40:35.104Z",
+      "updatedAt": "2026-10-07T02:40:42.561Z",
+      "description": "In the Agent view's Zone C bar buttons: (1) 'New Agent' currently re-jumps into the current session instead of starting a new agent like the board button / '.' key (CreateSessionDialog when no open sessions, resume path otherwise — RPC-395 parity). (2) 'Close Agent' runs the Close Session teardown directly instead of opening the same ExitConfirmationDialog that pressing Esc in the agent view shows (RPC-098 L7). (3) The Close Agent button label must read 'Close Agent [esc]' so the user knows Esc escapes the session without clicking. Board surface unchanged.",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-07T00:40:45.895Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-07T02:20:38.489Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-07T02:20:54.516Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-07T02:26:14.466Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-07T02:40:42.561Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: The agent bar's Zone C 'Close Agent' button no longer runs the Close Session teardown directly — it opens the SAME ExitConfirmationDialog that pressing Esc in the Agent view shows (RPC-098 L7, via the AgentEscPressed cascade: running/compacting → interrupt; non-empty input → clear; else the three-button Exit Session dialog). The dialog's Detach / Close Session / Cancel options commit through the existing AgentExitChoice bus action unchanged; the button is a gesture, never a destructive no-confirmation path.",
+          "deleted": false,
+          "createdAt": "2026-10-07T00:41:35.057Z"
+        },
+        {
+          "id": 1,
+          "text": "R3: The agent bar's second Zone C button label is 'Close Agent [esc]' (the trailing '[esc]' hint, 5 cells, telling the user Esc is the same exit gesture) while the first button keeps its exact 'New Agent' label. The board surface keeps its single 'New Agent' button unchanged. Geometry: Zone C still paints right-aligned and drops before Zone B content when the row cannot afford it (width math now includes the 5-cell hint; the R6 truncation ladder and the area-width proptest bound are unchanged).",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:17:57.181Z"
+        },
+        {
+          "id": 2,
+          "text": "R1: The agent bar's Zone C 'New Agent' button ALWAYS starts a new agent — it mounts the CreateSessionDialog as an overlay (RPC-060 idempotency: idempotent on CREATE_SESSION_DIALOG_ID, context-aware title from the current session's WorkUnitContext) and the user stays on the Agent view until the dialog is confirmed (RPC-097 reopen #1 contract: the view flip to a NEW session happens only on confirm; the existing session is never disturbed). The current-session target substitution (MENU-009 R8) is REMOVED for the agent surface; the board surface is unchanged (still substitutes the selected unit's session).",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:29:12.482Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "userStory": {
+        "role": "TUI user in the Agent view",
+        "action": "start a new agent from the bar's 'New Agent' button and exit the session from the bar's 'Close Agent' button",
+        "benefit": "the agent-bar Zone C buttons behave exactly like their board/Esc counterparts instead of re-opening the current session or destroying it without confirmation"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent view, 1 open session (s-1), user clicks the bar's 'New Agent' button (or Enter on it): the CreateSessionDialog mounts as an overlay; the user stays on the Agent view until the dialog is confirmed (RPC-097 reopen #1 parity); the bar's ring focus clears.",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:18:10.392Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent view with NO open sessions is unreachable in production (the view cannot be entered empty), so the no-sessions path is observed at the component level: an agent-bar snapshot with zero chips still paints both Zone C buttons.",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:18:11.715Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent view on a RUNNING session, user clicks 'Close Agent [esc]': pressing Esc in that state interrupts the run (RPC-051 L4/L5) — clicking the button must do the exact same thing (interrupt, stay on the Agent view), because the button is the Esc gesture, not a direct teardown.",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:18:17.515Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent view on session s-1 (idle, empty input), user clicks the bar's 'Close Agent [esc]' button: the 'Exit Session?' three-button confirmation dialog (Detach / Close Session / Cancel) appears — byte-identical to what pressing Esc in that same state shows; the session is NOT destroyed until an option is committed.",
+          "deleted": false,
+          "createdAt": "2026-10-07T01:18:18.297Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
+    },
+    "TUI-112": {
+      "id": "TUI-112",
+      "title": "Left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-10-07T03:29:23.125Z",
+      "updatedAt": "2026-10-07T07:06:39.673Z",
+      "description": "Every Enter-activatable selection in the Rust TUI's modal dialogs must ALSO be activatable by mouse left-click (ONE click = Enter on that control; user decision, 2026-10-07). Today the three-button dialogs (Start New Agent?, Exit Session?, Exit fspec?) only support Left/Right + Enter/scroll; their button rows are painted as one Span vector so a click cannot be mapped to an option. Scope: (1) three-button dialogs — CreateSessionDialog, ExitConfirmationDialog, BoardExitConfirmationDialog: left-click a button commits it (identical action to Left/Right + Enter); (2) shared-button-row dialogs — ConfirmDialog, MergeConfirmDialog, SessionWorktreesDialog (views/agent): left-click a button returns that outcome; (3) row-list dialogs with an Enter commit — ThinkingLevelDialog, AttachmentPickerDialog, MuxConfigDialog, RoleDialog, WorkUnitSearchDialog: left-click a row selects AND commits it. Excluded: HelpDialog/LoadingDialog/NotificationDialog/StatusDialog/ErrorDialog/DisconnectDialog/Checkpoint restore (no activatable buttons). Implementation anchors: mouse/hit_test.rs (rect_contains), WorkUnitSearchDialog (last_dialog_rect + work_unit_search_dialog_mouse.rs precedent), views/checkpoints/keys.rs handle_click (RPC-369 click precedent), views/agent/slash_command_popup_mouse.rs, components/dialog_theme.rs (shared row/geometry math — extract into a sibling module; dialog_theme.rs is at the 300-LoC ceiling).",
+      "epic": "rust-frontend",
+      "children": [],
+      "userStory": {
+        "role": "TUI user",
+        "action": "activate any Enter-selectable dialog choice (button or row) with a mouse left-click",
+        "benefit": "the dialogs I can confirm with Enter can also be confirmed by clicking, with no keyboard required"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-07T03:30:13.766Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-07T04:50:41.616Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-07T06:52:51.576Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-07T06:56:32.645Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-07T07:06:39.673Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: A left-click on a three-button dialog button (CreateSessionDialog, ExitConfirmationDialog, BoardExitConfirmationDialog) commits THAT button — the exact action Left/Right + Enter produces for it — and the dialog removes itself (one click, no separate select-then-activate step).",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:30:28.523Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: A left-click on a button of a shared-button-row dialog (ConfirmDialog, MergeConfirmDialog, SessionWorktreesDialog — views/agent) returns the SAME outcome enum variant as Left/Right + Enter on that button (Primary/Secondary/Cancel, Merge/Discard/Cancel, Prune/Cancel).",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:30:32.696Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: A left-click on a row of a row-list dialog (ThinkingLevelDialog, AttachmentPickerDialog, MuxConfigDialog, RoleDialog, WorkUnitSearchDialog) commits that row immediately (ONE-click): it selects AND emits the same Action the Enter key would emit for that row — no separate select-then-activate step. (User decision; matches the R1/R2 one-click semantics, diverging from the checkpoints RPC-369 select-only precedent.)",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:13.624Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: Mouse hit-testing uses the dialog's last-rendered rect (the `Cell<Option<Rect>>` + `mouse::hit_test::rect_contains` pattern, as in WorkUnitSearchDialog and the model selector). A left-click OUTSIDE the dialog's rect is Ignored (bubbles to whatever is behind the dialog); wheel behavior of every dialog is unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:34.218Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: A left-click inside the dialog rect but NOT on any activatable control (gaps between buttons, the title row, description text, footer, border) is Ignored — nothing is selected, committed, or dismissed. A left-click in the gap BETWEEN two three-button dialog buttons does nothing (buttons carry the exact ` <label> ` cells they paint, no bleed).",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:39.044Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "No dialog today stores its last-rendered rect — only WorkUnitSearchDialog (last_dialog_rect) and the model-selector/checkpoints views do. Each in-scope dialog must gain a `last_dialog_rect: Option<Rect>` set during render (dialog_theme::dialog_rect returns the exact rect), then gate a new mouse branch on rect_contains.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:37.888Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "CreateSessionDialog (Start New Agent?): user left-clicks the 'Yes - Isolated' button directly without touching the keyboard; the dialog emits Action::CreateSessionSubmitted{isolated:true} and removes itself — same as Left,Left,Enter.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:49.490Z"
+        },
+        {
+          "id": 1,
+          "text": "Exit Session? dialog (Esc cascade level 7, idle agent): user left-clicks 'Close Session' once; the session closes and the view returns to the board — identical to Right,Right,Enter.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:52.328Z"
+        },
+        {
+          "id": 2,
+          "text": "Exit fspec? dialog: user left-clicks the 'Exit' button once; the app quits (Action::Quit emitted, dialog removed). Left-clicking the 'Cancel' button dismisses the dialog and stays on the board (no action emitted).",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:55.952Z"
+        },
+        {
+          "id": 3,
+          "text": "MergeConfirmDialog (agent view, worktree has unmerged changes): user left-clicks the 'Discard' button once; the view receives the Discard outcome (the same outcome Left/Right+Enter on Discard produces) and proceeds with the discard. Left-clicking 'Cancel' dismisses without acting.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:42:59.116Z"
+        },
+        {
+          "id": 4,
+          "text": "SessionWorktreesDialog (agent view): user left-clicks the 'Prune' button once; the view receives the Prune outcome (same as Left/Right+Enter on Prune) and prunes the listed detached worktrees. Left-clicking 'Cancel' dismisses without acting.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:02.297Z"
+        },
+        {
+          "id": 5,
+          "text": "Thinking Level dialog: user left-clicks the 'High' row once; the level is set to High (Action::ThinkingLevelSelected emitted) and the dialog closes — same as Down,Down,Enter from Off.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:11.125Z"
+        },
+        {
+          "id": 6,
+          "text": "Mux Layout dialog: user left-clicks the 'Pane 2' row once; the cursor jumps to Pane 2 AND the dialog applies (same as navigating to Pane 2 + Enter). Left-clicking the 'Orientation' row applies with the cursor on Orientation.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:14.976Z"
+        },
+        {
+          "id": 7,
+          "text": "Role dialog: with a draft of 'code reviewer', user left-clicks the draft row once; the role is saved (same as Enter) and the dialog closes. Left-clicking the title/border regions does nothing.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:18.368Z"
+        },
+        {
+          "id": 8,
+          "text": "Attachment picker (work unit has attachments design.md and notes.pdf): user left-clicks the 'notes.pdf' row once; that attachment opens in the browser (Action::OpenAttachment with the full path) and the dialog closes.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:21.863Z"
+        },
+        {
+          "id": 9,
+          "text": "Work unit search dialog (board view): user types a query, then left-clicks the 'MENU-009' result row once; that work unit is selected/acted on exactly as pressing Enter would — no double-click needed.",
+          "deleted": false,
+          "createdAt": "2026-10-07T03:43:34.096Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "assumptions": [
+        "Mouse mode is already enabled app-wide (crossterm mouse capture) — dialogs that are topmost receive crossterm mouse events via the compositor priority chain; no new mouse-mode plumbing is needed, only per-dialog hit-testing and click routing."
+      ],
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/TUI-112/ast-research-dialog-mouse-click.md"
+      ]
+    },
+    "MENU-010": {
+      "id": "MENU-010",
+      "title": "Chip selected-highlight scoped to surface — agent-view current agent or ring selector only",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-10-07T07:33:49.903Z",
+      "updatedAt": "2026-10-07T10:22:32.005Z",
+      "description": "The Zone B chip in the menu bar must paint the selected-item (inverse-video) highlight ONLY when (a) the surface is the Agent view and the chip's session is the store's current session, OR (b) the ring selector (MenuFocus::ZoneB) is on that chip. In the board view (and the mux top bar), a chip that was the current agent in the Agent view must NOT carry the highlight after switching back to the board view — only the ring selector may highlight chips there.",
+      "epic": "menu-bar",
+      "children": [],
+      "userStory": {
+        "role": "TUI user",
+        "action": "see the session chip carry the selected-item (blue) highlight only where it means something — the current agent in the Agent view (and the focused agent pane in mux), or the chip my ring selector is on",
+        "benefit": "the board view no longer shows a stale blue highlight on the last active agent's chip after flipping back to the board"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-07T07:38:38.990Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-07T10:20:42.402Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-07T10:20:53.448Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-07T10:20:59.594Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-07T10:22:26.118Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The chip selected-item (inverse-video) highlight paints only on agent surfaces: in the Agent view, the chip whose session is the store's CURRENT session; in mux mode, the chip of the session rendered in the FOCUSED Agent pane (agent-pane parity). No other surface paints it.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:38:41.514Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: On the Board view, NO chip carries the selected-item highlight unless the ring selector (MenuFocus::ZoneB) is on it — the store's current_session does NOT drive a chip highlight on the board.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:04.238Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: The ring-selector highlight is surface-independent: if MenuFocus::ZoneB lands on a chip, that chip paints inverse-video on ANY surface (board, agent, mux) — the same R5 rule as before.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:04.599Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board view, 3 open sessions, s-2 is the store's current session (the last agent viewed), ring focus None: chip #2 paints the plain #333333 background — NO inverse highlight on the board; only a ring-selected chip may highlight.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:08.067Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent view, 3 sessions, s-2 is current, ring focus None: chip #2 IS highlighted (inverse bg Cyan) — the agent view's current-session highlight is preserved (MENU-006 parity).",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:28.813Z"
+        },
+        {
+          "id": 2,
+          "text": "Board view, 3 sessions, s-2 is current, ring focus ON chip #2: chip #2 IS highlighted (ring selector path, R3) — the ring selector still works on the board.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:29.184Z"
+        },
+        {
+          "id": 3,
+          "text": "Mux with [Board | Agent] panes, 2 sessions, the Agent pane focused showing s-1, ring focus None: chip #1 IS highlighted (agent-pane parity); chip #2 is NOT highlighted.",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:29.543Z"
+        },
+        {
+          "id": 4,
+          "text": "Board view, 3 sessions, s-2 is current, ring focus ON chip #1: chip #1 IS highlighted (ring), chip #2 is NOT highlighted (current-session does not drive highlight on the board).",
+          "deleted": false,
+          "createdAt": "2026-10-07T07:40:29.924Z"
+        },
+        {
+          "id": 5,
+          "text": "Mux with [Board | Agent] panes, 2 sessions, the BOARD pane focused (no Agent pane focused), ring focus None: NO chip is highlighted — chip #1's and chip #2's cells keep the #333333 background (the store's current session must not leak into the mux bar when a non-Agent pane is focused).",
+          "deleted": false,
+          "createdAt": "2026-10-07T09:34:14.463Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "The highlight decision moves into each surface's snapshot builder, NOT the shared painter: chip_inputs (views/board/menu_snapshot.rs) now always emits active:false; the new mark_active_chip(chips, active, session) helper marks one chip by position in the painted (non-Cleared) list and is a no-op when the session is not painted. Agent view (agent_bar_snapshot) marks store.current_session(); mux (build_snapshot) marks layout.focused_session_id() (None for non-Agent panes); the board builder marks nothing. Painter focused_cell (components/menu_bar/paint.rs) is unchanged — it ORs the ring focus with MenuChip.active, so R3 (surface-independent ring highlight) holds for free. This preserves the MENU-001 single-painter architecture and the three-surface ring-focus separation (BUG-163 rule: only the focused pane refreshes geometry in mux).",
+          "deleted": false,
+          "createdAt": "2026-10-07T10:20:22.181Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/MENU-010/ast-research-chip-highlight-surface-scoping.md"
+      ],
+      "iterations": 1
     }
   }
 }

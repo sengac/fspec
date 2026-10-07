@@ -140,6 +140,36 @@ pub(super) fn handle_menu_keys(
                 }
                 return Some(EventResult::ignored());
             }
+            // MENU-009 R3/R4: the right-aligned Zone C button (the
+            // board's single `New Agent`). Enter activates it (the
+            // store's `execute_dropdown_row` parity: the activation
+            // clears the bar's ring focus — dispatch resolves the
+            // action); Up/Down drop focus back into the focused
+            // column (R3); Left/Right walk the ring (the button is
+            // the ring's LAST stop).
+            crate::components::menu_bar::MenuFocus::ZoneC(index) => {
+                if plain(KeyCode::Up, key)
+                    || plain(KeyCode::Char('k'), key)
+                    || plain(KeyCode::Down, key)
+                    || plain(KeyCode::Char('j'), key)
+                {
+                    view.emit(Action::MenuFocusToColumns);
+                    return Some(EventResult::consumed());
+                }
+                if plain(KeyCode::Enter, key) {
+                    view.emit(Action::MenuZoneCActivate(index));
+                    return Some(EventResult::consumed());
+                }
+                if plain(KeyCode::Left, key) || plain(KeyCode::Char('h'), key) {
+                    view.emit(Action::MenuMove(-1));
+                    return Some(EventResult::consumed());
+                }
+                if plain(KeyCode::Right, key) || plain(KeyCode::Char('l'), key) {
+                    view.emit(Action::MenuMove(1));
+                    return Some(EventResult::consumed());
+                }
+                return Some(EventResult::ignored());
+            }
         }
     }
 

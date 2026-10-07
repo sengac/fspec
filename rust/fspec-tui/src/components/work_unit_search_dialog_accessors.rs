@@ -38,6 +38,8 @@ impl WorkUnitSearchDialog {
             scrollbar_drag: ScrollbarDrag::new(),
             last_dialog_rect: None,
             last_scrollbar_rect: None,
+            last_row_rects: Vec::new(),
+            pending_action: None,
         }
     }
 
@@ -87,5 +89,18 @@ impl WorkUnitSearchDialog {
     /// The visible-rows window (the value `render` last set).
     pub fn visible_rows(&self) -> usize {
         self.last_visible_rows.get().max(1)
+    }
+
+    /// TUI-112: the full-body-width rects of the visible result rows
+    /// from the last render (content-row order — the scroll window
+    /// start is `scroll_offset`). Empty before the first render.
+    pub fn last_row_rects(&self) -> &[Rect] {
+        &self.last_row_rects
+    }
+
+    /// TUI-112: test-only accessor — drain the stashed pending action
+    /// (set when no `action_tx` was attached).
+    pub fn take_pending_action(&mut self) -> Option<super::Action> {
+        self.pending_action.take()
     }
 }

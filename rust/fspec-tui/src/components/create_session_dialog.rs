@@ -7,18 +7,20 @@
 //! Mirrors `src/components/CreateSessionDialog.tsx` (TUI-090) — three
 //! flat options with cyclic Left/Right navigation, cyan accent, and a
 //! work-unit-aware title.
+//!
+//! TUI-112: the button row is ALSO left-click activatable — the shared
+//! paint/hit-test builder lives in `super::three_button_dialog`.
 
-use crossterm::event::{Event, KeyCode, MouseEventKind};
+use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
-use unicode_width::UnicodeWidthStr;
 
 use codelet_rpc_types::WorkUnitContext;
 
-use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::dialog_button_hits::LastLayout;
+use super::dialog_theme::Accent;
+use super::three_button_dialog::render_three_button_dialog;
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove`.
@@ -68,8 +70,13 @@ pub struct CreateSessionDialog {
     id: String,
     selected: CreateSessionOption,
     work_unit: Option<WorkUnitContext>,
+    /// Work-unit-aware title ("Work on <id>?" / "Start New Agent?"),
+    /// computed once at construction (it never changes afterwards).
+    title: String,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
+    /// TUI-112: last-rendered button-row geometry for left-click hit-testing.
+    last_layout: LastLayout,
 }
 
 impl CreateSessionDialog {
@@ -77,12 +84,18 @@ impl CreateSessionDialog {
     /// `CreateSessionOption::Yes`. `work_unit=Some(_)` switches the
     /// title to the context-aware "Work on <id>?" string.
     pub fn new(preselect: Option<CreateSessionOption>, work_unit: Option<WorkUnitContext>) -> Self {
+        let title = match work_unit.as_ref() {
+            Some(ctx) => format!("Work on {}?", ctx.id),
+            None => "Start New Agent?".to_string(),
+        };
         Self {
             id: CREATE_SESSION_DIALOG_ID.to_string(),
             selected: preselect.unwrap_or(CreateSessionOption::Yes),
             work_unit,
+            title,
             action_tx: None,
             pending_action: None,
+            last_layout: LastLayout::new(),
         }
     }
 
@@ -101,10 +114,7 @@ impl CreateSessionDialog {
     /// `"Work on <id>?"` when bound to a work unit, otherwise
     /// `"Start New Agent?"`.
     pub fn title(&self) -> String {
-        match self.work_unit.as_ref() {
-            Some(ctx) => format!("Work on {}?", ctx.id),
-            None => "Start New Agent?".to_string(),
-        }
+        self.title.clone()
     }
 
     /// Test accessor — the dialog's accent color. Returns the same
@@ -120,22 +130,58 @@ impl CreateSessionDialog {
         self.pending_action.take()
     }
 
+    /// TUI-112: test accessor — the last-rendered button-row geometry
+    /// (frame rect is `None` before the first render, R4).
+    pub fn last_layout(&self) -> &LastLayout {
+        &self.last_layout
+    }
+
+    /// TUI-112: commit a specific option — the shared path for the Enter
+    /// key and a left-click on a button. Emits the option's action and
+    /// returns the consumed-and-remove result (R1: one click == Enter on
+    /// that button).
+    fn commit(&mut self, opt: CreateSessionOption) -> EventResult {
+        let action = match opt {
+            CreateSessionOption::Yes => Action::CreateSessionSubmitted { isolated: false },
+            CreateSessionOption::Isolated => Action::CreateSessionSubmitted { isolated: true },
+            CreateSessionOption::Cancel => Action::CreateSessionCancelled,
+        };
+        self.emit_action(action);
+        EventResult::Consumed(Some(self.remove_callback()))
+    }
+
+    /// TUI-112: route a left-button press. A click on a button commits
+    /// that button (R1); a click on the row but off every button, or
+    /// outside the dialog frame, is Ignored (R4/R5). Wheel behavior is
+    /// handled separately (unchanged).
+    fn handle_click(&mut self, col: u16, row: u16) -> EventResult {
+        if !self.last_layout.contains(col, row) {
+            return EventResult::ignored();
+        }
+        match self.last_layout.hit(col, row) {
+            Some(0) => self.commit(CreateSessionOption::Yes),
+            Some(1) => self.commit(CreateSessionOption::Isolated),
+            Some(2) => self.commit(CreateSessionOption::Cancel),
+            _ => EventResult::ignored(),
+        }
+    }
+
     fn move_left(&mut self) {
-        let idx = OPTIONS
-            .iter()
-            .position(|o| *o == self.selected)
-            .unwrap_or(0);
+        let idx = self.selected_index();
         let next = if idx == 0 { OPTIONS.len() - 1 } else { idx - 1 };
         self.selected = OPTIONS[next];
     }
 
     fn move_right(&mut self) {
-        let idx = OPTIONS
+        let next = (self.selected_index() + 1) % OPTIONS.len();
+        self.selected = OPTIONS[next];
+    }
+
+    fn selected_index(&self) -> usize {
+        OPTIONS
             .iter()
             .position(|o| *o == self.selected)
-            .unwrap_or(0);
-        let next = (idx + 1) % OPTIONS.len();
-        self.selected = OPTIONS[next];
+            .unwrap_or(0)
     }
 
     fn emit_action(&mut self, action: Action) {
@@ -178,23 +224,16 @@ impl Component for CreateSessionDialog {
                     return EventResult::consumed();
                 }
                 KeyCode::Enter => {
-                    let action = match self.selected {
-                        CreateSessionOption::Yes => {
-                            Action::CreateSessionSubmitted { isolated: false }
-                        }
-                        CreateSessionOption::Isolated => {
-                            Action::CreateSessionSubmitted { isolated: true }
-                        }
-                        CreateSessionOption::Cancel => Action::CreateSessionCancelled,
-                    };
-                    self.emit_action(action);
-                    return EventResult::Consumed(Some(self.remove_callback()));
+                    return self.commit(self.selected);
                 }
                 _ => {}
             }
         }
         if let Event::Mouse(m) = event {
             match m.kind {
+                MouseEventKind::Down(MouseButton::Left) => {
+                    return self.handle_click(m.column, m.row);
+                }
                 MouseEventKind::ScrollLeft | MouseEventKind::ScrollUp => {
                     self.move_left();
                     return EventResult::consumed();
@@ -210,87 +249,24 @@ impl Component for CreateSessionDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        // EXACT TS Ink parity (src/components/CreateSessionDialog.tsx):
-        // selected button = bg=Blue/fg=White/bold on " <label> ";
-        // unselected = fg=Gray; centered three-button row; ASCII pipe
-        // footer; NO ▸/○ marker glyphs.
         let description_text = if self.work_unit.is_some() {
             "Start an AI session for this task"
         } else {
             "Begin a fresh AI conversation, not linked to any task."
         };
-        let dim_style = Style::default()
-            .add_modifier(Modifier::DIM)
-            .bg(Color::Black);
-        let description_row = DialogRow {
-            spans: vec![Span::styled(description_text.to_string(), dim_style)],
-            selectable: false,
-            selected: false,
-        };
-
-        let selected_style = Style::default()
-            .bg(Color::Blue)
-            .fg(Color::White)
-            .add_modifier(Modifier::BOLD);
-        let unselected_style = Style::default().fg(Color::Gray).bg(Color::Black);
-
-        // Layout mirrors TS marginX={1}: 1 leading space, ` Yes `,
-        // 2 spaces, ` Yes - Isolated `, 2 spaces, ` Cancel `, 1 trailing.
-        let mut spans: Vec<Span<'static>> = Vec::new();
-        spans.push(Span::styled(" ".to_string(), dim_style));
-        for (i, opt) in OPTIONS.iter().enumerate() {
-            if i > 0 {
-                spans.push(Span::styled("  ".to_string(), dim_style));
-            }
-            let label = format!(" {} ", option_label(*opt));
-            let style = if *opt == self.selected {
-                selected_style
-            } else {
-                unselected_style
-            };
-            spans.push(Span::styled(label, style));
-        }
-        spans.push(Span::styled(" ".to_string(), dim_style));
-
-        // Center the button row within the body content width — mirrors
-        // dialog_theme::inner_content_width's max() computation so the
-        // leading pad equals (final_body_w - raw_row_w)/2.
-        let title_text = self.title();
-        let raw_w: usize = spans.iter().map(|s| s.content.width()).sum();
-        let body_w = [
-            title_text.width(),
-            description_text.width(),
-            raw_w,
-            FOOTER.width(),
-            MIN_WIDTH as usize,
-        ]
-        .into_iter()
-        .max()
-        .unwrap_or(MIN_WIDTH as usize);
-        if body_w > raw_w {
-            let pad = (body_w - raw_w) / 2;
-            if pad > 0 {
-                spans.insert(
-                    0,
-                    Span::styled(" ".repeat(pad), Style::default().bg(Color::Black)),
-                );
-            }
-        }
-
-        let button_row = DialogRow {
-            spans,
-            selectable: false,
-            selected: false,
-        };
-
-        let dialog = FspecDialog {
-            accent: ACCENT,
-            title: title_text.as_str(),
-            rows: vec![description_row, button_row],
-            footer: FOOTER,
-            min_width: MIN_WIDTH,
-            query_row: None,
-        };
-        render_dialog(area, buf, &dialog);
+        let labels: Vec<&str> = OPTIONS.iter().map(|o| option_label(*o)).collect();
+        // TUI-112: paint + capture the button-row geometry in one call
+        // (shared builder = single source of truth for pixels + hit test).
+        self.last_layout = render_three_button_dialog(
+            area,
+            buf,
+            ACCENT,
+            &self.title,
+            description_text,
+            FOOTER,
+            MIN_WIDTH,
+            self.selected_index(),
+            &labels,
+        );
     }
 }
