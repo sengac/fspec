@@ -19,6 +19,10 @@
 //! moved its focus locally / focused the chip's session through its
 //! test seam, so the arm only closes the dropdown or re-emits the
 //! executed entry).
+//!
+//! BUG-200: the board↔bar ring edges (columns ⇄ items ⇄ chips) are
+//! mirrored in the Mux `MenuMove` arm — `menu_move_mux` (the mux arms
+//! live in `dispatch_menu_mux`).
 
 use crate::components::menu_bar::items::{MenuAction, CATEGORIES};
 use crate::components::Action;
@@ -72,100 +76,6 @@ impl App {
                 | Action::MenuFocusPane(_)
                 | Action::MenuZoneCActivate(_)
         )
-    }
-
-    /// MENU-004 R-STATE: the Mux-view half of `dispatch_menu` — the bar's
-    /// ring/dropdown state lives on `navigator.mux` (RED CARD 1), so the
-    /// arms mutate the mux layout instead of the board store. Executed
-    /// rows re-dispatch onto the bus (R-EXEC); chip activation focuses the
-    /// session WITHOUT flipping out of Mux (R-CHIPS).
-    pub(crate) fn dispatch_menu_mux(&mut self, action: &Action) {
-        let mux = &mut self.navigator.mux;
-        match action {
-            Action::MenuMove(delta) => {
-                // R-ZONEB: the ring = items + Zone B (pane labels + the
-                // GLOBAL chips). Walk it against a per-frame snapshot
-                // (the dispatched walk uses the painted zone_b, mirroring
-                // the board store's R8 `menu_move`).
-                //
-                // MENU-004 R-KEYS: the MUX bar owns the walk ONLY while
-                // its ring is active (an item/cell has the focus or a
-                // dropdown is open — entry into the bar is always the
-                // direct `MenuMoveToItem(0)` edge rule, never a
-                // `MenuMove`). When the mux bar is INACTIVE the focused
-                // pane has the keys: a `MenuMove` then belongs to that
-                // pane's OWN surface — the board pane's continuous
-                // column⇄item⇄chip ring (MENU-002, the board store) —
-                // and a walk landing on the board store's (suppressed)
-                // bar segment keeps operating via the board pane's own
-                // key arms, exactly as in the single Board view.
-                if mux.menu_ring_active() {
-                    let focus = mux.menu_focus();
-                    let open = mux.open_menu();
-                    let snapshot = crate::views::multiplex::menu_snapshot::build_snapshot(
-                        mux,
-                        &self.agent_view_store,
-                        focus,
-                        open,
-                        crate::views::multiplex::menu_render::now_ms(),
-                    );
-                    let next = snapshot.advance(focus, *delta);
-                    mux.menu_move_to_ring_position(next);
-                    mux.menu_reanchor_or_close();
-                } else if self.mux_board_pane_focused() {
-                    self.board_store.menu_move(*delta);
-                }
-            }
-            Action::MenuFocusToColumns => mux.menu_dismiss(),
-            Action::MenuOpenDropdown(category) => mux.menu_open_or_close(*category),
-            Action::MenuCloseDropdown => mux.menu_close_dropdown(),
-            Action::MenuDismissBar => mux.menu_dismiss(),
-            Action::MenuDropdownCursor(delta) => mux.menu_dropdown_cursor(*delta),
-            Action::MenuMoveToItem(index) => mux.menu_move_to_item(*index),
-            Action::MenuFocusPane(pane) => {
-                // R-ZONEB: Enter/click on a pane view label focuses that
-                // pane (set_focus) — no view flip, no session change.
-                mux.set_focus(*pane);
-            }
-            Action::MenuChipActivate(index) => {
-                // R-CHIPS: resolve against the GLOBAL painted chip list and
-                // focus that session's open-session slot — but do NOT flip
-                // out of Mux (the agent pane showing it stays put).
-                let sessions = crate::views::board::menu_snapshot::active_menu_session_ids(
-                    &self.agent_view_store,
-                );
-                let Some(session) = sessions.get(*index) else {
-                    return;
-                };
-                if let Some(open_idx) = self
-                    .agent_view_store
-                    .open_sessions()
-                    .iter()
-                    .position(|c| &c.id == session)
-                {
-                    self.agent_view_store.focus_session_index(open_idx);
-                }
-                // Stay in Mux — no `active_view` flip, no navigation target.
-            }
-            Action::MenuExecuteItem { category, row } => {
-                let Some(menu_action) = mux.menu_execute_item(*category, *row) else {
-                    return;
-                };
-                // R-EXEC: the NewAgent row carries NO session payload —
-                // substitute the live current-session snapshot at execute
-                // time (MENU-002/003 parity).
-                let target = if menu_action == MenuAction::NewAgent {
-                    self.agent_view_store.current_session().cloned()
-                } else {
-                    None
-                };
-                self.dispatch(menu_action.to_action(target));
-            }
-            // MENU-009 Q1: the mux bar paints NO Zone C — the token is
-            // unreachable on this surface (defensive no-op).
-            Action::MenuZoneCActivate(_) => {}
-            _ => {}
-        }
     }
 
     /// Route a MENU-002/003 menu-bar action (store-level half).

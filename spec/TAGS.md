@@ -752,6 +752,8 @@ Tags for test-related scenarios and requirements.
 | `@auto-attach` | Scenarios related to automatic session attachment |
 | `@backward-compatible` | Backward compatibility verification |
 | `@blocking` | Operations that block workflow progression |
+| `@bug-200` | Work unit identifier tag for BUG-200 — mux board-pane ring edges: Left from the first column wraps to the last Zone B cell (chip segment) and Right from the first item / last chip re-enters the board's last column (continuous columns⇄items⇄chips ring in mux). |
+| `@bug-201` | Work unit identifier tag for BUG-201 — mux board-pane ring: seam crossings (col0 ⇄ bar edges) must only fire while the Board pane is focused, and the board store's stale bar state (menu_focus/menu_open) must be cleared when entering mux so the ring never walks the board's invisible bar. |
 | `@circular-dependency` | Circular dependency detection tests |
 | `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
 | `@complex-command` | Complex command with multiple modes and options |
@@ -823,4 +825,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-07T07:56:13.526Z_
+_Last updated: 2026-10-08T08:06:13.359Z_

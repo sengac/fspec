@@ -93,6 +93,13 @@ impl App {
         // recompute the pane rects so `pane_rects()` is valid BEFORE
         // the first render.
         if self.navigator.mux.config().enabled {
+            // BUG-201: entering (re-entering) the grid clears the
+            // board store's OWN bar state — the board pane's bar is
+            // suppressed in the grid (MENU-004 R-SUPPRESS), so a stale
+            // `menu_focus` / `open_menu` from the single Board view
+            // would make Left/Right walk that INVISIBLE ring.
+            // `focused_column` stays (the entry must not reset it).
+            self.board_store.dismiss_menu();
             self.navigator.active_view = crate::views::ViewMode::Mux;
             self.mux_sync_window();
             self.navigator.mux.recompute_rects();
@@ -128,6 +135,14 @@ impl App {
             // the draft layout (R7).
             self.navigator.mux.enable_with_config(config, pre_mux);
             self.navigator.active_view = crate::views::ViewMode::Mux;
+            // BUG-201: entering (re-entering) the grid clears the
+            // board store's OWN bar state (ring focus + open
+            // dropdown) — the board pane's bar is suppressed in the
+            // grid (MENU-004 R-SUPPRESS), so a stale `menu_focus` /
+            // `open_menu` from the single Board view would make
+            // Left/Right walk that INVISIBLE ring. `focused_column`
+            // stays (the entry must not reset it).
+            self.board_store.dismiss_menu();
             self.mux_sync_window();
             self.navigator.mux.recompute_rects();
             // BUG-182 R7: OFF → ON entry loads un-loaded lazy panes.
@@ -164,6 +179,14 @@ impl App {
         self.navigator.mux.config_mut().enabled = true;
         self.navigator.mux.set_focus(0);
         self.navigator.active_view = crate::views::ViewMode::Mux;
+        // BUG-201: clear the board store's OWN bar state (ring focus +
+        // open dropdown) — the board pane's bar is suppressed in the
+        // grid (MENU-004 R-SUPPRESS), so a stale `menu_focus` /
+        // `open_menu` from the single Board view would make Left/Right
+        // walk that INVISIBLE ring (the ring "loses its place").
+        // `focused_column` is untouched (the entry must not reset the
+        // user's column).
+        self.board_store.dismiss_menu();
         // BUG-183: `/mux on` re-enters the grid from the SAVED layout —
         // clear the live-only `closed_panes` set (the panes the user
         // Esc-closed come back — the transient rule) and re-derive the

@@ -45,6 +45,16 @@ pub fn paint_bar(
     theme: &Theme,
 ) -> Option<MenuLayout> {
     let open = layout.open_menu();
+    // BUG-200 R1: re-sync the fed chip count from the LIVE store before
+    // deriving the snapshot — `refresh_menubar_ring` otherwise only runs
+    // on bus-action dispatch (`App::dispatch` → `feed_menu_ring_size`),
+    // so any store change that paints without an intervening dispatch
+    // (a session seeded through a test seam, a resumed bootstrap, …)
+    // left `menu_chips` one short of the paint: `zone_b_target`
+    // resolved the last chip's zone_b index to `None` and the click was
+    // Swallowed — "the chips can't be clicked" in mux mode. Paint and
+    // hit-test must derive the chip list from the SAME store state.
+    layout.refresh_menubar_ring(agent_store);
     let snapshot = build_snapshot(layout, agent_store, layout.menu_focus(), open, now_ms());
     let bar_rect = Rect {
         x: area.x,
@@ -89,6 +99,7 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::*;
+    use crate::views::multiplex::menu_keys::ZoneBTarget;
     use crate::views::multiplex::MuxPaneKind;
 
     /// A fresh AgentViewStore + a mux-enabled layout (test-side
@@ -118,6 +129,62 @@ mod tests {
         );
         assert!(m.menu_cells().is_some_and(|v| v.len() == 2));
         assert_eq!(m.menu_open_panel(), None);
+    }
+
+    #[test]
+    fn paint_bar_keeps_the_chips_zone_in_lockstep_with_the_paint() {
+        // BUG-200 R2: a repaint re-syncs `menu_chips` (and thus
+        // `zone_b_target`) from the live store — `refresh_menubar_ring`
+        // only fires on bus-action dispatch, so a session seeded
+        // without one (or any store change between dispatch ticks)
+        // must NOT leave the hit-test one chip short of the paint.
+        // @step Given a mux layout with [Board | Agent | Agent] panes and 2 open sessions
+        let mut m = enabled_layout(vec![
+            MuxPaneKind::Board,
+            MuxPaneKind::Agent,
+            MuxPaneKind::Agent,
+        ]);
+        m.sync_window(&[
+            codelet_rpc_types::SessionId::new("s-1"),
+            codelet_rpc_types::SessionId::new("s-2"),
+        ]);
+        let mut store = AgentViewStore::default();
+        store.append_session(crate::store::SessionContext::new(
+            codelet_rpc_types::SessionId::new("s-1"),
+        ));
+        store.append_session(crate::store::SessionContext::new(
+            codelet_rpc_types::SessionId::new("s-2"),
+        ));
+        let area = Rect::new(0, 0, 240, 1);
+        let mut buf = Buffer::empty(area);
+        // @step When the mux bar is painted (no bus-action dispatch has fed the ring)
+        paint_bar(&mut m, area, &mut buf, &store, &Theme::default()).expect("layout");
+        // @step Then every painted Zone B cell is addressable — the 2 view labels + both chips
+        let cells = m
+            .menu_cells()
+            .expect("painted bar caches its cells")
+            .to_vec();
+        assert!(
+            cells.len() >= 3,
+            "the paint shows 1 view label + 2 chips, got {cells:?}"
+        );
+        for (cell, _rect) in &cells {
+            match cell {
+                crate::components::menu_bar::DisplayCell::View { orig, .. }
+                | crate::components::menu_bar::DisplayCell::Chip { orig }
+                | crate::components::menu_bar::DisplayCell::Fold { orig, .. } => {
+                    assert!(
+                        !matches!(m.zone_b_target(*orig), ZoneBTarget::None),
+                        "painted cell at zone_b index {orig} must resolve to a target"
+                    );
+                }
+            }
+        }
+        assert_eq!(
+            m.zone_b_target(m.view_label_count() + 1),
+            ZoneBTarget::Chip(1),
+            "the second chip (index 1) must be hit-testable"
+        );
     }
 
     #[test]

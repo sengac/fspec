@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-07T10:22:26.118Z",
+    "lastUpdated": "2026-10-08T12:17:51.643Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 199,
+    "BUG": 201,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1757,7 +1757,9 @@
       "MENU-009",
       "BUG-199",
       "TUI-112",
-      "MENU-010"
+      "MENU-010",
+      "BUG-200",
+      "BUG-201"
     ],
     "blocked": [
       "QUERY-001",
@@ -237162,6 +237164,165 @@
         "spec/attachments/MENU-010/ast-research-chip-highlight-surface-scoping.md"
       ],
       "iterations": 1
+    },
+    "BUG-200": {
+      "id": "BUG-200",
+      "title": "Mux board-pane ring: Left at the first column lands on a menu item (no wrap to chips) and Right from the bar never returns to the columns",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-08T03:07:03.330Z",
+      "updatedAt": "2026-10-08T05:05:32.141Z",
+      "description": "In Mux mode with the Board pane focused, the continuous column⇄item⇄chip ring breaks at its left edge and one-way: (1) Left on the first column (backlog) wraps to the LAST menu item (Help) instead of the last chip — then every further Left walks the mux bar's items⇄chips ring only (no column stops) and never returns to the columns; (2) once any bar stop is engaged (menu_ring_active), Right from the last menu item / last chip wraps back to the first menu item instead of re-entering the board's columns, so the 7 column stops are unreachable from the bar side. Single Board view is unaffected (its ring is columns→items→chips→ZoneC→columns, all one store). Root cause: the Mux MenuMove dispatch arm falls through to the board store only while the mux bar is INACTIVE; the board store's own menu_move wraps column-0 Left to the last item (its ZoneC stop, count 0 in mux), and the mux snapshot ring has no column stops at all. Fix: in the Mux MenuMove arm with the board pane focused, when the board store owns a column focus (menu_focus None) mirror the wrapped slot: last-chip Left → first column; first-item Right (and last-chip Right, chips>0) → last column.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-08T03:13:10.934Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-08T04:32:22.122Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-08T04:32:27.180Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-08T04:32:30.164Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-08T05:05:32.141Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R-COLUMNS: Right from the first Zone A item lands on the board's LAST column (blocked) with the bar highlight cleared (mirrors the single-Board rule: running out of the bar's front segment re-enters the columns); Right from the LAST Zone B chip also lands on the last column (the bar's right edge, MENU-002/004 parity). Left from an interior bar stop keeps walking the bar's items⇄chips ring (no change).",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:13:17.832Z"
+        },
+        {
+          "id": 1,
+          "text": "R-WRAP: In Mux with the Board pane focused, the board ring's left edge re-enters the mux bar's CHIP segment (not the items): Left from the first column (backlog) wraps to the LAST Zone B chip (the first view-label cell when no chips are painted).",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:13:18.158Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "userStory": {
+        "role": "TUI user (mux mode)",
+        "action": "cycle the board column ⇄ menu-bar item ⇄ session-chip ring with Left/Right",
+        "benefit": "the ring is continuous in both directions across the board pane and the mux top bar"
+      },
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux grid [Board | Agent | Agent] with 2 open sessions, Board pane focused, ring on the first menu item (Kanban): Right lands on the FIRST column (backlog) with the bar highlight cleared; Right again walks the columns (specifying).",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:13:27.603Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux grid [Board | Agent | Agent] with 2 open sessions, Board pane focused, cursor on the first column (backlog): Left wraps to the LAST chip #2 (the last Zone B cell); Left again lands on chip #1; Left again lands on the last menu item (Help); Left from Help keeps walking the items (Settings) — no column stop.",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:13:27.931Z"
+        },
+        {
+          "id": 2,
+          "text": "Mux grid [Board | Agent | Agent] with 2 open sessions, Board pane focused, ring on the LAST chip #2: Right lands on the LAST column (blocked) with the bar highlight cleared; Right again walks the columns (done).",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:13:28.282Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implement in App::dispatch_menu's Mux MenuMove arm (rust/fspec-tui/src/app/dispatch_menu.rs): (a) bar ring active + Board pane focused + delta>0 + focus Item(0) or the last painted Zone B chip → board store focused_column = last (COLUMN_ORDER.len()-1 = blocked) and clear the mux bar ring; (b) bar ring active + Board pane focused + delta<0 + focus Item(0) → focused_column = 0 (backlog) and clear the bar ring; (c) bar ring INACTIVE (a column owns focus) + delta<0 + the board store's own wrap landing on its last item (menu_focus Item(items-1) after menu_move — the store's ZoneC-less edge in Mux) → re-target onto the MUX bar's last Zone B cell (last chip when chips > 0; the first view-label cell when no chips paint). The board bar stays suppressed (MENU-004 R-SUPPRESS) — BoardStore.menu_focus is not written; the columns stay the authoritative ring half. No new Action variant: the mirror runs inside the existing Mux MenuMove arm.",
+          "deleted": false,
+          "createdAt": "2026-10-08T03:19:11.094Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 2
+    },
+    "BUG-201": {
+      "id": "BUG-201",
+      "title": "Mux board-pane ring seams fire off the board pane + stale board bar state survives /mux on",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-08T07:41:29.754Z",
+      "updatedAt": "2026-10-08T12:17:51.643Z",
+      "description": "BUG-200 follow-up (user: 'the ring loop in mux mode is TOTALLY fucked'). Two defects in the new seam-mirror code: (1) The board↔bar seam crossings in menu_move_mux (Right off the last Zone B cell → col0; Left off Item(0) → col6) fire even when the BOARD PANE IS NOT FOCUSED (e.g. the agent pane is focused and the bar was entered from its empty-input Left rule). The seam silently sets board_store.focused_column and dismisses the mux bar; the next Left from the empty agent input re-enters at Item(0) — 'right at the end of the menu bar just cycles back around to the start of the menu bar and not back to the board'. When the board pane is not focused, the bar must be a closed items⇄chips loop (MUX-004) with no column stops. (2) Entering mux mode (handle_mux_on / dialog ON / /mux default) never clears the board store's own bar state (menu_focus / open_menu) left over from the single Board view. The board pane's bar is suppressed in the grid (MENU-004 R-SUPPRESS), but BoardView::handle_menu_keys gate 2 still claims Left/Right as walks of that INVISIBLE bar — the ring 'loses place' through dead keys before snapping back. The BUG-200 tests miss both: they enter mux via the enable_with_config test seam with a fresh board store, and they only assert the board-pane-focused paths.",
+      "epic": "mux",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-08T07:44:13.234Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-08T10:04:09.600Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-08T10:55:48.994Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-08T11:08:00.907Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-08T12:17:51.643Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When the Board pane is NOT the focused mux pane, the mux menu bar ring is a closed items⇄Zone B (view labels + chips) loop with no column stops: Right off the last Zone B cell wraps to Item(0) and Left off Item(0) wraps to the last Zone B cell. The board_store's focused_column must not be mutated by any seam crossing in this state.",
+          "deleted": false,
+          "createdAt": "2026-10-08T08:06:23.000Z"
+        },
+        {
+          "id": 1,
+          "text": "When the Board pane IS the focused mux pane, the BUG-200 seam crossings remain in effect: Right off the last Zone B cell lands on the first column (Backlog) and dismisses the bar; Left off Item(0) lands on the last column (Blocked) and dismisses the bar.",
+          "deleted": false,
+          "createdAt": "2026-10-08T08:06:26.179Z"
+        },
+        {
+          "id": 2,
+          "text": "Entering mux mode (via /mux on, /mux default, or committing the mux config dialog) clears the board store's bar state — menu_focus and open_menu are reset — so Left/Right in the board pane walks the visible columns, never the board's invisible (suppressed) bar. The board's focused_column is NOT reset.",
+          "deleted": false,
+          "createdAt": "2026-10-08T08:06:58.346Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux [Board|Agent] with the AGENT pane focused; the bar is engaged at the last chip (entered via empty-input Left on the agent pane). Pressing Right wraps to Item(0) (Kanban) and the board's focused_column is unchanged — the bar behaves as a closed loop.",
+          "deleted": false,
+          "createdAt": "2026-10-08T08:07:09.715Z"
+        },
+        {
+          "id": 1,
+          "text": "In mux with the board on the left and an agent on the right, the user's highlight is on the agent pane. They navigate the top menu bar and keep pressing Right past the last session chip: the highlight returns to the first menu item (Kanban) — it does NOT jump to the board's first column, and the board columns are not touched.",
+          "deleted": false,
+          "createdAt": "2026-10-08T08:07:15.121Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "userStory": {
+        "role": "TUI user (mux mode)",
+        "action": "walk the mux menu-bar ring while a pane other than the Board pane is focused, and enter mux mode from a Board view that had its own bar engaged",
+        "benefit": "the ring behaves as a closed items⇄chips loop (never crossing into the board columns off the board pane) and the board's invisible bar state is dropped on entry, so Left/Right never walk a dead bar"
+      },
+      "estimate": 3
     }
   }
 }

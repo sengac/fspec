@@ -88,6 +88,13 @@ impl MultiplexLayout {
             .count()
     }
 
+    /// MENU-004 R8: the fed painted-chip count (the ring's Zone B chip
+    /// cells). The App's dispatched `MenuMove` mirror (BUG-200) reads
+    /// it to compute the bar's last Zone B cell index.
+    pub fn menu_chips(&self) -> usize {
+        self.menu_chips
+    }
+
     // ── ring state ──────────────────────────────────────────────────────
 
     /// MENU-004: focus the `idx`-th Zone A item, clearing any other

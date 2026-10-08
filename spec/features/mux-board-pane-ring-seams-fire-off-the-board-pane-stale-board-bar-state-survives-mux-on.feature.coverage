@@ -1,0 +1,338 @@
+{
+  "scenarios": [
+    {
+      "name": "Right from the last chip with the agent pane focused wraps to the first menu item",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "117-185",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left from the first menu item with the agent pane focused wraps to the last chip",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "188-226",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Entering mux via /mux on from a Board view with an engaged bar clears the board bar state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "228-275",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Committing the mux config dialog from off to on clears the board bar state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "277-309",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Entering mux via /mux default clears the board bar state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "315-352",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_mux_apply.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With the board pane focused the BUG-200 seam crossings stay in effect",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs",
+          "lines": "360-405",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug201_mux_board_ring_seams_off_board_pane.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
+      "rust/fspec-tui/src/app/dispatch_mux_apply.rs"
+    ],
+    "totalLinesCovered": 498
+  }
+}

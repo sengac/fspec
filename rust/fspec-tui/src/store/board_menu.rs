@@ -136,6 +136,16 @@ impl BoardStore {
         self.menu_focus = None;
     }
 
+    /// BUG-200 R-WRAP: clear the bar's ring focus WITHOUT touching the
+    /// dropdown (the Mux mirror of the board store's left-edge wrap onto
+    /// the MUX bar's last Zone B cell — the suppressed board bar must not
+    /// keep a stale `menu_focus` that the next Mux `MenuMove` would
+    /// treat as its own engaged ring). The `focused_column` mirror is
+    /// authoritative while `menu_focus` is `None`.
+    pub fn menu_clear_focus(&mut self) {
+        self.menu_focus = None;
+    }
+
     /// R7 (mouse): focus the `idx`-th menu item, clearing any column
     /// bar-highlight.
     pub fn set_menu_focus_item(&mut self, idx: usize) {

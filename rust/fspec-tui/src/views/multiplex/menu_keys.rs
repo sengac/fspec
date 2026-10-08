@@ -70,6 +70,7 @@ fn emit(action: Action) -> MuxBarKeyOutcome {
 }
 
 /// A resolved Zone B cell target (Enter on a cell, R-ZONEB).
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ZoneBTarget {
     /// A chip — activate session `i` (the global painted-chip index).
     Chip(usize),

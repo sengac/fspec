@@ -95,6 +95,52 @@ impl MultiplexLayout {
         self.sessions.get(self.window_start + agent_idx).cloned()
     }
 
+    /// MUX-004 R-CHIPS / chip-click selection: rotate the agent window and
+    /// move pane focus so the agent pane rendering `session` is the focused
+    /// pane. This is what makes a clicked/entered chip *show* its selection
+    /// — the chip's selected-highlight (MENU-010) paints only on the focused
+    /// agent pane's window session, so without landing pane focus there the
+    /// click would be reverted by `sync_mux_focus_to_session` (which treats
+    /// the focused agent pane as the source of truth) and the highlight would
+    /// stay on the previously focused pane's session.
+    ///
+    /// Returns the newly focused pane index. `None` when there is no rendered
+    /// agent pane at all (an all-Board/Files/Ckpts grid) or the session is
+    /// not in the open-session list (closed / Cleared — no chip to select).
+    pub fn focus_agent_pane_for_session(&mut self, session: &SessionId) -> Option<usize> {
+        // The rendered agent pane indices, in rendered_panes order. The
+        // Nth of these renders `sessions[window_start + N]`.
+        let agent_indices: Vec<usize> = self
+            .rendered_panes
+            .iter()
+            .enumerate()
+            .filter_map(|(i, k)| (k == &MuxPaneKind::Agent).then_some(i))
+            .collect();
+        let n_slots = agent_indices.len();
+        if n_slots == 0 {
+            return None;
+        }
+        let pos = self.sessions.iter().position(|s| s == session)?;
+        // Rotate the window so `pos` is visible in an agent slot. This is the
+        // SAME bound `sync_window` uses (n_slots == min(agent_slot_count,
+        // sessions.len()) in every case), so the next render's re-derivation
+        // keeps the window where we put it (the focused session stays in
+        // `window_session_ids()` and no re-advance happens). A pure rotation
+        // does not change the session count, so the rendered pane list (and
+        // the focus index below) stays valid — no `recompute_effective_panes`
+        // needed.
+        let max_start = self.sessions.len().saturating_sub(n_slots);
+        let window_start = pos.min(max_start);
+        self.window_start = window_start;
+        // The agent slot rendering `pos` is `pos - window_start`; focus the
+        // rendered pane at that slot. `bump_focus` re-arms the flash (the
+        // focus genuinely moved).
+        let slot = pos - window_start;
+        let pane = *agent_indices.get(slot)?;
+        self.bump_focus(pane);
+        Some(pane)
+    }
+
     /// Focus the previous pane (Shift+Left fall-through). STOPS at the
     /// first pane — no wrap-around (MUX-002 rule 5). MUX-006: a focus
     /// move re-arms the flash; stopping at the first pane is a

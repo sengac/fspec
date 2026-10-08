@@ -619,7 +619,7 @@ async fn scenario_the_board_column_ring_continues_into_the_mux_bar() {
 /// Scenario: The mux bar ring wraps in both directions
 #[tokio::test]
 async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
-    // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused
+    // @step Given the mux grid is [Board | Agent | Agent] with 2 open sessions and the Board pane is focused with the cursor on the last column
     let (mut app, _mock) = fresh_app();
     seed_sessions(&mut app, 2).await;
     seed_units(&mut app).await;
@@ -632,30 +632,59 @@ async fn scenario_the_mux_bar_ring_wraps_in_both_directions() {
     // @step When I walk the ring Right until it wraps past the last chip
     // Enter the bar (Right off last column), then walk 6 more Rights
     // (Kanban→Tools→Settings→Help→Board→#1→#2) to reach the last chip,
-    // then one more Right wraps past the last chip back to Kanban.
+    // then one more Right wraps past the last chip back to the FIRST
+    // column (backlog) — the ring's right edge re-enters the columns
+    // (BUG-200: one continuous columns⇄items⇄chips ring; pre-BUG-200
+    // this step wrapped back to Kanban instead). Each key is drained
+    // before the next (the key-time classification reads the live
+    // ring state).
     for _ in 0..8 {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+        drain_pending(&mut app).await;
     }
-    drain_pending(&mut app).await;
 
-    // @step Then the highlight returns to the 'Kanban' menu item
+    // @step Then the highlight returns to the first column (backlog) (the ring's right edge re-enters the columns — BUG-200)
+    assert_eq!(
+        app.board_store_mut().focused_column_index(),
+        0,
+        "Right past the last chip must wrap back to the first column (backlog)"
+    );
+    assert_eq!(
+        app.navigator().mux.menu_focus(),
+        None,
+        "the bar ring must clear on the column landing"
+    );
+
+    // @step When I walk the ring Right across the 7 columns
+    // col0 → col1 → … → col6 (6 steps) → Kanban (1 step, the ring's
+    // left edge / the pre-existing entry rule): 7 Rights land on
+    // Kanban (the full ring is 14 stops: 7 columns + 7 bar stops).
+    for _ in 0..7 {
+        app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
+        drain_pending(&mut app).await;
+    }
+
+    // @step Then the highlight lands on 'Kanban' (the ring's left edge, the pre-existing entry rule)
     assert_eq!(
         app.navigator().mux.menu_focus(),
         Some(MenuFocus::Item(0)),
-        "Right past the last chip must wrap back to Kanban"
+        "a full cycle around the columns must land on Kanban"
     );
 
     // @step When I press Left from 'Kanban'
     app.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 
-    // @step Then the highlight wraps to the last chip
-    // Zone B for [Board | Agent | Agent] with 2 sessions:
-    //   [View("Board"), Chip(0), Chip(1)] → last cell = ZoneB(2)
+    // @step Then the highlight wraps to the last column (blocked) (the ring's left edge — BUG-200)
+    assert_eq!(
+        app.board_store_mut().focused_column_index(),
+        6,
+        "Left from Kanban must wrap to the last column (blocked)"
+    );
     assert_eq!(
         app.navigator().mux.menu_focus(),
-        Some(MenuFocus::ZoneB(2)),
-        "Left from Kanban must wrap to the last chip"
+        None,
+        "the bar ring must clear on the column landing"
     );
 }
 
@@ -1201,6 +1230,72 @@ async fn scenario_clicking_a_chip_activates_that_session() {
         Some(&SessionId::new("s-2")),
         "session #2 must be focused"
     );
+}
+
+/// Scenario: Clicking a chip whose session is outside the agent window rotates the window and focuses its pane
+#[tokio::test]
+async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_and_focuses_its_pane() {
+    // @step Given the mux grid is [Board | Agent | Agent] with 3 open sessions (the agent window shows #1 and #2) and the first Agent pane (session #1) is focused
+    let (mut app, _mock) = fresh_app();
+    seed_sessions(&mut app, 3).await;
+    seed_units(&mut app).await;
+    enable_mux(
+        &mut app,
+        vec![MuxPaneKind::Board, MuxPaneKind::Agent, MuxPaneKind::Agent],
+    );
+    // Sync the window onto the live session list (the first render does
+    // this — pane rects / window math read it).
+    let _buf = render_app(&mut app);
+    focus_pane(&mut app, 1); // first Agent pane → session s-1
+    assert_eq!(
+        app.navigator().mux.focused_session_id(),
+        Some(SessionId::new("s-1")),
+        "the focused Agent pane must show session s-1 before the click"
+    );
+    let buf = render_app(&mut app);
+    let chip3_x = find_x(&buf, 0, "#3").expect("chip #3 must be on the bar row");
+
+    // @step When I click chip '#3' in the top bar (the session is outside the 2-slot agent window)
+    app.handle_event(&click(chip3_x, 0));
+    drain_pending(&mut app).await;
+
+    // @step Then the agent window rotates so session #3 is rendered and that pane is focused
+    assert_eq!(
+        app.navigator().mux.focused_session_id(),
+        Some(SessionId::new("s-3")),
+        "the agent window must rotate so the clicked chip's session is the FOCUSED pane's session"
+    );
+    // @step And session #3 is the store's current session and the view stays in Mux
+    assert_eq!(
+        app.agent_view_store().current_session(),
+        Some(&SessionId::new("s-3")),
+        "session #3 must be the store's current session (and the focus-sync must keep it there)"
+    );
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Mux,
+        "the view must stay in Mux"
+    );
+
+    // @step And chip #3's cells carry the selected-item highlight on the next frame while chip #1's cells keep the #333333 background
+    let buf2 = render_app(&mut app);
+    let chip3_x2 = find_x(&buf2, 0, "#3").expect("chip #3 must paint on the next frame");
+    // A 4-cell chip: prefix "#3" + gap + glyph (menu010 chip_cell_range parity).
+    for cx in chip3_x2..chip3_x2 + 4 {
+        assert_eq!(
+            buf2[(cx, 0)].bg,
+            Color::Cyan,
+            "chip #3 cell {cx} must carry the selected-item (inverse) highlight"
+        );
+    }
+    let chip1_x2 = find_x(&buf2, 0, "#1").expect("chip #1 must paint on the next frame");
+    for cx in chip1_x2..chip1_x2 + 4 {
+        assert_ne!(
+            buf2[(cx, 0)].bg,
+            Color::Cyan,
+            "chip #1 cell {cx} must keep the #333333 background (no stale highlight)"
+        );
+    }
 }
 
 /// Scenario: Clicking a pane label focuses that pane

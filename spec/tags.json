@@ -2798,6 +2798,14 @@
           "description": "Operations that block workflow progression"
         },
         {
+          "name": "@bug-200",
+          "description": "Work unit identifier tag for BUG-200 — mux board-pane ring edges: Left from the first column wraps to the last Zone B cell (chip segment) and Right from the first item / last chip re-enters the board's last column (continuous columns⇄items⇄chips ring in mux)."
+        },
+        {
+          "name": "@bug-201",
+          "description": "Work unit identifier tag for BUG-201 — mux board-pane ring: seam crossings (col0 ⇄ bar edges) must only fire while the Board pane is focused, and the board store's stale bar state (menu_focus/menu_open) must be cleared when entering mux so the ring never walks the board's invisible bar."
+        },
+        {
           "name": "@circular-dependency",
           "description": "Circular dependency detection tests"
         },
@@ -3214,7 +3222,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-07T07:56:13.526Z",
+    "lastUpdated": "2026-10-08T08:06:13.359Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
