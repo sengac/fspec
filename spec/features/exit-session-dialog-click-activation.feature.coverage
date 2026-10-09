@@ -1,0 +1,72 @@
+{
+  "scenarios": [
+    {
+      "name": "Left-clicking the Close Session button commits the close",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui112_dialog_click_activation.rs",
+          "lines": "203-225",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left-clicking the Cancel button dismisses the dialog without destroying the session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/tui112_dialog_click_activation.rs",
+          "lines": "226-252",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui112_dialog_click_activation.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/exit_confirmation_dialog.rs"
+    ],
+    "totalLinesCovered": 74
+  }
+}

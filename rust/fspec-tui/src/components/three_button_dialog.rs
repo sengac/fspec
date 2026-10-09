@@ -1,6 +1,7 @@
-//! TUI-112 — shared paint + hit-test builder for the three-button
-//! dialog style (`CreateSessionDialog` / `ExitConfirmationDialog` /
-//! `BoardExitConfirmationDialog`).
+//! TUI-112 — shared paint + hit-test builder for the two-button
+//! confirmation dialog style (`ExitConfirmationDialog` /
+//! `BoardExitConfirmationDialog` + the three-option
+//! `CreateSessionDialog`).
 //!
 //! Feature: spec/features/left-click-activates-buttons-rows-in-all-enter-selectable-modal-dialogs-new-agent-exit-session-etc.feature
 //! Card: TUI-112.

@@ -96,12 +96,6 @@ impl App {
                 });
                 self.pending_tasks.push(handle);
             }
-            SlashCommandAction::Detach => {
-                // RPC-050: /detach handler — three documented paths
-                // (no session / no binding / Ok-Err round-trip) live
-                // in dispatch_work_unit_binding.rs::handle_slash_detach.
-                self.handle_slash_detach();
-            }
             SlashCommandAction::Provider => {
                 // RPC-054: open the ProviderSettingsView. Singular
                 // `/provider` only — the TypeScript Ink reference

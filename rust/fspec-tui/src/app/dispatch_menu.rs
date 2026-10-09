@@ -24,7 +24,7 @@
 //! mirrored in the Mux `MenuMove` arm — `menu_move_mux` (the mux arms
 //! live in `dispatch_menu_mux`).
 
-use crate::components::menu_bar::items::{MenuAction, CATEGORIES};
+use crate::components::menu_bar::items::CATEGORIES;
 use crate::components::Action;
 use crate::views::ViewMode;
 
@@ -114,30 +114,24 @@ impl App {
                         return;
                     };
                     self.navigator.agent.menu_state.set_open(None);
-                    // The NewAgent row carries NO session payload in the
-                    // registry — substitute the live current-session
-                    // snapshot at execute time (R8).
-                    let target = if entry.action == MenuAction::NewAgent {
-                        self.agent_view_store.current_session().cloned()
-                    } else {
-                        None
-                    };
-                    self.dispatch(entry.action.to_action(target));
+                    // BUG-199 / BUG-203: the registry mapping is
+                    // payload-free — `NewAgent` ALWAYS mounts the
+                    // CreateSessionDialog (the shared RPC-060 helper);
+                    // the R8 current-session substitution is removed.
+                    self.dispatch(entry.action.to_action());
                     return;
                 }
                 let Some(menu_action) = self.board_store.execute_dropdown_row(*category, *row)
                 else {
                     return;
                 };
-                // R8: the NewAgent row carries NO session payload in the
-                // registry — substitute the live current-session snapshot
-                // at execute time (BOARD-023 R5 semantics).
-                let target = if menu_action == MenuAction::NewAgent {
-                    self.agent_view_store.current_session().cloned()
-                } else {
-                    None
-                };
-                self.dispatch(menu_action.to_action(target));
+                // BUG-203: the registry mapping is payload-free —
+                // `NewAgent` ALWAYS mounts the CreateSessionDialog
+                // (the shared RPC-060 helper, BUG-199 agent-bar
+                // parity); the R8 selected-unit / current-session
+                // substitution is removed (that is the Shift+Right
+                // CYCLE gesture's `OpenAgentView` job).
+                self.dispatch(menu_action.to_action());
             }
             Action::MenuChipActivate(index) => {
                 // Resolve the chip against the PAINTED chip list (open

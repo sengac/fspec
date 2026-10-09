@@ -8,13 +8,16 @@
 //! This sub-module hosts the AgentViewStore accessors for the new
 //! per-session `work_unit_context_by_session: HashMap<SessionId,
 //! WorkUnitContext>` slot — updated by `Action::WorkUnitAttached`
-//! (BoardView attach path) and cleared by `Action::WorkUnitDetached`
-//! (`/detach` slash command). Read by the SessionHeader chip renderer
+//! (BoardView attach path). Read by the SessionHeader chip renderer
 //! in `views/agent.rs::render_with_store`.
 //!
+//! BUG-205: the `/detach` slash command (and the `WorkUnitDetached`
+//! action that cleared this slot) was removed; the slot is now
+//! cleared only when a session is destroyed (Close Session / merge
+//! teardown drop the store entry wholesale).
+//!
 //! Also hosts `reset_token_state(&SessionId)` — invoked by the
-//! `Action::WorkUnitDetached` arm to mirror the TS
-//! `prepareForNewSession` tokenUsage reset.
+//! stream-chunk dispatcher after a compaction completes.
 //!
 //! BUG-180: also hosts `sync_work_unit_contexts(&[WorkUnitInfo])` — the
 //! snapshot projection invoked by `App::dispatch` on
@@ -67,8 +70,8 @@ impl AgentViewStore {
     /// - A binding whose unit is ABSENT from `units` (deleted) is
     ///   preserved verbatim: a deleted unit must not silently detach
     ///   the session. The board shows the unit as gone; the header
-    ///   keeps painting the last-known status until the user runs
-    ///   `/detach` or attaches a different unit.
+    ///   keeps painting the last-known status until the session is
+    ///   closed or attaches a different unit.
     /// - The legacy fallback slots (`current_work_unit_id` /
     ///   `current_work_unit_status`, the RPC-029 pre-per-session
     ///   chrome source) are re-synced from the snapshot when they hold

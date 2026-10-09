@@ -31,6 +31,13 @@ Feature: Mux: Esc on the Files/Checkpoints pane does nothing — it must close t
   (restore/delete) keep their Esc-cancels-dialog precedence, and the
   board-pane exit dialog (BUG-165) + the agent-pane exit cascade + the
   single-view Esc-close are unchanged (R4).
+
+  SUPERSESSION NOTE (BUG-205): the agent exit confirmation dialog
+  referenced on line 115 ('(Detach / Close Session / Cancel)') is now
+  the two-button [Close Session, Cancel] dialog — Detach was removed
+  by BUG-205 (see
+  spec/features/exit-session-dialog-two-button-options.feature). This
+  historical feature is retained as-is.
   """
 
   # ========================================

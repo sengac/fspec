@@ -1,0 +1,353 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing '.' with the selected unit's session attached mounts the CreateSessionDialog instead of jumping into it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "742-775",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing '.' with an open session but no attachment on the selected unit still mounts the CreateSessionDialog (no silent resume)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "776-799",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/keys.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the board's '[ New Agent ]' button with a running agent mounts the CreateSessionDialog instead of switching into it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "800-845",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Confirming Yes on the board's New Agent prompt flips to the Agent view on the fresh session without binding it to a unit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "846-886",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel on the board's New Agent prompt leaves the user on the board with every open session untouched",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "887-916",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from the board still resumes the first open session (the CYCLE gesture is unchanged)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "917-954",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from the board with the selected unit's session attached still jumps into it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "955-983",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Executing the Kanban dropdown's 'New Agent' row mounts the CreateSessionDialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "984-1034",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Executing the 'u' menu-bar-help dialog's 'New Agent' row mounts the CreateSessionDialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "1035-1063",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar_help.rs",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Executing the mux top bar's Kanban 'New Agent' row mounts the CreateSessionDialog over the mux grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
+          "lines": "1064-1097",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu005_menu_bar_help.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/board/keys.rs",
+      "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+      "rust/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+      "rust/fspec-tui/src/components/create_session_dialog.rs",
+      "rust/fspec-tui/src/app/dispatch_session_cycle.rs",
+      "rust/fspec-tui/src/app/dispatch_menu.rs",
+      "rust/fspec-tui/src/components/menu_bar_help.rs",
+      "rust/fspec-tui/src/app/dispatch_menu_mux.rs"
+    ],
+    "totalLinesCovered": 526
+  }
+}

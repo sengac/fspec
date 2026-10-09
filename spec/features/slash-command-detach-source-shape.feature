@@ -14,6 +14,15 @@ Feature: /detach and work-unit binding source-shape invariants
   * `rust/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less than 300 lines of code.
   * The new dispatch_work_unit_binding.rs file exists and declares the three RPC-050 helpers.
   * The components::Action enum declares the three new variants.
+
+  SUPERSESSION NOTE (BUG-205): the detach-only plumbing was removed —
+  Action::WorkUnitDetached, handle_slash_detach and
+  handle_work_unit_detached no longer exist; the dispatch helpers are
+  attach-only now. The current source-shape invariants (attach helpers
+  present, detach helpers ABSENT) are pinned by
+  spec/features/remove-detach-slash-command-with-attach-path-intact.feature
+  and the BUG-205 scenario in tests/source_shape_rpc050.rs. This @done
+  feature is retained as a historical record of RPC-050.
   """
 
   # ========================================

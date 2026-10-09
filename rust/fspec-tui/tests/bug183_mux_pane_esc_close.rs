@@ -702,7 +702,7 @@ async fn esc_on_the_focused_agent_mux_pane_still_shows_the_agent_exit_dialog() {
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
 
-    // @step Then the agent exit confirmation dialog (Detach / Close Session / Cancel) is shown
+    // @step Then the agent exit confirmation dialog (Close Session / Cancel) is shown
     assert!(
         app.compositor().contains(
             codelet_fspec_tui::components::exit_confirmation_dialog::EXIT_CONFIRMATION_DIALOG_ID

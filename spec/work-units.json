@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-08T12:17:51.643Z",
+    "lastUpdated": "2026-10-09T11:49:18.871Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 201,
+    "BUG": 205,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -98,7 +98,7 @@
     "LAYA": 9,
     "AUDIT": 2,
     "RLCD": 4,
-    "MENU": 10
+    "MENU": 11
   },
   "states": {
     "backlog": [
@@ -1759,7 +1759,12 @@
       "TUI-112",
       "MENU-010",
       "BUG-200",
-      "BUG-201"
+      "BUG-201",
+      "MENU-011",
+      "BUG-202",
+      "BUG-203",
+      "BUG-204",
+      "BUG-205"
     ],
     "blocked": [
       "QUERY-001",
@@ -237323,6 +237328,488 @@
         "benefit": "the ring behaves as a closed items⇄chips loop (never crossing into the board columns off the board pane) and the board's invisible bar state is dropped on entry, so Left/Right never walk a dead bar"
       },
       "estimate": 3
+    },
+    "MENU-011": {
+      "id": "MENU-011",
+      "title": "Menu bar bracketed clickable elements in all zones (Zone A items, Zone B cells, Zone C buttons) + remove Close Agent [esc] hint",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-10-08T22:30:48.614Z",
+      "updatedAt": "2026-10-09T02:11:26.707Z",
+      "description": "In the menu bar, every clickable element in Zone A (menu items), Zone B (session chips + mux pane view labels) and Zone C (action buttons) is painted with square brackets: [ Label ] with a space between the word and each bracket. The existing '[esc]' hint on the agent bar's Close Agent button is removed. Brackets are part of the painted width, hit-test rects and inverse-video focus highlight.",
+      "epic": "menu-bar",
+      "children": [],
+      "userStory": {
+        "role": "TUI user",
+        "action": "see every clickable menu bar element bracketed so affordance is obvious at a glance, and drop the noisy [esc] hint",
+        "benefit": "the clickable surface of the bar (Zone A items, Zone B chips and pane labels, Zone C buttons) reads as buttons, with the Esc meaning kept implicit on the Close Agent button"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-08T22:31:09.033Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-09T02:04:17.202Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-09T02:04:31.216Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-09T02:06:52.913Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-09T02:11:26.707Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: Every Zone B cell is painted bracketed with a space between the word and each bracket — session chips as [ #1 WU-id glyph ] (e.g. [ #1 MENU-001 ● ], [ #1 ● ]) and mux pane view labels as [ Board ] [ Agent ] [ Files ] [ Ckpts ] (the focused pane stays bold-cyan, the others dim). The R6 truncation ladder semantics are unchanged: WU-id drop, +N folds (painted as [ +1 ]), dropping non-active view labels, and the absolute-minimum level all apply to the bracketed cells.",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:31:24.478Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: Every Zone A menu item label is painted bracketed with a space between the word and each bracket: [ Kanban ] [ Tools ] [ Settings ] [ Help ] (board/mux) and [ Board View ] (agent view). The brackets are part of the painted label — width, hit-test rects and the inverse-video focus highlight all cover them.",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:31:24.861Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: Every Zone C button label is painted bracketed with a space between the word and each bracket — [ New Agent ] and [ Close Agent ] — with a 2-cell gap between two buttons. The existing '[esc]' suffix on the agent bar's Close Agent button is REMOVED: the label reads exactly 'Close Agent' (the Esc cascade semantics of MENU-009/BUG-199 are unchanged — only the hint text goes).",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:31:41.832Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: The bracketed text is the button — width, hit-testing and focus. The layout pass measures labels WITH their brackets, mouse hit rects cover the full bracketed span, and the inverse-video focus highlight (Zone A items, Zone B cells, Zone C buttons) extends over the brackets. Nothing overflows the bar row (the existing proptest bounds still hold).",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:31:42.165Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board bar at 120 columns with 2 open sessions (Idle, Running): ' [ Kanban ] [ Tools ] [ Settings ] [ Help ]  │ [ #1 ● ]  [ #2 ⠋ ]  ...  [ New Agent ]' — Zone A items and chips bracketed, New Agent button bracketed, #2's glyph magenta, #333333 bg on every cell",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:32:40.649Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent bar at 100 columns with 0 open sessions: ' [ Board View ]  ...  [ New Agent ]  [ Close Agent ]' — both Zone C buttons bracketed, NO '[esc]' hint anywhere on the bar; the Close Agent button still runs the AgentEscPressed cascade on activation",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:32:41.368Z"
+        },
+        {
+          "id": 2,
+          "text": "Tight 52-column board row with 4 chips: the R6 ladder still runs on the bracketed cells — WU id suffixes drop first (chip reads '[ #1 ● ]'), the 4th chip folds into a single dim '[ +1 ]' marker, nothing overflows the row",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:32:57.552Z"
+        },
+        {
+          "id": 3,
+          "text": "Mux bar at 120 columns: ' [ Kanban ] [ Tools ] [ Settings ] [ Help ]  │ [ Board ]  [ Files ]  [ #1 ● ]' — the pane view labels are bracketed too (focused pane bold-cyan); the mux bar still paints no Zone C buttons",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:32:58.838Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach: paint-time bracketing in the shared components/menu_bar module. (1) items.rs: Zone A layout/painter derive ' [ label ] ' from the registry labels (add MenuCategory::bracketed_label helper) — dropdown/help dialog keep plain registry labels (scenario 13 guard). (2) layout.rs: zone_a_width + item rects use the bracketed label width; cell_width adds 2 cells per bracketed chip/view/fold cell. (3) paint.rs: Zone A items paint bracketed; Zone B cells paint '[ ' + content + ' ]' (chips, view labels, +N folds) via the existing per-segment paint helpers. (4) board/menu_snapshot.rs + agent/menu_render.rs: Zone C button labels become 'New Agent'/'Close Agent' (drop the '[esc]' suffix — MENU-009/BUG-199 semantics unchanged, only hint text removed). (5) Mux pane labels (views/multiplex/menu_snapshot.rs pane_label) also paint bracketed via the shared Zone B cell path. All existing R6 truncation-ladder and proptest overflow invariants keep applying to the wider rows. Files stay near/below the 300-LoC ceiling via small helpers.",
+          "deleted": false,
+          "createdAt": "2026-10-08T22:51:27.990Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/MENU-011/ast-research-menu-bar-brackets.md"
+      ]
+    },
+    "BUG-202": {
+      "id": "BUG-202",
+      "title": "Mux bar: the focused pane view label ([ Board ]) paints cyan instead of the rest of the bar's palette",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-09T03:07:30.639Z",
+      "updatedAt": "2026-10-09T04:02:24.749Z",
+      "description": "In mux mode the menu bar's Zone B pane view labels paint the FOCUSED pane's label (e.g. [ Board ]) in Color::Cyan + bold. The rest of the bar paints theme.fg (white) / theme.dim (dark gray) — so on a terminal whose default/accent colors are bluish (the #333333 bar bg + blue-ish terminal theme) the focused label is hard to read. The focus/selection highlight elsewhere in the bar is already inverse-video (bg Cyan, fg Black), so the ACTIVE-pane label should not be a standalone cyan fg: it should read consistently with the other labels (bold for active, dim for inactive) while the inverse-video highlight remains the ONLY place cyan appears in the bar.",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-09T03:07:35.768Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-09T03:11:05.510Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-09T03:21:49.408Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-09T03:44:29.084Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-09T04:02:24.749Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user in mux mode",
+        "action": "read the focused pane's view label on the shared menu bar",
+        "benefit": "see it in the same readable palette as every other bar element (not a standalone cyan foreground that blends into the blue-tinted background)"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2 (no regression): only the view-label styling changes. Session-chip styling is untouched — status glyphs keep their own colors (Running braille = magenta, Compacting = cyan, Paused = yellow, Interrupted = red, Idle = green dim), the WU id suffix stays dim, the ring focus / selected-chip inverse highlight stays bg Cyan / fg Black, and every other bar element (Zone A items, Zone C buttons, separator) keeps its existing styling.",
+          "deleted": false,
+          "createdAt": "2026-10-09T03:09:03.230Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: In the mux menu bar, a pane view label's ACTIVE (focused-pane) styling is BOLD + theme.fg (white) — never a standalone cyan foreground. Inactive labels stay theme.dim. The inverse-video selection highlight (bg Cyan / fg Black, the ring focus / selected chip) is the ONLY place cyan appears in the bar row, so 'focused pane' (active) and 'ring-focused' are visually distinguishable and the active label reads consistently with the rest of the bar.",
+          "deleted": false,
+          "createdAt": "2026-10-09T03:09:48.429Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Mux grid [Board | Files | Ckpts], Board pane focused, no ring focus: the '[ Board ]' label paints BOLD + theme.fg (white) while '[ Files ]' and '[ Ckpts ]' paint theme.dim — no cell in the row carries a cyan foreground.",
+          "deleted": false,
+          "createdAt": "2026-10-09T03:08:47.214Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux grid [Board | Agent], an Agent pane focused showing session #1: chip '[ #1 ● ]' carries the selected-item inverse highlight (cyan background, black text) while the '[ Board ]' label is bold white on the dark bar background — the two kinds of 'active' never share the same color treatment.",
+          "deleted": false,
+          "createdAt": "2026-10-09T03:08:52.376Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Single paint-site change: the DisplayCell::View arm of paint_cell in rust/fspec-tui/src/components/menu_bar/paint.rs (currently `fg(if *active { Color::Cyan } else { theme.dim })` + BOLD when active) becomes `fg(if *active { theme.fg } else { theme.dim })` + BOLD when active. The active flag is only ever set true by the mux snapshot builder (views/multiplex/menu_snapshot.rs), so the fix is mux-visible; the shared painter stays surface-agnostic. The MENU-001 painter unit tests (paint.rs inline mod) do not pin the active view-label fg, so no inline test change is needed — the integration pins live in tests/menu004_mux_surface.rs (fg Color::Cyan assertion) and the scenario 'Mux pane view labels paint bracketed' in tests/menu011_menu_bar_brackets.rs.",
+          "deleted": false,
+          "createdAt": "2026-10-09T03:09:14.848Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2
+    },
+    "BUG-203": {
+      "id": "BUG-203",
+      "title": "Board 'New Agent' (. key / Zone C button) resumes a running agent instead of prompting to start a new one",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-09T05:01:36.230Z",
+      "updatedAt": "2026-10-09T08:07:49.328Z",
+      "description": "From the board view, pressing '.' or clicking the right-aligned 'New Agent' button while an existing agent is running silently switches into that agent (acts like it attaches to a detached/running session) instead of prompting with the CreateSessionDialog. Root cause: the board 'New Agent' gesture reuses the Shift+Right cycle path (Action::OpenAgentView(selected_session) -> handle_open_agent_view) whose None-target branch probes first_open_session_id() and resumes the first open session (RPC-097 reopen #2) — and the Some-target branch jumps straight into the attached session. Shift+Right is a CYCLE gesture and must keep resuming; the 'New Agent' gesture (board '.' key, Zone C button, Kanban dropdown row, 'u' actions-dialog row, mux top-bar dropdown row) must ALWAYS mount the CreateSessionDialog, matching the agent bar's 'New Agent' (BUG-199).",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-09T05:37:00.236Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-09T07:53:36.247Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-09T07:53:44.847Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-09T07:53:48.709Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-09T08:07:46.478Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user on the Kanban board",
+        "action": "start a new agent from the 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown row, or the 'u' menu-bar-help row)",
+        "benefit": "always be prompted with the CreateSessionDialog instead of being silently attached to an already-running agent"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The board 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown 'New Agent' row, and the 'u' menu-bar-help 'New Agent' row) ALWAYS mounts the CreateSessionDialog — it never jumps into / resumes an existing open session, even when the selected work unit has an attached session or other sessions are open. This matches the agent bar's 'New Agent' button (BUG-199).",
+          "deleted": false,
+          "createdAt": "2026-10-09T05:38:12.391Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: Shift+Right (and the mux top-bar Shift+Right) is a CYCLE gesture and is unchanged — it still cycles/resumes sessions: attached-session fast path, then the first open session (RPC-097 reopen #2), then the create dialog only when zero sessions are open.",
+          "deleted": false,
+          "createdAt": "2026-10-09T05:38:40.155Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: When the 'New Agent' prompt is confirmed (Yes / Yes - Isolated) from a BOARD surface, the fresh session is created and the active view flips to AgentView on it (the existing handle_create_session_submitted board→agent flip) WITHOUT binding the session to the board's selected work unit (agent_view_store.current_work_unit_id is untouched; no extra AttachSession fires for it). Cancel / Esc keeps the user on the board and leaves every open session untouched (RPC-097 reopen #1 overlay contract).",
+          "deleted": false,
+          "createdAt": "2026-10-09T07:08:15.400Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "The user's exact report: an agent is running on s-1; from the board the user clicks the '[ New Agent ]' button (or presses '.') → the CreateSessionDialog mounts instead of switching into the running agent s-1; current session stays s-1; the board bar's ring focus clears",
+          "deleted": false,
+          "createdAt": "2026-10-09T05:39:01.909Z"
+        },
+        {
+          "id": 1,
+          "text": "Regression guard: with session s-1 open and the user on the board, Shift+Right still resumes s-1 (active view flips to Agent, no dialog) — the cycle gesture is untouched; only the 'New Agent' gesture changed",
+          "deleted": false,
+          "createdAt": "2026-10-09T05:39:09.072Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "NO new bus token: the registry mapping is payload-free — MenuAction::to_action() takes no target and MenuAction::NewAgent ALWAYS resolves to Action::OpenCreateSessionDialog { preselect: None } (the shared RPC-060 helper handle_open_create_session_dialog, BUG-199 agent-bar parity). Board entry points: (1) views/board/keys.rs '.' arm emits OpenCreateSessionDialog { preselect: None } directly; (2) dispatch_menu_zone_c.rs board button resolves the registered entry via button.action.to_action() after board_store.dismiss_menu() (ring-focus clear = execute path); (3) dispatch_menu.rs dropdown rows (agent + board branches) and dispatch_menu_mux.rs mux top-bar rows dispatch entry.action.to_action() — the MENU-009/BOARD-023 R8 current-session / selected-unit substitution is REMOVED; (4) menu_bar_help.rs 'u' dialog drops its new_agent_target snapshot field — MenuBarHelpDialog::new() is payload-free, enter_action() resolves via registry to_action(). Shift+Right (board key + mux arms, Action::OpenAgentView) is UNCHANGED — it remains the CYCLE gesture (attached fast path → first open session → dialog only when zero open). The fresh session is NOT bound to the board's selected work unit (R3).",
+          "deleted": false,
+          "createdAt": "2026-10-09T07:08:21.552Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 2,
+      "iterations": 1
+    },
+    "BUG-204": {
+      "id": "BUG-204",
+      "title": "agent-bar 'Close Agent' button runs the Esc cascade (interrupt) instead of closing the session directly",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-09T08:28:35.664Z",
+      "updatedAt": "2026-10-09T09:13:40.351Z",
+      "description": "The agent view's right-aligned [ Close Agent ] button is wired to the AgentEscPressed cascade (BUG-199 R2), so while a conversation is running, activating it only interrupts the run instead of closing the session. Observed: clicking [ Close Agent ] mid-conversation cancels the conversation rather than showing the close/exit confirmation. The button should close the agent session directly (the AgentExitChoice{CloseSession} teardown path, confirmation-gated per RPC-098), not behave as an Esc gesture.",
+      "epic": "rust-frontend",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-09T08:29:34.684Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-09T08:36:07.891Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-09T09:07:40.584Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-09T09:07:45.403Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-09T09:13:40.351Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user in the Agent view",
+        "action": "close the session from the bar's 'Close Agent' button",
+        "benefit": "the button actually closes the agent (gated by the exit confirmation) instead of behaving like an Esc keypress that only interrupts the run or clears the draft"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The agent bar's 'Close Agent' button ALWAYS mounts the 'Exit Session?' ExitConfirmationDialog (RPC-098) when a session is open — it does NOT run the AgentEscPressed cascade (no interrupt branch, no draft-clear branch, no BackToBoard fallback). The dialog's is_busy flag is computed from the current session's status (Running/Compacting → the 'The agent is currently running. Choose how to exit.' variant).",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:09.728Z"
+        },
+        {
+          "id": 1,
+          "text": "R5: This supersedes BUG-199 R2 ('Close Agent' runs the AgentEscPressed cascade). Pressing the physical Esc key in the Agent view is UNCHANGED: the full cascade (running → interrupt, draft → clear, else the same exit dialog) still applies to Esc; only the button's semantics change.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:16.488Z"
+        },
+        {
+          "id": 2,
+          "text": "R2: The dialog's options commit through the existing AgentExitChoice bus action: Detach → BackToBoard (session keeps running); Close Session → full teardown (board detach, open-session removal, work-unit pointer clear, backend.destroy_session, BackToBoard) — the exact ExitChoice::CloseSession path; Cancel → no-op (dialog removed, stay on Agent view).",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:16.860Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: With no open session, 'Close Agent' is a silent no-op (the dialog is meaningless without a session to exit) — NOT the Esc cascade's BackToBoard fallback.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:17.211Z"
+        },
+        {
+          "id": 4,
+          "text": "R4: Activating the button (Enter on the ring focus or left click) clears the agent bar's ring focus (the 'leave the bar' gesture parity with New Agent).",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:17.582Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent view on a RUNNING session: click 'Close Agent' → the 'Exit Session?' dialog appears with the running-variant description ('The agent is currently running. Choose how to exit.') — the run is NOT interrupted and no draft is cleared; picking 'Close Session' then destroys the running session and returns to the Board.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:20.453Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent view on an idle session with a typed draft in the input: click 'Close Agent' → the 'Exit Session?' dialog appears (idle variant) and the typed draft is still in the input — the draft-clear Esc branch never ran.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:34:58.424Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent view on a RUNNING session: press the physical Esc key → the run is interrupted (the existing Esc cascade is unchanged by this fix); only the 'Close Agent' button no longer triggers that branch.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:35:02.701Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent view on an idle session with an empty input: click 'Close Agent' → the 'Exit Session?' dialog appears; picking 'Detach' returns to the Board with the session still alive; picking 'Cancel' closes the dialog and stays on the Agent view.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:35:03.077Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Docs touched: MenuAction::CloseAgent + to_action (components/menu_bar/items.rs), MenuZoneCActivate doc (components/mod.rs), menu_render.rs AGENT_ZONE_C doc, menu_keys.rs / menu_mouse.rs module docs, dispatch_menu_zone_c.rs module doc, and the help-registry description for any row that references the close semantics. Tests: bug199_agent_bar_zone_c_semantics.rs (running/draft/idle scenarios inverted) and menu009_zone_c_buttons.rs / menu011_menu_bar_brackets.rs (idle-dialog scenarios keep passing).",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:35:08.638Z"
+        },
+        {
+          "id": 1,
+          "text": "Wiring change point: App::dispatch_menu_zone_c (rust/fspec-tui/src/app/dispatch_menu_zone_c.rs) — the MenuAction::CloseAgent arm currently calls handle_agent_esc_pressed(); it will instead push the ExitConfirmationDialog directly (is_busy computed from AgentViewStore::session_status_for for the current session; no current session → no-op; guard against double-push via Compositor::contains, same as the RPC-098 L7 branch).",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:35:08.992Z"
+        },
+        {
+          "id": 2,
+          "text": "Decision: keep MenuAction::CloseAgent payload-free and change ONLY the agent-surface dispatch arm (dispatch_menu_zone_c.rs) — no new Action variant. The board's to_action() CloseAgent→AgentEscPressed mapping is unreachable (CloseAgent appears in no board CATEGORIES row; only the agent bar's AGENT_ZONE_C slice carries it), so its doc is updated to reference the agent-surface dialog semantics for accuracy.",
+          "deleted": false,
+          "createdAt": "2026-10-09T08:35:14.258Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 3
+    },
+    "BUG-205": {
+      "id": "BUG-205",
+      "title": "Remove pointless 'Detach' option from close-agent dialog and the /detach slash command",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-09T10:09:26.938Z",
+      "updatedAt": "2026-10-09T11:52:22.999Z",
+      "description": "The Detach option in the 'Exit Session?' dialog (Close Agent button / ESC cascade L7) is redundant: navigating away (menu bar, Shift+Left, etc.) already keeps the session alive — Detach only did BackToBoard. Remove the Detach option (dialog becomes [Close Session, Cancel], Close Session pre-selected, matching the board 'Exit fspec?' convention) and remove the /detach slash command entirely (registry entry, SlashCommandAction::Detach, handle_slash_detach, handle_work_unit_detached, Action::WorkUnitDetached). Keep the backend set_work_unit_context RPC surface and the attach path intact.",
+      "epic": "menu-bar",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-09T10:09:30.482Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-09T11:27:07.067Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-09T11:32:20.181Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-09T11:32:23.465Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-09T11:49:18.871Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user closing an agent session",
+        "action": "see a two-button exit dialog (Close Session / Cancel) and a slash palette without /detach",
+        "benefit": "the exit dialog no longer offers a pointless option that duplicates plain navigation, and the /detach command (whose only effect was clearing a work-unit binding) is gone"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R2: Close Session is the default/pre-selected option in the exit dialog (index 0), matching the board 'Exit fspec?' convention of pre-selecting the destructive option. Left from Close Session wraps to Cancel; Right from Cancel wraps to Close Session.",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:33.655Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: The 'Exit Session?' ExitConfirmationDialog offers exactly two flat options in order [Close Session, Cancel] — the Detach option is removed (it only dispatched BackToBoard, which plain navigation already does).",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:34.036Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: The detach-only plumbing is removed: the Action::WorkUnitDetached variant, its App::dispatch arm, the handle_work_unit_detached helper, and handle_slash_detach are deleted. The attach path (Action::AttachWorkUnitToSession, WorkUnitAttached, handle_attach_work_unit_to_session, handle_work_unit_attached) and the backend set_work_unit_context(Some)/get_work_unit_context RPC surface remain intact.",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:38.269Z"
+        },
+        {
+          "id": 3,
+          "text": "R3: The /detach slash command no longer exists: the SlashCommandAction::Detach variant and its 'detach' registry entry are removed from the palette, and typing/picking '/detach' falls through to backend.send_input like any unregistered command.",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:38.607Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Dialog open with Close Session pre-selected → Enter destroys the backend session, clears the BoardStore attachment, and returns to the Board view",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:51.992Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses ESC in an idle AgentView (L7) → the 'Exit Session?' dialog shows exactly two buttons [Close Session, Cancel] with 'Close Session' pre-selected (blue bg/white/bold), 'Cancel' in gray; the 'Detach' label is nowhere painted",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:52.336Z"
+        },
+        {
+          "id": 2,
+          "text": "User opens the '/' slash palette and the '?' help dialog → neither lists a /detach command; the agent help slash list ends at /worktrees",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:57.163Z"
+        },
+        {
+          "id": 3,
+          "text": "User types '/detach' and presses Enter → the text is forwarded to the LLM as plain input (no slash handler intercepts it, no notice, no binding change)",
+          "deleted": false,
+          "createdAt": "2026-10-09T10:12:57.503Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 3,
+      "iterations": 1
     }
   }
 }

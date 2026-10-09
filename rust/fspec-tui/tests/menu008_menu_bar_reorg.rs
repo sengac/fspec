@@ -222,11 +222,11 @@ fn the_tools_category_lists_the_git_tools_in_order() {
     assert_eq!(TOOLS[0].action, MenuAction::ChangedFiles);
     assert_eq!(TOOLS[1].action, MenuAction::Checkpoints);
     assert!(matches!(
-        MenuAction::ChangedFiles.to_action(None),
+        MenuAction::ChangedFiles.to_action(),
         Action::OpenChangedFilesView
     ));
     assert!(matches!(
-        MenuAction::Checkpoints.to_action(None),
+        MenuAction::Checkpoints.to_action(),
         Action::OpenCheckpointsView
     ));
 }
@@ -249,11 +249,11 @@ fn the_settings_category_lists_the_configuration_entries_in_order() {
     assert_eq!(SETTINGS[0].action, MenuAction::Mux);
     assert_eq!(SETTINGS[1].action, MenuAction::Providers);
     assert!(matches!(
-        MenuAction::Mux.to_action(None),
+        MenuAction::Mux.to_action(),
         Action::OpenMuxConfigDialog
     ));
     assert!(matches!(
-        MenuAction::Providers.to_action(None),
+        MenuAction::Providers.to_action(),
         Action::OpenProviderSettingsView
     ));
 }
@@ -276,11 +276,11 @@ fn the_help_category_is_unchanged() {
     assert_eq!(HELP[0].action, MenuAction::Help);
     assert_eq!(HELP[1].action, MenuAction::Exit);
     assert!(matches!(
-        MenuAction::Help.to_action(None),
+        MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(None),
+        MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
 }
@@ -303,49 +303,47 @@ fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() {
         }
     }
     // @step And every action resolves to an existing Action variant
-    let target = SessionId::new("s-1");
+    // BUG-199 / BUG-203: the registry mapping is payload-free — the
+    // 'New Agent' row ALWAYS mounts the CreateSessionDialog (the
+    // shared RPC-060 helper), never a session resume.
     assert!(matches!(
-        MenuAction::NewAgent.to_action(Some(target)),
-        Action::OpenAgentView(Some(_))
+        MenuAction::NewAgent.to_action(),
+        Action::OpenCreateSessionDialog { preselect: None }
     ));
     assert!(matches!(
-        MenuAction::NewAgent.to_action(None),
-        Action::OpenAgentView(None)
-    ));
-    assert!(matches!(
-        MenuAction::Search.to_action(None),
+        MenuAction::Search.to_action(),
         Action::OpenWorkUnitSearch
     ));
     assert!(matches!(
-        MenuAction::Foundation.to_action(None),
+        MenuAction::Foundation.to_action(),
         Action::OpenFoundation
     ));
     assert!(matches!(
-        MenuAction::Attachments.to_action(None),
+        MenuAction::Attachments.to_action(),
         Action::OpenAttachmentPicker
     ));
     assert!(matches!(
-        MenuAction::ChangedFiles.to_action(None),
+        MenuAction::ChangedFiles.to_action(),
         Action::OpenChangedFilesView
     ));
     assert!(matches!(
-        MenuAction::Checkpoints.to_action(None),
+        MenuAction::Checkpoints.to_action(),
         Action::OpenCheckpointsView
     ));
     assert!(matches!(
-        MenuAction::Mux.to_action(None),
+        MenuAction::Mux.to_action(),
         Action::OpenMuxConfigDialog
     ));
     assert!(matches!(
-        MenuAction::Providers.to_action(None),
+        MenuAction::Providers.to_action(),
         Action::OpenProviderSettingsView
     ));
     assert!(matches!(
-        MenuAction::Help.to_action(None),
+        MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(None),
+        MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
 }
@@ -361,14 +359,18 @@ fn the_bar_row_paints_the_four_zone_a_items() {
     // @step When the bar is rendered into a 120-column row
     let buf = render(&snap, 120);
     let line = row(&buf, 120);
-    // @step Then Zone A reads "Kanban Tools Settings Help"
+    // @step Then Zone A reads "[ Kanban ] [ Tools ] [ Settings ] [ Help ]"
+    // (MENU-011: the Zone A items paint BRACKETED)
     assert!(
-        line.starts_with(" Kanban Tools Settings Help"),
-        "Zone A first, after the 1-cell R1 pad: {line}"
+        line.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"),
+        "Zone A first, after the 1-cell R1 pad (MENU-011: bracketed): {line}"
     );
     // @step And the row still carries the dim separator and the session chips
     assert!(line.contains("│"), "separator present: {line}");
-    assert!(line.contains("#1 ●"), "chip 1: {line}");
+    assert!(
+        line.contains("[ #1 ● ]"),
+        "chip 1 (MENU-011: bracketed): {line}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

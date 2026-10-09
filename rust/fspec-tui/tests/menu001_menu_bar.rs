@@ -29,7 +29,7 @@ use codelet_fspec_tui::components::menu_bar::paint::{paint_menu_bar, MENU_BAR_BG
 use codelet_fspec_tui::components::menu_bar::{MenuChip, MenuFocus, MenuSnapshot, ZoneBCell};
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::Theme;
-use codelet_rpc_types::{SessionId, SessionStatus};
+use codelet_rpc_types::SessionStatus;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier};
@@ -147,11 +147,11 @@ fn the_help_category_lists_the_help_and_exit_entries() {
     assert_eq!(HELP[0].action, MenuAction::Help);
     assert_eq!(HELP[1].action, MenuAction::Exit);
     assert!(matches!(
-        MenuAction::Help.to_action(None),
+        MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(None),
+        MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
 }
@@ -173,49 +173,47 @@ fn every_registry_entry_has_a_key_hint_label_description_and_a_valid_action() {
         }
     }
     // @step And every action resolves to an existing Action variant
-    let target = Some(SessionId::new("s-1"));
+    // BUG-199 / BUG-203: the registry mapping is payload-free — the
+    // 'New Agent' row ALWAYS mounts the CreateSessionDialog (the
+    // shared RPC-060 helper), never a session resume.
     assert!(matches!(
-        MenuAction::NewAgent.to_action(target),
-        Action::OpenAgentView(Some(_))
+        MenuAction::NewAgent.to_action(),
+        Action::OpenCreateSessionDialog { preselect: None }
     ));
     assert!(matches!(
-        MenuAction::NewAgent.to_action(None),
-        Action::OpenAgentView(None)
-    ));
-    assert!(matches!(
-        MenuAction::Search.to_action(None),
+        MenuAction::Search.to_action(),
         Action::OpenWorkUnitSearch
     ));
     assert!(matches!(
-        MenuAction::Attachments.to_action(None),
+        MenuAction::Attachments.to_action(),
         Action::OpenAttachmentPicker
     ));
     assert!(matches!(
-        MenuAction::Checkpoints.to_action(None),
+        MenuAction::Checkpoints.to_action(),
         Action::OpenCheckpointsView
     ));
     assert!(matches!(
-        MenuAction::ChangedFiles.to_action(None),
+        MenuAction::ChangedFiles.to_action(),
         Action::OpenChangedFilesView
     ));
     assert!(matches!(
-        MenuAction::Foundation.to_action(None),
+        MenuAction::Foundation.to_action(),
         Action::OpenFoundation
     ));
     assert!(matches!(
-        MenuAction::Mux.to_action(None),
+        MenuAction::Mux.to_action(),
         Action::OpenMuxConfigDialog
     ));
     assert!(matches!(
-        MenuAction::Providers.to_action(None),
+        MenuAction::Providers.to_action(),
         Action::OpenProviderSettingsView
     ));
     assert!(matches!(
-        MenuAction::Help.to_action(None),
+        MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(None),
+        MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
     ));
 }
@@ -236,20 +234,22 @@ fn three_sessions_paint_chips_with_per_status_glyphs() {
     // @step When the bar is rendered into a 120-column row
     let (buf, layout) = render(&snap, 120);
     let line = row(&buf, 120);
-    // @step Then Zone B reads "#1 ●  #2 ⠋  #3 ●"
+    // @step Then Zone B reads "#1 ●  #2 ⠋  #3 ●" (MENU-011: bracketed)
     assert!(
-        line.starts_with(" Kanban Tools Settings Help"),
-        "Zone A first, after the 1-cell R1 pad: {line}"
+        line.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"),
+        "Zone A first, after the 1-cell R1 pad (MENU-011: bracketed): {line}"
     );
     assert!(line.contains("│"), "separator present: {line}");
-    assert!(line.contains("#1 ●"), "chip 1: {line}");
-    assert!(line.contains("#2 ⠋"), "chip 2 (Running, 0ms): {line}");
-    assert!(line.contains("#3 ●"), "chip 3: {line}");
+    assert!(line.contains("[ #1 ● ]"), "chip 1: {line}");
+    assert!(line.contains("[ #2 ⠋ ]"), "chip 2 (Running, 0ms): {line}");
+    assert!(line.contains("[ #3 ● ]"), "chip 3: {line}");
     assert_eq!(layout.level, 0, "no truncation at 120 cols");
     assert_eq!(layout.cell_rects.len(), 3);
     // @step And the Running chip's glyph cell is styled magenta
     let chip2_rect = &layout.cell_rects[1];
-    let glyph_x = chip2_rect.x + chip2_rect.width - 1;
+    // MENU-011 R2: the glyph sits THREE cells before the rect's end
+    // (the " ]" bracket + its leading space: "[ #n … ]").
+    let glyph_x = chip2_rect.x + chip2_rect.width - 3;
     assert_eq!(
         buf[(glyph_x, 0)].fg,
         Color::Magenta,
@@ -272,11 +272,12 @@ fn each_session_status_maps_to_its_own_glyph_and_color() {
     snap.clock_ms = 0;
     // @step When the bar is rendered
     let (buf, layout) = render(&snap, 120);
-    // @step Then the chips render "↻", "!" and "✕"
+    // @step Then the chips render "↻", "!" and "✕" (MENU-011: the
+    // glyph sits three cells inside the right bracket: "[ … ]")
     for (i, glyph) in ["↻", "!", "✕"].iter().enumerate() {
         let rect = &layout.cell_rects[i];
         assert_eq!(
-            buf[(rect.x + rect.width - 1, 0)].symbol(),
+            buf[(rect.x + rect.width - 3, 0)].symbol(),
             *glyph,
             "chip {i} glyph"
         );
@@ -286,7 +287,7 @@ fn each_session_status_maps_to_its_own_glyph_and_color() {
     for (i, color) in colors.iter().enumerate() {
         let rect = &layout.cell_rects[i];
         assert_eq!(
-            buf[(rect.x + rect.width - 1, 0)].fg,
+            buf[(rect.x + rect.width - 3, 0)].fg,
             *color,
             "chip {i} glyph color"
         );
@@ -463,15 +464,17 @@ fn no_focus_paints_no_highlight() {
 
 #[test]
 fn the_row_paints_1_cell_padding_and_a_dark_background_on_every_cell() {
-    // @step Given a 40-column render area
+    // @step Given a 50-column render area
+    // (MENU-011: the bracketed Zone A is 42 cells wide — a 40-col area
+    // no longer fits even the absolute minimum; 50 keeps the layout.)
     // @step When the bar is rendered
     let snap = snap(vec![chip(0, None)]);
-    let (buf, _) = render(&snap, 40);
+    let (buf, _) = render(&snap, 50);
     // @step Then cell 0 and the last cell are background-only
     assert_eq!(buf[(0, 0)].symbol(), " ", "cell 0 is the pad");
-    assert_eq!(buf[(39, 0)].symbol(), " ", "last cell is the pad");
+    assert_eq!(buf[(49, 0)].symbol(), " ", "last cell is the pad");
     // @step And every cell of the row has the #333333 background
-    for x in 0..40u16 {
+    for x in 0..50u16 {
         assert_eq!(buf[(x, 0)].bg, MENU_BAR_BG, "cell {x} missing bg");
     }
 }
@@ -491,7 +494,7 @@ fn an_empty_chip_list_omits_the_separator_and_zone_b() {
     assert!(layout.cells.is_empty());
     let line = row(&buf, 80);
     assert!(!line.contains("│"));
-    assert!(line.starts_with(" Kanban Tools Settings Help"));
+    assert!(line.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -507,32 +510,30 @@ fn tight_width_drops_wu_ids_before_folding_chips() {
         status_chip(3, SessionStatus::Idle, Some("MENU-003-LONGID"), 0),
         status_chip(4, SessionStatus::Idle, Some("MENU-004-LONGID"), 0),
     ]);
-    // @step When the bar is rendered into a 52-column area
+    // @step When the bar is rendered into a 88-column area
     // (MENU-008: Zone A is now 26 cells wide — "Kanban Tools Settings
-    // Help" — so the old 38-col fixture would truncate to Zone A only;
-    // 52 keeps level 2: WU ids dropped + the 4th chip folded.)
-    let (buf, layout) = render(&snap, 52);
+    // Help"; MENU-011: the BRACKETED Zone A is 42 cells — so the
+    // old 52-col fixture would truncate further than intended; 88 keeps
+    // level 1: WU ids dropped, every chip still paints.)
+    let (buf, layout) = render(&snap, 88);
     // @step Then no chip shows a work-unit id suffix
     assert!(
-        layout.level >= 1,
+        layout.level == 1,
         "WU ids dropped first (got level {})",
         layout.level
     );
-    let line = row(&buf, 52);
+    let line = row(&buf, 88);
     assert!(!line.contains("MENU-001-LONGID"));
     assert!(!line.contains("MENU-004-LONGID"));
-    // @step And the 4th chip is folded into a "+1" marker after the first 3
-    assert!(
-        layout.level >= 2,
-        "level {} folds beyond the 3rd chip",
-        layout.level
-    );
+    // @step And every chip paints bracketed (nothing folded at this width)
+    assert!(line.contains("[ #1 ● ]"), "chip 1: {line}");
+    assert!(line.contains("[ #4 ● ]"), "chip 4: {line}");
     let folds = layout
         .cells
         .iter()
         .filter(|c| matches!(c, DisplayCell::Fold { .. }))
         .count();
-    assert_eq!(folds, 1, "a single +N marker");
+    assert_eq!(folds, 0, "no fold marker at this width");
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -568,8 +569,8 @@ fn extremely_tight_width_degrades_to_the_absolute_minimum() {
     let line = row(&buf, 30);
     if layout.level < 4 {
         assert!(
-            line.starts_with(" Kanban Tools Settings Help"),
-            "Zone A always survives: {line}"
+            line.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"),
+            "Zone A always survives (MENU-011: bracketed): {line}"
         );
     }
 }
@@ -876,13 +877,13 @@ fn wu_ids_count_toward_width_only_at_level_zero() {
     assert_eq!(full.level, 0);
     assert_eq!(
         full.cell_rects[0].width,
-        3 + 8 + 1 + 1,
-        "#1 prefix + WU id + space + glyph"
+        3 + 8 + 1 + 1 + 4,
+        "#1 prefix + WU id + space + glyph + the MENU-011 '[ ]' brackets"
     );
-    // 40 cols: the level-0 row (26 Zone A + separator + 13 chip = 42
-    // inner cells) no longer fits, so the WU id suffix is the first
-    // thing dropped (R6 step 1).
-    let tight = menu_bar_layout(Rect::new(0, 0, 40, 1), &snap).unwrap();
+    // 60 cols: the level-0 row (42 bracketed Zone A + 3 separator +
+    // 17 chip = 62 inner cells) no longer fits, so the WU id
+    // suffix is the first thing dropped (R6 step 1).
+    let tight = menu_bar_layout(Rect::new(0, 0, 60, 1), &snap).unwrap();
     assert_eq!(tight.level, 1, "WU id dropped first");
 }
 
@@ -899,7 +900,11 @@ fn full_width_keeps_level_zero_with_every_cell() {
 #[test]
 fn very_tight_width_folds_chips_beyond_three() {
     let chips = (0..6).map(|i| chip(i, None)).collect();
-    let layout = menu_bar_layout(Rect::new(0, 0, 30, 1), &snap(chips)).expect("layout");
+    // MENU-011: the bracketed Zone A is 42 cells — a 30-col area no
+    // longer fits even the absolute minimum. At 90 cols (88 inner) the
+    // level-1 row (61) still fits all 6 chips, so the ladder must fold
+    // at level 2: the 4th-6th chips become a single `+N` marker.
+    let layout = menu_bar_layout(Rect::new(0, 0, 90, 1), &snap(chips)).expect("layout");
     assert!(layout.level >= 2, "folding level used: {}", layout.level);
     let fold_count = layout
         .cells

@@ -1,7 +1,8 @@
-//! RPC-098 — AgentView ESC exit confirmation dialog (Detach / Close Session /
-//! Cancel) — failing tests (RED phase).
+//! RPC-098 — AgentView ESC exit confirmation dialog (Close Session /
+//! Cancel, since BUG-205) — integration tests.
 //!
 //! Feature: spec/features/agentview-esc-exit-confirmation-dialog.feature
+//!          spec/features/exit-session-dialog-two-button-options.feature
 //!
 //! This test file is written BEFORE the implementation. Until RPC-098 lands,
 //! `ExitConfirmationDialog`, `EXIT_CONFIRMATION_DIALOG_ID`, `ExitChoice`, and
@@ -178,11 +179,12 @@ fn dialog_present(app: &App) -> bool {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Scenario: Idle session ESC opens dialog with idle description and Detach focused
+// Scenario: Idle session ESC opens dialog with idle description and
+// Close Session focused
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn idle_session_esc_opens_dialog_with_idle_description_and_detach_focused() {
+async fn idle_session_esc_opens_dialog_with_idle_description_and_close_session_focused() {
     // @step Given I am in the Rust AgentView with an active session whose status is Idle
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And the input buffer is empty
@@ -218,46 +220,44 @@ async fn idle_session_esc_opens_dialog_with_idle_description_and_detach_focused(
         painted_str.contains("Choose how to exit the session."),
         "idle-description text must be painted, got:\n{painted_str}"
     );
-    // @step And the button "Detach" is selected with blue background and white foreground
-    let (dx, dy) =
-        find_text_cell(&painted, " Detach ").expect("' Detach ' must appear in rendered buffer");
-    for off in 0..8 {
-        let style = painted[(dx + off, dy)].style();
+    // @step And the button "Close Session" is pre-selected with blue background and white foreground
+    let (cs_x, cs_y) = find_text_cell(&painted, " Close Session ")
+        .expect("' Close Session ' must appear in rendered buffer");
+    for off in 0..15 {
+        let style = painted[(cs_x + off, cs_y)].style();
         assert_eq!(
             style.bg,
             Some(Color::Blue),
-            "Detach cell ({},{}) bg must be Blue",
-            dx + off,
-            dy
+            "Close Session cell ({},{}) bg must be Blue",
+            cs_x + off,
+            cs_y
         );
         assert_eq!(
             style.fg,
             Some(Color::White),
-            "Detach cell ({},{}) fg must be White",
-            dx + off,
-            dy
+            "Close Session cell ({},{}) fg must be White",
+            cs_x + off,
+            cs_y
         );
         assert!(
             style.add_modifier.contains(Modifier::BOLD),
-            "Detach cell ({},{}) must be bold",
-            dx + off,
-            dy
+            "Close Session cell ({},{}) must be bold",
+            cs_x + off,
+            cs_y
         );
     }
-    // @step And the buttons "Close Session" and "Cancel" are rendered in gray
-    let (cs_x, cs_y) = find_text_cell(&painted, " Close Session ")
-        .expect("' Close Session ' must appear in rendered buffer");
-    assert_eq!(
-        painted[(cs_x + 1, cs_y)].style().fg,
-        Some(Color::Gray),
-        "Close Session unselected must be Gray fg"
-    );
+    // @step And the button "Cancel" is rendered in gray
     let (cx, cy) =
         find_text_cell(&painted, " Cancel ").expect("' Cancel ' must appear in rendered buffer");
     assert_eq!(
         painted[(cx + 1, cy)].style().fg,
         Some(Color::Gray),
         "Cancel unselected must be Gray fg"
+    );
+    // @step And no "Detach" button is painted anywhere in the dialog
+    assert!(
+        find_text_cell(&painted, "Detach").is_none(),
+        "BUG-205: the 'Detach' option must be gone from the exit dialog, got:\n{painted_str}"
     );
     // @step And the footer reads "← → Navigate | Enter Select | Esc Cancel" in dim text
     assert!(
@@ -370,24 +370,19 @@ async fn no_active_session_esc_dispatches_back_to_board_without_dialog() {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Scenario: Cyclic Left/Right navigation across the three buttons
+// Scenario: Cyclic Left/Right navigation across the two buttons
 // ──────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn cyclic_left_right_navigation_across_three_buttons() {
-    // @step Given the ExitConfirmationDialog is open with Detach focused
+fn cyclic_left_right_navigation_across_two_buttons() {
+    // @step Given the ExitConfirmationDialog is open with Close Session focused
     let mut dialog = ExitConfirmationDialog::new(false);
-    assert_eq!(dialog.selected_choice(), ExitChoice::Detach);
+    assert_eq!(dialog.selected_choice(), ExitChoice::CloseSession);
 
     // @step When I press Left
     let _ = dialog.handle_event(&key(KeyCode::Left, KeyModifiers::NONE));
     // @step Then Cancel is focused
     assert_eq!(dialog.selected_choice(), ExitChoice::Cancel);
-
-    // @step When I press Right
-    let _ = dialog.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    // @step Then Detach is focused
-    assert_eq!(dialog.selected_choice(), ExitChoice::Detach);
 
     // @step When I press Right
     let _ = dialog.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
@@ -398,24 +393,27 @@ fn cyclic_left_right_navigation_across_three_buttons() {
     let _ = dialog.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     // @step Then Cancel is focused
     assert_eq!(dialog.selected_choice(), ExitChoice::Cancel);
-
-    // @step When I press Right
-    let _ = dialog.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    // @step Then Detach is focused
-    assert_eq!(dialog.selected_choice(), ExitChoice::Detach);
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Scenario: Enter on Detach dispatches BackToBoard without destroying the session
+// Scenario: Enter on the pre-selected Close Session destroys the session
+// and returns to Board (BUG-205: Detach was the pre-selected default;
+// it is gone, so Enter commits the close)
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn enter_on_detach_dispatches_back_to_board_without_destroy() {
-    // @step Given the ExitConfirmationDialog is open with Detach focused
+async fn enter_on_preselected_close_session_destroys_the_session_and_returns_to_board() {
+    // @step Given the ExitConfirmationDialog is open with Close Session pre-selected
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app), "dialog must be open");
+    // @step And the current AgentView session is attached to work unit "AUTH-001" in BoardStore
+    app.agent_view_store_mut().set_current_work_unit(
+        Some("AUTH-001".to_string()),
+        Some("implementing".to_string()),
+    );
+    app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
     // @step And the backend records every destroy_session call
     assert_eq!(mock.destroy_session_calls(), 0);
 
@@ -423,24 +421,33 @@ async fn enter_on_detach_dispatches_back_to_board_without_destroy() {
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 
-    // @step Then Action::AgentExitChoice { choice: Detach } is emitted
-    // (verified indirectly: dialog has popped AND BackToBoard occurred)
+    // @step Then Action::AgentExitChoice { choice: CloseSession } is emitted
+    // (verified indirectly: dialog has popped AND the destroy task fired)
     // @step And the ExitConfirmationDialog is removed from the compositor
-    assert!(
-        !dialog_present(&app),
-        "dialog must be popped after Enter on Detach"
+    assert!(!dialog_present(&app), "dialog must be popped after Enter");
+    // @step And the App spawns a backend.destroy_session task for session "s-1"
+    wait_until(
+        || mock.destroy_session_calls() >= 1,
+        "backend.destroy_session to fire",
+    )
+    .await;
+    assert_eq!(mock.last_destroyed_session(), Some(sid("s-1")));
+    // @step And the BoardStore work-unit-to-session attachment for "AUTH-001" is cleared
+    assert_eq!(
+        app.board_store().session_for("AUTH-001"),
+        None,
+        "Close Session must clear the AUTH-001 → s-1 attachment"
     );
-    // @step And Action::BackToBoard is dispatched
     // @step And the navigator switches to the Board view
     assert_eq!(app.navigator().active_view, ViewMode::Board);
-    // @step And the backend records zero destroy_session calls
-    assert_eq!(
-        mock.destroy_session_calls(),
-        0,
-        "Detach must NOT call backend.destroy_session"
+    // @step And the destroyed session is removed from AgentViewStore open_sessions
+    assert!(
+        app.agent_view_store()
+            .open_sessions()
+            .iter()
+            .all(|c| c.id != sid("s-1")),
+        "Close Session must remove s-1 from open_sessions"
     );
-    // @step And the backend session remains alive
-    assert!(mock.last_destroyed_session().is_none());
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -449,7 +456,7 @@ async fn enter_on_detach_dispatches_back_to_board_without_destroy() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn enter_on_close_session_destroys_then_dispatches_back_to_board() {
-    // @step Given the ExitConfirmationDialog is open with Detach focused
+    // @step Given the ExitConfirmationDialog is open with Close Session focused
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And the current AgentView session is attached to work unit "AUTH-001" in BoardStore
     app.agent_view_store_mut().set_current_work_unit(
@@ -469,12 +476,7 @@ async fn enter_on_close_session_destroys_then_dispatches_back_to_board() {
     // @step And the backend records every destroy_session call
     assert_eq!(mock.destroy_session_calls(), 0);
 
-    // @step When I press Right once
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    // @step Then Close Session is focused
-    // (verified indirectly via the Enter-side effect below)
-
-    // @step When I press Enter
+    // @step When I press Enter (Close Session is pre-selected — BUG-205)
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 
@@ -555,10 +557,10 @@ async fn cycling_sessions_in_agent_view_after_close_session_does_not_list_destro
     );
 
     // @step And the ExitConfirmationDialog is open with Close Session focused
+    // (Close Session is pre-selected — BUG-205)
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app));
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
@@ -635,10 +637,10 @@ async fn shift_right_after_close_session_does_not_navigate_back_to_destroyed_ses
     app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
 
     // @step And the ExitConfirmationDialog is open with Close Session focused
+    // (pre-selected since BUG-205)
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app));
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
 
     // @step When I press Enter
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
@@ -690,16 +692,14 @@ async fn shift_right_after_close_session_does_not_navigate_back_to_destroyed_ses
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn enter_on_cancel_removes_dialog_and_stays_on_agentview() {
-    // @step Given the ExitConfirmationDialog is open with Detach focused
+    // @step Given the ExitConfirmationDialog is open with Close Session pre-selected
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app), "dialog must be open");
 
-    // @step When I press Right twice
-    for _ in 0..2 {
-        let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    }
+    // @step When I press Right once
+    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     // @step Then Cancel is focused
     // (verified indirectly via the Enter-side effect below)
 
@@ -732,9 +732,6 @@ async fn esc_inside_dialog_is_equivalent_to_cancel() {
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app));
-    // Advance focus to Close Session.
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
 
     // @step When I press ESC
     let _ = app.handle_event(&esc());
@@ -835,20 +832,22 @@ fn snapshot_dialog_80x24_is_busy_true() {
         painted.contains("The agent is currently running. Choose how to exit."),
         "busy-description must be painted, got:\n{painted}"
     );
-    // @step And the button " Detach " is styled with blue background and white foreground
-    let (dx, dy) = find_text_cell(&buf, " Detach ").expect("' Detach ' must be painted");
-    for off in 0..8 {
-        let cell_style = buf[(dx + off, dy)].style();
+    // @step And the button " Close Session " is pre-selected with blue background and white foreground
+    let (cs_x, cs_y) = find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
+    for off in 0..15 {
+        let cell_style = buf[(cs_x + off, cs_y)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));
         assert_eq!(cell_style.fg, Some(Color::White));
         assert!(cell_style.add_modifier.contains(Modifier::BOLD));
     }
-    // @step And the buttons " Close Session " and " Cancel " are styled in gray
-    let (cs_x, cs_y) =
-        find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
-    assert_eq!(buf[(cs_x + 1, cs_y)].style().fg, Some(Color::Gray));
+    // @step And the button " Cancel " is styled in gray
     let (cx, cy) = find_text_cell(&buf, " Cancel ").expect("' Cancel ' must be painted");
     assert_eq!(buf[(cx + 1, cy)].style().fg, Some(Color::Gray));
+    // @step And no "Detach" button is painted
+    assert!(
+        find_text_cell(&buf, "Detach").is_none(),
+        "BUG-205: 'Detach' must be gone, got:\n{painted}"
+    );
     // @step And the footer reads "← → Navigate | Enter Select | Esc Cancel" in dim text
     assert!(
         painted.contains("← → Navigate | Enter Select | Esc Cancel"),
@@ -891,13 +890,18 @@ fn snapshot_dialog_80x24_is_busy_false() {
         !painted.contains("The agent is currently running"),
         "busy-only text must NOT appear with is_busy=false, got:\n{painted}"
     );
-    // @step And the button " Detach " is styled with blue background and white foreground
-    let (dx, dy) = find_text_cell(&buf, " Detach ").expect("' Detach ' must be painted");
-    for off in 0..8 {
-        let cell_style = buf[(dx + off, dy)].style();
+    // @step And the button " Close Session " is pre-selected with blue background and white foreground
+    let (cs_x, cs_y) = find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
+    for off in 0..15 {
+        let cell_style = buf[(cs_x + off, cs_y)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));
         assert_eq!(cell_style.fg, Some(Color::White));
     }
+    // @step And no "Detach" button is painted
+    assert!(
+        find_text_cell(&buf, "Detach").is_none(),
+        "BUG-205: 'Detach' must be gone, got:\n{painted}"
+    );
     // @step And the footer reads "← → Navigate | Enter Select | Esc Cancel" in dim text
     assert!(
         painted.contains("← → Navigate | Enter Select | Esc Cancel"),
@@ -1082,12 +1086,11 @@ async fn end_to_end_close_session_purges_destroyed_session_from_every_cycle_path
     app.agent_view_store_mut()
         .set_session_status(sid("s-A"), SessionStatus::Idle);
 
-    // ── Stage 2: user presses ESC → dialog opens; Right → highlight
-    //   Close Session; Enter → fire AgentExitChoice(CloseSession). ───────
+    // ── Stage 2: user presses ESC → dialog opens; Enter → fire
+    //   AgentExitChoice(CloseSession) — pre-selected since BUG-205. ──────
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app), "stage 2: dialog must open");
-    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
     let _ = app.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
     drain_pending(&mut app).await;
 

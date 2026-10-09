@@ -25,6 +25,12 @@ Feature: Board actions popup dialog triggered by the u key
   #       M Mux, P Providers, ? Help, Esc Exit).]
   #   4. R4: Up/Down arrows move the selection with wrap-around (Up from row 0 goes to row 7; Down from row 7 goes to row 0); the mouse wheel drives the same movement (MuxConfigDialog R4 parity).
   #   5. R5: Enter on a highlighted row emits the SAME Action the bare board key would emit and closes the dialog: C -> OpenCheckpointsView, F -> OpenChangedFilesView, D -> OpenFoundation, . -> OpenAgentView (with the session target snapshotted at dialog open — the modal blocks board selection while open), / -> OpenWorkUnitSearch, M -> OpenMuxConfigDialog. There is no close-only trigger row (R3).
+  # NOTE (BUG-203): the 'New Agent' R8 substitution described here is SUPERSEDED
+  # for the BOARD surface — the registry mapping is now payload-free (MenuAction
+  # NewAgent → Action::OpenCreateSessionDialog { preselect: None }); the board
+  # 'New Agent' gesture ALWAYS mounts the CreateSessionDialog and never resumes
+  # a session. Shift+Right keeps the cycle/resume semantics. See
+  # spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
   #   6. R6: Enter on the '? Help' row emits a new Action::OpenBoardHelp and closes the dialog; Enter on the 'Esc Exit' row emits a new Action::OpenBoardExitConfirmation and closes the dialog. These two actions are routed by App::dispatch to the SAME push helpers the stage-4 App shortcuts use for '?' (HelpDialog::for_board) and Esc (BoardExitConfirmationDialog) — one shared push helper per dialog, no duplicated push logic (DRY). The board help lines (help_content.rs) gain a 'u' row advertising this dialog ('u Actions').
   #   7. R7: the dialog is a TRUE MODAL (BUG-161 parity with WorkUnitSearchDialog): every key it does not explicitly handle (j/k/h/l, [, ], Enter on the board, Shift+arrows, Ctrl-chords, pastes) is CONSUMED as a no-op so the BoardView behind it stays frozen; no key ever leaks through the Compositor to the board while the dialog is open.
   #   8. R8: the Esc key ALWAYS closes the dialog (standard modal convention) and NEVER triggers the exit confirmation — even when the 'Esc Exit' row is highlighted. The only way to open the exit confirmation from this dialog is an explicit Enter on the 'Esc Exit' row. Likewise the '?' key is blocked by the modal (R7); only Enter on the '? Help' row opens the HelpDialog. This keeps Esc from creating a double-step accidental-quit path (exit confirmation opens with 'Exit' pre-selected).

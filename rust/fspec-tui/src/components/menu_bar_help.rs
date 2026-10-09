@@ -18,15 +18,15 @@
 //! the footer and the true-modal key blocking (BOARD-023 R7/R8) are
 //! unchanged.
 //!
-//! Snapshot semantics (R3): the dialog is constructed with the
-//! selected work unit's `Option<SessionId>` at open time (App's
-//! `handle_open_board_keybinding_dialog`), and Enter on the `.` New
-//! Agent row resolves through `MenuAction::to_action(target)` so the
-//! snapshot substitutes the registry's `None` placeholder. Enter on
-//! ANY registry row emits that entry's Action (resolved via
-//! `MenuAction::to_action`) and closes the dialog — so the registry's
-//! Help/Exit rows execute OpenBoardHelp / OpenBoardExitConfirmation
-//! exactly as before.
+//! Snapshot semantics (R3, re-purposed by BUG-203): the dialog is
+//! payload-free — Enter on the `.` New Agent row resolves through
+//! `MenuAction::to_action` (BUG-199 / BUG-203: the row ALWAYS mounts
+//! the CreateSessionDialog via the shared RPC-060 helper; it never
+//! re-enters / resumes a session — that is the Shift+Right CYCLE
+//! gesture's `OpenAgentView` job). Enter on ANY registry row emits
+//! that entry's Action (resolved via `MenuAction::to_action`) and
+//! closes the dialog — so the registry's Help/Exit rows execute
+//! OpenBoardHelp / OpenBoardExitConfirmation exactly as before.
 //!
 //! Navigation: `↑`/`↓` move the cursor with wrap-around (BOARD-023
 //! R4); the mouse wheel drives the same movement (MuxConfigDialog R4
@@ -50,8 +50,6 @@ use crossterm::event::{Event, KeyCode, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
-
-use codelet_rpc_types::SessionId;
 
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
 use super::dialog_theme_rows::label_description_row;
@@ -89,22 +87,19 @@ pub struct MenuBarHelpDialog {
     id: String,
     /// Cursor: index into the registry rows (0 = `. New Agent`).
     cursor: usize,
-    /// The `.` New Agent session target snapshotted at dialog open
-    /// (R3) — the modal blocks board selection while open, so the
-    /// snapshot stays valid for the dialog's whole lifetime.
-    new_agent_target: Option<SessionId>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
 }
 
 impl MenuBarHelpDialog {
-    /// Construct a fresh dialog. `new_agent_target` is the `Option`
-    /// session target `BoardView::selected_session` produced at open.
-    pub fn new(new_agent_target: Option<SessionId>) -> Self {
+    /// Construct a fresh dialog. BUG-203: the `.` New Agent row is
+    /// payload-free — the registry mapping ALWAYS mounts the
+    /// CreateSessionDialog (the shared RPC-060 helper), so no session
+    /// target is snapshotted at open time.
+    pub fn new() -> Self {
         Self {
             id: MENU_BAR_HELP_DIALOG_ID.to_string(),
             cursor: 0,
-            new_agent_target,
             action_tx: None,
             pending_action: None,
         }
@@ -158,13 +153,11 @@ impl MenuBarHelpDialog {
     }
 
     /// R3: resolve the Enter action for the highlighted row — the
-    /// registry entry's `MenuAction`, with the NewAgent row
-    /// substituting the session target snapshotted at dialog open.
+    /// registry entry's `MenuAction` (payload-free: BUG-203 removed
+    /// the NewAgent session-target substitution — the row ALWAYS
+    /// mounts the CreateSessionDialog, it never re-enters a session).
     fn enter_action(&self) -> Option<Action> {
-        let action = registry_actions()
-            .get(self.cursor)?
-            .to_action(self.new_agent_target.clone());
-        Some(action)
+        Some(registry_actions().get(self.cursor)?.to_action())
     }
 
     fn enter(&mut self) -> EventResult {
@@ -176,6 +169,12 @@ impl MenuBarHelpDialog {
 
     fn cancel(&self) -> EventResult {
         EventResult::Consumed(Some(self.remove_callback()))
+    }
+}
+
+impl Default for MenuBarHelpDialog {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -285,7 +284,7 @@ mod tests {
 
     #[test]
     fn new_defaults_cursor_to_first_registry_row() {
-        let d = MenuBarHelpDialog::new(None);
+        let d = MenuBarHelpDialog::new();
         // R2: the stable BOARD-023 compositor id is kept unchanged.
         assert_eq!(d.id(), MENU_BAR_HELP_DIALOG_ID);
         assert_eq!(d.id(), "board-actions-dialog");
@@ -298,7 +297,7 @@ mod tests {
 
     #[test]
     fn up_from_first_row_wraps_to_last_and_down_wraps_back() {
-        let mut d = MenuBarHelpDialog::new(None);
+        let mut d = MenuBarHelpDialog::new();
         let _ = d.handle_event(&key(KeyCode::Up));
         assert_eq!(d.cursor(), 9);
         let _ = d.handle_event(&key(KeyCode::Down));
@@ -306,22 +305,24 @@ mod tests {
     }
 
     #[test]
-    fn enter_on_row_zero_emits_open_agent_view_with_the_snapshot() {
-        let sid = SessionId::new("s-42");
-        let mut d = MenuBarHelpDialog::new(Some(sid.clone()));
+    fn enter_on_row_zero_emits_open_create_session_dialog() {
+        // BUG-203: the `.` New Agent row is payload-free — it ALWAYS
+        // mounts the CreateSessionDialog (BUG-199 agent-bar parity),
+        // it never re-enters / resumes a session.
+        let mut d = MenuBarHelpDialog::new();
         let _ = d.handle_event(&key(KeyCode::Enter));
         assert!(
             matches!(
                 d.take_pending_action(),
-                Some(Action::OpenAgentView(Some(s))) if s == sid
+                Some(Action::OpenCreateSessionDialog { preselect: None })
             ),
-            "row 0 (. New Agent) must emit OpenAgentView with the open-time snapshot"
+            "row 0 (. New Agent) must emit OpenCreateSessionDialog {{ preselect: None }}"
         );
     }
 
     #[test]
     fn enter_on_checkpoints_row_emits_open_checkpoints_view() {
-        let mut d = MenuBarHelpDialog::new(None);
+        let mut d = MenuBarHelpDialog::new();
         for _ in 0..5 {
             let _ = d.handle_event(&key(KeyCode::Down)); // cursor 0 → 5 (C Checkpoints, Tools)
         }
@@ -334,7 +335,7 @@ mod tests {
 
     #[test]
     fn enter_on_help_and_exit_rows_emit_the_new_variants() {
-        let mut d = MenuBarHelpDialog::new(None);
+        let mut d = MenuBarHelpDialog::new();
         for _ in 0..8 {
             let _ = d.handle_event(&key(KeyCode::Down)); // cursor → 8 (? Help)
         }
@@ -343,7 +344,7 @@ mod tests {
             d.take_pending_action(),
             Some(Action::OpenBoardHelp)
         ));
-        let mut d2 = MenuBarHelpDialog::new(None);
+        let mut d2 = MenuBarHelpDialog::new();
         for _ in 0..9 {
             let _ = d2.handle_event(&key(KeyCode::Down)); // cursor → 9 (Esc Exit)
         }
@@ -356,7 +357,7 @@ mod tests {
 
     #[test]
     fn u_and_unhandled_keys_are_consumed_no_op() {
-        let mut d = MenuBarHelpDialog::new(None);
+        let mut d = MenuBarHelpDialog::new();
         assert!(d.handle_event(&key(KeyCode::Char('u'))).is_consumed());
         assert!(d.handle_event(&key(KeyCode::Char('U'))).is_consumed());
         assert!(d.handle_event(&key(KeyCode::Char('j'))).is_consumed());
@@ -368,14 +369,14 @@ mod tests {
 
     #[test]
     fn esc_closes_without_emitting_any_action() {
-        let mut d = MenuBarHelpDialog::new(None);
+        let mut d = MenuBarHelpDialog::new();
         assert!(d.handle_event(&key(KeyCode::Esc)).is_consumed());
         assert!(d.take_pending_action().is_none());
     }
 
     #[test]
     fn menu_bar_help_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let mut dialog = MenuBarHelpDialog::new(None);
+        let mut dialog = MenuBarHelpDialog::new();
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
         terminal

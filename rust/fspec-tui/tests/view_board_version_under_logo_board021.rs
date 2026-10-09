@@ -216,7 +216,7 @@ fn the_version_text_never_overflows_the_12_cell_logo_block() {
     // (MENU-002 R1: the 'u Actions' hint became the live bar — Zone A
     // still starts right after the 12-cell logo block; MENU-008: the
     // first item is now 'Kanban'.)
-    let hint_x = find_cell(&row4, "Kanban").expect("menu bar 'Kanban' item must be present");
+    let hint_x = find_cell(&row4, "[ Kanban ]").expect("menu bar 'Kanban' item must be present");
     assert_eq!(
         hint_x, 15,
         "the bar must start right after the 12-cell logo block + 1-cell bar padding (x=15); got x={hint_x}"

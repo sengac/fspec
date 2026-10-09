@@ -1,33 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "Enter on the New Agent row substitutes the session snapshot",
-      "testMappings": [
-        {
-          "file": "rust/fspec-tui/tests/menu005_menu_bar_help.rs",
-          "lines": "287-320",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_board_keybinding.rs",
-              "lines": [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Enter on the A Attachments row fires the attachment picker",
       "testMappings": [
         {
@@ -685,12 +658,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Enter on the New Agent row substitutes the session snapshot (superseded by BUG-203 — the row now mounts the CreateSessionDialog)",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 12,
-    "coveredScenarios": 12,
-    "coveragePercent": 100,
+    "coveredScenarios": 11,
+    "coveragePercent": 92,
     "testFiles": [
       "rust/fspec-tui/tests/menu005_menu_bar_help.rs"
     ],

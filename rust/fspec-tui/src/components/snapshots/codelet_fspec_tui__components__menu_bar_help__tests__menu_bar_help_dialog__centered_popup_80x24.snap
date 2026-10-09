@@ -1,6 +1,6 @@
 ---
 source: fspec-tui/src/components/menu_bar_help.rs
-assertion_line: 395
+assertion_line: 392
 expression: rows
 ---
 - "                                                                                "
@@ -10,7 +10,7 @@ expression: rows
 - "     │                                                                    │     "
 - "     │ Menu bar                                                           │     "
 - "     │                                                                    │     "
-- "     │ ▸ . New Agent - Open/start an agent for the focused unit           │     "
+- "     │ ▸ . New Agent - Always start a new agent (never resumes)           │     "
 - "     │   / Search - Search work units                                     │     "
 - "     │   D FOUNDATION.md - Open FOUNDATION.md in the browser              │     "
 - "     │   A Attachments - Open the attachment picker for the selected unit │     "

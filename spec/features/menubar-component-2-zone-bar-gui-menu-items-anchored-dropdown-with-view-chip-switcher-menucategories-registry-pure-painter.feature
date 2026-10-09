@@ -22,6 +22,12 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
   #   6. R6: When Zone B has no chips AND is in chips-only (non-mux) mode, the separator '|' and Zone B are omitted entirely (the row is just the menu items). When a chip list exists but width is tight, the truncation ladder runs in order: (1) drop WU id suffixes, (2) fold chips beyond the 3rd into '+n', (3) drop non-active view labels (mux), (4) absolute minimum 'Kanban Tools Settings Help' (MENU-008). Every step must keep the painted row within area.width (a proptest pins this).
   #   7. R7: The MenuDropdown renders a rounded-border panel anchored directly under the owning menu item: x = item_x, y = bar_y + 1, width = max(24, widest_row + 4), height = entries + 2 (1 border row each side, NO footer, NO title row — GUI menu parity). Rows paint a 4-cell dim key-hint column, then the label (fg), then a dim description truncated with an ellipsis. The cursor row is inverse-video (bg Cyan/fg Black, bold). The panel left-clamps so it never paints past the terminal's right edge, and bottom-clips with a dim ellipsis row when the terminal is too short.
   #   8. R8: The dropdown row builder reuses the MenuCategories registry (R2) so the dropdown, the 'u' help dialog (MENU-005), and the bare-key arms can never drift. The 'New Agent' entry carries Action::OpenAgentView(None) as a placeholder; the caller (dialog/dropdown) substitutes the session target snapshot at open time (BOARD-023 R5 parity).
+  # NOTE (BUG-203): the 'New Agent' R8 substitution described here is SUPERSEDED
+  # for the BOARD surface — the registry mapping is now payload-free (MenuAction
+  # NewAgent → Action::OpenCreateSessionDialog { preselect: None }); the board
+  # 'New Agent' gesture ALWAYS mounts the CreateSessionDialog and never resumes
+  # a session. Shift+Right keeps the cycle/resume semantics. See
+  # spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
   #   9. Omit Cleared sessions entirely (no chip) — they are terminal-state sessions that no longer participate in the workflow; the chip list is built from open_sessions() which never includes cleared ones.
   #   10. Yes — include 'A' Attachments as a Kanban entry (OpenAttachmentPicker). The bare-key arm already exists and the Kanban menu should list every board workflow shortcut; the old SHORTCUTS table simply predated it.
   #
@@ -153,10 +159,10 @@ Feature: MenuBar component — 2-zone bar (GUI menu items + anchored dropdown) w
 
   @menu-geometry
   Scenario: Tight width drops WU ids before folding chips
-    Given a MenuSnapshot with 2 open sessions each bound to a long work-unit id
-    When the bar is rendered into a 58-column area
+    Given a MenuSnapshot with 4 open sessions each bound to a long work-unit id
+    When the bar is rendered into a 88-column area
     Then no chip shows a work-unit id suffix
-    And the chips still paint
+    And the chips still paint (MENU-011: bracketed, none folded)
 
   @menu-geometry
   Scenario: Extremely tight width degrades to the absolute minimum

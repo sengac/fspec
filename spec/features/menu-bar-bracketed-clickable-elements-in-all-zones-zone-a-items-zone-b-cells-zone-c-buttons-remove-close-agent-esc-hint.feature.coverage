@@ -1,0 +1,531 @@
+{
+  "scenarios": [
+    {
+      "name": "The board bar paints its Zone A items bracketed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "311-331",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar paints its \"Board View\" item bracketed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "333-348",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A session chip paints bracketed with its work-unit id when width allows",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "350-367",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The truncation ladder runs on bracketed cells",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "369-431",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mux pane view labels paint bracketed",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "433-470",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board bar paints a right-aligned \"[ New Agent ]\" button",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "472-505",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The agent bar paints \"[ New Agent ]\" then \"[ Close Agent ]\" right-aligned without the [esc] hint",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "507-545",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "With no open sessions the agent bar still shows both bracketed Zone C buttons",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "809-833",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the agent's \"[ Close Agent ]\" still shows the same exit confirmation as Esc",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "547-594",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_render.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A left click on the board's \"[ New Agent ]\" button activates it",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "596-632",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/board/menu_mouse.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A focused bracketed element's inverse-video highlight covers the brackets",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "634-680",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/paint.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The bracketed row never exceeds the area width (proptest)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "682-730",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/layout.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The dropdown rows and the \"u\" help dialog keep their plain registry labels",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs",
+          "lines": "733-806",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/menu_bar/dropdown_paint.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/menu011_menu_bar_brackets.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/menu_bar/paint.rs",
+      "rust/fspec-tui/src/components/menu_bar/layout.rs",
+      "rust/fspec-tui/src/views/board/menu_snapshot.rs",
+      "rust/fspec-tui/src/views/agent/menu_render.rs",
+      "rust/fspec-tui/src/views/board/menu_mouse.rs",
+      "rust/fspec-tui/src/components/menu_bar/dropdown_paint.rs"
+    ],
+    "totalLinesCovered": 811
+  }
+}

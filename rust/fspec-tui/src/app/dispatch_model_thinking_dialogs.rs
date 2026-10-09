@@ -279,7 +279,6 @@ impl App {
             Action::WorkUnitAttached(s, ctx) => {
                 self.handle_work_unit_attached(s.clone(), ctx.clone());
             }
-            Action::WorkUnitDetached(s) => self.handle_work_unit_detached(s.clone()),
             // RPC-051 Esc cascade — helper in dispatch_esc_cascade.rs.
             Action::AgentEscPressed => self.handle_agent_esc_pressed(),
             // RPC-098 ESC exit-confirmation dispatcher.

@@ -29,6 +29,13 @@ Feature: Menu bar Zone C — right-aligned New Agent / Close Agent buttons
   current session; "Close Agent" is the Esc gesture (the AgentEscPressed
   cascade) and its label carries the trailing "[esc]" hint. The board
   surface is unchanged.
+
+  BUG-204 supersession (the "Close Agent" button semantics were refined in
+  spec/features/bug204-close-agent-button-always-shows-exit-confirmation-dialog.feature):
+  the agent bar's "Close Agent" button ALWAYS mounts the "Exit Session?"
+  dialog (RPC-098) — it no longer runs the AgentEscPressed cascade's
+  interrupt / draft-clear branches (those belong to the physical Esc key
+  only). The board surface is unchanged.
   """
 
   # ========================================
@@ -43,9 +50,16 @@ Feature: Menu bar Zone C — right-aligned New Agent / Close Agent buttons
   #      C buttons.
   #   2. R2: Both buttons reuse EXISTING bus actions — the board's New
   #      Agent emits Action::OpenAgentView(target) (the '.'-key R8
+  # NOTE (BUG-203): the 'New Agent' R8 substitution described here is SUPERSEDED
+  # for the BOARD surface — the registry mapping is now payload-free (MenuAction
+  # NewAgent → Action::OpenCreateSessionDialog { preselect: None }); the board
+  # 'New Agent' gesture ALWAYS mounts the CreateSessionDialog and never resumes
+  # a session. Shift+Right keeps the cycle/resume semantics. See
+  # spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
   #      substitution); the agent's buttons (BUG-199 supersession) — New
   #      Agent mounts the CreateSessionDialog (start a NEW agent) and
-  #      "Close Agent [esc]" runs the Action::AgentEscPressed cascade.
+  #      "Close Agent [esc]" ALWAYS mounts the "Exit Session?" dialog
+  #      (BUG-204 supersession — no longer the AgentEscPressed cascade).
   #   3. R3: Zone C buttons join the unified ring focus — ring order is
   #      items -> Zone B -> Zone C -> wrap; Left from the first item wraps
   #      to the last Zone C button; Right from the last chip lands on the
@@ -123,9 +137,12 @@ Feature: Menu bar Zone C — right-aligned New Agent / Close Agent buttons
 
   @mouse-events
   Scenario: A left click on the board's "New Agent" button activates it
+    # NOTE (BUG-203 supersedes this scenario's Then): the board 'New Agent'
+    # gesture now ALWAYS mounts the CreateSessionDialog (payload-free registry
+    # mapping) — it never dispatches OpenAgentView with a substituted target.
     Given the board bar is painted with the "New Agent" Zone C button
     When I left-click the "New Agent" button
-    Then OpenAgentView dispatches with the selected unit's session target (the "."-key R8 substitution)
+    Then the CreateSessionDialog mounts over the board (BUG-203: the button ALWAYS starts a new agent — the OpenAgentView R8 substitution is gone)
     And the board bar's ring focus clears
 
   @keyboard-navigation

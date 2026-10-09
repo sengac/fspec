@@ -15,6 +15,12 @@ Feature: Board menu bar — reorganize Zone A into Kanban / Tools / Settings cat
   #
   # BUSINESS RULES:
   #   1. R2: The 'Kanban' category lists the work-unit workflow entries in order: '. New Agent' (OpenAgentView), '/ Search' (OpenWorkUnitSearch), 'D FOUNDATION.md' (OpenFoundation), 'A Attachments' (OpenAttachmentPicker).
+  # NOTE (BUG-203): the 'New Agent' R8 substitution described here is SUPERSEDED
+  # for the BOARD surface — the registry mapping is now payload-free (MenuAction
+  # NewAgent → Action::OpenCreateSessionDialog { preselect: None }); the board
+  # 'New Agent' gesture ALWAYS mounts the CreateSessionDialog and never resumes
+  # a session. Shift+Right keeps the cycle/resume semantics. See
+  # spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
   #   2. R1: The MenuCategories registry (components/menu_bar/items.rs) defines four categories in fixed order: 'Kanban', 'Tools', 'Settings', 'Help'. The 'Actions' label is renamed to 'Kanban' (id 'kanban'). The registry stays the single source of truth for the bar, dropdowns, 'u' help dialog and bare-key docs.
   #   3. R4: The 'Settings' category lists the configuration entries in order: 'M Mux' (OpenMuxConfigDialog), 'P Providers' (OpenProviderSettingsView). The 'P' bare-key arm is NEW — added to views/board/keys.rs modifier-free-only (Ctrl+P falls through), consistent with the a/c/f/d/m guards; it emits OpenProviderSettingsView from the board and from the focused Board pane in mux mode (Board-pane key routing parity).
   #   4. R3: The 'Tools' category lists the git tools in order: 'F Changed Files' (OpenChangedFilesView), 'C Checkpoints' (OpenCheckpointsView).

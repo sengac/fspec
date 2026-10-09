@@ -14,18 +14,20 @@
 //!
 //! Geometry (120x24, single Board view):
 //!   y1-4  4-row header (row 0 `Checkpoints:…` at y1, the 2-zone menu
-//!         bar at y4 — `bar_row(buf)`), "Kanban" item x15, "Help" x37.
+//!         bar at y4 — `bar_row(buf)`), "[ Kanban ]" item x15,
+//!         "[ Help ]" x49 (MENU-011: bracketed Zone A items).
 //!   The open dropdown's panel anchors at (item_x, bar+1): the Kanban
 //!   panel is x15..56 (width 42), y5..y10 (6 rows: 4 entries + 2
 //!   border rows) — entry rows y6..y9, top border row y5, bottom
 //!   border row y10.
 //!
 //! Geometry (240x24, mux active, bar present):
-//!   y0    mux menu bar: "Kanban" x1-6, "Tools" x8-12, "Settings"
-//!         x14-21, "Help" x23-26 (1-cell bar padding — content x1+).
+//!   y0    mux menu bar (MENU-011: the Zone A items paint BRACKETED):
+//!         "[ Kanban ]" x1-10, "[ Tools ]" x12-20, "[ Settings ]"
+//!         x22-33, "[ Help ]" x35-42 (1-cell bar padding — content x1+).
 //!   The open dropdown's panel anchors one row below the bar: the
 //!   Kanban panel is x1..42, y1..y6 (entry rows y2..y5, top border y1);
-//!   the Settings panel (2 entries, min width 24) is x14..37, y1..y4
+//!   the Settings panel (2 entries, min width 24) is x22..45, y1..y4
 //!   (entry rows y2..y3).
 //!
 //! Observation points:
@@ -311,16 +313,17 @@ async fn scenario_clicking_a_dropdown_entry_row_executes_that_entry() {
     app.handle_event(&click(click_x, new_agent_y));
     drain_pending(&mut app).await;
 
-    // @step Then the active view is the Agent view showing that session
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "a click on the 'New Agent' row must execute it (OpenAgentView on the current session s-1)"
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: the
+    // 'New Agent' row ALWAYS starts a new agent — the pre-BUG-203 R8
+    // substitution, which flipped to the Agent view on session s-1, is gone)
+    assert!(
+        app.compositor().contains(CREATE_SESSION_DIALOG_ID),
+        "a click on the 'New Agent' row must mount the CreateSessionDialog (BUG-199 parity)"
     );
     assert_eq!(
-        app.current_session(),
-        Some(SessionId::new("s-1")),
-        "the flipped view must host session s-1"
+        app.active_view(),
+        ViewMode::Board,
+        "the user stays on the board until the dialog is confirmed (RPC-097 reopen #1)"
     );
 
     // @step And the dropdown closes and the bar highlight clears
@@ -361,17 +364,19 @@ async fn scenario_clicking_a_non_cursor_dropdown_row_executes_the_clicked_row() 
     app.handle_event(&click(16, new_agent_y));
     drain_pending(&mut app).await;
 
-    // @step Then the active view is the Agent view showing the session that was current before the click
-    // The current session is s-2 (the last appended session).
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
+    // @step Then the CreateSessionDialog mounts over the board (BUG-203: a
+    // click on a NON-cursor row executes THAT row — and the 'New Agent' row
+    // now ALWAYS mounts the dialog; the pre-BUG-203 R8 substitution, which
+    // flipped to the Agent view on the session current before the click,
+    // is gone)
+    assert!(
+        app.compositor().contains(CREATE_SESSION_DIALOG_ID),
         "a click on a NON-cursor row must execute THAT row (GUI parity: click selects + confirms)"
     );
     assert_eq!(
-        app.current_session(),
-        Some(SessionId::new("s-2")),
-        "the executed row must target the session that was current before the click"
+        app.active_view(),
+        ViewMode::Board,
+        "the user stays on the board until the dialog is confirmed"
     );
 
     // @step And the dropdown closes and the bar highlight clears
@@ -393,8 +398,9 @@ async fn scenario_clicking_the_help_dropdown_exit_row_opens_the_exit_confirmatio
     let buf = render_app(&mut app, 120, 24);
     let exit_y = dropdown_row_y(&buf, "Exit");
     // Click inside the Help panel's inner area (the Help item sits at
-    // x37, so the panel starts at x37 — click x38).
-    let click_x = 38u16;
+    // x49 — MENU-011 moved it right to the bracketed "[ Help ]" — so
+    // the panel starts at x49; click x50).
+    let click_x = 50u16;
 
     // @step When I click the 'Exit' row in the open dropdown
     app.handle_event(&click(click_x, exit_y));
@@ -544,16 +550,17 @@ async fn scenario_clicking_a_mux_dropdown_row_executes_that_entry() {
     // The panel must have painted (the click arm hit-tests against the
     // cached panel rect from this frame).
     let buf = render_app(&mut app, 240, 24);
-    // The Settings item sits at x14 (1-cell bar padding), so the panel
-    // spans x14..37 (min width 24): click the inner area (x15) of the
-    // 'Mux' entry row.
+    // The Settings item sits at x22 (MENU-011: the bracketed Zone A
+    // items — "[ Kanban ]" x1-10, "[ Tools ]" x12-20, "[ Settings ]"
+    // x22-33 — so the panel starts at x22, min width 24 → x22..45):
+    // click the inner area (x23) of the 'Mux' entry row.
     let mux_row_y = mux_dropdown_row_y(&buf, "Mux");
     assert!(
         row_text(&buf, mux_row_y).contains("Mux"),
         "the 'Mux' entry row must be painted:\n{}",
         row_text(&buf, mux_row_y)
     );
-    let click_x = 15u16;
+    let click_x = 23u16;
 
     // @step When I click the 'Mux' row in the open dropdown
     app.handle_event(&click(click_x, mux_row_y));

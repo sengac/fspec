@@ -12,6 +12,17 @@ Feature: Port AgentView ESC exit confirmation dialog (Detach/Close Session/Cance
   Modify rust/fspec-tui/src/app/dispatch_esc_cascade.rs L7 fall-through (lines 55-65). Instead of `Action::BackToBoard`, push an ExitConfirmationDialog::new(is_busy).with_action_tx(self.action_tx.clone()) onto self.compositor. Guard with `if !self.compositor.contains(EXIT_CONFIRMATION_DIALOG_ID)` to prevent double-push.
   New file: rust/fspec-tui/src/app/dispatch_agent_exit.rs — impl App { fn handle_agent_exit_choice(&mut self, choice: ExitChoice) }. Cancel = no-op. Detach = send Action::BackToBoard. CloseSession = tokio::spawn(backend.destroy_session(id)) pushed onto self.pending_tasks, then send Action::BackToBoard. Wire in dispatch_model_thinking_dialogs.rs alongside the other Agent* actions: Action::AgentExitChoice { choice } => self.handle_agent_exit_choice(choice).
   Test plan: (a) component unit tests in components/exit_confirmation_dialog.rs covering priority, id, default selection, cyclic left/right, Enter on each option emits correct Action::AgentExitChoice, ESC emits Cancel; (b) two insta snapshot tests on 80x24 TestBackend (is_busy=true and is_busy=false); (c) integration test tests/agentview_esc_exit_confirmation_rpc098.rs covering App-level cascade routing — verifies L7 pushes dialog, no-session-skips-dialog, Compacting routes to L4 interrupt instead, no-double-push idempotence, and the three choice outcomes (Detach→BackToBoard, CloseSession→destroy_session+BackToBoard, Cancel→stays).
+
+  SUPERSESSION NOTE (BUG-205): the Detach option was removed from the
+  'Exit Session?' dialog — it is now the two-button
+  [Close Session, Cancel] dialog with Close Session pre-selected. The
+  Detach-specific scenarios below (e.g. 'Idle session ESC opens dialog
+  ... with Detach focused', 'Enter on Detach dispatches BackToBoard
+  without destroying the session', 'Cyclic Left/Right navigation across
+  the three buttons') are superseded by
+  spec/features/exit-session-dialog-two-button-options.feature, which is
+  the live acceptance-criteria source. This @done feature is retained as
+  a historical record of the original RPC-098 port.
   """
 
   # ========================================

@@ -422,9 +422,10 @@ async fn scenario_board_returning_to_the_board_after_a_chip_activation_shows_no_
         "the ring must be on chip #1 (a 1-based chip #1 = ring index 0)"
     );
     let buf = render_app(&mut app, 120, 24);
-    // The first chip's cell: Zone B starts after the items + separator
-    // (x45 — see the file header's geometry notes).
-    let chip1_x = 45u16;
+    // The first chip's cell: Zone B starts after the bracketed items +
+    // separator (MENU-011: `[ #1 ● ]` x61 — the `menu002_board_surface`
+    // CHIP1_X geometry).
+    let chip1_x = 61u16;
 
     // @step When I click chip #1 to open its Agent view and then return to the board
     // Click the chip (chip activation flips to the Agent view on

@@ -1,10 +1,14 @@
 //! RPC-395 — Board '.' (period) key starts a new agent.
 //!
 //! Feature: spec/features/board-key-starts-new-agent.feature
+//!         spec/features/board-new-agent-gesture-prompts-create-session-dialog.feature
 //!
 //! Drives `BoardView::handle_event` with a modifier-free `.` key press and
-//! asserts it emits `Action::OpenAgentView(...)` mirroring the Shift+Right
-//! handler, plus verifies the header hint row now reads ". New Agent".
+//! asserts it emits `Action::OpenCreateSessionDialog { preselect: None }`
+//! (BUG-203 supersedes the RPC-395 mirror-of-Shift+Right `OpenAgentView`
+//! emission: the '.' key is a 'New Agent' gesture that ALWAYS mounts the
+//! CreateSessionDialog — session resume is the Shift+Right CYCLE gesture's
+//! job), plus verifies the header hint row now reads ". New Agent".
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -65,9 +69,9 @@ fn join_buffer(buf: &Buffer) -> String {
     joined
 }
 
-/// Scenario: Pressing '.' with a selected work unit opens the AgentView for its session
+/// Scenario: Pressing '.' with a selected work unit mounts the CreateSessionDialog (BUG-203)
 #[test]
-fn pressing_period_with_a_selected_work_unit_opens_the_agent_view_for_its_session() {
+fn pressing_period_with_a_selected_work_unit_mounts_the_create_session_dialog() {
     // @step Given a BoardStore containing AUTH-001 in backlog with the focused column "backlog" and selected index 0
     let mut store = BoardStore::default();
     store.replace_work_units(vec![make_unit("AUTH-001", "backlog", "story")]);
@@ -79,7 +83,7 @@ fn pressing_period_with_a_selected_work_unit_opens_the_agent_view_for_its_sessio
         &Event::Key(KeyEvent::new(KeyCode::Char('.'), KeyModifiers::empty())),
         &store,
     );
-    // @step Then BoardView emits an Action::OpenAgentView for the selected work unit's session
+    // @step Then BoardView emits OpenCreateSessionDialog { preselect: None } (BUG-203: it never resumes/attaches the selected unit's session)
     let mut actions: Vec<Action> = Vec::new();
     while let Ok(a) = rx.try_recv() {
         actions.push(a);
@@ -90,16 +94,18 @@ fn pressing_period_with_a_selected_work_unit_opens_the_agent_view_for_its_sessio
         "expected exactly one action, got {actions:?}"
     );
     assert!(
-        matches!(actions[0], Action::OpenAgentView(_)),
-        "expected Action::OpenAgentView, got {:?}",
+        matches!(
+            actions[0],
+            Action::OpenCreateSessionDialog { preselect: None }
+        ),
+        "expected OpenCreateSessionDialog {{ preselect: None }}, got {:?}",
         actions[0]
     );
 }
 
-/// Scenario: Pressing '.' with no work unit selected still opens the AgentView with no attached session
+/// Scenario: Pressing '.' with no work unit selected still mounts the CreateSessionDialog
 #[test]
-fn pressing_period_with_no_work_unit_selected_still_opens_the_agent_view_with_no_attached_session()
-{
+fn pressing_period_with_no_work_unit_selected_still_mounts_the_create_session_dialog() {
     // @step Given an empty BoardStore with no work units
     let store = BoardStore::default();
     let (view, mut rx) = fresh();
@@ -108,7 +114,7 @@ fn pressing_period_with_no_work_unit_selected_still_opens_the_agent_view_with_no
         &Event::Key(KeyEvent::new(KeyCode::Char('.'), KeyModifiers::empty())),
         &store,
     );
-    // @step Then BoardView emits an Action::OpenAgentView with no attached session
+    // @step Then BoardView emits OpenCreateSessionDialog { preselect: None }
     let mut actions: Vec<Action> = Vec::new();
     while let Ok(a) = rx.try_recv() {
         actions.push(a);
@@ -119,8 +125,11 @@ fn pressing_period_with_no_work_unit_selected_still_opens_the_agent_view_with_no
         "expected exactly one action, got {actions:?}"
     );
     assert!(
-        matches!(actions[0], Action::OpenAgentView(None)),
-        "expected Action::OpenAgentView(None), got {:?}",
+        matches!(
+            actions[0],
+            Action::OpenCreateSessionDialog { preselect: None }
+        ),
+        "expected OpenCreateSessionDialog {{ preselect: None }}, got {:?}",
         actions[0]
     );
 }

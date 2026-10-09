@@ -3,7 +3,7 @@
 //!
 //! Feature: spec/features/slash-command-detach-source-shape.feature
 //!
-//! Pins the file layout invariants for the new RPC-050 wiring:
+//! Pins the file layout invariants for the RPC-050 wiring:
 //!   * No file under `rust/fspec-tui/src/` matches "codelet_napi"
 //!     (post-RPC-002 invariant).
 //!   * Every file under `rust/fspec-tui/src/app/`,
@@ -14,8 +14,12 @@
 //!     300 lines of code.
 //!   * `rust/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less
 //!     than 300 lines of code.
-//!   * `components::Action` declares the three new RPC-050 variants.
-//!   * `dispatch_work_unit_binding.rs` declares the four RPC-050 helpers.
+//!   * `components::Action` declares the RPC-050 attach variants.
+//!   * `dispatch_work_unit_binding.rs` declares the RPC-050 attach helpers.
+//!
+//! BUG-205: the `/detach` command was removed, so the invariants now pin
+//! the ABSENCE of `WorkUnitDetached(` and `handle_slash_detach` /
+//! `handle_work_unit_detached` from the source.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -154,9 +158,39 @@ fn action_enum_declares_rpc050_variants() {
         "components/mod.rs must declare Action::WorkUnitAttached(SessionId, WorkUnitContext) variant",
     );
 
-    // @step And the file declares "WorkUnitDetached(" as an Action variant
+    // @step And (BUG-205) the file declares NO "WorkUnitDetached(" Action variant
     assert!(
-        body.contains("WorkUnitDetached("),
-        "components/mod.rs must declare Action::WorkUnitDetached(SessionId) variant",
+        !body.contains("WorkUnitDetached("),
+        "components/mod.rs must NOT declare Action::WorkUnitDetached after BUG-205 removed /detach",
+    );
+}
+
+/// Scenario: dispatch_work_unit_binding.rs declares the RPC-050 attach
+/// helpers (BUG-205: the detach helpers are gone)
+#[test]
+fn dispatch_work_unit_binding_declares_attach_helpers_and_no_detach_helpers() {
+    // @step Given rust/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
+    let path = fspec_tui_src().join("app").join("dispatch_work_unit_binding.rs");
+    let body = read_raw(&path);
+
+    // @step Then the file declares "handle_attach_work_unit_to_session"
+    assert!(
+        body.contains("handle_attach_work_unit_to_session"),
+        "must declare the attach entry helper",
+    );
+    // @step And the file declares "handle_work_unit_attached"
+    assert!(
+        body.contains("handle_work_unit_attached"),
+        "must declare the attach Ok-branch fold helper",
+    );
+    // @step And (BUG-205) the file declares NO "handle_slash_detach"
+    assert!(
+        !body.contains("handle_slash_detach"),
+        "BUG-205: handle_slash_detach must be removed with the /detach command",
+    );
+    // @step And (BUG-205) the file declares NO "handle_work_unit_detached"
+    assert!(
+        !body.contains("handle_work_unit_detached"),
+        "BUG-205: handle_work_unit_detached must be removed with the /detach command",
     );
 }

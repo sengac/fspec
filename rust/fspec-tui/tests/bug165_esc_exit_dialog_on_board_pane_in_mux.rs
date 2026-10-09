@@ -16,8 +16,8 @@
 //! Expected: Esc while the Board pane is focused in mux mode pushes the
 //! same BoardExitConfirmationDialog as the single Board view (R9 —
 //! dialogs overlay the mux). Esc on a focused AGENT pane keeps the
-//! existing agent exit-confirmation cascade (Detach / Close Session /
-//! Cancel) — regression guard.
+//! existing agent exit-confirmation cascade (Close Session /
+//! Cancel — BUG-205 removed Detach) — regression guard.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -224,7 +224,7 @@ async fn pressing_esc_on_the_agent_pane_in_mux_mode_with_an_open_agent_still_sho
     // @step When I press the Esc key
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
-    // @step Then the agent exit confirmation dialog (Detach / Close Session / Cancel) is shown
+    // @step Then the agent exit confirmation dialog (Close Session / Cancel) is shown
     assert!(
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "ESC on the focused agent pane must open the agent exit confirmation dialog"

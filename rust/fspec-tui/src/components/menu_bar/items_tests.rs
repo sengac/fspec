@@ -5,8 +5,6 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_rpc_types::SessionId;
-
 use super::{MenuAction, CATEGORIES, HELP, KANBAN, SETTINGS, TOOLS};
 use crate::components::Action;
 
@@ -85,49 +83,56 @@ fn every_entry_has_a_non_empty_key_label_and_description() {
 fn every_action_maps_to_an_existing_bus_variant() {
     // @step And each entry's action matches the bare board key (OpenAgentView, OpenWorkUnitSearch, OpenFoundation, OpenAttachmentPicker)
     // @step And every action resolves to an existing Action variant
-    let target = Some(SessionId::new("s-1"));
+    // BUG-199 / BUG-203: the registry mapping is payload-free — the
+    // 'New Agent' row ALWAYS mounts the CreateSessionDialog (the
+    // shared RPC-060 helper), never a session resume.
     assert!(matches!(
-        MenuAction::NewAgent.to_action(target),
-        Action::OpenAgentView(Some(_))
+        MenuAction::NewAgent.to_action(),
+        Action::OpenCreateSessionDialog { preselect: None }
     ));
     assert!(matches!(
-        MenuAction::NewAgent.to_action(None),
-        Action::OpenAgentView(None)
-    ));
-    assert!(matches!(
-        MenuAction::Search.to_action(None),
+        MenuAction::Search.to_action(),
         Action::OpenWorkUnitSearch
     ));
     assert!(matches!(
-        MenuAction::Attachments.to_action(None),
+        MenuAction::Attachments.to_action(),
         Action::OpenAttachmentPicker
     ));
     assert!(matches!(
-        MenuAction::Checkpoints.to_action(None),
+        MenuAction::Checkpoints.to_action(),
         Action::OpenCheckpointsView
     ));
     assert!(matches!(
-        MenuAction::ChangedFiles.to_action(None),
+        MenuAction::ChangedFiles.to_action(),
         Action::OpenChangedFilesView
     ));
     assert!(matches!(
-        MenuAction::Foundation.to_action(None),
+        MenuAction::Foundation.to_action(),
         Action::OpenFoundation
     ));
     assert!(matches!(
-        MenuAction::Mux.to_action(None),
+        MenuAction::Mux.to_action(),
         Action::OpenMuxConfigDialog
     ));
     assert!(matches!(
-        MenuAction::Providers.to_action(None),
+        MenuAction::Providers.to_action(),
         Action::OpenProviderSettingsView
     ));
     assert!(matches!(
-        MenuAction::Help.to_action(None),
+        MenuAction::Help.to_action(),
         Action::OpenBoardHelp
     ));
     assert!(matches!(
-        MenuAction::Exit.to_action(None),
+        MenuAction::Exit.to_action(),
         Action::OpenBoardExitConfirmation
+    ));
+    // BUG-204: the agent bar's 'Close Agent' button ALWAYS shows the
+    // exit confirmation dialog — the agent surface resolves the action
+    // through its OWN dispatch arm (no board Zone C carries
+    // CloseAgent), so this payload-free mapping is a board-side
+    // fallback (unreachable in production).
+    assert!(matches!(
+        MenuAction::CloseAgent.to_action(),
+        Action::AgentEscPressed
     ));
 }

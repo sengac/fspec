@@ -1,12 +1,20 @@
 //! BUG-199 — agent-bar Zone C button semantics: 'New Agent' starts a new
-//! agent (the Create Session dialog); 'Close Agent' is the Esc exit
-//! gesture (the RPC-098 cascade), not a direct teardown.
+//! agent (the Create Session dialog); 'Close Agent' shows the Esc exit
+//! confirmation (the RPC-098 dialog) — the state-dependent cascade
+//! branches (running → interrupt, draft → clear) were SUPERSEDED by
+//! BUG-204 (`bug204_close_agent_button.rs` owns those scenarios now).
 //!
 //! Feature: spec/features/bug199-agent-bar-zone-c-new-agent-close-agent-esc-semantics.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature
 //! file. Scenarios map directly to Gherkin scenarios (strict
 //! arrange-act-assert).
+//!
+//! NOTE (BUG-204): the two R2 scenarios that encoded the state-dependent
+//! button behavior ('Close Agent' on a running session interrupts the
+//! run / with a non-empty input clears the draft) were REMOVED with the
+//! superseded feature scenarios; their replacement (the button ALWAYS
+//! shows the exit dialog) lives in `bug204_close_agent_button.rs`.
 //!
 //! Harness: App + MockBackend (the `menu009_zone_c_buttons.rs` pattern) —
 //! `fresh_app` + `drain_pending` + full-App render into a TestBackend at
@@ -29,7 +37,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use codelet_fspec_tui::components::menu_bar::MenuFocus;
 use codelet_fspec_tui::{AgentView, App, FspecBackend, Theme, ViewMode, CREATE_SESSION_DIALOG_ID};
@@ -40,7 +47,6 @@ use crossterm::event::{
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::Terminal;
-use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
@@ -134,7 +140,7 @@ async fn enter_agent_view(app: &mut App, session: &str) {
 }
 
 /// Walk the agent ring to Zone C button `button` (0 = New Agent,
-/// 1 = Close Agent [esc]) from the empty input: Left enters the bar at
+/// 1 = Close Agent — MENU-011 paints it bracketed, the [esc] hint removed) from the empty input: Left enters the bar at
 /// 'Board View' (ring pos 0), then Right walks the chips and the
 /// buttons (ring pos of ZoneC(i) = 1 + chip_count + i).
 async fn ring_to_zone_c(app: &mut App, chip_count: usize, button: usize) {
@@ -144,21 +150,6 @@ async fn ring_to_zone_c(app: &mut App, chip_count: usize, button: usize) {
         app.handle_event(&key(KeyCode::Right, KeyModifiers::NONE));
         drain_pending(app).await;
     }
-}
-
-/// Await `predicate` for up to a second (the cascade's interrupt branch
-/// spawns the backend `interrupt` task — the `menu009` helper).
-async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
-    timeout(Duration::from_secs(1), async {
-        loop {
-            if predicate() {
-                return;
-            }
-            tokio::time::sleep(Duration::from_millis(10)).await;
-        }
-    })
-    .await
-    .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
 }
 
 /// Render the view-level agent pane into a `w`-column TestBackend buffer
@@ -281,98 +272,6 @@ async fn scenario_a_left_click_on_the_agents_new_agent_button_mounts_the_create_
     );
 }
 
-/// Scenario: 'Close Agent' on a running session interrupts the run like the first Esc
-#[tokio::test]
-async fn scenario_close_agent_on_a_running_session_interrupts_the_run_like_the_first_esc() {
-    // @step Given the agent view shows 1 open session that is RUNNING
-    let (mut app, mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
-    // Deterministic status fold (the `keyboard_cascade_rpc051` pattern —
-    // the store seam instead of the broadcast subscriber task).
-    app.agent_view_store_mut()
-        .set_session_status(sid("s-1"), SessionStatus::Running);
-    // @step And the agent bar is painted
-    let buf = render_app(&mut app);
-    let x = find_x(&buf, AGENT_BAR_ROW, "Close Agent [esc]").unwrap_or_else(|| {
-        panic!(
-            "the 'Close Agent [esc]' button must paint on the bar row:\n{}",
-            row_text(&buf, AGENT_BAR_ROW)
-        )
-    });
-
-    // @step When I left-click the 'Close Agent [esc]' button
-    app.handle_event(&click(x, AGENT_BAR_ROW));
-    drain_pending(&mut app).await; // dispatch MenuZoneCActivate (the bus)
-                                   // @step Then the run is interrupted and the view stays the Agent view
-    wait_until(
-        || mock.interrupt_calls() == 1,
-        "backend.interrupt to fire (the L4/L5 Esc branch)",
-    )
-    .await;
-    assert_eq!(mock.last_interrupt(), Some(sid("s-1")));
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "the interrupt branch must keep the Agent view (RPC-051 L4/L5)"
-    );
-    // @step And no exit confirmation dialog is shown and the session is not destroyed
-    assert!(
-        !app.compositor().contains(EXIT_DIALOG_ID),
-        "the running branch must NOT show the exit confirmation dialog"
-    );
-    assert_eq!(
-        mock.destroy_session_calls(),
-        0,
-        "the button must never destroy the session directly (BUG-199 R2)"
-    );
-    // @step And the agent bar's ring focus clears
-    assert!(
-        app.navigator().agent.menu_focus().is_none(),
-        "activating the button must clear the agent bar's ring focus"
-    );
-}
-
-/// Scenario: 'Close Agent' with a non-empty input clears the draft like Esc level 6
-#[tokio::test]
-async fn scenario_close_agent_with_a_non_empty_input_clears_the_draft_like_esc_level_6() {
-    // @step Given the agent view shows 1 open idle session
-    let (mut app, _mock) = fresh_app();
-    seed_sessions(&mut app, 1).await;
-    enter_agent_view(&mut app, "s-1").await;
-    // @step And the input buffer contains a draft
-    app.navigator_mut().agent.input.set_value("hello world");
-    // @step And the agent bar is painted
-    let buf = render_app(&mut app);
-    let x = find_x(&buf, AGENT_BAR_ROW, "Close Agent [esc]").unwrap_or_else(|| {
-        panic!(
-            "the 'Close Agent [esc]' button must paint on the bar row:\n{}",
-            row_text(&buf, AGENT_BAR_ROW)
-        )
-    });
-
-    // @step When I left-click the 'Close Agent [esc]' button
-    app.handle_event(&click(x, AGENT_BAR_ROW));
-    drain_pending(&mut app).await;
-
-    // @step Then the input buffer is cleared and the view stays the Agent view
-    assert_eq!(
-        app.navigator().agent.input.value(),
-        "",
-        "the L6 Esc branch must clear the draft (BUG-199 R2)"
-    );
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "the L6 branch must keep the Agent view"
-    );
-    // @step And no exit confirmation dialog is shown
-    assert!(
-        !app.compositor().contains(EXIT_DIALOG_ID),
-        "a non-empty draft short-circuits before the dialog (RPC-095 L6)"
-    );
-}
-
 /// Scenario: 'Close Agent' on an idle session shows the same exit confirmation as Esc
 #[tokio::test]
 async fn scenario_close_agent_on_an_idle_session_shows_the_same_exit_confirmation_as_esc() {
@@ -382,9 +281,9 @@ async fn scenario_close_agent_on_an_idle_session_shows_the_same_exit_confirmatio
     enter_agent_view(&mut app, "s-1").await;
     // @step And the agent bar is painted
     let buf = render_app(&mut app);
-    let x = find_x(&buf, AGENT_BAR_ROW, "Close Agent [esc]").unwrap_or_else(|| {
+    let x = find_x(&buf, AGENT_BAR_ROW, "Close Agent").unwrap_or_else(|| {
         panic!(
-            "the 'Close Agent [esc]' button must paint on the bar row:\n{}",
+            "the 'Close Agent' button must paint on the bar row (MENU-011: bracketed, [esc] hint removed):\n{}",
             row_text(&buf, AGENT_BAR_ROW)
         )
     });
@@ -394,11 +293,11 @@ async fn scenario_close_agent_on_an_idle_session_shows_the_same_exit_confirmatio
         "no destroy before the activation"
     );
 
-    // @step When I left-click the 'Close Agent [esc]' button
+    // @step When I left-click the 'Close Agent' button (MENU-011: painted as '[ Close Agent ]')
     app.handle_event(&click(x, AGENT_BAR_ROW));
     drain_pending(&mut app).await;
 
-    // @step Then the 'Exit Session?' confirmation dialog (Detach / Close Session / Cancel) is shown
+    // @step Then the 'Exit Session?' confirmation dialog (Close Session / Cancel) is shown
     assert!(
         app.compositor().contains(EXIT_DIALOG_ID),
         "the idle branch must push the ExitConfirmationDialog (BUG-199 R2, RPC-098 L7)"
@@ -421,7 +320,9 @@ async fn scenario_close_agent_on_an_idle_session_shows_the_same_exit_confirmatio
     );
 }
 
-/// Scenario: The agent bar paints 'New Agent' then 'Close Agent [esc]' right-aligned
+/// Scenario: The agent bar paints 'New Agent' then 'Close Agent' right-aligned
+/// (MENU-011: both buttons paint BRACKETED — `[ New Agent ]` /
+/// `[ Close Agent ]` — and the legacy `[esc]` hint is removed)
 #[test]
 fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() {
     // @step Given an agent menu bar snapshot with 0 open sessions and no ring focus
@@ -432,16 +333,18 @@ fn scenario_the_agent_bar_paints_new_agent_then_close_agent_esc_right_aligned() 
     let buf = render_agent_pane(120);
     let row = row_text(&buf, AGENT_BAR_ROW);
 
-    // @step Then the row ends with 'New Agent' followed by 'Close Agent [esc]' right-aligned
+    // @step Then the row ends with '[ New Agent ]' followed by '[ Close Agent ]' right-aligned
+    // (MENU-011: both Zone C buttons paint BRACKETED — the legacy `[esc]`
+    // hint is REMOVED; the Esc-cascade semantics are unchanged)
     assert!(
-        row.ends_with("New Agent  Close Agent [esc]"),
-        "both Zone C buttons must paint, the second with the [esc] hint: {row:?}"
+        row.ends_with("[ New Agent ]  [ Close Agent ]"),
+        "both Zone C buttons must paint bracketed, no [esc] hint: {row:?}"
     );
 
-    // @step And the left-anchored 'Board View' item is unchanged
+    // @step And the left-anchored 'Board View' item is unchanged (bracketed)
     assert!(
-        row.contains("Board View"),
-        "the left-anchored 'Board View' item: {row:?}"
+        row.contains("[ Board View ]"),
+        "the left-anchored '[ Board View ]' item (MENU-011): {row:?}"
     );
     assert!(
         !row.contains('│') && !row.contains('#'),
@@ -474,10 +377,11 @@ fn scenario_the_board_bar_still_paints_a_single_new_agent_button() {
     paint_menu_bar(area, &mut buf, &snap, &Theme::default()).expect("layout for a non-zero area");
     let row = row_text(&buf, 0);
 
-    // @step Then the row ends with the right-aligned 'New Agent' Zone C button
+    // @step Then the row ends with the right-aligned '[ New Agent ]' Zone C button
+    // (MENU-011: the button label is stored BRACKETED)
     assert!(
-        row.ends_with("New Agent"),
-        "the board's single right-aligned button is unchanged: {row:?}"
+        row.ends_with("[ New Agent ]"),
+        "the board's single right-aligned button is bracketed: {row:?}"
     );
     // @step And the row contains no 'Close Agent' button
     assert!(

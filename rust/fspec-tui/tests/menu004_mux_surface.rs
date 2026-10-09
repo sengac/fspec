@@ -392,12 +392,21 @@ async fn scenario_the_focused_pane_label_is_active_and_the_chips_use_the_global_
         row.contains("Board"),
         "the Board pane label must paint:\n{row}"
     );
-    // Active pane label is fg Cyan + bold.
+    // Active pane label is theme.fg (white) + bold. BUG-202: never a
+    // standalone cyan foreground — the inverse-video highlight (bg
+    // Cyan / fg Black) is the only cyan in the bar row, so 'focused
+    // pane' and 'ring-focused' stay distinguishable.
     let board_x = find_x(&buf, y, "Board").expect("Board label must be on the bar row");
     assert_eq!(
         buf[(board_x, y)].fg,
-        Color::Cyan,
-        "the focused pane label must be Cyan (active)"
+        Color::White,
+        "the focused pane label must paint the primary foreground (theme.fg, BUG-202)"
+    );
+    assert!(
+        buf[(board_x, y)]
+            .modifier
+            .contains(ratatui::style::Modifier::BOLD),
+        "the focused pane label must stay bold (active)"
     );
     assert!(
         row.contains("#1") && row.contains("#2") && row.contains("#3"),
@@ -529,10 +538,10 @@ async fn scenario_the_agent_panes_paint_no_per_pane_menu_bar_in_mux() {
         "the mux top row must paint the bar:\n{row}"
     );
     let text = buf_text(&buf);
-    let kanban_count = text.matches("Kanban Tools").count();
+    let kanban_count = text.matches("[ Kanban ] [ Tools ]").count();
     assert_eq!(
         kanban_count, 1,
-        "exactly one 'Kanban Tools' Zone A run on screen (the mux top row)"
+        "exactly one '[ Kanban ] [ Tools ]' Zone A run on screen (the mux top row; MENU-011: bracketed)"
     );
 }
 
@@ -1234,7 +1243,8 @@ async fn scenario_clicking_a_chip_activates_that_session() {
 
 /// Scenario: Clicking a chip whose session is outside the agent window rotates the window and focuses its pane
 #[tokio::test]
-async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_and_focuses_its_pane() {
+async fn scenario_clicking_a_chip_outside_the_agent_window_rotates_the_window_and_focuses_its_pane()
+{
     // @step Given the mux grid is [Board | Agent | Agent] with 3 open sessions (the agent window shows #1 and #2) and the first Agent pane (session #1) is focused
     let (mut app, _mock) = fresh_app();
     seed_sessions(&mut app, 3).await;

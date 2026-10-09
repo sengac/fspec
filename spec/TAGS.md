@@ -663,6 +663,8 @@ Tags tracking development status of features.
 | `@bug-195` | Work unit identifier for BUG-195 — clicking a session chip in the Agent view must switch to that session: App::dispatch_menu's MenuChipActivate Agent branch runs the RPC-024 session switch (switch_to_session_index) instead of the old early-return no-op |
 | `@bug-197` | Work unit identifier for BUG-197 — menu bar click-away must de-select a focused item/chip on all 3 surfaces (board/agent/mux) and a stale ring focus must never leave a chip highlighted after view flips: the 'leave the bar' gesture (MenuDismissBar / in-view clear_focus) runs on every off-bar-row left click and on empty bar-row space, and chip activation / OpenAgentView flips drop the board store's ring focus |
 | `@bug-199` | Work unit BUG-199 — agent-bar Zone C button semantics: 'New Agent' mounts the CreateSessionDialog (start a new agent, board-button parity) instead of re-entering the current session; 'Close Agent' shows the Esc exit-confirmation cascade (Exit Session dialog / interrupt / clear) instead of the direct Close Session teardown; the button label reads 'Close Agent [esc]' |
+| `@bug-203` | Work unit BUG-203 — board 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown row, the 'u' menu-bar-help row) must ALWAYS mount the CreateSessionDialog instead of silently resuming/attaching to an already-open agent; Shift+Right stays the CYCLE gesture (resume) and is unchanged |
+| `@bug-204` | Work unit BUG-204 — agent-bar 'Close Agent' button: the button ALWAYS mounts the 'Exit Session?' ExitConfirmationDialog (RPC-098) instead of running the AgentEscPressed cascade (superseding BUG-199 R2); the interrupt/draft-clear branches belong to the physical Esc key only |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -754,6 +756,7 @@ Tags for test-related scenarios and requirements.
 | `@blocking` | Operations that block workflow progression |
 | `@bug-200` | Work unit identifier tag for BUG-200 — mux board-pane ring edges: Left from the first column wraps to the last Zone B cell (chip segment) and Right from the first item / last chip re-enters the board's last column (continuous columns⇄items⇄chips ring in mux). |
 | `@bug-201` | Work unit identifier tag for BUG-201 — mux board-pane ring: seam crossings (col0 ⇄ bar edges) must only fire while the Board pane is focused, and the board store's stale bar state (menu_focus/menu_open) must be cleared when entering mux so the ring never walks the board's invisible bar. |
+| `@bug-202` | Work unit identifier tag for BUG-202 — mux bar: the focused pane's view label ([ Board ]) painted a standalone cyan foreground instead of the bar's palette; the active label now paints BOLD + theme.fg (white) while the inverse-video (bg Cyan / fg Black) selection highlight remains the only cyan in the bar row. |
 | `@circular-dependency` | Circular dependency detection tests |
 | `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
 | `@complex-command` | Complex command with multiple modes and options |
@@ -825,4 +828,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-08T08:06:13.359Z_
+_Last updated: 2026-10-09T09:11:13.797Z_

@@ -89,9 +89,9 @@ fn enable_mux(app: &mut App, panes: Vec<MuxPaneKind>) {
 /// Seed `n` open sessions (s-1..s-n, Idle).
 async fn seed_sessions(app: &mut App, n: usize) {
     for i in 1..=n {
-        app.dispatch(codelet_fspec_tui::Action::SessionCreated(
-            SessionId::new(format!("s-{i}")),
-        ));
+        app.dispatch(codelet_fspec_tui::Action::SessionCreated(SessionId::new(
+            format!("s-{i}"),
+        )));
     }
     drain_pending(app).await;
 }
@@ -108,7 +108,8 @@ fn focus_column(app: &mut App, column: usize) {
         "done",
         "blocked",
     ];
-    app.board_store_mut().set_focused_column(column_names[column]);
+    app.board_store_mut()
+        .set_focused_column(column_names[column]);
 }
 
 /// Arrange: walk the ring until the bar's focus reaches `steps` stops
@@ -327,10 +328,14 @@ async fn scenario_right_from_the_last_column_enters_the_bar_at_the_first_item() 
 /// Scenario: Left from the first column with no open sessions lands on
 /// the last view-label cell
 #[tokio::test]
-async fn scenario_left_from_the_first_column_with_no_open_sessions_lands_on_the_last_view_label_cell() {
+async fn scenario_left_from_the_first_column_with_no_open_sessions_lands_on_the_last_view_label_cell(
+) {
     // @step Given the mux grid is [Board | Files] with no open sessions and the Board pane is focused with the cursor on the first column (backlog)
     let (mut app, _mock) = fresh_app();
-    enable_mux(&mut app, vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles]);
+    enable_mux(
+        &mut app,
+        vec![MuxPaneKind::Board, MuxPaneKind::ChangedFiles],
+    );
     focus_column(&mut app, 0);
     assert_eq!(app.navigator().mux.menu_focus(), None);
 

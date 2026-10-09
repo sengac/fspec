@@ -62,7 +62,10 @@ pub fn paint_menu_bar(
         } else {
             Style::default().fg(theme.fg)
         };
-        paint_text(buf, rect.x, y, category.label, style);
+        // MENU-011 R1: Zone A items paint their BRACKETED label
+        // (`[ Kanban ]`) — the brackets are part of the button, so the
+        // focused inverse-video highlight covers them too (R4).
+        paint_text(buf, rect.x, y, &category.bracketed_label(), style);
     }
     // Zone B (separator + cells) when the level keeps it. (No separator
     // = no cells to paint — the pre-MENU-009 early return, now folded
@@ -166,32 +169,42 @@ fn paint_cell(
             }
         }
     }
+    // MENU-011 R2: every Zone B cell paints BRACKETED (`[ ... ]`) — the
+    // brackets carry the cell's own style; the inner content keeps its
+    // per-segment styling. The layout's `+4` width accounts for them
+    // (R4: the brackets are part of the hit-test span + the inverse
+    // highlight when focused).
     match cell {
         DisplayCell::View { label, active, .. } => {
-            let mut style = Style::default().fg(if *active { Color::Cyan } else { theme.dim });
+            // BUG-202 R1: the ACTIVE (focused-pane) label paints BOLD +
+            // theme.fg (white) — never a standalone cyan foreground (it
+            // blended into the blue-tinted bar background). The
+            // inverse-video highlight (bg Cyan / fg Black) stays the
+            // ONLY cyan in the bar row, so 'focused pane' and
+            // 'ring-focused' remain visually distinguishable.
+            let mut style = Style::default().fg(if *active { theme.fg } else { theme.dim });
             if *active {
                 style = style.add_modifier(Modifier::BOLD);
             }
-            paint_text(buf, x, y, label, style);
+            let mut cx = paint_text(buf, x, y, "[ ", style);
+            cx = paint_text(buf, cx, y, label, style);
+            paint_text(buf, cx, y, " ]", style);
         }
         DisplayCell::Fold { count, .. } => {
-            paint_text(
-                buf,
-                x,
-                y,
-                &format!("+{count}"),
-                if focused {
-                    inverse_style()
-                } else {
-                    Style::default().fg(theme.dim)
-                },
-            );
+            let style = if focused {
+                inverse_style()
+            } else {
+                Style::default().fg(theme.dim)
+            };
+            let mut cx = paint_text(buf, x, y, "[ ", style);
+            cx = paint_text(buf, cx, y, &format!("+{count}"), style);
+            paint_text(buf, cx, y, " ]", style);
         }
         DisplayCell::Chip { orig } => {
             let Some(chip) = snap.chips.get(chip_index(snap, *orig)) else {
                 return;
             };
-            let mut cx = x;
+            let mut cx = paint_text(buf, x, y, "[ ", fg(theme.fg, focused));
             cx = paint_text(buf, cx, y, &index_prefix(chip.index), fg(theme.fg, focused));
             // R6 step 1: the WU suffix paints only at level 0.
             if level == 0 {
@@ -205,7 +218,8 @@ fn paint_cell(
             } else {
                 chip.glyph_style
             };
-            paint_text(buf, cx, y, &chip.glyph, glyph_style);
+            cx = paint_text(buf, cx, y, &chip.glyph, glyph_style);
+            paint_text(buf, cx, y, " ]", fg(theme.fg, focused));
         }
     }
 }
@@ -293,13 +307,13 @@ mod tests {
         // @step Then Zone B reads "#1 ●  #2 ⠋  #3 ●"
         let line = row(&buf, 120);
         assert!(
-            line.starts_with(" Kanban Tools Settings Help"),
-            "Zone A first, after the 1-cell R1 pad: {line}"
+            line.starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"),
+            "Zone A first, after the 1-cell R1 pad (MENU-011: bracketed): {line}"
         );
         assert!(line.contains("│"), "separator present: {line}");
-        assert!(line.contains("#1 ●"), "chip 1: {line}");
-        assert!(line.contains("#2 ●"), "chip 2: {line}");
-        assert!(line.contains("#3 ●"), "chip 3: {line}");
+        assert!(line.contains("[ #1 ● ]"), "chip 1: {line}");
+        assert!(line.contains("[ #2 ● ]"), "chip 2: {line}");
+        assert!(line.contains("[ #3 ● ]"), "chip 3: {line}");
         // @step And the Running chip's glyph cell is styled magenta
         // (the 120-col fixture chips are Idle-styled dots; the Running
         // braille + magenta styling is pinned in chips::running_uses_the_braille_frame_at_the_clock)
@@ -316,23 +330,23 @@ mod tests {
         let (buf, layout) = render(&snap(vec![chip(0, Some("MENU-001"))]), 120);
         // @step Then the chip reads "#1 MENU-001 ●"
         assert_eq!(layout.level, 0);
-        assert!(row(&buf, 120).contains("MENU-001 ●"));
+        assert!(row(&buf, 120).contains("[ #1 MENU-001 ● ]"));
     }
 
     #[test]
     fn tight_width_drops_wu_ids_before_anything_else() {
         // @step Given a MenuSnapshot with 4 open sessions each bound to a long work-unit id
         let snap = snap(vec![chip(0, Some("MENU-001")), chip(1, Some("MENU-002"))]);
-        // @step When the bar is rendered into a 58-column area
+        // @step When the bar is rendered into a 80-column area
         // (MENU-008: Zone A grew from 9 to 26 inner cells, so the
-        // level-0/level-1 boundary moved — 58 cols is 56 inner: level 0
-        // needs 62 (26 + separator + two 19-cell chips), level 1 needs
-        // 45, so WU ids are still the first thing dropped.)
-        let (buf, layout) = render(&snap, 58);
+        // level-0/level-1 boundary moved; MENU-011: the bracketed Zone
+        // A is 42 cells — at 80 cols (78 inner) level 0 needs 81, so
+        // the WU ids are still the first thing dropped.)
+        let (buf, layout) = render(&snap, 80);
         // @step Then no chip shows a work-unit id suffix
         assert_eq!(layout.level, 1, "WU ids dropped first");
-        assert!(!row(&buf, 58).contains("MENU-001"));
-        assert!(row(&buf, 58).contains("#1 ●"));
+        assert!(!row(&buf, 80).contains("MENU-001"));
+        assert!(row(&buf, 80).contains("[ #1 ● ]"));
     }
 
     #[test]
@@ -444,6 +458,6 @@ mod tests {
         assert!(layout.separator.is_none());
         assert!(layout.cells.is_empty());
         assert!(!row(&buf, 80).contains("│"));
-        assert!(row(&buf, 80).starts_with(" Kanban Tools Settings Help"));
+        assert!(row(&buf, 80).starts_with(" [ Kanban ] [ Tools ] [ Settings ] [ Help ]"));
     }
 }

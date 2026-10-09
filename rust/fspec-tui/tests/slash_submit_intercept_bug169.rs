@@ -29,7 +29,7 @@ use std::sync::Arc;
 use codelet_fspec_tui::{
     parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode,
 };
-use codelet_rpc_types::{SessionId, ThinkingLevel, WorkUnitContext};
+use codelet_rpc_types::{SessionId, ThinkingLevel};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 mod common;
@@ -170,20 +170,6 @@ fn assert_popup_pick_effect(app: &mut App, mock: &MockBackend, cmd: &str) {
             ViewMode::Blocklist,
             "/blocklist must flip the Navigator to Blocklist"
         ),
-        "/detach" => {
-            assert_eq!(
-                mock.set_work_unit_context_calls(),
-                1,
-                "/detach must call backend.set_work_unit_context(s-1, None)"
-            );
-            assert_eq!(mock.last_set_work_unit_context(), Some((sid("s-1"), None)),);
-            assert!(
-                app.agent_view_store()
-                    .work_unit_context_for(&sid("s-1"))
-                    .is_none(),
-                "/detach must clear the session's work-unit binding"
-            );
-        }
         "/merge-worktree" => assert_eq!(
             mock.inspect_session_changes_calls(),
             1,
@@ -211,23 +197,10 @@ async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() 
         ("/compact", ""),
         ("/isolation", ""),
         ("/blocklist", ""),
-        ("/detach", ""),
         ("/merge-worktree", ""),
     ] {
         let mock = Arc::new(MockBackend::new());
         let (mut app, _mock) = given_app_in_agent_view(&mock).await;
-        // /detach needs a bound work unit so the backend path (not the
-        // "no work unit attached" notice path) is exercised.
-        if cmd == "/detach" {
-            app.agent_view_store_mut().set_work_unit_context(
-                sid("s-1"),
-                WorkUnitContext {
-                    id: "BUG-169".to_string(),
-                    title: "BUG-169".to_string(),
-                    status: "testing".to_string(),
-                },
-            );
-        }
         let prior_send = mock.send_input_calls();
         // @step Given an App with one open session SessionId("s-1") in AgentView
         assert_eq!(app.navigator().active_view, ViewMode::Agent);
@@ -243,6 +216,39 @@ async fn submitting_bare_registered_commands_routes_to_the_popup_pick_handler() 
         // @step And the observable side effect <effect> lands (the same handler a popup pick would invoke)
         assert_popup_pick_effect(&mut app, &mock, cmd);
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: The removed /detach command is no longer intercepted and goes
+// to the LLM (BUG-205)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn removed_detach_command_is_not_intercepted_and_goes_to_the_llm() {
+    // @step Given an App with one open session SessionId("s-1") in AgentView
+    let (mut app, mock) = given_app_in_agent_view(&Arc::new(MockBackend::new())).await;
+    let prior_send = mock.send_input_calls();
+
+    // @step When the input is submitted with text "/detach"
+    app.dispatch(Action::InputSubmitted("/detach".to_string()));
+    drain_pending(&mut app).await;
+
+    // @step Then the text "/detach" IS forwarded to backend.send_input
+    assert_eq!(
+        mock.send_input_calls(),
+        prior_send + 1,
+        "BUG-205: /detach is unregistered and must be forwarded to the LLM"
+    );
+    assert_eq!(
+        mock.last_send_input(),
+        Some((sid("s-1"), "/detach".to_string()))
+    );
+    // @step And no work-unit binding change is made (no set_work_unit_context call)
+    assert_eq!(
+        mock.set_work_unit_context_calls(),
+        0,
+        "/detach must NOT reach the backend work-unit context path"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

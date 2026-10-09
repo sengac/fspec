@@ -1,12 +1,13 @@
 //! BUG-164 — closing a session in mux mode must retain the mux.
 //!
 //! Feature: spec/features/rust-mux-mode.feature
+//!          spec/features/exit-session-close-retains-mux-grid.feature
 //!
 //! This test file validates the acceptance criteria defined in the
 //! feature file. Scenarios map directly to Gherkin scenarios.
 //!
-//! The exit-confirmation dialog (Detach / Close Session / Cancel)
-//! routes both the Detach and Close Session choices through
+//! The exit-confirmation dialog (Close Session / Cancel — BUG-205
+//! removed the Detach option) routes the Close Session choice through
 //! `Action::BackToBoard`. When the mux grid is active, BackToBoard is
 //! a "focus the board pane within the grid" semantic — it must never
 //! flip the whole view out of Mux (the pre-fix behavior painted the
@@ -109,8 +110,7 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
         Some(&sid("s-1")),
         "the pane-hosted session s-1 must be the store's current session"
     );
-    let _ = app.handle_event(&right()); // Detach -> Close Session
-    let _ = app.handle_event(&enter());
+    let _ = app.handle_event(&enter()); // Close Session is pre-selected (BUG-205)
     drain_pending(&mut app).await;
     // @step Then the destroyed session is removed from the open-session list
     assert_eq!(
@@ -165,13 +165,13 @@ async fn closing_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pan
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: detaching from a session in mux mode retains the mux and
-// focuses the board pane
+// Scenario: cancelling the exit dialog in mux mode retains the mux and
+// keeps the agent pane focused
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: detaching from a session in mux mode retains the mux and focuses the board pane
+/// Scenario: cancelling the exit dialog in mux mode retains the mux and keeps the agent pane focused
 #[tokio::test]
-async fn detaching_from_a_session_in_mux_mode_retains_the_mux_and_focuses_the_board_pane() {
+async fn cancelling_the_exit_dialog_in_mux_mode_retains_the_mux_and_keeps_the_agent_pane_focused() {
     // @step Given mux mode is active with Board and Agent panes and one agent session is open
     let (mut app, mock) = fresh_app();
     app_with_sessions_and_mux(&mut app, 1).await;
@@ -179,37 +179,38 @@ async fn detaching_from_a_session_in_mux_mode_retains_the_mux_and_focuses_the_bo
     // @step And the Agent pane is focused
     let n = app.navigator().mux.pane_rects().len();
     app.navigator_mut().mux.set_focus(n - 1);
-    // @step When the exit dialog is answered with Detach
+    // @step When the exit dialog is answered with Cancel
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "the exit confirmation dialog must open on ESC from the agent pane"
     );
-    let _ = app.handle_event(&enter()); // Detach is pre-selected
+    let _ = app.handle_event(&right()); // Close Session -> Cancel
+    let _ = app.handle_event(&enter());
     drain_pending(&mut app).await;
     // @step Then the session remains open in the store
     assert_eq!(mock.destroy_session_calls(), 0);
     assert_eq!(
         app.agent_view_store().open_sessions().len(),
         1,
-        "Detach must NOT remove the session from open_sessions"
+        "Cancel must NOT remove the session from open_sessions"
     );
     // @step And the TUI is still in mux mode with the same panes and layout
     assert_eq!(
         app.active_view(),
         ViewMode::Mux,
-        "BackToBoard must NOT flip the whole view out of the mux grid"
+        "Cancel must NOT flip the whole view out of the mux grid"
     );
     assert!(
         app.navigator().mux.config().enabled,
-        "the mux config must stay enabled after a detach"
+        "the mux config must stay enabled after a cancel"
     );
-    // @step And the Board pane is focused within the grid
+    // @step And the Agent pane stays focused within the grid
     let focused = app.navigator().mux.effective_panes()[app.navigator().mux.focus()];
     assert_eq!(
         focused,
-        MuxPaneKind::Board,
-        "BackToBoard must focus the Board pane inside the grid"
+        MuxPaneKind::Agent,
+        "Cancel must keep the Agent pane focused (no BackToBoard)"
     );
 }

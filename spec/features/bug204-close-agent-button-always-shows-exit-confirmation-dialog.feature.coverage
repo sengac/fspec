@@ -1,0 +1,341 @@
+{
+  "scenarios": [
+    {
+      "name": "'Close Agent' on a running session shows the exit confirmation dialog (busy variant)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "198-251",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' with a non-empty input shows the exit confirmation dialog (draft preserved)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "253-297",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' on an idle session shows the exit confirmation dialog (unchanged)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "299-331",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the agent's 'Close Agent' button shows the exit confirmation dialog",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "333-363",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/menu_keys.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' commits 'Close Session' to destroy the session and return to Board",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "365-412",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' commits 'Detach' to return to Board with the session still alive",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "414-448",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "lines": [
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "'Close Agent' commits 'Cancel' to stay on the Agent view",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "450-491",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Esc on a running session still interrupts the run (Esc cascade unchanged)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "493-526",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Esc with a non-empty draft still clears the draft (Esc cascade unchanged)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug204_close_agent_button.rs",
+          "lines": "528-561",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug204_close_agent_button.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_menu_zone_c.rs",
+      "rust/fspec-tui/src/views/agent/menu_mouse.rs",
+      "rust/fspec-tui/src/views/agent/menu_keys.rs",
+      "rust/fspec-tui/src/app/dispatch_agent_exit.rs",
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs"
+    ],
+    "totalLinesCovered": 528
+  }
+}

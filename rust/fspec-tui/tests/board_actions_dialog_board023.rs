@@ -240,7 +240,7 @@ async fn scenario_u_opens_the_actions_dialog_from_the_single_board_view() {
         .collect::<Vec<_>>()
         .join("\n");
     for desc in [
-        "agent for the focused unit",
+        "Always start a new agent",
         "Search work units",
         "checkpoints view",
         "changed-files view",
@@ -363,7 +363,7 @@ async fn scenario_the_actions_dialog_body_lists_all_board_shortcuts_with_descrip
 
     // @step And each row shows its key, a label, and a one-line description
     for pair in [
-        (". New Agent", "- Open/start an agent for the focused unit"),
+        (". New Agent", "- Always start a new agent (never resumes)"),
         ("/ Search", "- Search work units"),
         ("D FOUNDATION.md", "- Open FOUNDATION.md in the browser"),
         (

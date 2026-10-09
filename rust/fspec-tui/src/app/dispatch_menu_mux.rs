@@ -14,7 +14,6 @@
 //! `menu_move_mux` borrows `self.board_store` +
 //! `self.navigator.mux` + `self.agent_view_store` together.
 
-use crate::components::menu_bar::items::MenuAction;
 use crate::components::Action;
 
 use super::state::App;
@@ -101,15 +100,11 @@ impl App {
                 let Some(menu_action) = mux.menu_execute_item(*category, *row) else {
                     return;
                 };
-                // R-EXEC: the NewAgent row carries NO session payload —
-                // substitute the live current-session snapshot at execute
-                // time (MENU-002/003 parity).
-                let target = if menu_action == MenuAction::NewAgent {
-                    self.agent_view_store.current_session().cloned()
-                } else {
-                    None
-                };
-                self.dispatch(menu_action.to_action(target));
+                // R-EXEC (BUG-203): the registry mapping is payload-free —
+                // `NewAgent` ALWAYS mounts the CreateSessionDialog (the
+                // shared RPC-060 helper, BUG-199 / BUG-203 parity); the
+                // MENU-002/003 R8 current-session substitution is removed.
+                self.dispatch(menu_action.to_action());
             }
             // MENU-009 Q1: the mux bar paints NO Zone C — the token is
             // unreachable on this surface (defensive no-op).
@@ -172,8 +167,10 @@ impl App {
         if mux.menu_ring_active() {
             let focus = mux.menu_focus();
             let open = mux.open_menu();
-            let last_cell =
-                mux.view_label_count().saturating_add(mux.menu_chips()).saturating_sub(1);
+            let last_cell = mux
+                .view_label_count()
+                .saturating_add(mux.menu_chips())
+                .saturating_sub(1);
             // Seam 2 (the bar's right edge): the last Zone B cell (last
             // chip / last view label) — Right wraps back to the FIRST
             // column (backlog), the columns' left edge (col0 ⇄
@@ -244,8 +241,10 @@ impl App {
             mux.menu_move_to_ring_position(MenuFocus::Item(0));
         } else if delta < 0 && self.board_store.menu_focus().is_some() {
             self.board_store.menu_clear_focus();
-            let last_cell =
-                mux.view_label_count().saturating_add(mux.menu_chips()).saturating_sub(1);
+            let last_cell = mux
+                .view_label_count()
+                .saturating_add(mux.menu_chips())
+                .saturating_sub(1);
             mux.menu_move_to_ring_position(MenuFocus::ZoneB(last_cell));
         }
     }

@@ -52,10 +52,6 @@ fn esc() -> Event {
     Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE))
 }
 
-fn right() -> Event {
-    Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::NONE))
-}
-
 fn enter() -> Event {
     Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE))
 }
@@ -202,7 +198,8 @@ async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_
         app.compositor().contains(EXIT_CONFIRMATION_DIALOG_ID),
         "the exit confirmation dialog must open on ESC from the agent view"
     );
-    let _ = app.handle_event(&right()); // Detach -> Close Session
+    // BUG-205: Close Session is pre-selected (the Detach option was
+    // removed), so a single Enter commits the close.
     let _ = app.handle_event(&enter());
     drain_pending(&mut app).await;
     assert_eq!(

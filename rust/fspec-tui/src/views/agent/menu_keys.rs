@@ -139,8 +139,9 @@ impl AgentView {
     /// focus (the composer regains the keys, the chip/board-view
     /// activation parity) and emit `MenuZoneCActivate(index)` (the
     /// `App::dispatch_menu` arm resolves it per surface: BUG-199 —
-    /// `New Agent` mounts the Create Session dialog, `Close Agent
-    /// [esc]` runs the `AgentEscPressed` cascade).
+    /// `New Agent` mounts the Create Session dialog, `Close Agent`
+    /// ALWAYS mounts the 'Exit Session?' dialog (BUG-204, superseding
+    /// BUG-199 R2 — the Esc cascade is the physical Esc key's job)).
     pub(crate) fn activate_menu_zone_c(&mut self, index: usize) {
         self.menu_state.clear_focus();
         self.emit(crate::components::Action::MenuZoneCActivate(index));

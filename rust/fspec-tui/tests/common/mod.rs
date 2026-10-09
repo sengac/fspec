@@ -298,7 +298,7 @@ pub struct MockBackend {
     last_interrupt: Mutex<Option<SessionId>>,
     /// RPC-098: counter incremented every time `destroy_session` is called
     /// via the FspecBackend trait. Lets ESC exit-confirmation tests assert
-    /// that Close Session reaches the backend and Detach/Cancel do NOT.
+    /// that Close Session reaches the backend and Cancel does NOT.
     destroy_session_calls: AtomicUsize,
     /// RPC-098: most recently destroyed SessionId — paired counterpart to
     /// `destroy_session_calls`.
@@ -2685,7 +2685,7 @@ impl FspecBackend for MockBackend {
 
     /// RPC-098: ESC exit-confirmation tests rely on this override to
     /// verify that `Close Session` reaches the backend and that
-    /// `Detach`/`Cancel` do NOT.
+    /// `Cancel` does NOT (BUG-205: the Detach option was removed).
     async fn destroy_session(&self, session_id: SessionId) -> Result<()> {
         self.destroy_session_calls.fetch_add(1, Ordering::SeqCst);
         *self

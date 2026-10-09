@@ -26,6 +26,16 @@ Feature: /detach slash command and work-unit context teardown
 
   Companion to spec/features/work-unit-attach-binding.feature which
   holds the BoardView attach side of the same binding.
+
+  SUPERSESSION NOTE (BUG-205): the /detach slash command was removed
+  entirely — SlashCommandAction::Detach, its registry entry,
+  App::handle_slash_detach, App::handle_work_unit_detached and
+  Action::WorkUnitDetached no longer exist; typing '/detach' now falls
+  through to backend.send_input like any unregistered command. The
+  post-removal invariants (no 'detach' command in the registry,
+  fall-through behavior, attach path intact) live in
+  spec/features/remove-detach-slash-command-with-attach-path-intact.feature.
+  This @done feature is retained as a historical record of RPC-050.
   """
 
   # ========================================

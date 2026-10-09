@@ -10,9 +10,9 @@
 //!   dialog-id collision (R2: exactly one instance, addressed by the
 //!   stable `MENU_BAR_HELP_DIALOG_ID` — the BOARD-023
 //!   `board-actions-dialog` token, kept stable this release by
-//!   MENU-005 R2). Seeded with the selected work unit's session
-//!   target (R5: the `.` New Agent row snapshots it at open time —
-//!   the modal blocks board selection while open).
+//!   MENU-005 R2). BUG-203: the dialog is payload-free — the `.` New
+//!   Agent row ALWAYS mounts the CreateSessionDialog (registry
+//!   mapping), so nothing is seeded at open time.
 //! - `OpenBoardHelp` / `OpenBoardExitConfirmation` (R6) route to the
 //!   SAME push helpers the stage-4 App shortcuts in `app/events.rs`
 //!   use for `?` (HelpDialog::for_board) and Esc
@@ -26,18 +26,16 @@ use super::state::App;
 
 impl App {
     /// BOARD-023 R1 (MENU-005 R2): push a fresh `MenuBarHelpDialog`
-    /// onto the Compositor seeded with the selected work unit's
-    /// session target (the `.` New Agent row emits `OpenAgentView`
-    /// with that snapshot). Idempotent on reopen (R2).
+    /// onto the Compositor. BUG-203: the dialog is payload-free —
+    /// the `.` New Agent row resolves through the registry mapping
+    /// (`NewAgent` → `OpenCreateSessionDialog { preselect: None }`),
+    /// so no session target is snapshotted at open time. Idempotent
+    /// on reopen (R2).
     pub(crate) fn handle_open_board_keybinding_dialog(&mut self) {
         if self.compositor.contains(MENU_BAR_HELP_DIALOG_ID) {
             return;
         }
-        let target = self
-            .board_store
-            .selected_work_unit()
-            .and_then(|u| self.board_store.session_for(&u.id).cloned());
-        let dialog = MenuBarHelpDialog::new(target).with_action_tx(self.action_tx.clone());
+        let dialog = MenuBarHelpDialog::new().with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 

@@ -1,5 +1,5 @@
 //! App::dispatch routing for RPC-050 — work-unit binding (BoardView
-//! attach path + `/detach` slash command).
+//! attach path).
 //!
 //! Feature files:
 //!   - spec/features/work-unit-attach-binding.feature
@@ -8,6 +8,11 @@
 //! Factored out of `app/dispatch.rs` and `app/dispatch_slash_commands.rs` so
 //! both orchestrator files stay under the 300-LoC ceiling pinned by
 //! `slash-command-detach-source-shape.feature`.
+//!
+//! BUG-205: the `/detach` slash command (and its slash-command handler +
+//! detached-state fold helpers) was removed — the command's only effect was
+//! clearing the session's work-unit binding, and with the exit dialog's
+//! Detach option gone it had no UI home. Only the attach path remains.
 //!
 //! Mirrors the spawned-task + action-bus round-trip pattern from
 //! `dispatch_slash_clear::/clear` and `dispatch_resume_search_views::/resume`.
@@ -21,8 +26,7 @@ use super::state::App;
 impl App {
     /// RPC-050: BoardView Enter path — bind the supplied work unit id to
     /// the focused AgentView session. When there is no current session
-    /// the helper is a silent no-op (matches `/detach` no-session
-    /// semantics). Otherwise spawns
+    /// the helper is a silent no-op. Otherwise spawns
     /// `backend.set_work_unit_context(session, Some(ctx))` and routes
     /// `Action::WorkUnitAttached(session, ctx)` on Ok or
     /// `Action::EmitSessionNotice(session, "[error] /attach failed: …")`
@@ -68,69 +72,8 @@ impl App {
 
     /// RPC-050: fold a successful `set_work_unit_context(Some)` outcome
     /// into the per-session AgentViewStore map.
-    pub(crate) fn handle_work_unit_attached(
-        &mut self,
-        session_id: SessionId,
-        ctx: WorkUnitContext,
-    ) {
+    pub(crate) fn handle_work_unit_attached(&mut self, session_id: SessionId, ctx: WorkUnitContext) {
         self.agent_view_store.set_work_unit_context(session_id, ctx);
-    }
-
-    /// RPC-050: fold a successful `set_work_unit_context(None)` outcome
-    /// (a.k.a. `/detach`) into the AgentViewStore — clear the binding,
-    /// reset the session's scrollback, and reset its TokenState.
-    /// Mirrors the TS `prepareForNewSession` cleanup chain.
-    pub(crate) fn handle_work_unit_detached(&mut self, session_id: SessionId) {
-        self.agent_view_store.clear_work_unit_context(&session_id);
-        if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session_id) {
-            ctx.reset_scrollback();
-        }
-        self.agent_view_store.reset_token_state(&session_id);
-    }
-
-    /// RPC-050: `/detach` slash command — three documented paths:
-    /// (1) no active session → silent return,
-    /// (2) no work unit attached → emit notice via the action bus,
-    /// (3) bound → spawn the backend round-trip; Ok→WorkUnitDetached,
-    ///            Err→EmitSessionNotice("[error] /detach failed: {e}").
-    pub(crate) fn handle_slash_detach(&mut self) {
-        let Some(session_id) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-        if self
-            .agent_view_store
-            .work_unit_context_for(&session_id)
-            .is_none()
-        {
-            let _ = self.action_tx.send(Action::EmitSessionNotice(
-                session_id,
-                "[notice] /detach: no work unit attached".to_string(),
-            ));
-            return;
-        }
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let session_for_task = session_id;
-        let handle = tokio::spawn(async move {
-            match backend
-                .set_work_unit_context(session_for_task.clone(), None)
-                .await
-            {
-                Ok(()) => {
-                    let _ = action_tx.send(Action::WorkUnitDetached(session_for_task));
-                }
-                Err(e) => {
-                    let _ = action_tx.send(Action::EmitSessionNotice(
-                        session_for_task,
-                        format!("[error] /detach failed: {e}"),
-                    ));
-                }
-            }
-        });
-        self.pending_tasks.push(handle);
     }
 
     /// Best-effort lookup of a work unit by id across the BoardStore's

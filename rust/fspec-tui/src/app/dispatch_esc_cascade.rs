@@ -68,7 +68,7 @@ impl App {
                 .send(Action::PendingInputChanged(String::new()));
             return;
         }
-        // RPC-098 L7 — open the three-button exit-confirmation modal.
+        // RPC-098 L7 — open the exit-confirmation modal.
         // No-double-push: skip if a dialog is already on the compositor.
         if self.compositor.contains(EXIT_CONFIRMATION_DIALOG_ID) {
             return;

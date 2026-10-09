@@ -22,8 +22,11 @@ use crate::store::AgentViewStore;
 /// `New Agent` button (the `.`-key / Kanban-dropdown-row semantics,
 /// R8 caller substitution at execute time). `&'static` so the shared
 /// painter stays surface-agnostic (the `AGENT_ZONE_A` precedent).
+/// MENU-011 R3: the label is stored BRACKETED — `[ New Agent ]` (a
+/// space between the word and each bracket) — so the layout width, the
+/// cached hit-test rects and the painter all agree (R4).
 pub const BOARD_ZONE_C: &[ZoneCButton] = &[ZoneCButton {
-    label: "New Agent",
+    label: "[ New Agent ]",
     action: MenuAction::NewAgent,
 }];
 

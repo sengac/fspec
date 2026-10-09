@@ -2470,6 +2470,14 @@
           "description": "Work unit BUG-199 — agent-bar Zone C button semantics: 'New Agent' mounts the CreateSessionDialog (start a new agent, board-button parity) instead of re-entering the current session; 'Close Agent' shows the Esc exit-confirmation cascade (Exit Session dialog / interrupt / clear) instead of the direct Close Session teardown; the button label reads 'Close Agent [esc]'"
         },
         {
+          "name": "@bug-203",
+          "description": "Work unit BUG-203 — board 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown row, the 'u' menu-bar-help row) must ALWAYS mount the CreateSessionDialog instead of silently resuming/attaching to an already-open agent; Shift+Right stays the CYCLE gesture (resume) and is unchanged"
+        },
+        {
+          "name": "@bug-204",
+          "description": "Work unit BUG-204 — agent-bar 'Close Agent' button: the button ALWAYS mounts the 'Exit Session?' ExitConfirmationDialog (RPC-098) instead of running the AgentEscPressed cascade (superseding BUG-199 R2); the interrupt/draft-clear branches belong to the physical Esc key only"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -2804,6 +2812,10 @@
         {
           "name": "@bug-201",
           "description": "Work unit identifier tag for BUG-201 — mux board-pane ring: seam crossings (col0 ⇄ bar edges) must only fire while the Board pane is focused, and the board store's stale bar state (menu_focus/menu_open) must be cleared when entering mux so the ring never walks the board's invisible bar."
+        },
+        {
+          "name": "@bug-202",
+          "description": "Work unit identifier tag for BUG-202 — mux bar: the focused pane's view label ([ Board ]) painted a standalone cyan foreground instead of the bar's palette; the active label now paints BOLD + theme.fg (white) while the inverse-video (bg Cyan / fg Black) selection highlight remains the only cyan in the bar row."
         },
         {
           "name": "@circular-dependency",
@@ -3222,7 +3234,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-08T08:06:13.359Z",
+    "lastUpdated": "2026-10-09T09:11:13.797Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

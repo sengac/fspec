@@ -7,9 +7,6 @@
 //!
 //! ```text
 //! choice = Cancel        → no-op (dialog removed via Callback)
-//! choice = Detach        → dispatch Action::BackToBoard; session keeps
-//!                          running in the backend (TS parity with
-//!                          GlobalSessionStreamManager detach semantics)
 //! choice = CloseSession  → mirrors TS `destroySession()` orchestrator
 //!                          at src/tui/services/sessionService.ts:620-647
 //!                          step-for-step:
@@ -73,9 +70,6 @@ impl App {
             ExitChoice::Cancel => {
                 // No-op. The dialog's Callback already removed it from the
                 // compositor; the AgentView remains active.
-            }
-            ExitChoice::Detach => {
-                let _ = self.action_tx.send(Action::BackToBoard);
             }
             ExitChoice::CloseSession => {
                 if let Some(session) = self.agent_view_store.current_session().cloned() {

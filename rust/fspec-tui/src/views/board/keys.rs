@@ -99,11 +99,14 @@ pub(super) fn handle_mode_view_key(
             }
             Some(EventResult::consumed())
         }
-        // RPC-395: '.' starts a new agent — mirror of the Shift+Right
-        // handler. Modifier-free so Ctrl-chorded keys fall through.
+        // RPC-395 (superseded by BUG-203): '.' starts a NEW agent —
+        // the CreateSessionDialog (BUG-199 agent-bar parity), NEVER a
+        // resume/attach: jumping into the selected unit's attached
+        // session or the first open session is the Shift+Right CYCLE
+        // gesture's job (`Action::OpenAgentView`). Modifier-free so
+        // Ctrl-chorded keys fall through.
         KeyCode::Char('.') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-            let target = view.selected_session(store);
-            view.emit(Action::OpenAgentView(target));
+            view.emit(Action::OpenCreateSessionDialog { preselect: None });
             Some(EventResult::consumed())
         }
         // BOARD-023 (re-purposed by MENU-005): 'u'/'U'

@@ -6,9 +6,15 @@
 //!
 //! Mirrors `src/components/ThreeButtonDialog.tsx` as used by
 //! `src/tui/components/AgentView.tsx` lines 4391-4426 + 5502-5515 (TUI-045 /
-//! TUI-046): three flat options [Detach, Close Session, Cancel] with cyclic
-//! Left/Right navigation, yellow accent, Detach pre-selected. Enter commits
-//! `Action::AgentExitChoice { choice }`. ESC commits Cancel.
+//! TUI-046): flat options with cyclic Left/Right navigation, yellow accent,
+//! first option pre-selected. Enter commits `Action::AgentExitChoice
+//! { choice }`. ESC commits Cancel.
+//!
+//! BUG-205: the original third option 'Detach' was removed — it only
+//! dispatched `Action::BackToBoard`, which plain navigation (menu bar,
+//! Shift+Left, mux board-pane focus) already does. The dialog now offers
+//! exactly [Close Session, Cancel] with Close Session pre-selected,
+//! matching the board 'Exit fspec?' convention.
 //!
 //! Description text is conditional on `is_busy`:
 //! - `true`  → "The agent is currently running. Choose how to exit."
@@ -31,25 +37,19 @@ pub const EXIT_CONFIRMATION_DIALOG_ID: &str = "exit-confirmation-dialog";
 /// `<ThreeButtonDialog borderColor="yellow" />` choice.
 const ACCENT: Accent = Accent::Yellow;
 
-/// Three flat options surfaced by the dialog. Discriminant order matches
-/// `options=['Detach', 'Close Session', 'Cancel']` in
-/// `src/tui/components/AgentView.tsx:5505` so cyclic Left/Right cycling
-/// lands on the same option across both frontends.
+/// Two flat options surfaced by the dialog. Discriminant order matches the
+/// board `BoardExitConfirmationDialog` convention: the destructive option
+/// first, pre-selected (BUG-205 removed the original 'Detach' option — it
+/// only navigated back to the Board, which plain navigation already does).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExitChoice {
-    /// "Detach" — leave the session running in background.
-    Detach,
     /// "Close Session" — terminate the backend session.
     CloseSession,
     /// "Cancel" — close the dialog, stay on AgentView.
     Cancel,
 }
 
-const OPTIONS: [ExitChoice; 3] = [
-    ExitChoice::Detach,
-    ExitChoice::CloseSession,
-    ExitChoice::Cancel,
-];
+const OPTIONS: [ExitChoice; 2] = [ExitChoice::CloseSession, ExitChoice::Cancel];
 
 const TITLE: &str = "Exit Session?";
 const DESCRIPTION_BUSY: &str = "The agent is currently running. Choose how to exit.";
@@ -62,7 +62,6 @@ const MIN_WIDTH: u16 = 54;
 
 fn option_label(opt: ExitChoice) -> &'static str {
     match opt {
-        ExitChoice::Detach => "Detach",
         ExitChoice::CloseSession => "Close Session",
         ExitChoice::Cancel => "Cancel",
     }
@@ -81,13 +80,14 @@ pub struct ExitConfirmationDialog {
 
 impl ExitConfirmationDialog {
     /// Construct a fresh dialog. `is_busy=true` switches the description
-    /// to the active-stream variant. Default selection is `Detach`
-    /// (`defaultSelectedIndex=0` per TS contract).
+    /// to the active-stream variant. Default selection is `CloseSession`
+    /// (BUG-205: destructive option pre-selected, matching the board
+    /// 'Exit fspec?' convention).
     pub fn new(is_busy: bool) -> Self {
         Self {
             id: EXIT_CONFIRMATION_DIALOG_ID.to_string(),
             is_busy,
-            selected: ExitChoice::Detach,
+            selected: ExitChoice::CloseSession,
             action_tx: None,
             pending_action: None,
             last_layout: LastLayout::new(),
@@ -109,9 +109,8 @@ impl ExitConfirmationDialog {
             return EventResult::ignored();
         }
         match self.last_layout.hit(col, row) {
-            Some(0) => self.commit(ExitChoice::Detach),
-            Some(1) => self.commit(ExitChoice::CloseSession),
-            Some(2) => self.commit(ExitChoice::Cancel),
+            Some(0) => self.commit(ExitChoice::CloseSession),
+            Some(1) => self.commit(ExitChoice::Cancel),
             _ => EventResult::ignored(),
         }
     }

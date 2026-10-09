@@ -518,12 +518,6 @@ pub enum Action {
         codelet_rpc_types::SessionId,
         codelet_rpc_types::WorkUnitContext,
     ),
-    /// RPC-050: emitted by the spawned `/detach` task on the Ok branch.
-    /// App::dispatch routes this through `handle_work_unit_detached`,
-    /// which clears the per-session binding in AgentViewStore, resets
-    /// the focused session's scrollback (TS prepareForNewSession
-    /// parity), and resets the per-session TokenState.
-    WorkUnitDetached(codelet_rpc_types::SessionId),
     /// RPC-051: emitted by the AgentView's default Esc arm (after the
     /// popup → compositor-dialog → mode-view cascade levels have
     /// already had a chance to consume the keypress). App::dispatch
@@ -538,12 +532,9 @@ pub enum Action {
     /// the Board view (silent no-op for the interrupt branch).
     AgentEscPressed,
     /// RPC-098: emitted by [`exit_confirmation_dialog::ExitConfirmationDialog`]
-    /// when the user picks one of the three options (Detach / Close Session
-    /// / Cancel). Routed through `App::dispatch` to `handle_agent_exit_choice`:
+    /// when the user picks one of the two options (Close Session / Cancel).
+    /// Routed through `App::dispatch` to `handle_agent_exit_choice`:
     ///   - `ExitChoice::Cancel` → no-op (dialog already removed via Callback);
-    ///   - `ExitChoice::Detach` → dispatch `Action::BackToBoard` (the session
-    ///     stays alive in the backend, mirroring the TS GlobalSessionStreamManager
-    ///     detach semantics);
     ///   - `ExitChoice::CloseSession` → spawn `backend.destroy_session(id)` as
     ///     a pending task, then dispatch `Action::BackToBoard`.
     AgentExitChoice {
@@ -1400,9 +1391,12 @@ pub enum Action {
     /// `[New Agent, Close Agent [esc]]`, mux: none). The `App`
     /// dispatch resolves it per surface: the board's `New Agent`
     /// reuses the `.`-key target (selected unit's session, R8
-    /// substitution); the agent's buttons (BUG-199) — `New Agent`
-    /// mounts the CreateSessionDialog (start a new agent) and
-    /// `Close Agent [esc]` runs the `AgentEscPressed` cascade.
+    /// substitution — BUG-203 supersedes it with the payload-free
+    /// CreateSessionDialog mapping); the agent's buttons (BUG-199) —
+    /// `New Agent` mounts the CreateSessionDialog (start a new agent)
+    /// and `Close Agent` ALWAYS mounts the 'Exit Session?'
+    /// ExitConfirmationDialog (BUG-204, superseding BUG-199 R2 — the
+    /// AgentEscPressed cascade is the physical Esc key's job).
     /// A single token keeps the dispatch arm readable and avoids
     /// overloading the Zone A item index (the design doc's Q-free
     /// choice).

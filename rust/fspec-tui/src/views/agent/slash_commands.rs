@@ -27,7 +27,6 @@ pub enum SlashCommandAction {
     Compact,
     Debug,
     Provider,
-    Detach,
     MergeWorktree,
     Schedule,
     Loop,
@@ -61,7 +60,6 @@ impl SlashCommandAction {
             SlashCommandAction::Compact => "compact",
             SlashCommandAction::Debug => "debug",
             SlashCommandAction::Provider => "provider",
-            SlashCommandAction::Detach => "detach",
             SlashCommandAction::MergeWorktree => "merge-worktree",
             SlashCommandAction::Schedule => "schedule",
             SlashCommandAction::Loop => "loop",
@@ -151,10 +149,6 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Blocklist,
         description: "Manage blocklist rules",
-    },
-    SlashCommand {
-        action: SlashCommandAction::Detach,
-        description: "Detach session from work unit",
     },
     SlashCommand {
         action: SlashCommandAction::MergeWorktree,

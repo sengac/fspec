@@ -34,10 +34,12 @@
 //!
 //! Bar content geometry (inside the 120x24 buffer, ASCII cells):
 //!   logo block x2..13, right column x14..118 (1-cell bar padding →
-//!   content x15..): "Kanban" x15-20 (item x = 15), "Tools" x22-26,
-//!   "Settings" x28-35, "Help" x37-40 (MENU-008: four Zone A items),
-//!   dim `│` separator at x43, chips from x45 (4-cell cells, 2-cell
-//!   gaps: `#1` x45-48, `#2` x51-54, `#3` x57-60).
+//!   content x15..): MENU-011 paints the Zone A items BRACKETED —
+//!   "[ Kanban ]" x15-24 (item x = 15), "[ Tools ]" x26-34,
+//!   "[ Settings ]" x36-47, "[ Help ]" x49-56 (MENU-008: four Zone A
+//!   items), dim `│` separator at x59, bracketed chips from x61 (6-cell
+//!   cells, 2-cell gaps: `[ #1 ● ]` x61-66, `[ #2 ● ]` x69-74,
+//!   `[ #3 ● ]` x77-82).
 //!   The Kanban dropdown panel anchors under the item: x15, y5.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -61,11 +63,15 @@ use common::MockBackend;
 /// The Kanban item's Zone A rect x (header right column, bar row).
 const KANBAN_X: u16 = 15;
 /// The Tools item's Zone A rect x.
-const TOOLS_X: u16 = 22;
+/// MENU-011: the Zone A items paint bracketed (`[ Kanban ]` etc.), so the
+/// item x positions moved right (`[ Kanban ]` = 10 cells wide).
+const TOOLS_X: u16 = 26;
 /// The Help item's Zone A rect x.
-const HELP_X: u16 = 37;
+const HELP_X: u16 = 49;
 /// The first chip's cell x.
-const CHIP1_X: u16 = 45;
+/// MENU-011 R2: the bracketed cells widen the row — chip #1 x61-66,
+/// chip #2 x69-74, chip #3 x77-82 (2-cell gaps between cells).
+const CHIP1_X: u16 = 61;
 
 const BOARD_EXIT_DIALOG_ID: &str = "board-exit-confirmation-dialog";
 
@@ -280,7 +286,9 @@ async fn scenario_left_from_the_first_column_focuses_the_last_chip() {
     // The 'New Agent' button's rightmost cell (its last char, 't')
     // paints inverse-video.
     let na_x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
-    let na_last = na_x + 8; // "New Agent".len() - 1
+    // MENU-011: the button paints bracketed — "[ New Agent ]" (find_x
+    // lands on the 'N'; the last 't' sits 10 cells past the '[').
+    let na_last = na_x + 10; // "[ New Agent".len() - 1
     assert!(
         is_inverse(&buf, na_last, y),
         "the New Agent button's last cell must paint inverse-video on row {y}:\n{}",
@@ -320,10 +328,12 @@ async fn scenario_left_from_the_new_agent_button_focuses_the_last_chip() {
     );
     let buf = render_app(&mut app);
     let y = bar_row(&buf);
-    // Chips sit 4 cells wide with 2-cell gaps after the `│` separator:
-    // #1 x45-48, #2 x51-54, #3 x57-60 — so chip #3 starts at x57.
+    // Chips sit 8 cells wide (MENU-011 R2: the bracketed `[ #n ● ]` =
+    // "#n " prefix + glyph + the "[ " / " ]" brackets) with 2-cell gaps
+    // after the `│` separator: #1 x61-68, #2 x71-78, #3 x81-88 — so
+    // chip #3 starts at x81 (CHIP1_X + 2*10).
     assert!(
-        is_inverse(&buf, CHIP1_X + 12, y),
+        is_inverse(&buf, CHIP1_X + 20, y),
         "chip #3 cell must paint inverse-video on row {y}:\n{}",
         row_text(&buf, y)
     );
@@ -784,7 +794,7 @@ async fn scenario_with_no_open_sessions_the_ring_wraps_from_the_last_item_to_the
     let y = bar_row(&buf);
     let na_x = find_x(&buf, y, "New Agent").expect("New Agent on the bar row");
     assert!(
-        is_inverse(&buf, na_x + 8, y),
+        is_inverse(&buf, na_x + 10, y), // MENU-011: bracketed "[ New Agent ]"
         "the New Agent button must paint inverse-video on row {y}:\n{}",
         row_text(&buf, y)
     );

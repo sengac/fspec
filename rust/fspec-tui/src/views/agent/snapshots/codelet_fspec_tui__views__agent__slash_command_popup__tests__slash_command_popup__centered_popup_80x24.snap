@@ -19,8 +19,8 @@ expression: rows
 - │   /compact         Compact context window                                    │
 - │   /isolation       Toggle worktree isolation (detach or create isolated sess │
 - │   /blocklist       Manage blocklist rules                                    │
-- │   /detach          Detach session from work unit                             │
 - │   /merge-worktree  Merge worktree changes and close session                  │
+- │   /schedule        Manage scheduled jobs                                     │
 - │ ↓                                                                            │
 - │                                                                              │
 - │                  ↑↓ Navigate │ Tab/Enter Select │ Esc Close                  │

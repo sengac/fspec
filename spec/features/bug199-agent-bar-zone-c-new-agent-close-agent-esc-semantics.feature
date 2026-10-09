@@ -31,6 +31,14 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   3. R3 — the agent bar's second button label is 'Close Agent [esc]'
   (5-cell hint), so the user knows how to escape the session without
   clicking the button. The board keeps its single 'New Agent' button.
+
+  SUPERSESSION NOTE (BUG-204): R2 was superseded by BUG-204 — 'Close
+  Agent' ALWAYS mounts the 'Exit Session?' dialog (no interrupt /
+  no draft-clear branch); only the physical Esc key keeps the full
+  cascade. The two R2 scenarios that encoded the state-dependent
+  behavior ('Close Agent' on a running session interrupts the run /
+  clears the draft) were removed; the idle-session scenario remains
+  valid (BUG-204 keeps the dialog for every state).
   """
 
   # ========================================
@@ -43,13 +51,10 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   #      on the dialog id, context-aware title from the current session's
   #      WorkUnitContext) and the user stays on the Agent view until the
   #      dialog is confirmed. The existing session is never disturbed.
-  #   2. R2: The agent bar's Zone C 'Close Agent' button runs the
-  #      AgentEscPressed cascade (the button IS the Esc gesture): running /
-  #      compacting session → interrupt the run and stay on the Agent view;
-  #      non-empty input draft → clear the draft and stay; otherwise → push
-  #      the 'Exit Session?' ExitConfirmationDialog (idempotent on the
-  #      dialog id). The dialog's options commit through the existing
-  #      AgentExitChoice bus action (Detach / Close Session / Cancel).
+  #   2. R2 (SUPERSEDED by BUG-204): The agent bar's Zone C 'Close Agent'
+  #      button ALWAYS mounts the 'Exit Session?' dialog (the running /
+  #      draft variants now show the dialog too, not interrupt/clear).
+  #      The physical Esc key still runs the full cascade.
   #   3. R3: The agent bar's second Zone C button label is 'Close Agent
   #      [esc]'; the first button keeps its exact 'New Agent' label. The
   #      board surface keeps its single 'New Agent' button unchanged.
@@ -62,12 +67,12 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   #   1. Agent view with 2 open sessions: click 'New Agent' → the Create
   #      Session dialog mounts over the Agent view; the current session is
   #      unchanged until the dialog is confirmed.
-  #   2. Agent view on a RUNNING session: click 'Close Agent [esc]' → the
-  #      run is interrupted, the user stays on the Agent view (EXACTLY the
-  #      first Esc behavior) — no confirmation dialog, no teardown.
-  #   3. Agent view on an idle session with a typed draft: click 'Close
-  #      Agent [esc]' → the draft is cleared (EXACTLY the L6 Esc behavior)
-  #      and no dialog appears.
+  #   2. (SUPERSEDED by BUG-204) Agent view on a RUNNING session: click
+  #      'Close Agent' → the 'Exit Session?' dialog appears (busy variant);
+  #      the run is NOT interrupted.
+  #   3. (SUPERSEDED by BUG-204) Agent view on an idle session with a
+  #      typed draft: click 'Close Agent' → the 'Exit Session?' dialog
+  #      appears; the draft is NOT cleared.
   #   4. Agent view on an idle session with an empty input: click 'Close
   #      Agent [esc]' → the 'Exit Session?' three-button dialog (Detach /
   #      Close Session / Cancel) appears — the session is destroyed only if
@@ -111,25 +116,9 @@ Feature: BUG-199 — agent-bar Zone C button semantics (New Agent starts a new a
   @keyboard-navigation
   @mouse-events
   @regression
-  Scenario: 'Close Agent' on a running session interrupts the run like the first Esc
-    Given the agent view shows 1 open session that is RUNNING
-    And the agent bar is painted
-    When I left-click the 'Close Agent [esc]' button
-    Then the run is interrupted and the view stays the Agent view
-    And no exit confirmation dialog is shown and the session is not destroyed
-    And the agent bar's ring focus clears
-
   @keyboard-navigation
   @mouse-events
   @regression
-  Scenario: 'Close Agent' with a non-empty input clears the draft like Esc level 6
-    Given the agent view shows 1 open idle session
-    And the input buffer contains a draft
-    And the agent bar is painted
-    When I left-click the 'Close Agent [esc]' button
-    Then the input buffer is cleared and the view stays the Agent view
-    And no exit confirmation dialog is shown
-
   @keyboard-navigation
   @mouse-events
   @regression

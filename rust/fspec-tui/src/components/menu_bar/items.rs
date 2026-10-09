@@ -19,14 +19,12 @@
 //!
 //! Each entry carries the key hint, label, one-line description, and the
 //! `MenuAction` it resolves to. `MenuAction::to_action` maps onto the
-//! EXISTING `Action` variants (no new bus tokens).
-//!
-//! R8: the `NewAgent` entry carries NO session payload in the registry —
-//! the caller substitutes its live `Option<SessionId>` target via
-//! `to_action` (BOARD-023 R5 snapshot semantics, but the registry stays
-//! `&'static`).
-
-use codelet_rpc_types::SessionId;
+//! EXISTING `Action` variants (no new bus tokens) — payload-free: the
+//! `NewAgent` entry's MENU-009 R8 session-target substitution was removed
+//! by BUG-199 (agent surface) and BUG-203 (board surface) — 'New Agent'
+//! ALWAYS mounts the CreateSessionDialog (the shared RPC-060 helper), it
+//! never re-enters / resumes a session (that is the Shift+Right CYCLE
+//! gesture's `Action::OpenAgentView` job).
 
 use crate::components::Action;
 
@@ -35,8 +33,15 @@ use crate::components::Action;
 /// MENU-001 (the ring-navigation actions land with MENU-002/003).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MenuAction {
-    /// `.` New Agent — `OpenAgentView(target)` where `target` is the
-    /// caller's session snapshot at execute time (R8).
+    /// `.` New Agent — BUG-199 / BUG-203: ALWAYS start a NEW agent. The
+    /// row mounts the CreateSessionDialog via the shared RPC-060 helper
+    /// (`Action::OpenCreateSessionDialog { preselect: None }`, the
+    /// agent-bar button's `dispatch_menu_zone_c` arm — exact parity).
+    /// The MENU-009 R8 current-session / selected-unit target
+    /// substitution is REMOVED: 'New Agent' must never re-enter /
+    /// resume an existing session (that is the Shift+Right CYCLE
+    /// gesture's job, `Action::OpenAgentView`). The mapping is
+    /// payload-free — `to_action` takes no target.
     NewAgent,
     /// `/` Search work units.
     Search,
@@ -56,21 +61,30 @@ pub enum MenuAction {
     Help,
     /// `Esc` Confirm exiting fspec.
     Exit,
-    /// MENU-009 Zone C: the agent bar's `Close Agent [esc]` button —
-    /// BUG-199: the button IS the Esc gesture, so it runs the
-    /// AgentEscPressed cascade (running → interrupt, draft → clear,
-    /// else the 'Exit Session?' ExitConfirmationDialog — RPC-098 L7)
-    /// instead of the direct `AgentExitChoice{CloseSession}` teardown.
+    /// MENU-009 Zone C: the agent bar's `Close Agent` button —
+    /// BUG-204 (superseding BUG-199 R2): the button ALWAYS mounts the
+    /// 'Exit Session?' ExitConfirmationDialog (RPC-098 L7) when a
+    /// session is open (no interrupt / no draft-clear branch — those
+    /// belong to the physical Esc key only). The mapping below is a
+    /// payload-free board-side fallback: the agent surface resolves
+    /// `CloseAgent` through its OWN dispatch arm (`dispatch_menu_zone_c`),
+    /// and no board Zone C carries `CloseAgent`, so this arm is
+    /// unreachable in production.
     CloseAgent,
 }
 
 impl MenuAction {
-    /// Resolve to the concrete [`Action`] to emit. `new_agent_target`
-    /// carries the session target snapshot for [`MenuAction::NewAgent`]
-    /// (ignored by every other variant).
-    pub fn to_action(self, new_agent_target: Option<SessionId>) -> Action {
+    /// Resolve to the concrete [`Action`] to emit. Every variant maps to
+    /// a payload-free `Action` — BUG-199 / BUG-203 removed the
+    /// `NewAgent` session-target substitution (the 'New Agent' row /
+    /// button ALWAYS mounts the CreateSessionDialog via the shared
+    /// RPC-060 helper; it never re-enters or resumes a session).
+    pub fn to_action(self) -> Action {
         match self {
-            MenuAction::NewAgent => Action::OpenAgentView(new_agent_target),
+            // BUG-199 / BUG-203: 'New Agent' ALWAYS starts a new agent —
+            // the shared RPC-060 helper (the agent-bar button's
+            // `dispatch_menu_zone_c` arm — exact parity, no payload).
+            MenuAction::NewAgent => Action::OpenCreateSessionDialog { preselect: None },
             MenuAction::Search => Action::OpenWorkUnitSearch,
             MenuAction::Attachments => Action::OpenAttachmentPicker,
             MenuAction::Checkpoints => Action::OpenCheckpointsView,
@@ -80,9 +94,12 @@ impl MenuAction {
             MenuAction::Providers => Action::OpenProviderSettingsView,
             MenuAction::Help => Action::OpenBoardHelp,
             MenuAction::Exit => Action::OpenBoardExitConfirmation,
-            // BUG-199 R2: the agent bar's 'Close Agent [esc]' button is
-            // the Esc gesture — the same cascade `AgentEscPressed` runs
-            // (interrupt / draft-clear / ExitConfirmationDialog).
+            // BUG-204 (superseding BUG-199 R2): the agent bar's
+            // 'Close Agent' button ALWAYS mounts the 'Exit Session?'
+            // dialog — the agent surface resolves `CloseAgent` through
+            // its OWN dispatch arm (`dispatch_menu_zone_c`), so this
+            // mapping is a payload-free board-side fallback (no board
+            // Zone C carries `CloseAgent` — unreachable in production).
             MenuAction::CloseAgent => Action::AgentEscPressed,
         }
     }
@@ -115,13 +132,26 @@ pub struct MenuCategory {
     pub entries: &'static [MenuEntry],
 }
 
+impl MenuCategory {
+    /// MENU-011 R1: the Zone A item's bracketed display label —
+    /// `"Kanban"` → `"[ Kanban ]"` (a space between the word and each
+    /// bracket). The brackets are part of the button: the layout pass,
+    /// the painter and the hit-test rects all cover them. The registry
+    /// `label` itself stays PLAIN — the dropdown rows and the 'u' help
+    /// dialog keep their plain labels (bracketing is a bar-row-only
+    /// paint-time transform).
+    pub fn bracketed_label(&self) -> String {
+        format!("[ {} ]", self.label)
+    }
+}
+
 /// MENU-008 R2: the 4 Kanban (work-unit workflow) entries — the legacy
 /// `.`/`/`/`D`/`A` BOARD-023 arms.
 pub const KANBAN: &[MenuEntry] = &[
     MenuEntry {
         key: ".",
         label: "New Agent",
-        description: "Open/start an agent for the focused unit",
+        description: "Always start a new agent (never resumes)",
         action: MenuAction::NewAgent,
     },
     MenuEntry {

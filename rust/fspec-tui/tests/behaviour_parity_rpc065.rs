@@ -31,7 +31,7 @@ use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
     Action, ViewMode, CREATE_SESSION_DIALOG_ID, ROLE_DIALOG_ID, THINKING_LEVEL_DIALOG_ID,
 };
-use codelet_rpc_types::{SessionId, SessionStatus, ThinkingLevel, WorkUnitContext};
+use codelet_rpc_types::{SessionId, SessionStatus, ThinkingLevel};
 use crossterm::event::KeyCode;
 
 mod common;
@@ -404,42 +404,6 @@ async fn slash_blocklist_activates_blocklist_view() {
 
     // @step Then the navigator's active_view is ViewMode::Blocklist
     assert_eq!(h.active_view(), ViewMode::Blocklist);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// /detach — calls backend.set_work_unit_context(None)
-// ─────────────────────────────────────────────────────────────────────────
-
-/// TS-REF: src/tui/views/AgentView.tsx (handleDetachCommand)
-/// DEEP-REF: tests/slash_detach_rpc050.rs
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_detach_clears_work_unit_context() {
-    // @step Given a fresh AppTestHarness with focused session s-1 bound to a WorkUnitContext
-    let mut h = AppTestHarness::new();
-    let ctx = WorkUnitContext {
-        id: "AUTH-001".to_string(),
-        title: "User Login".to_string(),
-        status: "implementing".to_string(),
-    };
-    h.app
-        .agent_view_store_mut()
-        .set_work_unit_context(seed_sid(), ctx);
-
-    // @step When I dispatch the slash command "/detach"
-    h.dispatch_slash(SlashCommandAction::Detach);
-
-    // @step Then within 1 second MockBackend.set_work_unit_context_calls() is 1
-    h.wait_for_mock(
-        |m| m.set_work_unit_context_calls() == 1,
-        "MockBackend.set_work_unit_context_calls() == 1",
-    )
-    .await;
-
-    // @step And MockBackend.last_set_work_unit_context() is Some((s-1, None))
-    assert_eq!(
-        h.mock.last_set_work_unit_context(),
-        Some((seed_sid(), None))
-    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

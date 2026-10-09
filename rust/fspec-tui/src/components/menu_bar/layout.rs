@@ -123,7 +123,9 @@ pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {
     let mut x = inner.x;
     let mut item_rects = Vec::with_capacity(snap.zone_a.len());
     for category in snap.zone_a.iter() {
-        let w = category.label.width() as u16;
+        // MENU-011 R1: the Zone A item's PAINTED label is the bracketed
+        // form (`[ Kanban ]`) — the rect covers the brackets (R4).
+        let w = category.bracketed_label().width() as u16;
         item_rects.push(Rect {
             x,
             y: inner.y,
@@ -183,10 +185,16 @@ pub fn menu_bar_layout(area: Rect, snap: &MenuSnapshot) -> Option<MenuLayout> {
     })
 }
 
-/// Zone A natural width: the item labels joined by 1 space.
+/// Zone A natural width: the item labels joined by 1 space. MENU-011
+/// R1: the labels count their BRACKETED forms (`[ Kanban ]` =
+/// `label + 4` cells) — the brackets are part of the button (R4).
 fn zone_a_width(snap: &MenuSnapshot) -> usize {
     let items = snap.zone_a;
-    items.iter().map(|c| c.label.width()).sum::<usize>() + items.len().saturating_sub(1)
+    items
+        .iter()
+        .map(|c| c.bracketed_label().width())
+        .sum::<usize>()
+        + items.len().saturating_sub(1)
 }
 
 /// MENU-009: Zone C's natural width: the button labels joined by the
@@ -251,9 +259,12 @@ fn display_cells(snap: &MenuSnapshot, level: u8) -> Vec<DisplayCell> {
 }
 
 /// One Zone B cell's width at `level` (marker = `+N`; the WU id suffix
-/// counts only at level 0 — it is the R6 step-1 truncation).
+/// counts only at level 0 — it is the R6 step-1 truncation). MENU-011
+/// R2: every Zone B cell paints bracketed (`[ ... ]`) — the +4 cells
+/// cover the `"[ "` prefix and the `" ]"` suffix (R4: the brackets are
+/// part of the hit-test span).
 pub fn cell_width(snap: &MenuSnapshot, cell: &DisplayCell, level: u8) -> usize {
-    match cell {
+    let mut w = match cell {
         DisplayCell::View { label, .. } => label.width(),
         DisplayCell::Fold { count, .. } => format!("+{count}").len(),
         DisplayCell::Chip { orig } => {
@@ -268,7 +279,9 @@ pub fn cell_width(snap: &MenuSnapshot, cell: &DisplayCell, level: u8) -> usize {
             }
             w + chip.glyph.width()
         }
-    }
+    };
+    w += 4; // MENU-011 R2: the "[ " + " ]" brackets
+    w
 }
 
 /// The chip index an original Zone B cell refers to (view labels have
@@ -333,13 +346,13 @@ mod tests {
         assert_eq!(full.level, 0);
         assert_eq!(
             full.cell_rects[0].width,
-            3 + 8 + 1 + 1,
-            "#1 prefix + WU id + space + glyph"
+            3 + 8 + 1 + 1 + 4,
+            "#1 prefix + WU id + space + glyph + the MENU-011 '[ ]' brackets"
         );
-        // 40 cols: the level-0 row (26 Zone A + separator + chip = 34
-        // inner cells) no longer fits, so the WU id suffix is the first
-        // thing dropped (R6 step 1).
-        let tight = menu_bar_layout(Rect::new(0, 0, 40, 1), &snap).unwrap();
+        // 60 cols: the level-0 row (42 bracketed Zone A + 3 separator
+        // + 17 chip = 69 inner cells) no longer fits, so the WU id
+        // suffix is the first thing dropped (R6 step 1).
+        let tight = menu_bar_layout(Rect::new(0, 0, 60, 1), &snap).unwrap();
         // @step Then no chip shows a work-unit id suffix
         assert_eq!(tight.level, 1, "WU id dropped first");
     }
@@ -347,8 +360,10 @@ mod tests {
     #[test]
     fn very_tight_width_folds_chips_beyond_three() {
         // @step And the 4th chip is folded into a "+1" marker after the first 3
+        // (MENU-011: the bracketed Zone A is 42 cells — the fold level
+        // needs 84 inner cells, so the 90-col area is the fixture.)
         let chips = (0..6).map(|i| chip(i, None)).collect();
-        let layout = menu_bar_layout(Rect::new(0, 0, 30, 1), &snap(chips)).expect("layout");
+        let layout = menu_bar_layout(Rect::new(0, 0, 90, 1), &snap(chips)).expect("layout");
         assert!(layout.level >= 2, "folding level used: {}", layout.level);
         let fold_count = layout
             .cells
@@ -361,13 +376,16 @@ mod tests {
     #[test]
     fn absolute_minimum_drops_zone_b() {
         // @step Given a MenuSnapshot with 4 open sessions
-        // @step When the bar is rendered into a 30-column area
+        // @step When the bar is rendered into a 50-column area
+        // (MENU-011: the bracketed Zone A is 42 cells — the minimum a
+        // 50-col area keeps; every Zone B ladder step overflows, so
+        // Zone B is dropped entirely.)
         // @step Then the row still fits within the area width
         // @step And it shows at least the "Kanban" and "Help" items
         let chips = (0..6)
             .map(|i| chip(i, Some("A-LONG-UNIT-ID-TO-WRAP")))
             .collect();
-        let layout = menu_bar_layout(Rect::new(0, 0, 30, 1), &snap(chips)).unwrap();
+        let layout = menu_bar_layout(Rect::new(0, 0, 50, 1), &snap(chips)).unwrap();
         assert_eq!(layout.level, 4, "Zone B dropped entirely");
         assert!(layout.separator.is_none());
         assert!(layout.cell_rects.is_empty());

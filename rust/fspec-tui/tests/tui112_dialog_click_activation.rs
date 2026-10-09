@@ -3,6 +3,7 @@
 //! R3 row-list dialogs, R4/R5 hit-testing semantics).
 //!
 //! Feature: spec/features/left-click-activates-buttons-rows-in-all-enter-selectable-modal-dialogs-new-agent-exit-session-etc.feature
+//!          spec/features/exit-session-dialog-click-activation.feature
 //!
 //! Each scenario in the feature file maps 1:1 to a test below; every
 //! Gherkin step is annotated with its `// @step` comment (ACDD).
@@ -201,14 +202,14 @@ fn exit_choice_of(action: Option<Action>) -> Option<ExitChoice> {
 /// Scenario: Exit Session — clicking Close Session commits it
 #[test]
 fn exit_session_clicking_close_session_commits_it() {
-    // @step Given the "Exit Session?" dialog is open with "Detach" highlighted
+    // @step Given the "Exit Session?" dialog is open with "Close Session" highlighted
     let mut dialog = ExitConfirmationDialog::new(false);
-    assert_eq!(dialog.selected_choice(), ExitChoice::Detach);
+    assert_eq!(dialog.selected_choice(), ExitChoice::CloseSession);
     render_80x24(&mut dialog);
     let layout = dialog.last_layout();
 
     // @step When the user left-clicks the "Close Session" button
-    let ev = down_at(col_of(layout, 1), layout.controls[1].y);
+    let ev = down_at(col_of(layout, 0), layout.controls[0].y);
     let result = dialog.handle_event(&ev);
 
     // @step Then the exit choice CloseSession is committed
@@ -221,27 +222,27 @@ fn exit_session_clicking_close_session_commits_it() {
     assert!(result.is_consumed(), "a committing click is consumed");
 }
 
-/// Scenario: Exit Session — clicking Detach commits it
+/// Scenario: Exit Session — clicking Cancel dismisses it
 #[test]
-fn exit_session_clicking_detach_commits_it() {
-    // @step Given the "Exit Session?" dialog is open with "Detach" highlighted
+fn exit_session_clicking_cancel_dismisses_it() {
+    // @step Given the "Exit Session?" dialog is open with "Close Session" highlighted
     let mut dialog = ExitConfirmationDialog::new(false);
-    assert_eq!(dialog.selected_choice(), ExitChoice::Detach);
+    assert_eq!(dialog.selected_choice(), ExitChoice::CloseSession);
     render_80x24(&mut dialog);
     let layout = dialog.last_layout();
 
-    // @step When the user left-clicks the "Detach" button
-    let ev = down_at(col_of(layout, 0), layout.controls[0].y);
+    // @step When the user left-clicks the "Cancel" button
+    let ev = down_at(col_of(layout, 1), layout.controls[1].y);
     let result = dialog.handle_event(&ev);
 
-    // @step Then the exit choice Detach is committed
+    // @step Then the exit choice Cancel is committed
     assert_eq!(
         exit_choice_of(dialog.take_pending_action()),
-        Some(ExitChoice::Detach),
-        "clicking 'Detach' must commit the Detach choice"
+        Some(ExitChoice::Cancel),
+        "clicking 'Cancel' must commit the Cancel choice"
     );
     // @step And the dialog is removed
-    assert!(result.is_consumed(), "a committing click is consumed");
+    assert!(result.is_consumed(), "a dismissing click is consumed");
 }
 
 // ─────────────────────────────────────────────────────────────────────
