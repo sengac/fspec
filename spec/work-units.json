@@ -237818,7 +237818,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2026-10-10T07:33:43.245Z",
-      "updatedAt": "2026-10-10T21:50:04.885Z",
+      "updatedAt": "2026-10-10T22:16:29.345Z",
       "description": "When a client connects to a daemon that already has sessions (or a fresh client process starts), the TUI must restore the session the user was last viewing instead of silently creating a fresh empty session. Resolution order: (1) client's own focused session (reconnect path only — tabs survive transient WS drops), (2) daemon's in-memory active-session pointer (RPC-037 get_active_session), (3) most-recent session from list_sessions(daemon workspace cwd) — covers daemon restart via resume-from-disk, (4) fallback to create_session(None) only when nothing is restorable (preserves RPC-011 safety net). The TUI keeps the daemon pointer fresh by calling set_active_session on attach, focus switch, and session creation. Restores attach via the existing RPC-049 path (resume_session + get_buffered_output replay) and flip to the Agent view. Supersedes the unconditional create_session(None) in bootstrap-adjacent paths: RPC-011 create-on-reconnect becomes a fallback only.",
       "epic": "rust-frontend",
       "children": [],
@@ -237945,7 +237945,8 @@
       "estimate": 8,
       "attachments": [
         "spec/attachments/TUI-113/ast-research-session-restore-anchors.md"
-      ]
+      ],
+      "iterations": 1
     }
   }
 }
