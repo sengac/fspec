@@ -833,7 +833,8 @@ fn snapshot_dialog_80x24_is_busy_true() {
         "busy-description must be painted, got:\n{painted}"
     );
     // @step And the button " Close Session " is pre-selected with blue background and white foreground
-    let (cs_x, cs_y) = find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
+    let (cs_x, cs_y) =
+        find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
     for off in 0..15 {
         let cell_style = buf[(cs_x + off, cs_y)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));
@@ -891,7 +892,8 @@ fn snapshot_dialog_80x24_is_busy_false() {
         "busy-only text must NOT appear with is_busy=false, got:\n{painted}"
     );
     // @step And the button " Close Session " is pre-selected with blue background and white foreground
-    let (cs_x, cs_y) = find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
+    let (cs_x, cs_y) =
+        find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
     for off in 0..15 {
         let cell_style = buf[(cs_x + off, cs_y)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));

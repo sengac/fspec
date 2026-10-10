@@ -34,9 +34,7 @@ use codelet_fspec_tui::components::menu_bar::{
     build_chips, paint_menu_bar, ChipInput, MenuAction, MenuCategory, MenuChip, MenuFocus,
     MenuLayout, MenuSnapshot, ZoneBCell, ZoneCButton, CATEGORIES,
 };
-use codelet_fspec_tui::{
-    AgentView, App, FspecBackend, Theme, ViewMode, CREATE_SESSION_DIALOG_ID,
-};
+use codelet_fspec_tui::{AgentView, App, FspecBackend, Theme, ViewMode, CREATE_SESSION_DIALOG_ID};
 use codelet_rpc_types::{SessionId, SessionStatus, WorkUnitInfo};
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,

@@ -31,8 +31,7 @@
 use std::sync::Arc;
 
 use codelet_fspec_tui::{
-    App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind, ViewMode,
-    CREATE_SESSION_DIALOG_ID,
+    App, FspecBackend, MuxConfig, MuxOrientation, MuxPaneKind, ViewMode, CREATE_SESSION_DIALOG_ID,
 };
 use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -793,7 +792,11 @@ async fn scenario_bug203_board_period_key_with_unattached_open_session_does_not_
         app.compositor().layer_ids()
     );
     // @step And the first open session "s-1" is NOT resumed (the active view is still the board)
-    assert_eq!(app.active_view(), ViewMode::Board, "no silent resume (BUG-203)");
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Board,
+        "no silent resume (BUG-203)"
+    );
 }
 
 #[tokio::test]
@@ -814,9 +817,7 @@ async fn scenario_bug203_board_zone_c_button_with_running_agent_mounts_dialog() 
 
     // @step When I left-click the '[ New Agent ]' button
     app.handle_event(&Event::Mouse(crossterm::event::MouseEvent {
-        kind: crossterm::event::MouseEventKind::Down(
-            crossterm::event::MouseButton::Left,
-        ),
+        kind: crossterm::event::MouseEventKind::Down(crossterm::event::MouseButton::Left),
         column: x,
         row: y,
         modifiers: KeyModifiers::NONE,
@@ -924,10 +925,7 @@ async fn scenario_bug203_shift_right_from_board_still_resumes_first_open_session
     app.board_store_mut().set_selected_index_for("testing", 0);
 
     // @step When the user presses Shift+Right
-    let _ = app.handle_event(&key(
-        KeyCode::Right,
-        KeyModifiers::SHIFT,
-    ));
+    let _ = app.handle_event(&key(KeyCode::Right, KeyModifiers::SHIFT));
     drain_pending(&mut app).await;
 
     // @step Then the active view is the Agent view on session "s-1" (resumed)
@@ -1010,9 +1008,7 @@ async fn scenario_bug203_kanban_dropdown_new_agent_row_mounts_dialog() {
         .expect("the open Kanban dropdown row for 'New Agent'");
     let x = find_x(&buf, y, "New Agent").expect("New Agent row x");
     app.handle_event(&Event::Mouse(crossterm::event::MouseEvent {
-        kind: crossterm::event::MouseEventKind::Down(
-            crossterm::event::MouseButton::Left,
-        ),
+        kind: crossterm::event::MouseEventKind::Down(crossterm::event::MouseButton::Left),
         column: x,
         row: y,
         modifiers: KeyModifiers::NONE,
@@ -1066,10 +1062,7 @@ async fn scenario_bug203_mux_top_bar_kanban_new_agent_row_mounts_dialog() {
     let (mut app, _mock) = fresh_app();
     seed_sessions(&mut app, 1).await;
     seed_units(&mut app).await;
-    enable_mux(
-        &mut app,
-        vec![MuxPaneKind::Board, MuxPaneKind::Agent],
-    );
+    enable_mux(&mut app, vec![MuxPaneKind::Board, MuxPaneKind::Agent]);
     render_app_at(&mut app, 120, 24);
     // @step And an agent is running on session "s-1"
     // (seeded above)
@@ -1093,5 +1086,9 @@ async fn scenario_bug203_mux_top_bar_kanban_new_agent_row_mounts_dialog() {
         app.compositor().layer_ids()
     );
     // @step And the active view remains the mux (confirming the dialog later is what flips, not the row pick)
-    assert_eq!(app.active_view(), ViewMode::Mux, "the row pick must not flip the view");
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Mux,
+        "the row pick must not flip the view"
+    );
 }

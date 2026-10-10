@@ -181,9 +181,9 @@ fn chip_cell_span(_buf: &Buffer, app: &App, chip_index: usize) -> (u16, u16) {
         .expect("a painted bar caches its Zone B cells");
     let labels = app.navigator().mux.view_label_count();
     let cell_no = labels + chip_index;
-    let (cell, rect) = cells
-        .get(cell_no)
-        .unwrap_or_else(|| panic!("chip cell {chip_index} must be cached (labels {labels}, cell index {cell_no})"));
+    let (cell, rect) = cells.get(cell_no).unwrap_or_else(|| {
+        panic!("chip cell {chip_index} must be cached (labels {labels}, cell index {cell_no})")
+    });
     assert!(
         matches!(cell, DisplayCell::Chip { .. }),
         "cell {cell_no} must be a chip: {cell:?}"
@@ -349,9 +349,7 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
         "the Kanban item must keep its primary (white) foreground: {row}"
     );
     // The dim `│` separator between the zones.
-    let sep_x = row
-        .find('│')
-        .expect("the zone separator must paint: {row}");
+    let sep_x = row.find('│').expect("the zone separator must paint: {row}");
     let sx = row[..sep_x].chars().count() as u16;
     assert_eq!(
         buf[(sx, BAR_ROW)].fg,
@@ -368,8 +366,7 @@ async fn scenario_everything_else_on_the_bar_keeps_its_existing_styling() {
         .filter(|cx| buf[(*cx, BAR_ROW)].fg == Color::Magenta)
         .count();
     assert_eq!(
-        running_magenta,
-        1,
+        running_magenta, 1,
         "exactly one Running chip cell must be magenta (the braille glyph): {row}"
     );
     let (idle_x, idle_w) = chip_cell_span(&buf, &app, 1);

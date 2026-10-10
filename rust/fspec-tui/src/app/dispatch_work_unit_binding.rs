@@ -72,7 +72,11 @@ impl App {
 
     /// RPC-050: fold a successful `set_work_unit_context(Some)` outcome
     /// into the per-session AgentViewStore map.
-    pub(crate) fn handle_work_unit_attached(&mut self, session_id: SessionId, ctx: WorkUnitContext) {
+    pub(crate) fn handle_work_unit_attached(
+        &mut self,
+        session_id: SessionId,
+        ctx: WorkUnitContext,
+    ) {
         self.agent_view_store.set_work_unit_context(session_id, ctx);
     }
 

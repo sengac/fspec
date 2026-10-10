@@ -22,7 +22,9 @@ use std::time::Duration;
 use codelet_fspec_tui::views::agent::slash_commands::{
     filter_commands, SlashCommandAction, SLASH_COMMANDS,
 };
-use codelet_fspec_tui::{parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode};
+use codelet_fspec_tui::{
+    parse_slash_command, Action, App, FspecBackend, SlashCommandParse, ViewMode,
+};
 use codelet_rpc_types::{SessionId, WorkUnitContext, WorkUnitInfo};
 use tokio::time::timeout;
 

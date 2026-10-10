@@ -170,7 +170,9 @@ fn action_enum_declares_rpc050_variants() {
 #[test]
 fn dispatch_work_unit_binding_declares_attach_helpers_and_no_detach_helpers() {
     // @step Given rust/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
-    let path = fspec_tui_src().join("app").join("dispatch_work_unit_binding.rs");
+    let path = fspec_tui_src()
+        .join("app")
+        .join("dispatch_work_unit_binding.rs");
     let body = read_raw(&path);
 
     // @step Then the file declares "handle_attach_work_unit_to_session"
