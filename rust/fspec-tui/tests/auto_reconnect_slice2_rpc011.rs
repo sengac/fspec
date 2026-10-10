@@ -281,6 +281,10 @@ async fn auto_reconnect_happy_path() {
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario 8: Reconnect re-issues create_session(None) and replaces
 //             active session id
+// SUPERSEDED BY TUI-113 (R5): the reconnect re-bootstrap now RE-ATTACHES
+// the focused session (RPC-049 resume_session path) instead of re-creating
+// one; `create_session(None)` remains only the empty-daemon fallback.
+// This test now pins the superseded contract (re-attach, no create).
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -301,31 +305,43 @@ async fn reconnect_reissues_create_session_and_replaces_active_session_id() {
     );
 
     // @step When the supervisor reconnects against a fresh daemon
-    // Surface assertion: dispatching Action::Reconnected triggers the
-    // App-side reconnect-bootstrap path (re-issue list_work_units +
-    // create_session(None)). The supervisor itself runs in the WS
-    // backend; here we exercise the App's reaction to Reconnected.
+    // TUI-113 R5: the App-side reconnect path re-ATTACHES the focused
+    // session (S-old) via the RPC-049 durable-restore path instead of
+    // re-creating a session.
     let initial_calls = mock.create_session_calls();
     app.send_action(Action::Reconnected).expect("send_action");
     pump_actions(&mut app);
-    // Yield so any tokio::spawn'd create_session call completes.
+    // Yield so the tokio::spawn'd restore round-trip (get_active_session →
+    // AttachToSession → resume_session) completes.
     tokio::time::sleep(Duration::from_millis(50)).await;
 
     // @step Then it calls backend.create_session(None) and gets back SessionId("S-new")
-    assert!(
-        mock.create_session_calls() > initial_calls,
-        "Reconnected must trigger a fresh create_session(None) call"
+    // SUPERSEDED (TUI-113 R4/R5): with a focused session the restore
+    // resolution yields "S-old", so NO create_session is issued — the
+    // RPC-011 safety net only fires on a genuinely empty daemon.
+    assert_eq!(
+        mock.create_session_calls(),
+        initial_calls,
+        "TUI-113 R5: focused-session reconnect must NOT create a new session"
     );
 
     // @step And it emits Action::SessionCreated(SessionId("S-new")) onto the action bus
     // @step And the App's repl_active_session() returns Some(SessionId("S-new"))
+    // SUPERSEDED (TUI-113 R5): the re-attach goes through the existing
+    // RPC-049 path — resume_session round-trip for "S-old" — and the
+    // focused session stays active.
     pump_actions(&mut app);
     tokio::time::sleep(Duration::from_millis(50)).await;
     pump_actions(&mut app);
     assert_eq!(
+        mock.last_resume_session(),
+        Some(SessionId::new("S-old")),
+        "TUI-113 R5: the focused session must be re-attached via resume_session"
+    );
+    assert_eq!(
         app.current_session(),
-        Some(SessionId::new("S-new")),
-        "after Reconnected, current_session must reflect the new session id"
+        Some(SessionId::new("S-old")),
+        "after Reconnected, current_session must still be the focused session"
     );
 
     // @step And the REPL transcript is NOT destructively truncated (old transcript lines remain on screen)

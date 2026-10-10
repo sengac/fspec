@@ -49,7 +49,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
-          "lines": "123-262",
+          "lines": "124-266",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",

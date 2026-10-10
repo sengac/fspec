@@ -151,6 +151,9 @@ impl App {
             .current_session_context()
             .map(|c| c.id.clone())
         {
+            // TUI-113 R3: keep the daemon's active-session pointer in
+            // sync with the focus (fire-and-forget).
+            self.spawn_set_active_session(incoming_session.clone());
             self.spawn_load_supervisors(incoming_session.clone());
             // TOOL-022 P2: re-probe the exec-stdin overlay for the
             // incoming session on focus switch. The probe clears the

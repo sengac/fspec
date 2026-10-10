@@ -2254,6 +2254,10 @@
           "description": "Work unit TUI-112 — left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.)"
         },
         {
+          "name": "@tui-113",
+          "description": "Work unit TUI-113 — auto-restore the last active session on client startup and reconnect: resolution order (focused session → daemon active pointer → most-recent workspace session), ReattachSession/RestoreSession bus tokens, set_active_session pointer tracking (sticky across BackToBoard), RPC-011 create_session fallback preserved for empty daemons"
+        },
+        {
           "name": "@turn-selection",
           "description": "Scenarios testing turn-based selection in conversation"
         },
@@ -3234,7 +3238,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-09T09:11:13.797Z",
+    "lastUpdated": "2026-10-10T15:40:42.030Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -138,28 +138,24 @@ async fn each_broadcast_stream_delivers_a_post_reconnect_event_to_the_app() {
     mock.reconnect_all();
     app.dispatch(Action::Reconnected);
     // RPC-415 determinism: `Action::Reconnected` also spawns a one-shot
-    // RPC-011 re-bootstrap (list_work_units refetch + create_session)
-    // whose WorkUnitsLoaded lands on the same bus as the broadcast
-    // events below. Wait for BOTH refetch backend calls to have run
-    // (polling the mock's call counters) so the refetch snapshot is
-    // already queued — and drained by the next bus sweep — BEFORE the
-    // broadcast events are pushed.
+    // RPC-011 re-bootstrap (list_work_units refetch) whose WorkUnitsLoaded
+    // lands on the same bus as the broadcast events below. Wait for the
+    // refetch backend call to have run (polling the mock's call counter)
+    // so the refetch snapshot is already queued — and drained by the next
+    // bus sweep — BEFORE the broadcast events are pushed.
+    //
+    // TUI-113 R5: the create_session(None) half of the re-bootstrap is
+    // superseded — the reconnect now re-ATTACHES the focused session via
+    // the RPC-049 path; create only fires as the empty-daemon fallback.
+    // The gate below therefore waits for the list_work_units refetch only.
     let baseline_list = mock.list_work_units_calls();
-    let baseline_create = mock.create_session_calls();
     let deadline = std::time::Instant::now() + std::time::Duration::from_millis(2000);
-    while std::time::Instant::now() < deadline
-        && (mock.list_work_units_calls() <= baseline_list
-            || mock.create_session_calls() <= baseline_create)
-    {
+    while std::time::Instant::now() < deadline && mock.list_work_units_calls() <= baseline_list {
         tokio::time::sleep(std::time::Duration::from_millis(5)).await;
     }
     assert!(
         mock.list_work_units_calls() > baseline_list,
         "Reconnected must trigger the RPC-011 list_work_units refetch"
-    );
-    assert!(
-        mock.create_session_calls() > baseline_create,
-        "Reconnected must trigger the RPC-011 create_session refetch"
     );
     // Determinism harness: each RESPAWNED subscriber only binds to the
     // new broadcast channel on its FIRST poll, and a broadcast send to

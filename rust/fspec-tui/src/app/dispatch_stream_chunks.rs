@@ -198,6 +198,32 @@ impl App {
     /// Fold a push-driven `(SessionId, SessionStatus)` broadcast into
     /// the AgentViewStore so the SessionFooter status pill repaints on
     /// the next frame.
+    /// Interrupt the CURRENT session's agent turn (RPC-009 action bus).
+    pub(crate) fn handle_interrupt(&mut self) {
+        if let Some(session) = self.agent_view_store.current_session().cloned() {
+            let backend = self.backend.clone();
+            tokio::spawn(async move {
+                let _ = backend.interrupt(session).await;
+            });
+        }
+    }
+
+    /// Fold a streamed chunk into the per-session scrollback + token
+    /// state, drive the RPC-045 state updates, and surface the RPC-079
+    /// error dialog when a chunk is an error.
+    pub(crate) fn handle_chunk_received(
+        &mut self,
+        id: &codelet_rpc_types::SessionId,
+        chunk: &StreamChunk,
+    ) {
+        if let Some(ctx) = self.agent_view_store.session_context_mut_for(id) {
+            ctx.record_chunk(chunk);
+        }
+        self.agent_view_store.apply_chunk_to_token_state(id, chunk);
+        self.handle_stream_chunk_state_updates(id, chunk); // RPC-045
+        self.maybe_push_error_dialog_for_chunk(chunk); // RPC-079
+    }
+
     pub(crate) fn handle_session_status_changed(
         &mut self,
         session_id: SessionId,

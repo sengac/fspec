@@ -398,6 +398,15 @@ pub struct MockBackend {
     /// RPC-049: capture of the last (id, limit) pair passed to
     /// `get_buffered_output`.
     last_get_buffered_output: Mutex<Option<(SessionId, u32)>>,
+    /// TUI-113: scripted active session returned by `get_active_session`
+    /// (RPC-037 default returns `Ok(None)` — the mock overrides so
+    /// bootstrap/reconnect restore tests can script a daemon pointer).
+    scripted_active_session: Mutex<Option<SessionId>>,
+    /// TUI-113: per-call counter for `set_active_session`.
+    set_active_session_calls: AtomicUsize,
+    /// TUI-113: capture of the last SessionId passed to
+    /// `set_active_session` (R3 pointer-tracking assertions).
+    last_set_active_session: Mutex<Option<SessionId>>,
     /// RPC-050: per-call counter for `set_work_unit_context`.
     set_work_unit_context_calls: AtomicUsize,
     /// RPC-050: per-call counter for `get_work_unit_context`.
@@ -836,6 +845,9 @@ impl Default for MockBackend {
             buffered_output: Mutex::new(Vec::new()),
             get_buffered_output_calls: AtomicUsize::new(0),
             last_get_buffered_output: Mutex::new(None),
+            scripted_active_session: Mutex::new(None),
+            set_active_session_calls: AtomicUsize::new(0),
+            last_set_active_session: Mutex::new(None),
             set_work_unit_context_calls: AtomicUsize::new(0),
             get_work_unit_context_calls: AtomicUsize::new(0),
             last_set_work_unit_context: Mutex::new(None),
@@ -1646,6 +1658,29 @@ impl MockBackend {
     /// `get_buffered_output`.
     pub fn last_get_buffered_output(&self) -> Option<(SessionId, u32)> {
         self.last_get_buffered_output
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// TUI-113: script the active session returned by `get_active_session`.
+    /// `None` (the default) models a daemon with no in-memory pointer.
+    pub fn seed_active_session(&self, session: SessionId) {
+        *self
+            .scripted_active_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session);
+    }
+
+    /// TUI-113: how many times `set_active_session` was awaited.
+    pub fn set_active_session_calls(&self) -> usize {
+        self.set_active_session_calls.load(Ordering::SeqCst)
+    }
+
+    /// TUI-113: the last SessionId passed to `set_active_session`
+    /// (R3 pointer-tracking assertions).
+    pub fn last_set_active_session(&self) -> Option<SessionId> {
+        self.last_set_active_session
             .lock()
             .expect("MockBackend mutex")
             .clone()
@@ -3135,6 +3170,25 @@ impl FspecBackend for MockBackend {
             .lock()
             .expect("MockBackend mutex")
             .clone())
+    }
+
+    /// TUI-113: scripted active session (RPC-037 default is `Ok(None)`).
+    async fn get_active_session(&self) -> Result<Option<SessionId>> {
+        Ok(self
+            .scripted_active_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
+    }
+
+    /// TUI-113: capture the active-session pointer writes (R3).
+    async fn set_active_session(&self, session_id: SessionId) -> Result<()> {
+        self.set_active_session_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_active_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id);
+        Ok(())
     }
 
     async fn get_work_unit_context(

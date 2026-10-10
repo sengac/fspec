@@ -588,6 +588,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@truncation` | Output truncation and limit handling |
 | `@ts-parity` | Feature requires parity with the TypeScript Ink reference implementation |
 | `@tui-112` | Work unit TUI-112 — left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.) |
+| `@tui-113` | Work unit TUI-113 — auto-restore the last active session on client startup and reconnect: resolution order (focused session → daemon active pointer → most-recent workspace session), ReattachSession/RestoreSession bus tokens, set_active_session pointer tracking (sticky across BackToBoard), RPC-011 create_session fallback preserved for empty daemons |
 | `@turn-selection` | Scenarios testing turn-based selection in conversation |
 | `@turn-sequence` | Message turn sequence scenarios |
 | `@turns` | Turn boundary scenarios |
@@ -828,4 +829,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-09T09:11:13.797Z_
+_Last updated: 2026-10-10T15:40:42.030Z_

@@ -141,23 +141,22 @@ impl App {
             task.abort();
         }
         self.spawn_subscriber_tasks();
-        // RPC-011 rule [5]: re-bootstrap on reconnect.
+        // RPC-011 rule [5] (kept by TUI-113 R5): re-fetch the work-unit
+        // snapshot on the fresh client so the board re-seeds.
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let active_session_tx = self.active_session_tx.clone();
-        tokio::spawn(async move {
+        let rebootstrap_handle = tokio::spawn(async move {
             if let Ok(units) = backend.list_work_units().await {
                 let _ = action_tx.send(Action::WorkUnitsLoaded(units));
             }
-            if let Ok(session) = backend.create_session(None).await {
-                // PROV-101 FIX 1: an empty id is a decline — surface it
-                // explicitly and never seed it as the active session.
-                crate::app::session_creation::route_bootstrap_create_session(
-                    session,
-                    &active_session_tx,
-                    &action_tx,
-                );
-            }
         });
+        self.pending_tasks.push(rebootstrap_handle);
+        // TUI-113 R2/R5: re-bootstrap re-ATTACHES the client's focused
+        // session (tabs survive the transient drop) instead of creating
+        // a new one. `create_session(None)` runs ONLY when the
+        // resolution yields nothing (R4 — the RPC-011 safety net for a
+        // genuinely empty / restarted daemon).
+        let focused = self.agent_view_store.current_session().cloned();
+        self.spawn_session_restore(focused, true);
     }
 }

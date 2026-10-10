@@ -394,6 +394,50 @@ async fn closing_the_originating_session_before_the_timer_fires_is_a_silent_no_o
     );
 }
 
+// TUI-113 regression guard (no dedicated scenario): the reconnect
+// re-attach (RPC-049 path) must only ever focus an ALREADY-OPEN tab —
+// the restore resolution's focused-session override must not re-open a
+// session the user has closed.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn reconnect_re_attach_never_reopens_a_closed_session() {
+    // @step Given a focused session A with the WebSocket dropped then recovered
+    let (mut app, _mock) = app_with_session("A");
+    app.dispatch(Action::Disconnected);
+    app.dispatch(Action::Reconnected);
+    // Drain the restore round-trip so the re-attach (if any) has been
+    // fully processed before A is closed.
+    for _ in 0..100 {
+        pump_actions(&mut app);
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+    assert!(
+        reconnect_lines(&app, &sid("A"))
+            .iter()
+            .any(|l| l.contains("Reconnected")),
+        "precondition: A shows a reconnected success line"
+    );
+
+    // @step And session A is closed
+    let removed = app.agent_view_store_mut().remove_session_if_open(&sid("A"));
+    assert!(removed, "session A must be closed");
+
+    // @step When a second reconnect flap resolves the restore target
+    app.dispatch(Action::Disconnected);
+    app.dispatch(Action::Reconnected);
+    for _ in 0..100 {
+        pump_actions(&mut app);
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+
+    // @step Then session A stays closed — the re-attach must not re-open it
+    assert!(
+        app.agent_view_store()
+            .session_context_for(&sid("A"))
+            .is_none(),
+        "TUI-113: the re-attach must not re-open a closed session"
+    );
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: A re-drop after the originating session closed shows a fresh
 //           reconnecting line in the focused session

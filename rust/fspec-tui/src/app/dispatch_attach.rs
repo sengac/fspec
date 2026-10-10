@@ -10,6 +10,7 @@ use codelet_rpc_types::SessionId;
 
 use crate::components::Action;
 use crate::store::SessionContext;
+use crate::views::ViewMode;
 
 use super::state::App;
 
@@ -55,7 +56,37 @@ impl App {
                     .append_session(SessionContext::new(session.clone()));
             }
         }
+        self.finish_session_attach_wiring(session);
+    }
+
+    /// Shared post-focus wiring for the attach / reattach / restore
+    /// handlers: active-session publish, Agent-view flip (TUI-113 R1),
+    /// R3 daemon-pointer publish, chrome hydration (RPC-018/052/061/430)
+    /// and the RPC-049 durable-restore round-trip
+    /// (`backend.resume_session` → `SessionResumeComplete` →
+    /// `get_buffered_output` replay).
+    pub(crate) fn finish_session_attach_wiring(&mut self, session: SessionId) {
         let _ = self.active_session_tx.send(Some(session.clone()));
+        // TUI-113 R1: landing on a restored session must land in the
+        // Agent view (mirrors `handle_open_agent_view(Some)`): set the
+        // navigation target, flip the view, and drop the board bar's
+        // ring focus (BUG-197 R3/R4) so no stale chip highlight
+        // survives the flip. Guards: never steal the view while the
+        // /resume list is open, and never leave the mux grid (a mux
+        // attach focuses the agent pane in-grid instead).
+        if self.navigator.active_view != ViewMode::Agent
+            && self.navigator.active_view != ViewMode::Mux
+            && self.navigator.agent.resume_view.is_none()
+        {
+            self.agent_view_store
+                .set_navigation_target(Some(session.clone()));
+            self.navigator.active_view = ViewMode::Agent;
+            self.board_store.menu_focus_to_columns();
+        }
+        // TUI-113 R3: publish the attached session to the daemon's
+        // active-session pointer (fire-and-forget) so the next client
+        // start can restore it.
+        self.spawn_set_active_session(session.clone());
         self.refresh_session_chrome(session.clone());
 
         // RPC-052: hydrate the per-session draft from the backend so
@@ -107,6 +138,79 @@ impl App {
             }
         });
         self.pending_tasks.push(handle);
+    }
+
+    /// TUI-113: reconnect/restore re-attach — focus the session's EXISTING
+    /// tab and run the durable-restore round-trip (RPC-049:
+    /// `resume_session` + `get_buffered_output` replay), but NEVER
+    /// re-open a closed tab. A session the user closed stays closed;
+    /// the bootstrap lazy create-on-enter-work-unit path (RPC-012) is
+    /// the only path that creates a session on a fresh start.
+    ///
+    /// When the tab is already open this mirrors
+    /// `handle_attach_to_session` (focus + flip to Agent view + R3
+    /// pointer publish + chrome/supervisor/debug hydration + resume
+    /// round-trip). When the tab is closed it focuses nothing — only
+    /// the R3 pointer publish fires (the daemon's sticky pointer still
+    /// tracks the last-viewed session for a later restart).
+    pub(crate) fn handle_reattach_session(&mut self, session: SessionId) {
+        tracing::info!(
+            session_id = %session.value,
+            "TUI-113: handle_reattach_session"
+        );
+        self.navigator.agent.resume_view = None;
+        let existing_idx = self
+            .agent_view_store
+            .open_sessions()
+            .iter()
+            .position(|c| c.id == session);
+        match existing_idx {
+            Some(idx) => {
+                tracing::debug!(
+                    session_id = %session.value,
+                    index = idx,
+                    "TUI-113: reattach — session tab open, focusing"
+                );
+                self.agent_view_store.focus_session_index(idx);
+            }
+            None => {
+                tracing::debug!(
+                    session_id = %session.value,
+                    "TUI-113: reattach — session tab closed, NOT re-opening"
+                );
+                return;
+            }
+        }
+        self.finish_session_attach_wiring(session);
+    }
+
+    /// TUI-113: bootstrap/fresh-start restore — re-open the last-viewed
+    /// session (append a fresh tab when absent, focus it when present)
+    /// and run the durable-restore round-trip. Unlike
+    /// `handle_reattach_session` this RE-OPENS a closed/absent tab: a
+    /// fresh client process restoring its last session from a live
+    /// daemon is the RPC-049 durable-restore flow, not a reconnect
+    /// re-attach.
+    pub(crate) fn handle_restore_session(&mut self, session: SessionId) {
+        tracing::info!(
+            session_id = %session.value,
+            "TUI-113: handle_restore_session"
+        );
+        let existing_idx = self
+            .agent_view_store
+            .open_sessions()
+            .iter()
+            .position(|c| c.id == session);
+        match existing_idx {
+            Some(idx) => {
+                self.agent_view_store.focus_session_index(idx);
+            }
+            None => {
+                self.agent_view_store
+                    .append_session(SessionContext::new(session.clone()));
+            }
+        }
+        self.finish_session_attach_wiring(session);
     }
 
     /// RPC-049: react to the success outcome of `backend.resume_session`

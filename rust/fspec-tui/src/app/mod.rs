@@ -87,6 +87,7 @@ pub mod mux_parser; // MUX-001: /mux slash-command grammar
 pub mod run_loop;
 pub mod schedule_parser;
 pub mod session_creation;
+pub mod session_restore; // TUI-113: auto-restore last active session on startup/reconnect
 pub mod slash_parser;
 pub mod state;
 pub mod update_parser; // UPD-002: /update subcommand parser + message formatting

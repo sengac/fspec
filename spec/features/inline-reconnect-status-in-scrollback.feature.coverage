@@ -243,7 +243,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
-          "lines": "351-380",
+          "lines": "364-400",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_reconnect.rs",

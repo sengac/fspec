@@ -22,22 +22,8 @@ impl App {
             Action::InputSubmitted(text) => {
                 self.handle_input_submitted(text.clone());
             }
-            Action::Interrupt => {
-                if let Some(session) = self.agent_view_store.current_session().cloned() {
-                    let backend = self.backend.clone();
-                    tokio::spawn(async move {
-                        let _ = backend.interrupt(session).await;
-                    });
-                }
-            }
-            Action::ChunkReceived(id, chunk) => {
-                if let Some(ctx) = self.agent_view_store.session_context_mut_for(id) {
-                    ctx.record_chunk(chunk);
-                }
-                self.agent_view_store.apply_chunk_to_token_state(id, chunk);
-                self.handle_stream_chunk_state_updates(id, chunk); // RPC-045
-                self.maybe_push_error_dialog_for_chunk(chunk); // RPC-079
-            }
+            Action::Interrupt => self.handle_interrupt(),
+            Action::ChunkReceived(id, chunk) => self.handle_chunk_received(id, chunk),
             Action::SessionStatusChanged(id, status) => {
                 self.handle_session_status_changed(id.clone(), *status);
             }
@@ -270,6 +256,12 @@ impl App {
             Action::CloseSearchView => self.handle_close_search_view(),
             Action::SessionListLoaded(s) => self.handle_session_list_loaded(s.clone()),
             Action::AttachToSession(s) => self.handle_attach_to_session(s.clone()),
+            // TUI-113: the reconnect/restore path — re-attach without
+            // ever re-opening a closed tab.
+            Action::ReattachSession(s) => self.handle_reattach_session(s.clone()),
+            // TUI-113: the bootstrap/fresh-start restore — re-opens the
+            // last-viewed session (RPC-049 durable-restore flow).
+            Action::RestoreSession(s) => self.handle_restore_session(s.clone()),
             Action::SearchHistory(q) => self.handle_search_history(q.clone()),
             Action::HistorySearchResults { query, matches } => {
                 self.handle_history_search_results(query.clone(), matches.clone())

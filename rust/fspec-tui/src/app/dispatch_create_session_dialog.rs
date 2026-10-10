@@ -153,6 +153,12 @@ impl App {
         // (RPC-024 draft round-trip). No-op outside mux mode.
         self.sync_mux_focus_to_session();
         let _ = self.active_session_tx.send(Some(session.clone()));
+        // TUI-113 R3: publish the newly-created (and now focused) session
+        // to the daemon's active-session pointer (fire-and-forget). This
+        // fires for EVERY creation path — direct SessionCreated fold,
+        // routed bootstrap/lazy creations, spawned subordinates — so the
+        // daemon pointer tracks the last focused/created session.
+        self.spawn_set_active_session(session.clone());
         if let Some(id) = self
             .agent_view_store
             .current_work_unit_id()

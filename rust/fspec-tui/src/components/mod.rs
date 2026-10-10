@@ -391,6 +391,19 @@ pub enum Action {
     /// SessionContext::new(id) if the session is not yet open. Also
     /// publishes to active_session_tx and runs refresh_session_chrome.
     AttachToSession(codelet_rpc_types::SessionId),
+    /// TUI-113: re-attach a session tab WITHOUT re-opening it.
+    /// Emitted by the reconnect/restore path when the session's tab
+    /// still exists in `open_sessions` — focuses it and runs the
+    /// durable-restore round-trip, but NEVER appends (a closed tab
+    /// must stay closed).
+    ReattachSession(codelet_rpc_types::SessionId),
+    /// TUI-113: bootstrap/fresh-start restore — re-open (append a
+    /// fresh tab for) the last-viewed session and run the
+    /// durable-restore round-trip. Unlike `ReattachSession` this
+    /// RE-OPENS a closed/absent tab: a fresh client process restoring
+    /// its last session from a live daemon is the RPC-049
+    /// durable-restore flow, not a reconnect re-attach.
+    RestoreSession(codelet_rpc_types::SessionId),
     /// RPC-026: emitted by the search view as the user types.
     /// App::dispatch spawns `backend.persistence_search_history(q)` and
     /// dispatches Action::HistorySearchResults on success.

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-09T11:49:18.871Z",
+    "lastUpdated": "2026-10-10T21:50:04.885Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -83,7 +83,7 @@
     "TOKEN": 3,
     "TOOL": 24,
     "TOOLS": 4,
-    "TUI": 112,
+    "TUI": 113,
     "UX": 2,
     "VAL": 7,
     "VID": 2,
@@ -1764,7 +1764,8 @@
       "BUG-202",
       "BUG-203",
       "BUG-204",
-      "BUG-205"
+      "BUG-205",
+      "TUI-113"
     ],
     "blocked": [
       "QUERY-001",
@@ -237810,6 +237811,141 @@
       "nextExampleId": 4,
       "estimate": 3,
       "iterations": 1
+    },
+    "TUI-113": {
+      "id": "TUI-113",
+      "title": "Auto-restore last active session on client startup and reconnect",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-10-10T07:33:43.245Z",
+      "updatedAt": "2026-10-10T21:50:04.885Z",
+      "description": "When a client connects to a daemon that already has sessions (or a fresh client process starts), the TUI must restore the session the user was last viewing instead of silently creating a fresh empty session. Resolution order: (1) client's own focused session (reconnect path only — tabs survive transient WS drops), (2) daemon's in-memory active-session pointer (RPC-037 get_active_session), (3) most-recent session from list_sessions(daemon workspace cwd) — covers daemon restart via resume-from-disk, (4) fallback to create_session(None) only when nothing is restorable (preserves RPC-011 safety net). The TUI keeps the daemon pointer fresh by calling set_active_session on attach, focus switch, and session creation. Restores attach via the existing RPC-049 path (resume_session + get_buffered_output replay) and flip to the Agent view. Supersedes the unconditional create_session(None) in bootstrap-adjacent paths: RPC-011 create-on-reconnect becomes a fallback only.",
+      "epic": "rust-frontend",
+      "children": [],
+      "userStory": {
+        "role": "developer running fspec in daemon/client mode",
+        "action": "start or reconnect a client while the daemon already has sessions",
+        "benefit": "the session I was last viewing is restored automatically — agent state (scrollback, pending input, work-unit binding) re-attaches without hunting through /resume or losing the thread"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-10T07:37:17.068Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-10T08:22:47.459Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-10T08:51:42.665Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-10T21:32:00.269Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-10T21:50:04.885Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R4: The restore task never creates a second session if it attaches — it only dispatches Action::AttachToSession(target). create_session(None) fires ONLY as a fallback when all resolution steps yield nothing: reconnect with no focused session AND get_active_session() == None AND list_sessions(daemon_cwd) is empty. This preserves the RPC-011/012 safety net (a genuinely empty daemon still gets a session when the user first enters a work unit) while preventing the 'phantom empty session' symptom.",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:39:53.969Z"
+        },
+        {
+          "id": 1,
+          "text": "R1: On App::bootstrap, a detached tokio task resolves the restore target and dispatches the existing Action::AttachToSession on success; bootstrap never awaits the resolution, so the Board first frame renders immediately (mirrors the lazy create_session spawn pattern).",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:40:29.507Z"
+        },
+        {
+          "id": 2,
+          "text": "R2: Resolution order — (a) reconnect path (Action::Reconnected): the client's currently focused session wins (tabs survive transient WS drops; another client may have moved the daemon pointer meanwhile); (b) get_active_session() — the daemon's in-memory active-session pointer (RPC-037); (c) most-recent entry of list_sessions(daemon_cwd) where daemon_cwd comes from get_workspace_info().cwd (RPC-018) with fallback to empty string (no project filter) — NEVER the client-side std::env::current_dir(), because on a remote client machine that path matches no daemon session (the RPC-427 filter would empty the list).",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:45:08.431Z"
+        },
+        {
+          "id": 3,
+          "text": "R5: Supersedes RPC-011 scenario 'Reconnect re-issues create_session(None)': on Action::Reconnected the re-bootstrap re-ATTACHES the focused/existing session (Action::AttachToSession → resume_session + get_buffered_output replay, which recovers chunks streamed while the WS was down) instead of creating a new one. create_session(None) runs only when no session is restorable (R4). The list_work_units refetch + subscriber respawn on reconnect is unchanged. The RPC-011 feature file keeps the old scenario with a SUPERSEDED-BY-TUI-113 annotation.",
+          "deleted": false,
+          "createdAt": "2026-10-10T08:12:04.437Z"
+        },
+        {
+          "id": 4,
+          "text": "R3: The TUI keeps the daemon's active-session pointer fresh by calling set_active_session(sid) on every attach (Action::AttachToSession handler), on session focus switch (switch_to_session_index — RPC-024 cycle, mux focus follow, chip activation), and on session creation (route_bootstrap_create_session / handle_session_created). All three are fire-and-forget (backend errors are logged at debug and never block the UI). NOTE: BackToBoard does NOT clear the pointer (user decision 2026-10-10: the daemon pointer is sticky; 'I was on the board' is not an explicit state) — a later restart therefore restores the last-viewed session, which is the desired behaviour.",
+          "deleted": false,
+          "createdAt": "2026-10-10T08:12:05.565Z"
+        }
+      ],
+      "nextRuleId": 15,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Transient WS drop while watching a running agent: on reconnect the SAME session tab re-attaches, the '✓ Reconnected' line lands in it, and chunks streamed while the connection was down are replayed — no new session is created",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:46:38.607Z"
+        },
+        {
+          "id": 1,
+          "text": "Remote client reconnects via Tailscale (fresh process) to a daemon whose session 'Session be4bd683' is still running: the TUI lands back in the Agent view on that session with its scrollback replayed via get_buffered_output, not a blank new session",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:46:39.521Z"
+        },
+        {
+          "id": 2,
+          "text": "Daemon process restarts (SIGTERM + relaunch) while a client stays connected: the reconnect handler finds no focused session on the new daemon's fresh in-memory map, falls back to the persisted most-recent session for the workspace, and re-attaches it via resume-from-disk",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:47:23.125Z"
+        },
+        {
+          "id": 3,
+          "text": "Fresh client, fresh daemon (no sessions on disk, no active pointer): reconnect re-bootstrap still creates a session exactly as RPC-011 required — the safety net for a genuinely empty workspace survives",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:47:43.184Z"
+        },
+        {
+          "id": 4,
+          "text": "Client machine cwd (/Users/remote/code) differs from the daemon workspace (/home/rquast/projects/fspec): the restore path queries sessions with the daemon's workspace path (from workspace info), so the RPC-427 project filter never empties the list; if the client cwd were used instead the list would be empty and restore would silently fail",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:47:43.695Z"
+        },
+        {
+          "id": 5,
+          "text": "User cycles between three open agent panes then closes the client: the daemon's active pointer tracks the last-focused session (set on each focus switch), so on the next connect exactly that last-focused session restores — not the first or most-recent-by-time one",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:48:04.423Z"
+        },
+        {
+          "id": 6,
+          "text": "Reconnect fires twice in quick succession (WS flap): the second re-attach targets the already-open session tab, focuses it, and does not spawn a second session or a second resume_session round-trip — the append path is idempotent",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:48:05.236Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New module rust/fspec-tui/src/app/session_restore.rs (impl App::resolve_restore_target + App::spawn_session_restore) — pure resolution logic (focused-session override → get_active_session → list_sessions(daemon_cwd).first()) returning Option<SessionId>, kept under the 300-LoC ceiling. bootstrap.rs calls spawn_session_restore(); dispatch_reconnect.rs calls it with the focused-session override; dispatch_attach.rs / dispatch_session_cycle.rs / session_creation.rs gain the set_active_session fire-and-forget calls; dispatch_back_to_board (dispatch.rs) calls clear_active_session(). All backend calls go through the existing FspecBackend trait (get_active_session / set_active_session / clear_active_session / list_sessions / get_workspace_info / attach path) so both embedded + websocket transports work unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-10T07:48:37.130Z"
+        },
+        {
+          "id": 1,
+          "text": "New module rust/fspec-tui/src/app/session_restore.rs (App::resolve_restore_target + App::spawn_session_restore) — pure resolution logic (focused-session override → get_active_session → list_sessions(daemon_cwd).first()) returning Option<SessionId>, under the 300-LoC ceiling. bootstrap.rs calls spawn_session_restore() after the existing bootstrap RPCs (R1 fire-and-forget); dispatch_reconnect.rs calls it with the focused-session override and replaces the unconditional create_session(None) with resolve-then-attach (create only when resolution is empty — R4). dispatch_attach.rs (handle_attach_to_session), dispatch_session_cycle.rs (switch_to_session_index) and session_creation.rs (route_bootstrap_create_session) gain fire-and-forget set_active_session calls (R3). BackToBoard does NOT clear the pointer (sticky, user decision 2026-10-10). All backend calls go through the existing FspecBackend trait (get_active_session / set_active_session / list_sessions / get_workspace_info / resume_session / get_buffered_output) so both embedded + websocket transports work unchanged (RPC-037 parity). Restore target attaches via the EXISTING Action::AttachToSession path (RPC-049 durable restore) — no new transport RPCs.",
+          "deleted": false,
+          "createdAt": "2026-10-10T08:17:59.712Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/TUI-113/ast-research-session-restore-anchors.md"
+      ]
     }
   }
 }

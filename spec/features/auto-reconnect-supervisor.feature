@@ -51,6 +51,9 @@ Feature: Auto-reconnect supervisor (exponential backoff + Reconnecting/Reconnect
     And the WorkUnitsListView re-seeds from the snapshot returned by the new daemon
 
   Scenario: Reconnect re-issues create_session(None) and replaces active session id
+    # SUPERSEDED BY TUI-113 (R5): reconnect re-ATTACHES the focused/existing
+    # session via the RPC-049 path instead of creating a new one.
+    # create_session(None) remains only as the empty-daemon fallback (R4).
     Given a fspec client with active_session = SessionId("S-old") before disconnect
     When the supervisor reconnects against a fresh daemon
     Then it calls backend.create_session(None) and gets back SessionId("S-new")
