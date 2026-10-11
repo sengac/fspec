@@ -2,27 +2,324 @@
   "scenarios": [
     {
       "name": "Starting the TUI against a daemon with open sessions seeds a tab for each of them",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+          "lines": "90-134",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/bootstrap.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "A remote session creation adds a tab live (no poll)",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+          "lines": "141-180",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                1060,
+                1061,
+                1062,
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "A remote session removal closes its tab with focus and board cleanup",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+          "lines": "188-247",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/bootstrap_session_removed.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Removal events are idempotent for already-closed tabs",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+          "lines": "254-295",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+      "rust/fspec-tui/src/app/bootstrap.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/store/board.rs",
+      "rust/fspec-tui/src/app/bootstrap_session_removed.rs",
+      "rust/fspec-tui/src/app/dispatch.rs"
+    ],
+    "totalLinesCovered": 396
   }
 }

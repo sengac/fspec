@@ -35,6 +35,16 @@ use crate::components::Action;
 /// 250ms → 500ms → 1s → 2s → 5s cap.
 const BACKOFF_SCHEDULE_MS: &[u64] = &[250, 500, 1_000, 2_000, 5_000];
 
+/// RPC-434: capacity for the per-subscriber created/removed split
+/// channels (each carries one session lifecycle frame at a time in
+/// practice; 16 mirrors the other per-transport broadcast sizes).
+const SESSION_EVENT_SPLITS_CAPACITY: usize = 16;
+
+/// RPC-434: bounded wait for the connect-time `SessionSnapshot` frame
+/// before `session_snapshot` degrades to an empty Vec (the pump's
+/// watch replay normally delivers the cached snapshot immediately).
+const SNAPSHOT_WAIT: Duration = Duration::from_millis(500);
+
 /// WebSocket-backed [`FspecBackend`].
 ///
 /// RPC-011: the inner `FspecWsClient` is now held behind an
@@ -142,6 +152,19 @@ impl WebSocketFspecBackend {
         SupervisorHandle {
             client: Arc::clone(&self.client),
             manual_reconnect: Arc::clone(&self.manual_reconnect),
+        }
+    }
+
+    /// RPC-434: borrow the current client's `session_events_rx()`
+    /// template receiver — `None` when the client slot is
+    /// disconnected (or the lock is contended) so the splitter
+    /// callers degrade to closed receivers (R2).
+    fn client_session_events_rx(
+        &self,
+    ) -> Option<broadcast::Receiver<codelet_rpc_types::SessionEvent>> {
+        match self.client.try_read() {
+            Ok(guard) => guard.as_ref().map(FspecWsClient::session_events_rx),
+            Err(_) => None,
         }
     }
 }
@@ -282,13 +305,80 @@ impl FspecBackend for WebSocketFspecBackend {
         }
     }
 
-    /// RPC-385: the remote/WebSocket transport has no session-created push
-    /// frame yet, so return a never-firing (closed) receiver. Full remote
-    /// parity — surfacing spawned-subordinate visibility over the wire — is an
-    /// explicit OUT-OF-SCOPE RPC follow-up; spawned subordinates are only
-    /// visible on the embedded transport for now.
+    /// RPC-434: the WebSocket transport splits the single RPC-433
+    /// session-event wire stream (`SessionEvent::Created` /
+    /// `SessionEvent::Removed`) onto a per-subscriber
+    /// `SessionInfo` broadcast. Each call grabs a fresh
+    /// `session_events_rx()` receiver from the client, spawns a
+    /// splitter task that forwards only the `Created` variant onto a
+    /// per-subscriber channel, and returns that channel's receiver.
+    /// The splitter exits when the wire stream closes (WS drop), and
+    /// dropping its sender closes the per-subscriber broadcast —
+    /// subscribers observe `RecvError::Closed` (RPC-010 rule [23]).
+    /// When the client slot is `None` (disconnected) or the lock is
+    /// contended, returns a closed receiver so the bootstrap
+    /// subscriber exits immediately and is respawned on Reconnected
+    /// (R2/R5). Replaces the never-firing RPC-385 OUT-OF-SCOPE stub.
     fn session_created_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionInfo> {
-        empty_broadcast_rx()
+        let (sub_tx, sub_rx) =
+            broadcast::channel::<codelet_rpc_types::SessionInfo>(SESSION_EVENT_SPLITS_CAPACITY);
+        let Some(mut events_rx) = self.client_session_events_rx() else {
+            return empty_broadcast_rx();
+        };
+        tokio::spawn(async move {
+            while let Ok(event) = events_rx.recv().await {
+                if let codelet_rpc_types::SessionEvent::Created(info) = event {
+                    if sub_tx.send(info).is_err() {
+                        break;
+                    }
+                }
+            }
+            // `RecvError::Closed` — the wire stream closed (WS drop).
+            // Dropping `sub_tx` here closes the per-subscriber channel.
+        });
+        sub_rx
+    }
+
+    /// RPC-434: sibling of `session_created_rx` — splits the RPC-433
+    /// session-event wire stream onto a per-subscriber `SessionId`
+    /// broadcast (the `Removed` variant only). Same closed-on-disconnect
+    /// degradation (R2/R5).
+    fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (sub_tx, sub_rx) = broadcast::channel::<SessionId>(SESSION_EVENT_SPLITS_CAPACITY);
+        let Some(mut events_rx) = self.client_session_events_rx() else {
+            return empty_broadcast_rx();
+        };
+        tokio::spawn(async move {
+            while let Ok(event) = events_rx.recv().await {
+                if let codelet_rpc_types::SessionEvent::Removed(id) = event {
+                    if sub_tx.send(id).is_err() {
+                        break;
+                    }
+                }
+            }
+            // `RecvError::Closed` — the wire stream closed (WS drop).
+            // Dropping `sub_tx` here closes the per-subscriber channel.
+        });
+        sub_rx
+    }
+
+    /// RPC-434: the connect-time open-session snapshot. Reads the
+    /// fresh client's cached `SessionSnapshot` frame (the pump's
+    /// watch-backed `session_snapshot_rx` replays it even when the
+    /// subscriber arrived after the server pushed it); a bounded wait
+    /// tolerates the initial frame arriving one tick after connect.
+    /// Disconnected (client slot `None`) or frame-not-yet-received →
+    /// empty Vec (seeds no tabs).
+    async fn session_snapshot(&self) -> Vec<codelet_rpc_types::SessionInfo> {
+        let guard = self.client.read().await;
+        let Some(client) = guard.as_ref() else {
+            return Vec::new();
+        };
+        let mut rx = client.session_snapshot_rx();
+        match tokio::time::timeout(SNAPSHOT_WAIT, rx.recv()).await {
+            Ok(Ok(snapshot)) => snapshot,
+            _ => Vec::new(),
+        }
     }
 
     async fn health(&self) -> Result<HealthInfo> {

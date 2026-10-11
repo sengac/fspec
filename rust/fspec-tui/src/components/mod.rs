@@ -139,6 +139,13 @@ pub enum Action {
     /// RPC-009: bootstrap's `create_session(None)` returned a session id;
     /// the AgentReplView records it as its active session.
     SessionCreated(codelet_rpc_types::SessionId),
+    /// RPC-434: a session was destroyed on the daemon (from this client
+    /// or from ANY other connected machine). Folded onto the action bus
+    /// by the bootstrap's session-removed subscriber (both transports —
+    /// the WS transport splits the RPC-433 `SessionEvent` wire stream
+    /// onto per-variant receivers); `App::dispatch` routes it to the
+    /// idempotent `handle_session_removed` (app/dispatch_session_lifecycle.rs).
+    SessionRemoved(codelet_rpc_types::SessionId),
     /// PROV-101: `create_session` returned an EMPTY `SessionId` because no
     /// default model was set (decline). The TUI must NOT append an empty-id
     /// session — every caller maps the empty id to THIS action via

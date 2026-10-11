@@ -204,10 +204,11 @@ async fn auto_reconnect_happy_path() {
     let full_stream_count = app.subscriber_task_count();
     // BUG-181: 7 streams — the original 6 (work_units, chunks, logs,
     // status_changes, session_created, checkpoints_progress) plus the
-    // checkpoint_counts_changed push.
+    // checkpoint_counts_changed push. RPC-434 adds an 8th:
+    // session_removed (the remote session-destruction fan-out).
     assert_eq!(
-        full_stream_count, 7,
-        "bootstrap must spawn all seven subscriber tasks"
+        full_stream_count, 8,
+        "bootstrap must spawn all eight subscriber tasks"
     );
     // RPC-416: open a focused session and drop the connection so an inline
     // reconnecting line is showing in its scrollback (the presentation the

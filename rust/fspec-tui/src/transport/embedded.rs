@@ -1068,6 +1068,29 @@ impl FspecBackend for EmbeddedFspecBackend {
         }
     }
 
+    /// RPC-434: subscribe to the session manager's session-removed
+    /// broadcast (zero-cost embedded path — the same direct handle read
+    /// `status_changes_rx` / `session_created_rx` use). A session
+    /// destroyed on the daemon fires `SessionEvent::Removed` on every
+    /// connected client; the embedded TUI observes it here.
+    fn session_removed_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionId> {
+        match self.service.session_manager() {
+            Some(handle) => handle.session_removed_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
+
+    /// RPC-434: the connect-time open-session snapshot — delegates to
+    /// the shared service's in-memory live map (no disk merge, no
+    /// project filter — parity with the BUG-206 liveness gate).
+    async fn session_snapshot(&self) -> Vec<codelet_rpc_types::SessionInfo> {
+        self.service.live_sessions_snapshot()
+    }
+
     /// TUI-109: subscribe to the checkpoint-enumeration progress
     /// broadcast. The channel lives directly on the
     /// `SharedFspecService` (not the session manager), so the embedded

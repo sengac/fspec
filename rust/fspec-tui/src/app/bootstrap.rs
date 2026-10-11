@@ -2,9 +2,11 @@
 //!
 //! RPC-012 rule [8]: `bootstrap` no longer pre-creates a session. It
 //! ONLY calls `backend.list_work_units()` and seeds the BoardStore via
-//! `Action::WorkUnitsLoaded`, then spawns the five subscriber tasks
+//! `Action::WorkUnitsLoaded`, then spawns the subscriber tasks
 //! (work_units_rx / chunks_rx / logs_rx / status_changes_rx /
-//! session_created_rx). Session creation is deferred
+//! session_created_rx / checkpoints_progress_rx / git_state /
+//! session_removed — RPC-434 added the last). Session creation is
+//! deferred
 //! until the user enters AgentView for the first time (lazy creation
 //! inside `App::dispatch` on `Action::EnterWorkUnit`).
 
@@ -57,6 +59,11 @@ impl App {
         // fspec-config.json, tui.mux) so a restart restores the saved
         // grid; missing key → default preset.
         self.load_mux_config();
+        // RPC-434: replay the connect-time open-session snapshot (the
+        // server-pushed `SessionSnapshot` frame / embedded live map)
+        // BEFORE the BUG-206 restore so the auto-restore re-asserts
+        // the daemon active pointer AFTER the tabs exist (R4).
+        self.replay_session_snapshot().await;
         // BUG-206: auto-restore the last active session — MEMORY-ONLY.
         // Resolution: the daemon's in-memory active-session pointer,
         // verified LIVE via list_live_sessions (never persisted
@@ -144,10 +151,11 @@ impl App {
         }
     }
 
-    /// Spawn the five subscriber tasks per RPC-009 architecture note [2]
+    /// Spawn the subscriber tasks per RPC-009 architecture note [2]
     /// (work_units_rx / chunks_rx / logs_rx / status_changes_rx /
-    /// session_created_rx). Each task runs on the host runtime
-    /// (`tokio::spawn`, NEVER `tokio::runtime::Builder` or
+    /// session_created_rx / checkpoints_progress_rx / git_state /
+    /// session_removed — RPC-434 added the last). Each task runs on the
+    /// host runtime (`tokio::spawn`, NEVER `tokio::runtime::Builder` or
     /// `Runtime::new()` per RPC-005 Q9).
     pub(crate) fn spawn_subscriber_tasks(&mut self) {
         // (a) work_units_rx → Action::WorkUnitsLoaded
@@ -295,5 +303,10 @@ impl App {
         // websocket closed-receiver degradation live in
         // app/bootstrap_git_state.rs (300-LoC ceiling).
         self.spawn_git_state_subscriber();
+
+        // (h) RPC-434: session_removed_rx → Action::SessionRemoved —
+        // daemon-side session destruction (any client). Body in
+        // app/bootstrap_session_removed.rs (300-LoC ceiling).
+        self.spawn_session_removed_subscriber();
     }
 }

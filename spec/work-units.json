@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-11T05:55:20.728Z",
+    "lastUpdated": "2026-10-11T07:20:02.167Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -253,8 +253,7 @@
       "RIG-013",
       "SCHED-001",
       "TOOL-001",
-      "TUI-085",
-      "RPC-434"
+      "TUI-085"
     ],
     "testing": [],
     "implementing": [
@@ -1768,7 +1767,8 @@
       "BUG-205",
       "TUI-113",
       "BUG-206",
-      "RPC-433"
+      "RPC-433",
+      "RPC-434"
     ],
     "blocked": [
       "QUERY-001",
@@ -238177,9 +238177,9 @@
       "id": "RPC-434",
       "title": "TUI consumes session lifecycle events on both transports (embedded + WS): created/removed fan-in + snapshot replay",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-10-11T03:17:46.360Z",
-      "updatedAt": "2026-10-11T03:27:23.463Z",
+      "updatedAt": "2026-10-11T07:20:02.167Z",
       "description": "Wire the TUI to consume the RPC-433 push streams: make WebSocketFspecBackend::session_created_rx real (replace the OUT-OF-SCOPE stub) via a per-subscriber splitter over FspecWsClient::session_events_rx, add session_removed_rx + async session_snapshot to FspecBackend (both transports), add Action::SessionRemoved with idempotent tab removal (focus/mux/WU cleanup reusing dispatch_agent_exit pieces), a 6th bootstrap subscriber, and connect-time/reconnect snapshot replay through the existing SessionCreated handler (idempotent). Research attached: spec/attachments/RPC-434/session-events-tui-consumption-research.md",
       "epic": "rust-frontend",
       "children": [],
@@ -238191,6 +238191,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-10-11T03:22:36.205Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-11T06:35:46.653Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-11T06:50:03.502Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-11T07:16:55.255Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-11T07:20:02.167Z"
         }
       ],
       "userStory": {
@@ -238279,7 +238295,8 @@
           "createdAt": "2026-10-11T03:27:23.463Z"
         }
       ],
-      "nextNoteId": 1
+      "nextNoteId": 1,
+      "iterations": 1
     }
   }
 }

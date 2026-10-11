@@ -248,6 +248,19 @@ impl BoardStore {
         self.session_attachments.remove(work_unit_id);
     }
 
+    /// RPC-434: every `(work-unit id, attached session)` pair whose
+    /// session is `session` — the inverse lookup `handle_session_removed`
+    /// needs to release ALL of the removed session's board attachments
+    /// (a session may be attached to several units; `attach_session`'s
+    /// migration rule usually keeps it to one).
+    pub fn session_attachments_for(&self, session: &SessionId) -> Vec<(&str, &SessionId)> {
+        self.session_attachments
+            .iter()
+            .filter(|(_, attached)| **attached == *session)
+            .map(|(wu, sid)| (wu.as_str(), sid))
+            .collect()
+    }
+
     /// Mark the most-recently-changed work unit id (drives the `⏩`
     /// animation in the eventual rich render — not used by this slice's
     /// placeholder render).

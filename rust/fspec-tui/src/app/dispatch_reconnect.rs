@@ -151,6 +151,12 @@ impl App {
             }
         });
         self.pending_tasks.push(rebootstrap_handle);
+        // RPC-434: replay the fresh connect-time open-session snapshot
+        // BEFORE spawn_session_restore — sessions opened on another
+        // machine while we were disconnected get their tabs back
+        // (idempotent append; R4). Best effort: a fetch failure seeds
+        // no tabs and never blocks the reconnect.
+        self.spawn_replay_session_snapshot();
         // BUG-206: re-bootstrap re-ATTACHES the client's focused session
         // (tabs survive the transient drop) — ONLY if that session is
         // still LIVE in the daemon's in-memory map (liveness-gated via

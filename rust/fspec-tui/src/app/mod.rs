@@ -18,6 +18,7 @@
 
 pub mod bootstrap;
 pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
+pub mod bootstrap_session_removed; // RPC-434: (h) session_removed_rx subscriber (300-LoC ceiling)
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
@@ -63,6 +64,7 @@ pub mod dispatch_role_dialog;
 pub mod dispatch_scroll;
 pub mod dispatch_session_chrome;
 pub mod dispatch_session_cycle;
+pub mod dispatch_session_lifecycle; // RPC-434: SessionRemoved handler + snapshot replay
 pub mod dispatch_slash_clear;
 pub mod dispatch_slash_commands;
 pub mod dispatch_slash_continue; // CONT-002: /continue apply + backend round-trip

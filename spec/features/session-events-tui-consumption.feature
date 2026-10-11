@@ -1,4 +1,4 @@
-@wip
+@done
 @rust
 @tui
 @session

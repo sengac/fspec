@@ -997,6 +997,36 @@ pub trait FspecBackend: Send + Sync {
         rx
     }
 
+    /// RPC-434: subscribe to session-removed events — a session was
+    /// destroyed on the daemon (from this client or ANY other connected
+    /// machine). The payload is the destroyed session's `SessionId`
+    /// (nothing else: the client already holds all tab state). The
+    /// embedded backend forwards the SessionManager's
+    /// `session_removed_tx()`; the WebSocket backend splits the RPC-433
+    /// `SessionEvent` wire stream onto this per-variant receiver. The
+    /// default returns a closed receiver so transports that do not yet
+    /// wire the channel compile unchanged (RPC-037 / PROV-109
+    /// convention) — the App subscriber observes `RecvError::Closed`
+    /// and exits (respawned on Reconnected per R5).
+    fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (tx, rx) = broadcast::channel(1);
+        drop(tx);
+        rx
+    }
+
+    /// RPC-434: the connect-time open-session snapshot — the
+    /// in-memory live session set the daemon holds at connect time
+    /// (WS: the server-pushed `Envelope::SessionSnapshot` frame;
+    /// embedded: `SharedFspecService::live_sessions_snapshot()`).
+    /// `App::bootstrap` / `handle_reconnected` fold every entry
+    /// through the existing `Action::SessionCreated` handler
+    /// (idempotent append) BEFORE `spawn_session_restore`. The default
+    /// returns an empty Vec so test doubles and degenerate backends
+    /// compile unchanged — an empty snapshot seeds no tabs.
+    async fn session_snapshot(&self) -> Vec<SessionInfo> {
+        Vec::new()
+    }
+
     /// TUI-109: subscribe to per-item checkpoint-enumeration progress
     /// frames (the `CheckpointsProgress` broadcast fed by
     /// `FspecServiceImpl::list_checkpoints`). The embedded transport
