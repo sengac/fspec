@@ -1062,6 +1062,38 @@ impl SharedFspecService {
             }
         }
     }
+
+    /// RPC-433: subscribe to session-removed events. When a session manager is
+    /// attached, delegates to its per-process broadcast so the WS server's
+    /// per-connection fan-out task can wrap each id in
+    /// `Envelope::SessionEvent(SessionEvent::Removed(_))` and push it to
+    /// every connected client. Without a session manager, returns a
+    /// degenerate receiver whose sender has been dropped (subscribers
+    /// immediately observe `RecvError::Closed`).
+    pub fn session_removed_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionId> {
+        match &self.session_manager {
+            Some(handle) => handle.session_removed_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
+
+    /// RPC-433: the in-memory live session map as a snapshot
+    /// (`Vec<SessionInfo>`), the connect-time replay source for
+    /// `Envelope::SessionSnapshot` (rule R3: no disk merge, no project
+    /// filter — parity with the BUG-206 liveness gate). Delegates to the
+    /// attached handle; empty when no session manager is attached (the
+    /// degenerate no-manager daemon still sends an always-present,
+    /// possibly-empty snapshot on connect).
+    pub fn live_sessions_snapshot(&self) -> Vec<codelet_rpc_types::SessionInfo> {
+        match &self.session_manager {
+            Some(handle) => handle.live_session_infos(),
+            None => Vec::new(),
+        }
+    }
 }
 
 /// Cloneable adapter that lets tarpc serve `FspecService` against a single

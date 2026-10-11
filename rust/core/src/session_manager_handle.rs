@@ -727,6 +727,34 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         rx
     }
 
+    /// RPC-433: subscribe to session-removed events. Each event carries the
+    /// destroyed session's [`SessionId`] — a connected client already holds
+    /// all tab state for that session and needs nothing else to close the
+    /// tab. The default returns a degenerate receiver whose sender has been
+    /// dropped (subscribers observe `RecvError::Closed`) so handles that do
+    /// not push session-removed events degrade gracefully. The real
+    /// `SessionManager` handle overrides this to forward
+    /// `session_removed_tx().subscribe()`; `StubSessionManagerHandle`
+    /// overrides it so multi-client fan-out tests can drive removals.
+    fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (tx, rx) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        drop(tx);
+        rx
+    }
+
+    /// RPC-433: the in-memory live session map as a snapshot
+    /// (`Vec<SessionInfo>`), WITHOUT the persisted-manifest merge and
+    /// WITHOUT project filtering. This is the connect-time replay source
+    /// for the WS server's `Envelope::SessionSnapshot` frame (rule R3 of
+    /// session-events-daemon-fanout.feature): parity with the BUG-206
+    /// liveness gate — implementations MUST NOT read disk. The default
+    /// returns an empty list so handles without a session table
+    /// (`StubSessionManagerHandle` overrides; test-only handles) compile
+    /// unchanged.
+    fn live_session_infos(&self) -> Vec<SessionInfo> {
+        Vec::new()
+    }
+
     /// RPC-037: destroy a session, removing it from `list_sessions`.
     fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {
         let _ = session_id;
@@ -982,6 +1010,14 @@ pub struct StubSessionManagerHandle {
     chunks_tx: broadcast::Sender<(SessionId, StreamChunk)>,
     logs_tx: broadcast::Sender<LogRecord>,
     status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>,
+    /// RPC-433: session-lifecycle event senders so multi-client fan-out
+    /// tests can drive created/removed events through the real
+    /// `SharedFspecService` → WS-server path. `create_session` /
+    /// `create_isolated_session` fire `session_created_tx`;
+    /// `destroy_session` fires `session_removed_tx` only when the
+    /// session actually existed (mirrors the real `SessionManager`).
+    session_created_tx: broadcast::Sender<SessionInfo>,
+    session_removed_tx: broadcast::Sender<SessionId>,
     sessions: Arc<Mutex<Vec<SessionRecord>>>,
     next_id: AtomicU64,
     next_iso_id: AtomicU64,
@@ -1072,7 +1108,7 @@ pub struct StubSessionManagerHandle {
     custom_models: Arc<Mutex<HashMap<String, Vec<CustomModelDefinition>>>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct SessionRecord {
     id: SessionId,
     role: Option<String>,
@@ -1106,16 +1142,41 @@ impl StubSessionManagerHandle {
         Self::new()
     }
 
+    /// Build the wire [`SessionInfo`] for a record (same field mapping as
+    /// `list_sessions`). RPC-433: used by the session-lifecycle event
+    /// fires and by `live_session_infos`.
+    fn record_info(r: &SessionRecord) -> SessionInfo {
+        SessionInfo {
+            id: r.id.value.clone(),
+            name: r.id.value.clone(),
+            status: status_str(r.status).to_string(),
+            project: String::new(),
+            message_count: 0,
+            provider_id: None,
+            model_id: None,
+            is_isolated: r.is_isolated,
+            worktree_path: r.worktree_path.clone(),
+            role: r.role.clone(),
+            updated_at_ms: None,
+        }
+    }
+
     /// Construct a stub with custom broadcast capacities (mostly useful
     /// for stress tests that need bigger buffers).
     pub fn with_capacity(chunks_capacity: usize, logs_capacity: usize) -> Self {
         let (chunks_tx, _) = broadcast::channel(chunks_capacity);
         let (logs_tx, _) = broadcast::channel(logs_capacity);
         let (status_changes_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        // RPC-433: session-lifecycle events use the same capacity as
+        // status changes; both are low-rate control-plane events.
+        let (session_created_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        let (session_removed_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
         Self {
             chunks_tx,
             logs_tx,
             status_changes_tx,
+            session_created_tx,
+            session_removed_tx,
             sessions: Arc::new(Mutex::new(Vec::new())),
             next_id: AtomicU64::new(1),
             next_iso_id: AtomicU64::new(1),
@@ -1547,22 +1608,14 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             Ok(sessions) => sessions,
             Err(_) => return Vec::new(),
         };
-        sessions
-            .iter()
-            .map(|r| SessionInfo {
-                id: r.id.value.clone(),
-                name: r.id.value.clone(),
-                status: status_str(r.status).to_string(),
-                project: String::new(),
-                message_count: 0,
-                provider_id: None,
-                model_id: None,
-                is_isolated: r.is_isolated,
-                worktree_path: r.worktree_path.clone(),
-                role: r.role.clone(),
-                updated_at_ms: None,
-            })
-            .collect()
+        sessions.iter().map(Self::record_info).collect()
+    }
+
+    /// RPC-433: the in-memory live session map as a snapshot — the
+    /// connect-time replay source for `Envelope::SessionSnapshot`
+    /// (in-memory only: no persisted-manifest merge, no project filter).
+    fn live_session_infos(&self) -> Vec<SessionInfo> {
+        self.list_sessions("")
     }
 
     fn create_session(&self, role: Option<String>) -> SessionId {
@@ -1570,15 +1623,20 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             "stub-{}",
             self.next_id.fetch_add(1, Ordering::SeqCst)
         ));
+        let record = SessionRecord {
+            id: id.clone(),
+            role,
+            status: SessionStatus::Idle,
+            is_isolated: false,
+            worktree_path: None,
+        };
         if let Ok(mut sessions) = self.sessions.lock() {
-            sessions.push(SessionRecord {
-                id: id.clone(),
-                role,
-                status: SessionStatus::Idle,
-                is_isolated: false,
-                worktree_path: None,
-            });
+            sessions.push(record.clone());
         }
+        // RPC-433: fire the session-created event (multi-client fan-out
+        // tests drive Created through this sender; a lagged subscriber
+        // recovers via RecvError::Lagged — the TUI append is idempotent).
+        let _ = self.session_created_tx.send(Self::record_info(&record));
         id
     }
 
@@ -2106,15 +2164,19 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         let seq = self.next_iso_id.fetch_add(1, Ordering::SeqCst);
         let id = SessionId::new(format!("stub-iso-{seq}"));
         let worktree_path = format!("/tmp/stub-wt-{seq}");
+        let record = SessionRecord {
+            id: id.clone(),
+            role,
+            status: SessionStatus::Idle,
+            is_isolated: true,
+            worktree_path: Some(worktree_path.clone()),
+        };
         if let Ok(mut sessions) = self.sessions.lock() {
-            sessions.push(SessionRecord {
-                id: id.clone(),
-                role,
-                status: SessionStatus::Idle,
-                is_isolated: true,
-                worktree_path: Some(worktree_path.clone()),
-            });
+            sessions.push(record.clone());
         }
+        // RPC-433: isolated sessions are sessions too — fire the
+        // session-created event so remote clients learn about them.
+        let _ = self.session_created_tx.send(Self::record_info(&record));
         Ok(IsolatedSessionInfo {
             session_id: id,
             worktree_path,
@@ -2130,9 +2192,31 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         self.status_changes_tx.clone()
     }
 
+    /// RPC-433: subscribe to the stub's session-created events.
+    fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        self.session_created_tx.subscribe()
+    }
+
+    /// RPC-433: subscribe to the stub's session-removed events.
+    fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
+        self.session_removed_tx.subscribe()
+    }
+
     fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {
-        if let Ok(mut sessions) = self.sessions.lock() {
-            sessions.retain(|r| r.id != *session_id);
+        let existed = {
+            let mut fired = false;
+            if let Ok(mut sessions) = self.sessions.lock() {
+                let before = sessions.len();
+                sessions.retain(|r| r.id != *session_id);
+                fired = sessions.len() != before;
+            }
+            fired
+        };
+        // RPC-433: fire the session-removed event ONLY when the session
+        // actually existed (idempotent destroy of an unknown id emits
+        // nothing — mirrors the real `SessionManager::destroy_session`).
+        if existed {
+            let _ = self.session_removed_tx.send(session_id.clone());
         }
         // Clean up keyed state.
         if let Ok(mut g) = self.tokens.lock() {

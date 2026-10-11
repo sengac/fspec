@@ -167,6 +167,15 @@ pub struct SessionManager {
     /// append a tab for sessions it did not itself initiate. The payload is
     /// the new session's [`SessionInfo`] (its `.id` carries the SessionId).
     session_created_tx: broadcast::Sender<SessionInfo>,
+    /// RPC-433: per-manager broadcast of session-removed events. Fires
+    /// from `destroy_session` ONLY when the in-memory map actually lost a
+    /// session (an idempotent destroy of an unknown id emits nothing).
+    /// Payload is the destroyed session's [`SessionId`] — a connected
+    /// client already holds all tab state for that session. The WS server
+    /// fans it out to every client as
+    /// `Envelope::SessionEvent(SessionEvent::Removed(_))` (rule R2 of
+    /// session-events-daemon-fanout.feature).
+    session_removed_tx: broadcast::Sender<SessionId>,
     /// RPC-040: NAPI-side subsystems injected via the hooks trait.
     hooks: ArcSwap<Arc<dyn SessionManagerHooks>>,
     /// RPC-386: Weak self-reference, populated via [`SessionManager::init_self_weak`]
@@ -197,6 +206,12 @@ impl SessionManager {
         // TUI's append is idempotent, so a dropped/replayed event never
         // produces a duplicate or missing tab.
         let (session_created_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
+        // RPC-433: removal events share the created-events capacity and
+        // lag-recovery contract — the TUI close path is idempotent, so a
+        // lagged receiver recovers via RecvError::Lagged without producing
+        // a wrong tab state (a missed removal is healed by the next
+        // connect-time SessionSnapshot on reconnect).
+        let (session_removed_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let default_hooks: Arc<dyn SessionManagerHooks> = Arc::new(NoopSessionManagerHooks);
         Self {
             sessions: RwLock::new(IndexMap::new()),
@@ -211,6 +226,7 @@ impl SessionManager {
             logs_tx,
             status_changes_tx,
             session_created_tx,
+            session_removed_tx,
             hooks: ArcSwap::from_pointee(default_hooks),
             self_weak: OnceLock::new(),
         }
@@ -266,6 +282,29 @@ impl SessionManager {
     /// sessions (created outside the TUI) become visible as tabs.
     pub fn session_created_tx(&self) -> &broadcast::Sender<SessionInfo> {
         &self.session_created_tx
+    }
+
+    /// RPC-433: accessor for the session-removed broadcast sender. The WS
+    /// server's per-connection fan-out task subscribes to this and wraps
+    /// each id in `Envelope::SessionEvent(SessionEvent::Removed(_))`.
+    pub fn session_removed_tx(&self) -> &broadcast::Sender<SessionId> {
+        &self.session_removed_tx
+    }
+
+    /// RPC-433: the in-memory live session map as a snapshot
+    /// (`Vec<SessionInfo>`), WITHOUT the persisted-manifest merge and
+    /// WITHOUT project filtering that `list_sessions` applies. This is
+    /// the connect-time replay source for
+    /// `Envelope::SessionSnapshot` (rule R3 of
+    /// session-events-daemon-fanout.feature): parity with the BUG-206
+    /// liveness gate — it MUST NOT read disk.
+    pub fn live_session_infos(&self) -> Vec<SessionInfo> {
+        self.sessions
+            .read()
+            .expect("sessions lock poisoned")
+            .values()
+            .map(|s| s.get_info())
+            .collect()
     }
 
     /// SCHED-004: Set the default model for scheduled session spawning.
@@ -1290,6 +1329,15 @@ impl SessionManager {
                 session_id = %uuid,
                 "destroy_session: session removed from in-memory map"
             );
+            // RPC-433: fire the removal broadcast AFTER the map removal so
+            // the event reflects a state that already holds. Only a live
+            // destroy reaches this block (an unknown id falls through to
+            // the Err arm), so the event is exactly-once per live session
+            // (rule R2). The id is the SessionId newtype, matching what a
+            // connected client's tabs key on.
+            let _ = self
+                .session_removed_tx
+                .send(SessionId::from(uuid.to_string()));
             session.interrupt();
             self.hooks().stop_footer_poller(id);
             self.hooks().cleanup_session_loops(uuid);

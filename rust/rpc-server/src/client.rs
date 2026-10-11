@@ -11,7 +11,9 @@
 use crate::pump::{run_envelope_pump, ClientInbound};
 use crate::transport::ChannelTransport;
 use codelet_rpc::FspecServiceClient;
-use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{
+    LogRecord, SessionEvent, SessionId, SessionInfo, SessionStatus, StreamChunk, WorkUnitInfo,
+};
 use futures::StreamExt;
 use tokio::sync::{broadcast, watch};
 use tokio_tungstenite::WebSocketStream;
@@ -37,6 +39,12 @@ const LOGS_BROADCAST_CAPACITY: usize = 1024;
 /// status updates piggyback on the same per-connection envelope-out
 /// channel and are similar in volume.
 const STATUS_BROADCAST_CAPACITY: usize = 256;
+
+/// Capacity of the session-events broadcast channel internal to
+/// [`FspecWsClient`] (RPC-433). Matches the status-changes capacity:
+/// session lifecycle events are low-rate control-plane traffic on the
+/// same per-connection envelope-out channel.
+const SESSION_EVENTS_BROADCAST_CAPACITY: usize = 256;
 
 /// Client returned by [`ws_client_connect`].
 ///
@@ -81,6 +89,16 @@ pub struct FspecWsClient {
     /// WS disconnect closes every receiver returned by
     /// [`Self::status_changes_rx`].
     status_rx_template: broadcast::Receiver<(SessionId, SessionStatus)>,
+    /// RPC-433: Template receiver for the session-events broadcast
+    /// (Created / Removed). The sender side is owned by the pump task
+    /// only — dropping it on WS disconnect closes every receiver
+    /// returned by [`Self::session_events_rx`] (RPC-010 rule [23]).
+    session_events_rx_template: broadcast::Receiver<SessionEvent>,
+    /// RPC-433: Initial watch receiver cloned by
+    /// [`Self::session_snapshot_rx`]. The sender side is owned by the
+    /// pump task only — dropping it on WS disconnect closes every
+    /// forwarder spawned by [`Self::session_snapshot_rx`].
+    session_snapshot_watch_rx: watch::Receiver<Option<Vec<SessionInfo>>>,
 }
 
 impl FspecWsClient {
@@ -162,6 +180,66 @@ impl FspecWsClient {
     pub fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
         self.status_rx_template.resubscribe()
     }
+
+    /// RPC-433: subscribe to server-pushed session lifecycle events
+    /// (`SessionEvent::Created` / `SessionEvent::Removed`) — the live
+    /// fan-out that reaches every connected client for sessions created
+    /// or destroyed on ANY machine (rule R6). ONE stream carries both
+    /// variants, preserving created/removed ordering per session.
+    /// Sibling of the embedded transport's `session_created_rx` /
+    /// `session_removed_rx` pair (the TUI splits it onto the two
+    /// per-variant receivers).
+    ///
+    /// Because the sender is held only by the pump task, a subscriber
+    /// observes `RecvError::Closed` as soon as the WS connection drops.
+    pub fn session_events_rx(&self) -> broadcast::Receiver<SessionEvent> {
+        self.session_events_rx_template.resubscribe()
+    }
+
+    /// RPC-433: subscribe to the connect-time open-session snapshot
+    /// (rule R6). Sibling of [`Self::work_units_rx`] — a small forwarder
+    /// task replays the cached snapshot on the new broadcast channel,
+    /// then forwards subsequent updates.
+    ///
+    /// The watch-backed cache matters here: the TUI subscribes to the
+    /// session streams only AFTER bootstrap's initial RPCs, which races
+    /// the server's connect-time `SessionSnapshot` push (the same race
+    /// RPC-006 documented for work-units initial snapshots). The
+    /// forwarder replays the cached snapshot regardless of when this
+    /// method is called. When the WS connection drops, the forwarder
+    /// exits and the per-subscriber broadcast closes.
+    pub fn session_snapshot_rx(&self) -> broadcast::Receiver<Vec<SessionInfo>> {
+        let (sub_tx, sub_rx) =
+            broadcast::channel::<Vec<SessionInfo>>(WORK_UNITS_BROADCAST_CAPACITY);
+        let mut watch_rx = self.session_snapshot_watch_rx.clone();
+        tokio::spawn(async move {
+            // Replay the current cached snapshot first (if any). Mark it
+            // seen so `changed().await` only fires on subsequent
+            // updates, avoiding double-delivery.
+            {
+                let initial = watch_rx.borrow_and_update().clone();
+                if let Some(payload) = initial {
+                    if sub_tx.send(payload).is_err() {
+                        return;
+                    }
+                }
+            }
+            while watch_rx.changed().await.is_ok() {
+                let next = watch_rx.borrow_and_update().clone();
+                if let Some(payload) = next {
+                    if sub_tx.send(payload).is_err() {
+                        break;
+                    }
+                }
+            }
+            // `changed().await` returned `Err`, meaning every watch
+            // sender (owned by the pump task) was dropped — i.e. the
+            // WS connection closed. Letting `sub_tx` drop here closes
+            // the per-subscriber broadcast so external callers of
+            // [`Self::session_snapshot_rx`] observe `RecvError::Closed`.
+        });
+        sub_rx
+    }
 }
 
 /// Build an [`FspecWsClient`] over a tokio-tungstenite WebSocket stream.
@@ -194,6 +272,18 @@ where
     // [`FspecWsClient::status_changes_rx`] (RPC-010 rule [23]).
     let (status_tx, status_rx_template) =
         broadcast::channel::<(SessionId, SessionStatus)>(STATUS_BROADCAST_CAPACITY);
+    // RPC-433: broadcast channel for session lifecycle events
+    // (Created / Removed). The sender is moved into the pump task so
+    // dropping it on WS disconnect closes every subscriber returned by
+    // [`FspecWsClient::session_events_rx`] (RPC-010 rule [23]).
+    let (session_events_tx, session_events_rx_template) =
+        broadcast::channel::<SessionEvent>(SESSION_EVENTS_BROADCAST_CAPACITY);
+    // RPC-433: watch channel holding the latest connect-time
+    // open-session snapshot. The sender is moved into the pump task so
+    // dropping it on WS disconnect tears down every forwarder spawned
+    // by [`FspecWsClient::session_snapshot_rx`] (RPC-010 rule [23]).
+    let (session_snapshot_tx, session_snapshot_watch_rx) =
+        watch::channel::<Option<Vec<SessionInfo>>>(None);
 
     let (sink, stream) = ws.split();
 
@@ -212,6 +302,8 @@ where
                 chunks_tx,
                 logs_tx,
                 status_tx,
+                session_events_tx,
+                session_snapshot_tx,
             },
             None,
             None,
@@ -235,5 +327,7 @@ where
         chunks_rx_template,
         logs_rx_template,
         status_rx_template,
+        session_events_rx_template,
+        session_snapshot_watch_rx,
     })
 }

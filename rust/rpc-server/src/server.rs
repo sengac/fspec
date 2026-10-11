@@ -150,6 +150,20 @@ async fn handle_connection(
     }
     let _ = envelope_out_tx.send(Envelope::WorkUnitsUpdate(initial_snapshot));
 
+    // RPC-433: connect-time open-session snapshot (rule R5). Sent right
+    // after the initial WorkUnitsUpdate and ALWAYS — even when empty — so
+    // a late-joining client deterministically learns about every session
+    // already open (and can distinguish "checked, none open" from
+    // "never asked"). In-memory only (no disk merge, no project filter):
+    // parity with the BUG-206 liveness gate.
+    let live_sessions = service.live_sessions_snapshot();
+    tracing::debug!(
+        live_sessions = live_sessions.len(),
+        client_id = %peer,
+        "ws connect-time SessionSnapshot sent"
+    );
+    let _ = envelope_out_tx.send(Envelope::SessionSnapshot(live_sessions));
+
     let watcher_rx = service.watcher_rx();
     let envelope_out_tx_for_watcher = envelope_out_tx.clone();
     let lag_work_units = Arc::clone(&stats.lag_work_units);
@@ -194,6 +208,33 @@ async fn handle_connection(
         lag_status,
     ));
 
+    // RPC-433: per-connection fanout for session lifecycle events
+    // (rule R4). Two tasks mirror `status_changes_fanout`: one drains
+    // `SharedFspecService::session_created_rx` and wraps each
+    // `SessionInfo` in `Envelope::SessionEvent(Created)`, the other
+    // drains `session_removed_rx` and wraps each id in
+    // `Envelope::SessionEvent(Removed)`. Both fan out to EVERY
+    // connected client — including the one that issued the RPC (no
+    // per-client filtering, RPC-007 chunk fan-out precedent). They
+    // share a single lag counter (`lag_session_events`), like
+    // `lag_status` for the status fanout.
+    let session_created_rx = service.session_created_rx();
+    let envelope_out_tx_for_session_created = envelope_out_tx.clone();
+    let lag_session_events = Arc::clone(&stats.lag_session_events);
+    let session_created_fanout = tokio::spawn(session_created_fanout(
+        session_created_rx,
+        envelope_out_tx_for_session_created,
+        lag_session_events,
+    ));
+
+    let session_removed_rx = service.session_removed_rx();
+    let envelope_out_tx_for_session_removed = envelope_out_tx.clone();
+    let session_removed_fanout = tokio::spawn(session_removed_fanout(
+        session_removed_rx,
+        envelope_out_tx_for_session_removed,
+        Arc::clone(&stats.lag_session_events),
+    ));
+
     let transport = ChannelTransport::new(rpc_bytes_rx, server_out_tx);
     let service_impl = FspecServiceImpl::new(Arc::clone(&service));
     let server = BaseChannel::with_defaults(transport);
@@ -226,10 +267,14 @@ async fn handle_connection(
     chunks_fanout.abort();
     logs_fanout.abort();
     status_fanout.abort();
+    session_created_fanout.abort();
+    session_removed_fanout.abort();
     let _ = watcher_fanout.await;
     let _ = chunks_fanout.await;
     let _ = logs_fanout.await;
     let _ = status_fanout.await;
+    let _ = session_created_fanout.await;
+    let _ = session_removed_fanout.await;
     result
 }
 
@@ -341,6 +386,73 @@ async fn status_changes_fanout(
             Err(RecvError::Lagged(skipped)) => {
                 lag_status.fetch_add(skipped, Ordering::SeqCst);
                 tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws status fan-out lagged; some status updates dropped");
+                continue;
+            }
+            Err(RecvError::Closed) => break,
+        }
+    }
+}
+
+/// RPC-433: drain session-created events and forward as
+/// `Envelope::SessionEvent(Created(info))` to every connected client
+/// (rule R4). Mirrors `status_changes_fanout`; a lagged subscriber
+/// recovers via RecvError::Lagged — the client's tab append is
+/// idempotent and a missed add is re-asserted by the next
+/// connect-time `SessionSnapshot` on reconnect.
+async fn session_created_fanout(
+    mut created_rx: tokio::sync::broadcast::Receiver<codelet_rpc_types::SessionInfo>,
+    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
+    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
+) {
+    use tokio::sync::broadcast::error::RecvError;
+    loop {
+        match created_rx.recv().await {
+            Ok(info) => {
+                if envelope_out_tx
+                    .send(Envelope::SessionEvent(
+                        codelet_rpc_types::SessionEvent::Created(info),
+                    ))
+                    .is_err()
+                {
+                    break;
+                }
+            }
+            Err(RecvError::Lagged(skipped)) => {
+                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
+                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-created fan-out lagged; some events dropped");
+                continue;
+            }
+            Err(RecvError::Closed) => break,
+        }
+    }
+}
+
+/// RPC-433: drain session-removed events and forward as
+/// `Envelope::SessionEvent(Removed(id))` to every connected client
+/// (rule R4). Mirrors `session_created_fanout`; a missed removal is
+/// healed by the next connect-time `SessionSnapshot` on reconnect
+/// (known limitation: add-only replay, no stale-tab pruning).
+async fn session_removed_fanout(
+    mut removed_rx: tokio::sync::broadcast::Receiver<SessionId>,
+    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
+    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
+) {
+    use tokio::sync::broadcast::error::RecvError;
+    loop {
+        match removed_rx.recv().await {
+            Ok(session_id) => {
+                if envelope_out_tx
+                    .send(Envelope::SessionEvent(
+                        codelet_rpc_types::SessionEvent::Removed(session_id),
+                    ))
+                    .is_err()
+                {
+                    break;
+                }
+            }
+            Err(RecvError::Lagged(skipped)) => {
+                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
+                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-removed fan-out lagged; some events dropped");
                 continue;
             }
             Err(RecvError::Closed) => break,

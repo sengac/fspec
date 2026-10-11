@@ -19,7 +19,9 @@
 //! [`Envelope::LogEvent`] carries the `LogRecord` published by the
 //! host's tracing::Layer (RPC-007 architecture notes 6 + 7).
 
-use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{
+    LogRecord, SessionEvent, SessionId, SessionInfo, SessionStatus, StreamChunk, WorkUnitInfo,
+};
 use serde::{Deserialize, Serialize};
 
 /// WebSocket framing envelope.
@@ -67,6 +69,26 @@ pub enum Envelope {
     CmdReq,
     /// Reserved: client-to-server command response. Rejected in RPC-007.
     CmdRes,
+    /// RPC-433: server-pushed session lifecycle event (live fan-out).
+    ///
+    /// Carries a [`codelet_rpc_types::SessionEvent`] — either
+    /// `Created(SessionInfo)` (fed by the per-connection fan-out task
+    /// draining `SharedFspecService::session_created_rx`) or
+    /// `Removed(SessionId)` (draining `session_removed_rx`). Sent to
+    /// EVERY connected client, including the one that issued the
+    /// `create_session` / `destroy_session` call (no per-client
+    /// filtering — RPC-007 chunk fan-out precedent).
+    ///
+    /// APPENDED after the reserved `Cmd*` variants so existing bincode
+    /// variant indices stay stable (forward-compat rule set in RPC-007).
+    SessionEvent(SessionEvent),
+    /// RPC-433: server-pushed open-session snapshot, sent once per
+    /// connection right after the initial `WorkUnitsUpdate` snapshot
+    /// (connect-time "add replay" — a late-joining client learns about
+    /// every session already open, without any RPC poll). ALWAYS sent,
+    /// even when empty, so a connecting client can distinguish
+    /// "checked, none open" from "never asked".
+    SessionSnapshot(Vec<SessionInfo>),
 }
 
 impl Envelope {
@@ -81,6 +103,8 @@ impl Envelope {
             Envelope::StatusUpdate { .. } => "StatusUpdate",
             Envelope::CmdReq => "CmdReq",
             Envelope::CmdRes => "CmdRes",
+            Envelope::SessionEvent(_) => "SessionEvent",
+            Envelope::SessionSnapshot(_) => "SessionSnapshot",
         }
     }
 }

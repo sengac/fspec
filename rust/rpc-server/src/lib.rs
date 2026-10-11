@@ -94,6 +94,11 @@ pub struct ServerStats {
     /// RPC-037: cumulative RecvError::Lagged count from the
     /// status-changes fanout task.
     pub lag_status: Arc<AtomicU64>,
+    /// RPC-433: cumulative RecvError::Lagged count from the
+    /// session-events fanout tasks (shared by the created + removed
+    /// fanouts). Stats-only, like `lag_status` — NOT surfaced on
+    /// `ServerStatsHandle` / `HealthInfo`.
+    pub lag_session_events: Arc<AtomicU64>,
     /// RPC-011: process startup instant.
     pub started_at: Instant,
     /// RPC-011: notified once on SIGTERM/SIGINT so each per-connection
@@ -122,6 +127,7 @@ impl ServerStats {
             lag_logs: Arc::new(AtomicU64::new(0)),
             lag_work_units: Arc::new(AtomicU64::new(0)),
             lag_status: Arc::new(AtomicU64::new(0)),
+            lag_session_events: Arc::new(AtomicU64::new(0)),
             started_at,
             shutdown_signal: Arc::new(tokio::sync::Notify::new()),
             shutdown_flag: Arc::new(std::sync::atomic::AtomicBool::new(false)),
@@ -169,6 +175,12 @@ impl ServerStats {
     /// status-changes fanout task.
     pub fn lag_status(&self) -> u64 {
         self.lag_status.load(Ordering::SeqCst)
+    }
+
+    /// RPC-433: cumulative `RecvError::Lagged` count from the
+    /// session-events fanout tasks (created + removed share the counter).
+    pub fn lag_session_events(&self) -> u64 {
+        self.lag_session_events.load(Ordering::SeqCst)
     }
 
     /// RPC-011: snapshot of the most recent watcher snapshot Instant.

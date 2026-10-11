@@ -34,8 +34,7 @@ pub(crate) static ENV_GUARD: std::sync::LazyLock<std::sync::Arc<tokio::sync::Mut
 
 /// Process-wide hermetic dirs, created ONCE per test binary:
 /// `codelet_common::set_data_directory` is first-call-wins.
-pub(crate) static SHARED_DIR: std::sync::OnceLock<tempfile::TempDir> =
-    std::sync::OnceLock::new();
+pub(crate) static SHARED_DIR: std::sync::OnceLock<tempfile::TempDir> = std::sync::OnceLock::new();
 
 fn shared_dir() -> &'static Path {
     SHARED_DIR
@@ -127,10 +126,7 @@ async fn wired_manager() -> (
 
 /// Create an isolated session through the registered manager's in-memory API
 /// (the same call the fspec binary drives via RPC). Returns the session UUID.
-async fn create_isolated_sync(
-    manager: &Arc<SessionManager>,
-    repo: &Path,
-) -> (Uuid, PathBuf) {
+async fn create_isolated_sync(manager: &Arc<SessionManager>, repo: &Path) -> (Uuid, PathBuf) {
     let id = Uuid::new_v4();
     let info = manager
         .create_isolated_session_with_id(

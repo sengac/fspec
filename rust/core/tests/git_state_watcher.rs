@@ -286,8 +286,15 @@ async fn steady_state_silence_in_a_clean_repo() {
     // The initial broadcast landed before `rx` existed — the receiver must
     // observe ZERO frames during the silent window.
     let frames = count_frames(&mut rx, Duration::from_millis(500)).await;
-    assert_eq!(frames, 0, "dedup: unchanged poll ticks must not re-broadcast");
-    assert_eq!(watcher.snapshot(), initial, "stored snapshot must be untouched");
+    assert_eq!(
+        frames, 0,
+        "dedup: unchanged poll ticks must not re-broadcast"
+    );
+    assert_eq!(
+        watcher.snapshot(),
+        initial,
+        "stored snapshot must be untouched"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -363,7 +370,9 @@ async fn a_new_checkpoint_ref_produces_a_frame_on_the_checkpointed_repo() {
         .map(|c| (c.work_unit_id.clone(), c.name.clone()))
         .collect();
     assert!(
-        names.iter().any(|(wu, n)| wu == "AUTH-001" && n == "baseline"),
+        names
+            .iter()
+            .any(|(wu, n)| wu == "AUTH-001" && n == "baseline"),
         "frame must carry the pre-existing checkpoint: {names:?}"
     );
     assert!(

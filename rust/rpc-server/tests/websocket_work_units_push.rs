@@ -116,13 +116,17 @@ async fn scenario_work_units_update_frames_are_bincode_encoded_and_not_json() {
 
     let ws = connect_with_retry(port).await;
     let (_sink, mut stream) = ws.split();
-    // Drain the initial snapshot so the next frame on the wire is the
-    // mutation push, in isolation.
-    let _initial = timeout(Duration::from_secs(2), stream.next())
-        .await
-        .expect("initial frame within 2s")
-        .expect("ws not closed")
-        .expect("ws frame ok");
+    // Drain the connect-time handshake frames so the next frame on the
+    // wire is the mutation push, in isolation. RPC-433 made the
+    // handshake TWO frames: the initial WorkUnitsUpdate followed by
+    // the (possibly empty) SessionSnapshot — drain both.
+    for _ in 0..2 {
+        timeout(Duration::from_secs(2), stream.next())
+            .await
+            .expect("initial frame within 2s")
+            .expect("ws not closed")
+            .expect("ws frame ok");
+    }
 
     write_workspace(
         &path,

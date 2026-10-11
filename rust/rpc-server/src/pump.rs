@@ -21,7 +21,9 @@
 //! channel (it keeps the sender alive so the receiver stays `Pending`).
 
 use crate::envelope::Envelope;
-use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{
+    LogRecord, SessionEvent, SessionId, SessionInfo, SessionStatus, StreamChunk, WorkUnitInfo,
+};
 use futures::{stream::SplitSink, stream::SplitStream, SinkExt, StreamExt};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
@@ -83,6 +85,27 @@ pub trait InboundHandler: Send + 'static {
     fn on_status_update(&self, _session_id: SessionId, _status: SessionStatus) {
         self.on_reserved("StatusUpdate");
     }
+
+    /// Called when an `Envelope::SessionEvent(event)` arrives
+    /// (RPC-433). Default implementation defers to
+    /// [`Self::on_reserved`] — session lifecycle events only flow
+    /// server → client, so a client-pushed `SessionEvent` is rejected on
+    /// the server side (counted in `rejected_envelopes`, named in
+    /// `rejected_variants` — rule R7). Client-side handlers override this
+    /// to forward the payload to their session-events broadcast.
+    fn on_session_event(&self, _event: SessionEvent) {
+        self.on_reserved("SessionEvent");
+    }
+
+    /// Called when an `Envelope::SessionSnapshot(payload)` arrives
+    /// (RPC-433). Default implementation defers to
+    /// [`Self::on_reserved`] — the connect-time snapshot only flows
+    /// server → client, so a client-pushed `SessionSnapshot` is rejected
+    /// on the server side (rule R7). Client-side handlers override this
+    /// to forward the payload to their snapshot watch.
+    fn on_session_snapshot(&self, _payload: Vec<SessionInfo>) {
+        self.on_reserved("SessionSnapshot");
+    }
 }
 
 /// Server-side reserved-variant handler — increments a counter and warns.
@@ -130,6 +153,16 @@ pub struct ClientInbound {
     /// RPC-037: status updates broadcast forwarded onto
     /// `FspecWsClient::status_changes_rx()` subscribers.
     pub status_tx: tokio::sync::broadcast::Sender<(SessionId, SessionStatus)>,
+    /// RPC-433: session lifecycle events (Created / Removed) forwarded
+    /// onto `FspecWsClient::session_events_rx()` subscribers. ONE stream
+    /// for both variants preserves created/removed ordering per session.
+    pub session_events_tx: tokio::sync::broadcast::Sender<SessionEvent>,
+    /// RPC-433: connect-time open-session snapshot. WATCH (not
+    /// broadcast): this is the exact fix documented for the work-units
+    /// initial-snapshot race (the doc on `work_units_tx` above) — the
+    /// TUI subscribes to session streams only AFTER bootstrap's initial
+    /// RPCs, so a plain broadcast snapshot would be lost.
+    pub session_snapshot_tx: tokio::sync::watch::Sender<Option<Vec<SessionInfo>>>,
 }
 
 impl InboundHandler for ClientInbound {
@@ -164,6 +197,22 @@ impl InboundHandler for ClientInbound {
         // there are no active receivers — that's fine, the next
         // subscribe() call will see the next status update.
         let _ = self.status_tx.send((session_id, status));
+    }
+
+    fn on_session_event(&self, event: SessionEvent) {
+        // Broadcast to all subscribers. `send` returns `Err` only if
+        // there are no active receivers — that's fine, the next
+        // subscribe() call will see the next session event.
+        let _ = self.session_events_tx.send(event);
+    }
+
+    fn on_session_snapshot(&self, payload: Vec<SessionInfo>) {
+        // `send_replace` always succeeds (does not require subscribers).
+        // Watch semantics ("latest snapshot wins") match the
+        // connect-time contract: a subscriber created after the
+        // handshake frame is still replayed the cached snapshot via
+        // `FspecWsClient::session_snapshot_rx`'s forwarder.
+        let _ = self.session_snapshot_tx.send_replace(Some(payload));
     }
 }
 
@@ -300,6 +349,12 @@ fn pump_dispatch_inbound<H: InboundHandler>(
                 }
                 Envelope::StatusUpdate { session_id, status } => {
                     inbound.on_status_update(session_id, status);
+                }
+                Envelope::SessionEvent(event) => {
+                    inbound.on_session_event(event);
+                }
+                Envelope::SessionSnapshot(payload) => {
+                    inbound.on_session_snapshot(payload);
                 }
                 other => {
                     inbound.on_reserved(other.variant_name());

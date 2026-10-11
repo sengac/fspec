@@ -306,6 +306,25 @@ pub struct SessionInfo {
     pub updated_at_ms: Option<i64>,
 }
 
+/// RPC-433: a session lifecycle event pushed to ALL connected clients.
+///
+/// Server-to-client only (the WS server rejects client-pushed frames of
+/// this payload — see `codelet_rpc_server::Envelope::SessionEvent`).
+///
+/// `Removed` carries only the id: a connected client already holds all
+/// tab state for that session and needs nothing else to close the tab.
+/// The connect-time "add replay" is deliberately NOT a `replay` flag on
+/// this event — it is a separate `Envelope::SessionSnapshot` frame, which
+/// keeps the live event stream pure (research:
+/// `spec/attachments/RPC-433/session-events-daemon-fanout-research.md` §2.1).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SessionEvent {
+    /// A session was created (any client, spawned subordinate, or /resume).
+    Created(SessionInfo),
+    /// A session was destroyed / removed from the daemon's live map.
+    Removed(SessionId),
+}
+
 /// Structured log event payload pushed to subscribers via the
 /// `logs_rx` broadcast channel.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]

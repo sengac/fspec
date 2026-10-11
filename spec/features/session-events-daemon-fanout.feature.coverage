@@ -1,0 +1,270 @@
+{
+  "scenarios": [
+    {
+      "name": "Session created on any client is pushed to all connected clients",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "87-149",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/lib.rs",
+              "lines": [
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326
+              ]
+            },
+            {
+              "file": "rust/rpc-server/src/envelope.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session destroyed on any client is pushed to all connected clients",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "87-150",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340
+              ]
+            },
+            {
+              "file": "rust/rpc-server/src/envelope.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A connecting client is re-told about the sessions that are already open",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "154-193",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            },
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A connecting client always receives an open-session snapshot even when no sessions are open",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "197-225",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Client-pushed session event frames are rejected as reserved",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc433_session_event_fan_out.rs",
+          "lines": "229-282",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/pump.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/rpc433_session_event_fan_out.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/lib.rs",
+      "rust/rpc-server/src/envelope.rs",
+      "rust/sessions/src/session_manager.rs",
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc-server/src/pump.rs"
+    ],
+    "totalLinesCovered": 405
+  }
+}

@@ -759,10 +759,7 @@ fn scenario_the_napi_front_door_registers_the_shared_codelet_sessions_callback_f
     // Whitespace-tolerant: the shim call may be formatted across lines (rustfmt
     // wraps it once the line exceeds the limit), so collapse ALL whitespace on
     // both the haystack and the needle before comparing.
-    let collapsed = stripped
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join("");
+    let collapsed = stripped.split_whitespace().collect::<Vec<_>>().join("");
     assert!(
         collapsed.contains(
             "codelet_sessions::session_tool_callbacks::emit_block_notification(session_id_str,action,reason,)"

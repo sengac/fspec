@@ -132,19 +132,15 @@ async fn a_slow_git_state_capture_never_blocks_the_other_async_work_on_the_runti
     let captures = Arc::new(AtomicUsize::new(0));
     let captures_hook = Arc::clone(&captures);
     let slow_flag = Arc::clone(&first_capture_slow);
-    let _watcher = GitStateWatcher::with_captures(
-        repo,
-        Duration::from_millis(100),
-        move || {
-            if slow_flag.swap(false, Ordering::SeqCst) {
-                // Simulate the profiled slow capture (gix pack decode):
-                // 400ms of pure sync work — far longer than the 100ms
-                // poll interval.
-                std::thread::sleep(Duration::from_millis(400));
-            }
-            captures_hook.fetch_add(1, Ordering::SeqCst);
-        },
-    );
+    let _watcher = GitStateWatcher::with_captures(repo, Duration::from_millis(100), move || {
+        if slow_flag.swap(false, Ordering::SeqCst) {
+            // Simulate the profiled slow capture (gix pack decode):
+            // 400ms of pure sync work — far longer than the 100ms
+            // poll interval.
+            std::thread::sleep(Duration::from_millis(400));
+        }
+        captures_hook.fetch_add(1, Ordering::SeqCst);
+    });
 
     // @step And a concurrent async timer task on the same runtime firing at a short cadence
     let timer_started = std::time::Instant::now();
@@ -183,7 +179,8 @@ async fn a_slow_git_state_capture_never_blocks_the_other_async_work_on_the_runti
 
     // @step Then the concurrent timer task fires on schedule throughout (its ticks are not delayed by the captures)
     assert_eq!(
-        ticks.load(Ordering::SeqCst), 24,
+        ticks.load(Ordering::SeqCst),
+        24,
         "all 24 timer ticks must fire"
     );
     // 24 ticks at 50ms = 1.2s of work. A 400ms inline capture on this
@@ -222,29 +219,25 @@ async fn a_tick_that_fires_while_a_capture_is_in_flight_is_dropped_not_queued() 
     let first_capture_slow = Arc::new(AtomicBool::new(true));
     let capture_starts = Arc::new(Mutex::new(Vec::<std::time::Instant>::new()));
     let captures = Arc::new(AtomicUsize::new(0));
-    let watcher = GitStateWatcher::with_captures(
-        repo,
-        Duration::from_millis(100),
-        {
-            let slow_guard = Arc::clone(&slow_guard);
-            let first_capture_slow = Arc::clone(&first_capture_slow);
-            let capture_starts = Arc::clone(&capture_starts);
-            let captures = Arc::clone(&captures);
-            move || {
-                capture_starts
-                    .lock()
-                    .expect("capture_starts poisoned")
-                    .push(std::time::Instant::now());
-                if first_capture_slow.swap(false, Ordering::SeqCst) {
-                    // Hold the guard for 600ms — any capture that
-                    // started during this window would be overlapping.
-                    let _guard = slow_guard.lock().expect("slow_guard poisoned");
-                    std::thread::sleep(Duration::from_millis(600));
-                }
-                captures.fetch_add(1, Ordering::SeqCst);
+    let watcher = GitStateWatcher::with_captures(repo, Duration::from_millis(100), {
+        let slow_guard = Arc::clone(&slow_guard);
+        let first_capture_slow = Arc::clone(&first_capture_slow);
+        let capture_starts = Arc::clone(&capture_starts);
+        let captures = Arc::clone(&captures);
+        move || {
+            capture_starts
+                .lock()
+                .expect("capture_starts poisoned")
+                .push(std::time::Instant::now());
+            if first_capture_slow.swap(false, Ordering::SeqCst) {
+                // Hold the guard for 600ms — any capture that
+                // started during this window would be overlapping.
+                let _guard = slow_guard.lock().expect("slow_guard poisoned");
+                std::thread::sleep(Duration::from_millis(600));
             }
-        },
-    );
+            captures.fetch_add(1, Ordering::SeqCst);
+        }
+    });
 
     // @step When several poll ticks fire while the first capture is still running
     let window = Duration::from_millis(2000);
@@ -256,10 +249,7 @@ async fn a_tick_that_fires_while_a_capture_is_in_flight_is_dropped_not_queued() 
             _ = &mut deadline => break,
             r = rx.recv() => r,
         };
-        if matches!(
-            res,
-            Err(tokio::sync::broadcast::error::RecvError::Closed)
-        ) {
+        if matches!(res, Err(tokio::sync::broadcast::error::RecvError::Closed)) {
             break;
         }
         let _ = res;
@@ -348,16 +338,12 @@ async fn a_checkpoint_written_from_another_terminal_still_lands_within_the_watch
     let tmp = setup_test_repo();
     let repo = tmp.path();
     let captures = Arc::new(AtomicUsize::new(0));
-    let watcher = GitStateWatcher::with_captures(
-        repo,
-        Duration::from_millis(100),
-        {
-            let captures = Arc::clone(&captures);
-            move || {
-                captures.fetch_add(1, Ordering::SeqCst);
-            }
-        },
-    );
+    let watcher = GitStateWatcher::with_captures(repo, Duration::from_millis(100), {
+        let captures = Arc::clone(&captures);
+        move || {
+            captures.fetch_add(1, Ordering::SeqCst);
+        }
+    });
     assert_eq!(
         watcher.snapshot().checkpoint_counts,
         codelet_rpc_types::CheckpointCounts { manual: 0, auto: 0 },

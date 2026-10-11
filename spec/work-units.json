@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-11T02:10:41.713Z",
+    "lastUpdated": "2026-10-11T05:55:20.728Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -74,7 +74,7 @@
     "REVIEW": 1,
     "RIG": 15,
     "RLM": 2,
-    "RPC": 432,
+    "RPC": 434,
     "SCHED": 14,
     "SESS": 2,
     "TAG": 4,
@@ -253,7 +253,8 @@
       "RIG-013",
       "SCHED-001",
       "TOOL-001",
-      "TUI-085"
+      "TUI-085",
+      "RPC-434"
     ],
     "testing": [],
     "implementing": [
@@ -1766,7 +1767,8 @@
       "BUG-204",
       "BUG-205",
       "TUI-113",
-      "BUG-206"
+      "BUG-206",
+      "RPC-433"
     ],
     "blocked": [
       "QUERY-001",
@@ -238039,6 +238041,245 @@
         "benefit": "the session I was last viewing restores without ever resurrecting a session I closed in the past"
       },
       "iterations": 1
+    },
+    "RPC-433": {
+      "id": "RPC-433",
+      "title": "Daemon-side session lifecycle event fan-out (created/removed) + connect-time snapshot over WebSocket",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-10-11T03:17:41.863Z",
+      "updatedAt": "2026-10-11T05:55:40.532Z",
+      "description": "SessionManager.session_created_tx already fires on all creation paths but never crosses the WS wire: handle_connection has no fan-out task for it, Envelope has no session variant, and the remote client stubs session_created_rx out. destroy_session fires no removal event at all. Add a SessionEvent {Created, Removed} push + a connect-time SessionSnapshot so every connected client learns about session adds/removes and re-broadcasts open sessions on connect. Research attached: spec/attachments/RPC-433/session-events-daemon-fanout-research.md",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/RPC-433/session-events-daemon-fanout-research.md",
+        "spec/attachments/RPC-433/ast-research-session-event-fanout.md"
+      ],
+      "userStory": {
+        "role": "operator",
+        "action": "create or destroy a session on any machine connected to the fspec daemon",
+        "benefit": "every other connected client is told about the add/removal over the wire, and a connecting client is re-told about the sessions that are already open"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-11T03:18:02.213Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-11T03:27:27.031Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-11T05:50:21.184Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-11T05:50:24.022Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-11T05:55:20.728Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: New SessionEvent { Created(SessionInfo), Removed(SessionId) } payload type in codelet-rpc-types; new Envelope variants SessionEvent(SessionEvent) and SessionSnapshot(Vec<SessionInfo>) APPENDED after CmdRes so existing bincode variant indices stay stable",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:06.027Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: SessionManager gains session_removed_tx (capacity 256); destroy_session fires SessionEvent::Removed ONLY when the shift_remove actually removed a session (idempotent destroy of an unknown id emits nothing)",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:09.315Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: SessionManager::live_session_infos() returns the in-memory session map ONLY (no persisted-manifest merge, no project filter) — parity with the BUG-206 liveness gate; it is the connect-time replay source",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:12.292Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: WS server handle_connection spawns per-connection fan-out tasks for session_created_rx (Envelope::SessionEvent(Created)) and session_removed_rx (Envelope::SessionEvent(Removed)) mirroring status_changes_fanout, plus a lag_session_events stat; ServerStats exposes it",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:16.855Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: On connect, the server pushes Envelope::SessionSnapshot(live_sessions_snapshot()) right after the initial WorkUnitsUpdate — ALWAYS sent (even when empty) so a late-joining client deterministically re-broadcasts every open session",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:20.178Z"
+        },
+        {
+          "id": 5,
+          "text": "R6: FspecWsClient gains session_events_rx() (broadcast template, sender owned by the pump task — drop-on-disconnect propagation per RPC-010 rule [23]) and session_snapshot_rx() (watch-backed forwarder replaying the cached snapshot, mirroring work_units_rx); ws_client_connect wires both into ClientInbound",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:22.897Z"
+        },
+        {
+          "id": 6,
+          "text": "R7: SessionEvent / SessionSnapshot are server-to-client only: a client-pushed frame of either variant is counted in ServerStats.rejected_envelopes, named in rejected_variants, and traced (same treatment as StatusUpdate)",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:26.147Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "I open the TUI on machine B while a session already runs on the daemon (created from machine A); when machine B connects it learns about that open session without me having to poll",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:37.634Z"
+        },
+        {
+          "id": 1,
+          "text": "I close a session on machine A; the TUI on machine B is told about the removal over the wire (not by polling list_live_sessions)",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:40.362Z"
+        },
+        {
+          "id": 2,
+          "text": "The client that issued the create_session call also receives the pushed Created event for its own session (no per-client filtering, like the RPC-007 chunk fan-out)",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:44.098Z"
+        },
+        {
+          "id": 3,
+          "text": "I connect a TUI to a daemon that has no open sessions; the connection handshake still delivers an (empty) open-session snapshot so I can distinguish 'checked, none open' from 'never asked'",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:18:47.492Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "SessionEvent { Created(SessionInfo), Removed(SessionId) } in codelet-rpc-types + Envelope::SessionEvent / Envelope::SessionSnapshot APPENDED after CmdRes (stable variant indices). Full design + file list in spec/attachments/RPC-433/session-events-daemon-fanout-research.md",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:26:02.386Z"
+        },
+        {
+          "id": 1,
+          "text": "Manager: session_removed_tx (cap 256) fired in destroy_session only when shift_remove removed a session; live_session_infos() = in-memory map only (no disk merge) as the connect-time replay source. handle trait: session_removed_rx (default closed) + live_session_infos (default empty); StubSessionManagerHandle upgraded to fire created/removed + implement both so multi-client fan-out tests can drive events",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:26:05.567Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "iterations": 1
+    },
+    "RPC-434": {
+      "id": "RPC-434",
+      "title": "TUI consumes session lifecycle events on both transports (embedded + WS): created/removed fan-in + snapshot replay",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-10-11T03:17:46.360Z",
+      "updatedAt": "2026-10-11T03:27:23.463Z",
+      "description": "Wire the TUI to consume the RPC-433 push streams: make WebSocketFspecBackend::session_created_rx real (replace the OUT-OF-SCOPE stub) via a per-subscriber splitter over FspecWsClient::session_events_rx, add session_removed_rx + async session_snapshot to FspecBackend (both transports), add Action::SessionRemoved with idempotent tab removal (focus/mux/WU cleanup reusing dispatch_agent_exit pieces), a 6th bootstrap subscriber, and connect-time/reconnect snapshot replay through the existing SessionCreated handler (idempotent). Research attached: spec/attachments/RPC-434/session-events-tui-consumption-research.md",
+      "epic": "rust-frontend",
+      "children": [],
+      "attachments": [
+        "spec/attachments/RPC-434/session-events-tui-consumption-research.md",
+        "spec/attachments/RPC-434/ast-research-tui-consumption.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-11T03:22:36.205Z"
+        }
+      ],
+      "userStory": {
+        "role": "operator",
+        "action": "run the fspec TUI against a shared daemon over WebSocket (or embedded) and see session tabs appear/disappear as sessions are created or closed on ANY connected machine",
+        "benefit": "my client always reflects the daemon's live session set without polling, including when I connect late or reconnect"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: FspecBackend gains session_removed_rx() (default: closed receiver — existing convention) and async session_snapshot() (default: empty Vec); EmbeddedFspecBackend delegates both to the SharedFspecService/handle; WebSocketFspecBackend replaces its never-firing session_created_rx stub with a real receiver fed by the RPC-433 wire stream",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:22:45.809Z"
+        },
+        {
+          "id": 1,
+          "text": "R2: The WebSocket backend splits the single RPC-433 session-event wire stream (SessionEvent::Created / Removed) onto separate session_created_rx and session_removed_rx broadcast receivers, preserving per-variant ordering; when the client slot is None (disconnected) both return a closed receiver so the bootstrap subscriber exits on RecvError::Closed and is respawned on Reconnected",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:22:49.293Z"
+        },
+        {
+          "id": 2,
+          "text": "R3: New Action::SessionRemoved(SessionId); App::handle_session_removed is IDEMPOTENT (not-open tab => no-op, so the local close path + the remote event never double-remove) and mirrors the dispatch_agent_exit cleanup: remove_session_if_open, mux_sync_window, detach the session's board work-unit binding, and clear the current work unit when it pointed at the removed session; focus falls back to a surviving session or the board",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:22:52.516Z"
+        },
+        {
+          "id": 3,
+          "text": "R4: Bootstrap seeds the tab list from backend.session_snapshot() by replaying each SessionInfo through the EXISTING Action::SessionCreated handler (idempotent append), synchronously BEFORE spawn_session_restore so the BUG-206 auto-restore re-asserts the correct focus; a shared App::replay_session_snapshot() helper is used by both bootstrap and the reconnect path",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:02.787Z"
+        },
+        {
+          "id": 4,
+          "text": "R5: Bootstrap spawns a 6th subscriber task (session_removed_rx -> Action::SessionRemoved) using the same Lagged-debug/Closed-break loop shape as the session-created subscriber; the Reconnected handler's abort+respawn of ALL subscriber tasks covers the new task automatically — no reconnect-specific wiring",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:06.511Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "I start the TUI against a daemon that already has two sessions open (started from another machine); both sessions appear as tabs without me doing anything",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:09.372Z"
+        },
+        {
+          "id": 1,
+          "text": "While my TUI is open, a session is created from another machine; a new tab appears in my session list without any poll or action on my side",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:13.179Z"
+        },
+        {
+          "id": 2,
+          "text": "A session is closed from another machine; its tab disappears from my TUI, my focus moves to a surviving session (or the board if it was the last one), and the board's work-unit attachment for that session is released",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:15.685Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When the connect-time snapshot replay appends N session tabs, which session ends up focused? (Design decision per research doc: the last replayed session grabs focus, then the BUG-206 auto-restore re-asserts the daemon active pointer when one exists — confirm.)",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:23:20.889Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Chosen design (per attached research doc): replayed snapshot frames ride the existing Action::SessionCreated handler, so the last-replayed session temporarily grabs focus; the BUG-206 auto-restore (spawned AFTER the synchronous replay in bootstrap) re-asserts the daemon active pointer when one exists. If the pointer is empty, the last-created session stays focused (most-recent intuition, matches embedded behaviour). No replay flag on the wire — simpler, and restore runs deterministically after replay."
+        }
+      ],
+      "nextQuestionId": 1,
+      "assumptions": [
+        "Chosen design (per attached research doc): replayed snapshot frames ride the existing Action::SessionCreated handler, so the last-replayed session temporarily grabs focus; the BUG-206 auto-restore (spawned AFTER the synchronous replay in bootstrap) re-asserts the daemon active pointer when one exists. If the pointer is empty, the last-created session stays focused (most-recent intuition, matches embedded behaviour). No replay flag on the wire — simpler, and restore runs deterministically after replay."
+      ],
+      "estimate": 8,
+      "dependsOn": [
+        "RPC-433"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "New Action::SessionRemoved + idempotent App::handle_session_removed (new file app/dispatch_session_lifecycle.rs): remove_session_if_open as the gate, mux_sync_window, board detach, clear current WU, soft focus fallback. Bootstrap: 6th subscriber + replay_session_snapshot() helper (bootstrap AND handle_reconnected, both before spawn_session_restore). Full design in spec/attachments/RPC-434/session-events-tui-consumption-research.md",
+          "deleted": false,
+          "createdAt": "2026-10-11T03:27:23.463Z"
+        }
+      ],
+      "nextNoteId": 1
     }
   }
 }

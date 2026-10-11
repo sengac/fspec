@@ -316,6 +316,20 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         SessionManager::session_created_tx(self).subscribe()
     }
 
+    /// RPC-433: subscribe to the session-removed broadcast. The WS
+    /// server's per-connection fan-out task drains this and wraps each
+    /// id in `Envelope::SessionEvent(SessionEvent::Removed(_))`.
+    fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
+        SessionManager::session_removed_tx(self).subscribe()
+    }
+
+    /// RPC-433: the in-memory live session map as a snapshot — the
+    /// connect-time replay source for `Envelope::SessionSnapshot`
+    /// (rule R3: no disk merge, no project filter).
+    fn live_session_infos(&self) -> Vec<SessionInfo> {
+        SessionManager::live_session_infos(self)
+    }
+
     fn get_session_tokens(&self, session_id: &SessionId) -> SessionTokens {
         let uuid = uuid_from(session_id);
         self.get_session(&uuid.to_string())

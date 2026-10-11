@@ -218,11 +218,7 @@ async fn scenario_isolated_edit_blocked_original_project() {
     let tool = EditTool::new(env.session_id);
     let result = tool
         .call(EditArgs {
-            file_path: env
-                .repo
-                .join("src/config.ts")
-                .to_string_lossy()
-                .to_string(),
+            file_path: env.repo.join("src/config.ts").to_string_lossy().to_string(),
             old_string: "original".to_string(),
             new_string: "modified".to_string(),
         })
@@ -531,17 +527,16 @@ async fn scenario_isolated_write_allowed_relative_worktree() {
 
     // @step When the Write tool is invoked with file_path "src/new-file.ts" and content "new content"
     let tool = WriteTool::new(env.session_id);
-    tool
-        .call(WriteArgs {
-            file_path: env
-                .worktree
-                .join("src/new-file.ts")
-                .to_string_lossy()
-                .to_string(),
-            content: "new content".to_string(),
-        })
-        .await
-        .expect("write within worktree must succeed");
+    tool.call(WriteArgs {
+        file_path: env
+            .worktree
+            .join("src/new-file.ts")
+            .to_string_lossy()
+            .to_string(),
+        content: "new content".to_string(),
+    })
+    .await
+    .expect("write within worktree must succeed");
 
     // @step Then the tool should succeed
     assert!(env.worktree.join("src/new-file.ts").exists());
@@ -565,13 +560,12 @@ async fn scenario_isolated_write_allowed_tmp() {
     // @step When the Write tool is invoked with file_path "/tmp/test-write.txt" and content "written content"
     let tmp_file = unique_tmp_file("test-write.txt", "");
     let tool = WriteTool::new(env.session_id);
-    tool
-        .call(WriteArgs {
-            file_path: tmp_file.to_string_lossy().to_string(),
-            content: "written content".to_string(),
-        })
-        .await
-        .expect("/tmp write must succeed");
+    tool.call(WriteArgs {
+        file_path: tmp_file.to_string_lossy().to_string(),
+        content: "written content".to_string(),
+    })
+    .await
+    .expect("/tmp write must succeed");
 
     // @step Then the tool should succeed
     assert!(tmp_file.exists());
@@ -676,11 +670,7 @@ async fn scenario_non_isolated_read_allowed_original_project() {
     let tool = ReadTool::new(env.session_id);
     let content = tool
         .call(ReadArgs {
-            file_path: env
-                .repo
-                .join("src/main.ts")
-                .to_string_lossy()
-                .to_string(),
+            file_path: env.repo.join("src/main.ts").to_string_lossy().to_string(),
             offset: None,
             limit: None,
             pdf_mode: None,
@@ -704,17 +694,12 @@ async fn scenario_non_isolated_write_allowed_all_paths() {
 
     // @step When the Write tool is invoked with file_path "/project/src/new.ts" and content "new content"
     let tool = WriteTool::new(env.session_id);
-    tool
-        .call(WriteArgs {
-            file_path: env
-                .repo
-                .join("src/new.ts")
-                .to_string_lossy()
-                .to_string(),
-            content: "new content".to_string(),
-        })
-        .await
-        .expect("non-isolated write must succeed");
+    tool.call(WriteArgs {
+        file_path: env.repo.join("src/new.ts").to_string_lossy().to_string(),
+        content: "new content".to_string(),
+    })
+    .await
+    .expect("non-isolated write must succeed");
 
     // @step Then the tool should succeed
     assert!(env.repo.join("src/new.ts").exists());
