@@ -151,12 +151,14 @@ impl App {
             }
         });
         self.pending_tasks.push(rebootstrap_handle);
-        // TUI-113 R2/R5: re-bootstrap re-ATTACHES the client's focused
-        // session (tabs survive the transient drop) instead of creating
-        // a new one. `create_session(None)` runs ONLY when the
-        // resolution yields nothing (R4 — the RPC-011 safety net for a
-        // genuinely empty / restarted daemon).
+        // BUG-206: re-bootstrap re-ATTACHES the client's focused session
+        // (tabs survive the transient drop) — ONLY if that session is
+        // still LIVE in the daemon's in-memory map (liveness-gated via
+        // list_live_sessions). Nothing live → nothing happens: the
+        // client lands on the board. No create_session fallback — the
+        // RPC-012 lazy create-on-enter-work-unit path is the only
+        // session-creation path on reconnect.
         let focused = self.agent_view_store.current_session().cloned();
-        self.spawn_session_restore(focused, true);
+        self.spawn_session_restore(focused);
     }
 }

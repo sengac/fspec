@@ -72,6 +72,14 @@ pub trait FspecService {
     /// shows sessions belonging to the current project.
     async fn list_sessions(project_path: String) -> Vec<SessionInfo>;
 
+    /// BUG-206: return the IDs of every session that is ALIVE in the
+    /// daemon's in-memory session map. This is the liveness gate for the
+    /// TUI's auto-restore path — a restore candidate that is not in this
+    /// list is closed/manifest-only and must never be re-opened.
+    /// Deliberately NOT disk-aware (unlike `list_sessions`, which merges
+    /// persisted manifests for the /resume picker).
+    async fn list_live_sessions() -> Vec<SessionId>;
+
     /// Create a new session with optional role. Returns the freshly-minted
     /// session id.
     async fn create_session(role: Option<String>) -> SessionId;
@@ -1080,6 +1088,13 @@ impl FspecService for FspecServiceImpl {
     async fn list_sessions(self, _ctx: Context, project_path: String) -> Vec<SessionInfo> {
         match self.inner.session_manager() {
             Some(handle) => handle.list_sessions(&project_path),
+            None => Vec::new(),
+        }
+    }
+
+    async fn list_live_sessions(self, _ctx: Context) -> Vec<SessionId> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.list_live_sessions(),
             None => Vec::new(),
         }
     }

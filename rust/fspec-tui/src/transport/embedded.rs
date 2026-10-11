@@ -80,6 +80,12 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?)
     }
 
+    /// BUG-206: liveness gate for the auto-restore path — in-memory
+    /// session IDs only, never disk.
+    async fn list_live_sessions(&self) -> Result<Vec<SessionId>> {
+        Ok(self.client.list_live_sessions(context::current()).await?)
+    }
+
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
         Ok(self.client.create_session(context::current(), role).await?)
     }

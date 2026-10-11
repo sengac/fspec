@@ -1261,6 +1261,24 @@ impl SessionManager {
             .expect("sessions lock poisoned")
             .shift_remove(&uuid);
 
+        // BUG-206: a closed session must never be referenced by the
+        // active-session pointer. The pointer is in-memory and sticky
+        // (BackToBoard does not clear it — user decision 2026-10-10),
+        // so without this guard the last-viewed-but-CLOSED session
+        // would keep winning the auto-restore candidate resolution
+        // until the next client start. Clear it when it pointed at
+        // the destroyed session (parity with
+        // StubSessionManagerHandle::destroy_session).
+        {
+            let mut active = self
+                .active_session_id
+                .write()
+                .expect("active_session lock poisoned");
+            if *active == Some(uuid) {
+                *active = None;
+            }
+        }
+
         tracing::info!(
             session_id = %uuid,
             session_removed = session.is_some(),

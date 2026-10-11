@@ -71,6 +71,20 @@ pub trait FspecBackend: Send + Sync {
     /// so `/resume` only shows sessions belonging to the current project.
     async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>>;
 
+    /// BUG-206: the IDs of every session ALIVE in the daemon's in-memory
+    /// session map — the auto-restore liveness gate. Unlike
+    /// `list_sessions` (which merges persisted manifests for the /resume
+    /// picker) this NEVER reads disk: a candidate not in this list is
+    /// closed/manifest-only and must not be re-opened. Both transports
+    /// delegate to the shared `FspecService::list_live_sessions` RPC
+    /// method. The default impl returns an empty Vec so test doubles
+    /// compile unchanged (RPC-037 / PROV-109 convention) — and an empty
+    /// list is also the honest answer for a backend with no live
+    /// sessions, which is exactly the "nothing restorable → board" case.
+    async fn list_live_sessions(&self) -> Result<Vec<SessionId>> {
+        Ok(Vec::new())
+    }
+
     /// Create a new session with an optional role overlay.
     async fn create_session(&self, role: Option<String>) -> Result<SessionId>;
 

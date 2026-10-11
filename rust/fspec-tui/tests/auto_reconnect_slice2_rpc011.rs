@@ -282,16 +282,20 @@ async fn auto_reconnect_happy_path() {
 // Scenario 8: Reconnect re-issues create_session(None) and replaces
 //             active session id
 // SUPERSEDED BY TUI-113 (R5): the reconnect re-bootstrap now RE-ATTACHES
-// the focused session (RPC-049 resume_session path) instead of re-creating
-// one; `create_session(None)` remains only the empty-daemon fallback.
-// This test now pins the superseded contract (re-attach, no create).
+// the focused session instead of re-creating one. BUG-206: the re-attach
+// is LIVE-GATED (list_live_sessions) and memory-only (in-memory
+// get_buffered_output catch-up — never a disk resume_session, never a
+// create_session fallback).
+// This test now pins the BUG-206 contract (live re-attach, no create).
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn reconnect_reissues_create_session_and_replaces_active_session_id() {
     // @step Given a fspec client with active_session = SessionId("S-old") before disconnect
+    // BUG-206: "S-old" is still running in the daemon's in-memory map.
     let mock = Arc::new(MockBackend::new());
     mock.script_create_session(SessionId::new("S-new"));
+    mock.seed_live_sessions(vec![SessionId::new("S-old")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let (mut app, _terminal) = test_app(backend);
     // Pre-seed the App's active session to "S-old" via direct dispatch
@@ -305,9 +309,10 @@ async fn reconnect_reissues_create_session_and_replaces_active_session_id() {
     );
 
     // @step When the supervisor reconnects against a fresh daemon
-    // TUI-113 R5: the App-side reconnect path re-ATTACHES the focused
-    // session (S-old) via the RPC-049 durable-restore path instead of
-    // re-creating a session.
+    // BUG-206: the App-side reconnect path re-ATTACHES the focused
+    // session (S-old) — live-gated via list_live_sessions and
+    // memory-only (in-memory get_buffered_output catch-up, never a
+    // disk resume_session) — instead of re-creating a session.
     let initial_calls = mock.create_session_calls();
     app.send_action(Action::Reconnected).expect("send_action");
     pump_actions(&mut app);
@@ -327,16 +332,21 @@ async fn reconnect_reissues_create_session_and_replaces_active_session_id() {
 
     // @step And it emits Action::SessionCreated(SessionId("S-new")) onto the action bus
     // @step And the App's repl_active_session() returns Some(SessionId("S-new"))
-    // SUPERSEDED (TUI-113 R5): the re-attach goes through the existing
-    // RPC-049 path — resume_session round-trip for "S-old" — and the
-    // focused session stays active.
+    // SUPERSEDED (TUI-113 R5) + BUG-206: the re-attach is live-gated and
+    // MEMORY-ONLY — the in-memory get_buffered_output catch-up targets
+    // "S-old" and the disk resume_session round-trip is NEVER issued.
     pump_actions(&mut app);
     tokio::time::sleep(Duration::from_millis(50)).await;
     pump_actions(&mut app);
     assert_eq!(
-        mock.last_resume_session(),
-        Some(SessionId::new("S-old")),
-        "TUI-113 R5: the focused session must be re-attached via resume_session"
+        mock.last_get_buffered_output(),
+        Some((SessionId::new("S-old"), 1000)),
+        "BUG-206: the focused session must be re-attached via the in-memory catch-up (get_buffered_output)"
+    );
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: the reconnect re-attach must NEVER resume-from-disk"
     );
     assert_eq!(
         app.current_session(),

@@ -194,6 +194,17 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
+    /// BUG-206: liveness gate for the auto-restore path — in-memory
+    /// session IDs only, never disk.
+    async fn list_live_sessions(&self) -> Result<Vec<SessionId>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .list_live_sessions(context::current())
+            .await?)
+    }
+
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;

@@ -1,18 +1,19 @@
-//! TUI-113 — Auto-restore last active session on client startup and reconnect.
+//! BUG-206 — Auto-restore of the last active session on client startup and
+//! reconnect. MEMORY-ONLY (supersedes the TUI-113 disk-aware fallbacks).
 //!
 //! Feature: spec/features/auto-restore-last-active-session-on-client-startup-and-reconnect.feature
 //!
-//! Green-phase integration tests: every scenario exercises the
-//! `App::spawn_session_restore` / `App::resolve_restore_target` restore
-//! path (app/session_restore.rs) and the `set_active_session`
-//! fire-and-forget calls (R3) against the MockBackend.
+//! Every scenario exercises the `App::spawn_session_restore` /
+//! `resolve_restore_target` restore path (app/session_restore.rs) against
+//! the MockBackend. The liveness gate is the MockBackend's
+//! `seed_live_sessions` scripting surface (BUG-206 R3: `list_live_sessions`
+//! returns the daemon's in-memory session map — never persisted manifests).
 //!
 //! MockBackend note: the active-session surface (`seed_active_session` /
-//! `set_active_session_calls` / `last_set_active_session`) is added to
-//! `tests/common/mod.rs` as part of this work unit's test scaffolding —
-//! it only stores scripted state (no production behaviour), so the RED
-//! assertions still fail for the right reason (no restore dispatch /
-//! no set_active_session call from App).
+//! `set_active_session_calls` / `last_set_active_session`) and the
+//! live-sessions surface (`seed_live_sessions`) only store scripted
+//! state, so the assertions fail for the right reason (no restore
+//! dispatch / no set_active_session call from App).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -20,7 +21,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::{SessionId, SessionInfo, StreamChunk, WorkspaceInfo};
+use codelet_rpc_types::{SessionId, StreamChunk};
 
 mod common;
 use common::MockBackend;
@@ -29,12 +30,14 @@ fn sid(value: &str) -> SessionId {
     SessionId::new(value)
 }
 
-fn session_info(id: &str, project: &str) -> SessionInfo {
-    SessionInfo {
+/// A persisted (disk-only) session for `list_sessions` seeding — the
+/// /resume picker list the auto-restore path must NEVER scan.
+fn disk_session(id: &str) -> codelet_rpc_types::SessionInfo {
+    codelet_rpc_types::SessionInfo {
         id: id.to_string(),
         name: format!("Session {id}"),
         status: "idle".to_string(),
-        project: project.to_string(),
+        project: "/home/rquast/projects/fspec".to_string(),
         message_count: 0,
         provider_id: None,
         model_id: None,
@@ -42,13 +45,6 @@ fn session_info(id: &str, project: &str) -> SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: Some(1_000),
-    }
-}
-
-fn workspace(cwd: &str) -> WorkspaceInfo {
-    WorkspaceInfo {
-        cwd: cwd.to_string(),
-        git_branch: None,
     }
 }
 
@@ -85,10 +81,10 @@ async fn wait_until(mut pred: impl FnMut() -> bool, what: &str) {
 
 /// Like [`wait_until`] but also pumps the action bus + awaits pending
 /// tasks on every iteration — the restore path only SENDS
-/// `Action::AttachToSession` onto the bus; without pumping, the
-/// resume_session round-trip it triggers never runs and the wait times
-/// out. (The restore task is fire-and-forget by design — R1 — the test
-/// harness plays the role of the App run loop.)
+/// `Action::ReattachSession` onto the bus; without pumping, the
+/// in-memory catch-up it triggers never runs and the wait times out.
+/// (The restore task is fire-and-forget by design — the test harness
+/// plays the role of the App run loop.)
 async fn wait_until_drained(app: &mut App, mut pred: impl FnMut() -> bool, what: &str) {
     let deadline = std::time::Instant::now() + Duration::from_secs(2);
     while std::time::Instant::now() < deadline {
@@ -144,6 +140,7 @@ fn last_set_active_is(mock: &MockBackend, id: &SessionId) -> bool {
 async fn reconnect_reattaches_the_focused_session_instead_of_creating_a_new_one() {
     // @step Given a client is viewing session "S-focus" and the WebSocket connection drops
     let mock = Arc::new(MockBackend::new());
+    mock.seed_live_sessions(vec![sid("S-focus")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("S-focus")));
@@ -159,28 +156,25 @@ async fn reconnect_reattaches_the_focused_session_instead_of_creating_a_new_one(
     app.dispatch(Action::Reconnected);
     drain_pending(&mut app).await;
 
-    // @step Then the focused session "S-focus" is re-attached via the existing attach path
+    // @step Then the focused session "S-focus" is re-attached via the live re-attach path
     assert_eq!(
         app.agent_view_store().current_session(),
         Some(&sid("S-focus")),
         "the focused session must stay the current session after Reconnected"
-    );
-    wait_until(
-        || mock.resume_session_calls() >= 1,
-        "backend.resume_session for the re-attach round-trip",
-    )
-    .await;
-    assert_eq!(
-        mock.last_resume_session(),
-        Some(sid("S-focus")),
-        "re-attach must go through the existing RPC-049 resume_session path"
     );
 
     // @step And no create_session RPC is issued
     assert_eq!(
         mock.create_session_calls(),
         create_calls_before,
-        "TUI-113 R4/R5: reconnect with a focused session must NOT create a new one"
+        "BUG-206: reconnect with a focused LIVE session must NOT create a new one"
+    );
+
+    // @step And the re-attach NEVER runs the disk resume_session round-trip (BUG-206: the candidate is live — the disk durable-restore path would double-inject its LLM context)
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "the memory-only re-attach must not call backend.resume_session"
     );
 
     // @step And the inline reconnect notice lands in the "S-focus" session's scrollback
@@ -199,6 +193,7 @@ async fn reconnect_reattaches_the_focused_session_instead_of_creating_a_new_one(
 async fn reconnect_replays_output_streamed_while_the_connection_was_down() {
     // @step Given a client is viewing session "S-focus" and the WebSocket connection drops
     let mock = Arc::new(MockBackend::new());
+    mock.seed_live_sessions(vec![sid("S-focus")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("S-focus")));
@@ -213,15 +208,16 @@ async fn reconnect_replays_output_streamed_while_the_connection_was_down() {
 
     // @step When the supervisor reconnects and the re-attach completes
     app.dispatch(Action::Reconnected);
+    drain_pending(&mut app).await;
     wait_until_drained(
         &mut app,
         || mock.get_buffered_output_calls() >= 1,
-        "backend.get_buffered_output for the replay",
+        "backend.get_buffered_output for the in-memory catch-up replay",
     )
     .await;
     drain_pending(&mut app).await;
 
-    // @step Then the 3 chunks are replayed into "S-focus"'s scrollback via the buffered-output round-trip
+    // @step Then the 3 chunks are replayed into "S-focus"'s scrollback via the in-memory buffered-output catch-up
     let text = session_scrollback_text(&app, &sid("S-focus"));
     for i in 1..=3 {
         assert!(
@@ -229,6 +225,13 @@ async fn reconnect_replays_output_streamed_while_the_connection_was_down() {
             "replayed chunk-{i} missing from S-focus scrollback, got: {text:?}"
         );
     }
+
+    // @step And the catch-up came from the IN-MEMORY buffer — no disk resume_session
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: the reconnect catch-up must not resume from disk"
+    );
 
     // @step And live streaming chunks continue after the replay
     // (manual poll loop: the live-chunk check reads app state that
@@ -260,6 +263,7 @@ async fn fresh_client_process_restores_the_daemon_s_active_session_on_bootstrap(
     // @step Given a daemon has a live session "S-active" set as its active session
     let mock = Arc::new(MockBackend::new());
     mock.seed_active_session(sid("S-active"));
+    mock.seed_live_sessions(vec![sid("S-active")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
 
@@ -272,22 +276,24 @@ async fn fresh_client_process_restores_the_daemon_s_active_session_on_bootstrap(
     // action bus because it plays the role of the App run loop)
     wait_until_drained(
         &mut app,
-        || mock.resume_session_calls() >= 1,
-        "bootstrap restore to dispatch AttachToSession(S-active)",
+        || mock.list_live_sessions_calls() >= 1,
+        "bootstrap restore to query the daemon's in-memory session map",
     )
     .await;
     drain_pending(&mut app).await;
 
-    // @step And the client re-attaches "S-active" via the existing durable-restore path
-    assert_eq!(
-        mock.last_resume_session(),
-        Some(sid("S-active")),
-        "the restore must target the daemon's active session via the RPC-049 path"
-    );
+    // @step And the client re-attaches "S-active" via the live re-attach path
     assert_eq!(
         app.agent_view_store().current_session(),
         Some(&sid("S-active")),
         "S-active must become the open+focused session"
+    );
+
+    // @step And the re-attach is memory-only — NO disk resume_session round-trip
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: restoring a live session must not resume from disk (it would double-inject the LLM context)"
     );
 
     // @step And the TUI lands in the Agent view on "S-active" with its scrollback replayed
@@ -299,67 +305,61 @@ async fn fresh_client_process_restores_the_daemon_s_active_session_on_bootstrap(
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 4: Fresh client process restores the most-recent workspace
-//             session when no active pointer exists
+// Scenario 4: Fresh client process lands on the board when no session is live
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn fresh_client_process_restores_the_most_recent_workspace_session_when_no_active_pointer_exists(
-) {
+async fn fresh_client_process_lands_on_the_board_when_no_session_is_live() {
     // @step Given a daemon's active-session pointer is unset (e.g. no client has attached yet after a daemon restart)
     let mock = Arc::new(MockBackend::new());
     // get_active_session defaults to Ok(None) on the MockBackend.
-    mock.set_workspace_info(workspace("/home/rquast/projects/fspec"));
 
-    // @step And the daemon's workspace has persisted sessions ["S-older", "S-recent"] by recency
-    // TUI-099: list_sessions is sorted by updated_at_ms DESC, most-recent first.
-    mock.seed_sessions(vec![
-        session_info("S-recent", "/home/rquast/projects/fspec"),
-        session_info("S-older", "/home/rquast/projects/fspec"),
-    ]);
+    // @step And the daemon's workspace has ONLY persisted sessions on disk (["S-older", "S-recent"]) — none of them is in the daemon's in-memory map
+    // (BUG-206: persisted manifests are NEVER candidates — the auto-
+    //  restore path must not scan list_sessions at all.)
+    mock.seed_sessions(vec![disk_session("S-recent"), disk_session("S-older")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
 
     // @step When a new client process starts and App::bootstrap runs
     app.bootstrap().await.expect("bootstrap");
-    wait_until_drained(
-        &mut app,
-        || mock.resume_session_calls() >= 1,
-        "bootstrap restore to pick the most-recent session",
-    )
-    .await;
+    // No candidates (no pointer, no focused session) — the resolver
+    // returns None without even querying liveness. The restore task is
+    // on pending_tasks, so drain it.
     drain_pending(&mut app).await;
 
-    // @step Then the client restores "S-recent" — the most-recent entry of list_sessions(daemon_cwd)
+    // @step Then nothing is restored — the TUI stays on the board with NO open session
+    assert!(
+        app.agent_view_store().open_sessions().is_empty(),
+        "no session may be re-opened when nothing is live in the daemon"
+    );
     assert_eq!(
-        mock.last_resume_session(),
-        Some(sid("S-recent")),
-        "the restore must pick the most-recent entry of list_sessions(daemon_cwd)"
+        app.active_view(),
+        codelet_fspec_tui::ViewMode::Board,
+        "the client must land on the board, not the Agent view"
     );
 
-    // @step And "S-older" is not restored
+    // @step And the restore path never touched the disk — no resume_session and no list_sessions call
     assert_eq!(
         mock.resume_session_calls(),
-        1,
-        "exactly one session (S-recent) may be restored, got {:#?}",
-        mock.resume_session_calls()
+        0,
+        "BUG-206: the auto-restore path must never resume from disk"
     );
     assert_eq!(
-        app.agent_view_store().current_session(),
-        Some(&sid("S-recent")),
+        mock.list_sessions_calls(),
+        0,
+        "BUG-206: the auto-restore path must never scan list_sessions (disk manifests)"
     );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 5: Daemon restart restores the persisted most-recent session
-//             via resume-from-disk
+// Scenario 5: Daemon restart lands the client on the board (the pointer is gone)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn daemon_restart_restores_the_persisted_most_recent_session_via_resume_from_disk() {
+async fn daemon_restart_lands_the_client_on_the_board() {
     // @step Given a daemon was killed and relaunched so its in-memory session map is empty
     let mock = Arc::new(MockBackend::new());
-    mock.set_workspace_info(workspace("/home/rquast/projects/fspec"));
 
     // @step And a client stays connected and its supervisor reconnects
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -368,134 +368,112 @@ async fn daemon_restart_restores_the_persisted_most_recent_session_via_resume_fr
 
     // @step And the re-attach finds no focused session on the fresh daemon
     // (get_active_session → Ok(None) — the in-memory pointer is lost on
-    // daemon restart; the persisted list still holds the session)
-    mock.seed_sessions(vec![session_info(
-        "S-persisted",
-        "/home/rquast/projects/fspec",
-    )]);
-
-    // @step When the restore falls back to the persisted sessions for the daemon's workspace
+    // daemon restart; the persisted manifests still hold the old
+    // sessions, but BUG-206: they are NOT candidates)
     app.dispatch(Action::Reconnected);
-    wait_until_drained(
-        &mut app,
-        || mock.resume_session_calls() >= 1,
-        "reconnect restore to resume the persisted session",
-    )
-    .await;
     drain_pending(&mut app).await;
 
-    // @step Then the most-recent persisted session is re-attached via the resume_session round-trip
-    assert_eq!(
-        mock.last_resume_session(),
-        Some(sid("S-persisted")),
-        "the persisted most-recent session must go through resume_session"
+    // @step Then nothing is re-attached — the persisted sessions are NOT resumed from disk
+    assert!(
+        app.agent_view_store().open_sessions().is_empty(),
+        "a restarted daemon with an empty in-memory map must not resurrect closed sessions"
     );
     assert_eq!(
-        app.agent_view_store().current_session(),
-        Some(&sid("S-persisted")),
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: the reconnect path must never resume-from-disk"
     );
-
-    // @step And its conversation history replays from disk
-    wait_until_drained(
-        &mut app,
-        || mock.get_buffered_output_calls() >= 1,
-        "get_buffered_output replay after resume",
-    )
-    .await;
+    assert_eq!(
+        mock.create_session_calls(),
+        0,
+        "BUG-206: the reconnect path must never create a session (RPC-012 lazy create is the only creation path)"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 6: Empty daemon still creates a session on reconnect
-//             (RPC-011 safety net preserved)
+// Scenario 6: Empty daemon lands on the board on reconnect (NO create fallback)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn empty_daemon_still_creates_a_session_on_reconnect() {
-    // @step Given a fresh daemon with no active session and no persisted sessions for its workspace
+async fn empty_daemon_lands_on_the_board_on_reconnect_without_creating_a_session() {
+    // @step Given a fresh daemon with no active session and no live sessions
     let mock = Arc::new(MockBackend::new());
-    mock.script_create_session(sid("S-fallback"));
-    mock.set_workspace_info(workspace("/empty/workspace"));
-    // list_sessions → empty (no seed), get_active_session → None.
+    let backend: Arc<dyn FspecBackend> = mock.clone();
+    let mut app = App::new(backend);
 
     // @step And a client's supervisor reconnects with no focused session
-    let backend: Arc<dyn FspecBackend> = mock.clone();
-    let mut app = App::new(backend);
-
-    // @step When the restore resolution yields no candidate
     app.dispatch(Action::Reconnected);
 
-    // @step Then create_session(None) is issued as the fallback
-    wait_until_drained(
-        &mut app,
-        || mock.create_session_calls() >= 1,
-        "RPC-011 fallback create_session on an empty daemon",
-    )
-    .await;
+    // @step When the restore resolution yields no candidate
+    // (the resolution task queries list_live_sessions → empty; draining
+    // lets the fire-and-forget resolution complete)
     drain_pending(&mut app).await;
 
-    // @step And the new session becomes the active session exactly as RPC-011 specified
+    // @step Then NO create_session is issued — the client lands on the board
     assert_eq!(
-        app.agent_view_store().current_session(),
-        Some(&sid("S-fallback")),
-        "the fallback-created session must become the active session"
+        mock.create_session_calls(),
+        0,
+        "BUG-206: an empty daemon must NOT trigger create_session on reconnect (RPC-012 lazy create-on-enter-work-unit is the only creation path)"
+    );
+    assert!(
+        app.agent_view_store().open_sessions().is_empty(),
+        "no session tab may exist after an empty-daemon reconnect"
     );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 7: Restore queries sessions by the daemon workspace path, not the client cwd
+// Scenario 7: A closed candidate is never restored — the liveness gate drops it
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn restore_queries_sessions_by_the_daemon_workspace_path_not_the_client_cwd() {
-    // @step Given the client machine's cwd is "/Users/remote/code"
-    // (Modelled by the test process's real cwd — whatever it is, it must
-    // NOT be what the restore path passes to list_sessions.)
-
-    // @step And the daemon workspace is "/home/rquast/projects/fspec"
+async fn a_closed_candidate_is_never_restored() {
+    // @step Given the daemon's active pointer still references session "S-closed" but "S-closed" is NOT in the daemon's in-memory map (it was closed)
     let mock = Arc::new(MockBackend::new());
-    mock.set_workspace_info(workspace("/home/rquast/projects/fspec"));
-
-    // @step And a session "S-ds" exists for the daemon workspace but NOT for the client cwd
-    mock.seed_sessions(vec![session_info("S-ds", "/home/rquast/projects/fspec")]);
+    mock.seed_active_session(sid("S-closed"));
+    // BUG-206 R4: the daemon clears the pointer on destroy — model the
+    // pointer-survives-older-daemon case by pointing at a session that
+    // simply is not live.
+    mock.seed_live_sessions(vec![sid("S-live-other")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
 
-    // @step When a fresh client process resolves the restore target
+    // @step When a new client process starts and App::bootstrap runs
     app.bootstrap().await.expect("bootstrap");
     wait_until_drained(
         &mut app,
-        || mock.list_sessions_project().is_some(),
-        "list_sessions to be called during restore resolution",
+        || mock.list_live_sessions_calls() >= 1,
+        "the restore resolution to query liveness",
     )
     .await;
+    drain_pending(&mut app).await;
 
-    // @step Then list_sessions is called with "/home/rquast/projects/fspec" (from get_workspace_info)
-    assert_eq!(
-        mock.list_sessions_project(),
-        Some("/home/rquast/projects/fspec".to_string()),
-        "R2(c): the daemon workspace cwd must be passed — never the client cwd"
+    // @step Then the closed "S-closed" candidate is dropped by the liveness gate — nothing restores
+    assert!(
+        app.agent_view_store().open_sessions().is_empty(),
+        "the closed pointer target must NOT be re-opened"
     );
-
-    // @step And "S-ds" is a candidate and gets restored
-    wait_until_drained(
-        &mut app,
-        || mock.last_resume_session() == Some(sid("S-ds")),
-        "S-ds to be restored via resume_session",
-    )
-    .await;
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: a non-live candidate must never be resumed from disk"
+    );
+    assert!(
+        !app.agent_view_store()
+            .open_sessions()
+            .iter()
+            .any(|c| c.id == sid("S-closed")),
+        "the closed session must not appear in open_sessions"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Restore does not re-create a closed session
+// Scenario: Reconnect does not recreate a destroyed session
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn restore_does_not_recreate_a_closed_session() {
+async fn reconnect_does_not_recreate_a_destroyed_session() {
     // @step Given a client whose last-viewed session "S-x" was destroyed and closed while the client was running
     let mock = Arc::new(MockBackend::new());
-    // The closed tab must NOT be re-opened: the create fallback (if it
-    // fires) returns a FRESH session id, never the destroyed one.
-    mock.script_create_session(sid("S-fresh"));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("S-x")));
@@ -506,32 +484,28 @@ async fn restore_does_not_recreate_a_closed_session() {
 
     // @step And the daemon has no sessions and no active pointer for its workspace
     // (the destroyed session left no trace: get_active_session → None,
-    // list_sessions → empty)
+    //  list_live_sessions → empty)
 
     // @step When the client reconnects
     app.dispatch(Action::Reconnected);
     drain_pending(&mut app).await;
 
-    // @step Then the R4 create_session fallback fires exactly once (RPC-011 safety net)
-    assert_eq!(
-        mock.create_session_calls(),
-        1,
-        "a daemon with nothing restorable still creates a session on reconnect"
-    );
-
-    // @step And the closed "S-x" tab is not re-opened
+    // @step Then the closed "S-x" tab is NOT re-opened and NO session is created
     assert!(
         app.agent_view_store()
             .session_context_for(&sid("S-x"))
             .is_none(),
         "the destroyed/closed session must not be resurrected by the restore path"
     );
-
-    // @step And the fallback-created session becomes the active session
     assert_eq!(
-        app.agent_view_store().current_session(),
-        Some(&sid("S-fresh")),
-        "the fallback-created session must be the active session"
+        mock.create_session_calls(),
+        0,
+        "BUG-206: no create_session fallback on reconnect"
+    );
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: no disk resume of a destroyed session"
     );
 }
 
@@ -557,7 +531,7 @@ async fn focus_switches_track_the_daemon_active_pointer() {
     drain_pending(&mut app).await;
 
     // @step When the user cycles focus S-a → S-b → S-c
-    // (Each SessionCreated focuses the new tab: a → b → c. TUI-113 R3
+    // (Each SessionCreated focuses the new tab: a → b → c. R3
     // must publish set_active_session on every creation/focus switch.)
     wait_until(
         || last_set_active_is(&mock, &sid("S-c")),
@@ -572,22 +546,29 @@ async fn focus_switches_track_the_daemon_active_pointer() {
         "R3: the last focus switch must be published to the daemon"
     );
 
-    // @step And on the next client start "S-c" restores — not "S-a" and not the most-recent-by-time session
+    // @step And on the next client start "S-c" restores (because it is LIVE) — not "S-a" and not a disk entry
     let mock2 = Arc::new(MockBackend::new());
     mock2.seed_active_session(sid("S-c"));
+    mock2.seed_live_sessions(vec![sid("S-c")]);
     let backend2: Arc<dyn FspecBackend> = mock2.clone();
     let mut app2 = App::new(backend2);
     app2.bootstrap().await.expect("bootstrap");
     wait_until_drained(
         &mut app2,
-        || mock2.last_resume_session() == Some(sid("S-c")),
-        "next start to restore S-c via the daemon pointer",
+        || mock2.list_live_sessions_calls() >= 1,
+        "next start to query liveness for the live pointer restore",
     )
     .await;
+    drain_pending(&mut app2).await;
     assert_eq!(
-        mock2.last_resume_session(),
-        Some(sid("S-c")),
-        "the last-focused session must win over first/most-recent-by-time"
+        app2.agent_view_store().current_session(),
+        Some(&sid("S-c")),
+        "the last-focused LIVE session must win over first/most-recent-by-time"
+    );
+    assert_eq!(
+        mock2.resume_session_calls(),
+        0,
+        "BUG-206: the restore of a live pointer target must not resume from disk"
     );
 }
 
@@ -599,6 +580,7 @@ async fn focus_switches_track_the_daemon_active_pointer() {
 async fn repeated_reconnects_re_attach_idempotently() {
     // @step Given a client is viewing session "S-focus"
     let mock = Arc::new(MockBackend::new());
+    mock.seed_live_sessions(vec![sid("S-focus")]);
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("S-focus")));
@@ -630,8 +612,8 @@ async fn repeated_reconnects_re_attach_idempotently() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 10: Esc back to board keeps the active pointer sticky so
-//              restart restores the last-viewed session
+// Scenario 10: Esc back to board keeps the active pointer sticky so restart
+//             restores the last-viewed session
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -663,16 +645,63 @@ async fn esc_back_to_board_keeps_the_active_pointer_sticky() {
         "the view must still flip back to the board"
     );
 
-    // @step And on the next client start "S-focus" restores as the last-viewed session
+    // @step And on the next client start "S-focus" restores as the last-viewed session (while it is still live)
     let mock2 = Arc::new(MockBackend::new());
     mock2.seed_active_session(sid("S-focus"));
+    mock2.seed_live_sessions(vec![sid("S-focus")]);
     let backend2: Arc<dyn FspecBackend> = mock2.clone();
     let mut app2 = App::new(backend2);
     app2.bootstrap().await.expect("bootstrap");
     wait_until_drained(
         &mut app2,
-        || mock2.last_resume_session() == Some(sid("S-focus")),
-        "sticky pointer to restore S-focus on the next start",
+        || mock2.list_live_sessions_calls() >= 1,
+        "sticky pointer restore to query liveness on the next start",
     )
     .await;
+    drain_pending(&mut app2).await;
+    assert_eq!(
+        app2.agent_view_store().current_session(),
+        Some(&sid("S-focus")),
+        "the sticky pointer must restore S-focus while it is still live"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario 11: A stale pointer is skipped — the daemon's live sessions win
+// ─────────────────────────────────────────────────────────────────────────
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_stale_pointer_is_skipped_and_the_focused_live_session_wins() {
+    // @step Given a client reconnects while focused on session "S-focus" (the tab survived the WS drop) and the daemon pointer still references the CLOSED "S-closed" session
+    let mock = Arc::new(MockBackend::new());
+    mock.seed_active_session(sid("S-closed"));
+    mock.seed_live_sessions(vec![sid("S-focus")]);
+    let backend: Arc<dyn FspecBackend> = mock.clone();
+    let mut app = App::new(backend);
+    app.dispatch(Action::SessionCreated(sid("S-focus")));
+    app.dispatch(Action::Disconnected);
+
+    // @step When the supervisor reconnects and Action::Reconnected is dispatched
+    app.dispatch(Action::Reconnected);
+    drain_pending(&mut app).await;
+
+    // @step Then the client re-attaches the focused LIVE session "S-focus"
+    assert_eq!(
+        app.agent_view_store().current_session(),
+        Some(&sid("S-focus")),
+        "the focused live session must win over the stale pointer"
+    );
+
+    // @step And the closed pointer target is never restored
+    assert!(
+        app.agent_view_store()
+            .session_context_for(&sid("S-closed"))
+            .is_none(),
+        "the closed pointer target must not be re-opened"
+    );
+    assert_eq!(
+        mock.resume_session_calls(),
+        0,
+        "BUG-206: memory-only re-attach — no disk resume"
+    );
 }

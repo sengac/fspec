@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-10T21:50:04.885Z",
+    "lastUpdated": "2026-10-11T02:10:41.713Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 205,
+    "BUG": 206,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1765,7 +1765,8 @@
       "BUG-203",
       "BUG-204",
       "BUG-205",
-      "TUI-113"
+      "TUI-113",
+      "BUG-206"
     ],
     "blocked": [
       "QUERY-001",
@@ -237946,6 +237947,97 @@
       "attachments": [
         "spec/attachments/TUI-113/ast-research-session-restore-anchors.md"
       ],
+      "iterations": 1
+    },
+    "BUG-206": {
+      "id": "BUG-206",
+      "title": "Session auto-restore resurrects closed sessions via disk fallbacks instead of restoring only sessions live in the daemon",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-10T23:29:55.323Z",
+      "updatedAt": "2026-10-11T02:10:41.713Z",
+      "description": "TUI-113 (d1c37e3d) built the auto-restore resolution with fallbacks the card never called for: (a) the focused-session override is never liveness-checked, (b) the daemon active-session pointer survives close (destroy_session never clears it), and (c) list_sessions(daemon_cwd) merges persisted manifests FROM DISK — so a fresh client / reconnect resumes sessions closed in the past via resume_session load_session-from-disk. Also: create_session(None) fires as a reconnect fallback. Fix: resolution considers ONLY sessions running in the daemon's in-memory map (new list_live_sessions RPC), close invalidates the pointer, and nothing restorable means land on the board (RPC-012 lazy create is the only creation path).",
+      "epic": "rust-frontend",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-10T23:30:02.264Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-10T23:31:25.224Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-11T01:47:20.618Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-11T01:55:58.584Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-11T01:56:04.604Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-11T02:10:41.713Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "R1: The auto-restore resolution (bootstrap + reconnect) considers ONLY sessions running in the daemon's in-memory session map. Resolution order: (a) on reconnect, the client's focused session; (b) the daemon's active-session pointer (get_active_session). The candidate must be verified LIVE via list_live_sessions() before any restore dispatch. No candidate, or a candidate that is not live → NOTHING happens: land on the board. NO list_sessions disk scan, NO resume-from-disk, NO create_session fallback. The RPC-012 lazy create-on-enter-work-unit path is the only session-creation path on startup/reconnect.",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:30:06.561Z"
+        },
+        {
+          "id": 1,
+          "text": "R3: A new RPC list_live_sessions() returns ONLY the session IDs of the daemon's in-memory session map (SessionManager::all_in_memory_session_ids surfaced via SessionManagerHandle → FspecService → FspecBackend, embedded + websocket + MockBackend). It NEVER reads persisted manifests. The auto-restore path uses it exclusively for candidate verification; list_sessions (the disk-merging /resume list) is removed from the auto-restore path entirely.",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:30:28.142Z"
+        },
+        {
+          "id": 2,
+          "text": "R4: The daemon's in-memory active-session pointer is invalidated when the session it references is destroyed: SessionManager::destroy_session clears the pointer when it pointed at the destroyed session (single source of truth — the client's close path needs no extra clear call). A pointer must never reference a closed session.",
+          "deleted": false,
+          "createdAt": "2026-10-11T00:13:13.915Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Fresh client start while the daemon is running session 'S-live' (in its in-memory map) and a long-closed session 'S-closed' exists on disk: the TUI restores 'S-live' (the daemon's live session) and NEVER re-opens 'S-closed'",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:32:17.259Z"
+        },
+        {
+          "id": 1,
+          "text": "Transient WS drop while the user watches session 'S-focus' and 'S-focus' is still running in the daemon: on reconnect the SAME 'S-focus' tab re-attaches and no new session is created",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:32:24.258Z"
+        },
+        {
+          "id": 2,
+          "text": "Fresh client start with a daemon that has ZERO in-memory sessions (only persisted manifests on disk): nothing restores — the TUI lands on the board and creates no session (the lazy create-on-enter-work-unit path is the only creation path)",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:32:28.711Z"
+        },
+        {
+          "id": 3,
+          "text": "Client reconnects (WS flap) but the daemon's active pointer and the client's focused session both reference a session that was CLOSED since the drop: nothing re-attaches — the closed tab stays closed and the TUI does not resurrect it from disk",
+          "deleted": false,
+          "createdAt": "2026-10-10T23:32:32.290Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "userStory": {
+        "role": "developer running fspec in daemon/client mode",
+        "action": "start or reconnect a client and have it re-attach a session that is actually running in the daemon",
+        "benefit": "the session I was last viewing restores without ever resurrecting a session I closed in the past"
+      },
       "iterations": 1
     }
   }

@@ -787,6 +787,16 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         SessionManager::set_active_session(self, uuid);
     }
 
+    /// BUG-206: the live in-memory session IDs — the auto-restore
+    /// liveness gate. In-memory map ONLY: closed / manifest-only
+    /// sessions never appear here.
+    fn list_live_sessions(&self) -> Vec<SessionId> {
+        SessionManager::all_in_memory_session_ids(self)
+            .into_iter()
+            .map(SessionId::new)
+            .collect()
+    }
+
     fn clear_active_session(&self) {
         SessionManager::clear_active_session(self);
     }

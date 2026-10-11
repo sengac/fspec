@@ -57,11 +57,14 @@ impl App {
         // fspec-config.json, tui.mux) so a restart restores the saved
         // grid; missing key → default preset.
         self.load_mux_config();
-        // TUI-113 R1: auto-restore the last active session (daemon
-        // pointer → most-recent workspace session). Fire-and-forget —
-        // no create fallback: the RPC-012 lazy create-on-enter-work-unit
-        // path is the safety net for a genuinely empty daemon.
-        self.spawn_session_restore(None, false);
+        // BUG-206: auto-restore the last active session — MEMORY-ONLY.
+        // Resolution: the daemon's in-memory active-session pointer,
+        // verified LIVE via list_live_sessions (never persisted
+        // manifests). Fire-and-forget — no create fallback: the RPC-012
+        // lazy create-on-enter-work-unit path is the only session
+        // creation path on a fresh start. Nothing restorable → the
+        // client lands on the board.
+        self.spawn_session_restore(None);
         self.start_viewer_server().await;
         Ok(())
     }

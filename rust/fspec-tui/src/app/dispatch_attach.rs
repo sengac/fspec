@@ -3,8 +3,10 @@
 //! Factored out of `app/dispatch_resume_search_views.rs` so that file
 //! stays under the 300-LoC ceiling. Hosts the attach round-trip
 //! (index move or fresh SessionContext append + `backend.resume_session`
-//! spawn), the `SessionResumeComplete` buffered-output replay, and the
-//! `list_sessions` spawn shared with `handle_open_resume_view`.
+//! spawn — the MANUAL /resume path only), the `SessionResumeComplete`
+//! buffered-output replay, the BUG-206 live-session re-attach (in-memory
+//! catch-up, no disk), and the `list_sessions` spawn shared with
+//! `handle_open_resume_view`.
 
 use codelet_rpc_types::SessionId;
 
@@ -19,7 +21,7 @@ impl App {
     /// else append a fresh SessionContext. Also publishes to
     /// active_session_tx and runs refresh_session_chrome.
     ///
-    /// RPC-049: also spawns a tokio task that awaits
+    /// RPC-049 (MANUAL /resume): also spawns a tokio task that awaits
     /// `backend.resume_session(session_id)` so the durable-restore
     /// round-trip lands the session's prior messages + token state.
     /// On Ok the task dispatches `Action::SessionResumeComplete(id)`,
@@ -56,16 +58,31 @@ impl App {
                     .append_session(SessionContext::new(session.clone()));
             }
         }
-        self.finish_session_attach_wiring(session);
+        // RPC-049: the manual /resume path resumes from disk (the
+        // session may not be in the daemon's memory at all).
+        self.finish_session_attach_wiring(&session, true);
     }
 
-    /// Shared post-focus wiring for the attach / reattach / restore
-    /// handlers: active-session publish, Agent-view flip (TUI-113 R1),
-    /// R3 daemon-pointer publish, chrome hydration (RPC-018/052/061/430)
-    /// and the RPC-049 durable-restore round-trip
+    /// Shared post-focus wiring for the attach / reattach handlers:
+    /// active-session publish, Agent-view flip (TUI-113 R1), R3
+    /// daemon-pointer publish, and chrome/supervisor/debug hydration
+    /// (RPC-018/052/061/430).
+    ///
+    /// The RPC-049 durable-restore round-trip
     /// (`backend.resume_session` → `SessionResumeComplete` →
-    /// `get_buffered_output` replay).
-    pub(crate) fn finish_session_attach_wiring(&mut self, session: SessionId) {
+    /// `get_buffered_output` replay) is OPT-IN via
+    /// `resume_from_disk`: it belongs to the manual /resume flow
+    /// (where the target may be disk-only). The auto-restore path
+    /// (BUG-206) never passes `true` — its candidate is verified
+    /// LIVE in the daemon's in-memory map, and re-running
+    /// `resume_session` on a live session would double-inject the
+    /// whole persisted conversation into its LLM context and
+    /// re-broadcast every chunk (see BUG-206 R3).
+    pub(crate) fn finish_session_attach_wiring(
+        &mut self,
+        session: &SessionId,
+        resume_from_disk: bool,
+    ) {
         let _ = self.active_session_tx.send(Some(session.clone()));
         // TUI-113 R1: landing on a restored session must land in the
         // Agent view (mirrors `handle_open_agent_view(Some)`): set the
@@ -103,6 +120,9 @@ impl App {
         // badge reflects the ground-truth on session attach.
         self.spawn_hydrate_debug_state(session.clone());
 
+        if !resume_from_disk {
+            return;
+        }
         // RPC-049: spawn the durable-restore round-trip. Honour the
         // synchronous unit-test path so tests that don't drive a tokio
         // runtime can still observe the open_sessions move/append.
@@ -111,6 +131,7 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let session = session.clone();
         let handle = tokio::spawn(async move {
             tracing::info!(
                 session_id = %session.value,
@@ -140,23 +161,27 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// TUI-113: reconnect/restore re-attach — focus the session's EXISTING
-    /// tab and run the durable-restore round-trip (RPC-049:
-    /// `resume_session` + `get_buffered_output` replay), but NEVER
-    /// re-open a closed tab. A session the user closed stays closed;
-    /// the bootstrap lazy create-on-enter-work-unit path (RPC-012) is
-    /// the only path that creates a session on a fresh start.
+    /// BUG-206: auto-restore re-attach (bootstrap + reconnect) — the
+    /// target was JUST verified live in the daemon's in-memory map
+    /// (`list_live_sessions`), so this NEVER resumes from disk. A
+    /// closed/absent tab is re-opened (fresh client start re-opening
+    /// the last-viewed session) and focused; an already-open tab
+    /// (transient WS drop) is focused in place.
     ///
-    /// When the tab is already open this mirrors
-    /// `handle_attach_to_session` (focus + flip to Agent view + R3
-    /// pointer publish + chrome/supervisor/debug hydration + resume
-    /// round-trip). When the tab is closed it focuses nothing — only
-    /// the R3 pointer publish fires (the daemon's sticky pointer still
-    /// tracks the last-viewed session for a later restart).
+    /// Catch-up: the session's in-memory `get_buffered_output`
+    /// (RPC-037 — the daemon's in-memory chunk buffer, never the disk
+    /// manifest) is replayed through the chunk pipeline so the client
+    /// view catches up to whatever the daemon has: a fresh tab lands
+    /// on the full live conversation, and a tab that survived a
+    /// transient WS drop picks up the chunks streamed while the
+    /// connection was down. (The replay is scrollback-only — it never
+    /// touches the daemon's LLM context, which is exactly what the
+    /// disk `resume_session` round-trip would corrupt by double-
+    /// injecting a live session's persisted messages.)
     pub(crate) fn handle_reattach_session(&mut self, session: SessionId) {
         tracing::info!(
             session_id = %session.value,
-            "TUI-113: handle_reattach_session"
+            "BUG-206: handle_reattach_session (memory-only re-attach)"
         );
         self.navigator.agent.resume_view = None;
         let existing_idx = self
@@ -169,48 +194,47 @@ impl App {
                 tracing::debug!(
                     session_id = %session.value,
                     index = idx,
-                    "TUI-113: reattach — session tab open, focusing"
+                    "BUG-206: reattach — session tab open, focusing + in-memory catch-up"
                 );
                 self.agent_view_store.focus_session_index(idx);
             }
             None => {
                 tracing::debug!(
                     session_id = %session.value,
-                    "TUI-113: reattach — session tab closed, NOT re-opening"
+                    "BUG-206: reattach — re-opening the closed tab (fresh-start restore)"
                 );
-                return;
-            }
-        }
-        self.finish_session_attach_wiring(session);
-    }
-
-    /// TUI-113: bootstrap/fresh-start restore — re-open the last-viewed
-    /// session (append a fresh tab when absent, focus it when present)
-    /// and run the durable-restore round-trip. Unlike
-    /// `handle_reattach_session` this RE-OPENS a closed/absent tab: a
-    /// fresh client process restoring its last session from a live
-    /// daemon is the RPC-049 durable-restore flow, not a reconnect
-    /// re-attach.
-    pub(crate) fn handle_restore_session(&mut self, session: SessionId) {
-        tracing::info!(
-            session_id = %session.value,
-            "TUI-113: handle_restore_session"
-        );
-        let existing_idx = self
-            .agent_view_store
-            .open_sessions()
-            .iter()
-            .position(|c| c.id == session);
-        match existing_idx {
-            Some(idx) => {
-                self.agent_view_store.focus_session_index(idx);
-            }
-            None => {
                 self.agent_view_store
                     .append_session(SessionContext::new(session.clone()));
             }
         }
-        self.finish_session_attach_wiring(session);
+        // Memory-only attach wiring: NO disk resume_session.
+        self.finish_session_attach_wiring(&session, false);
+        // In-memory catch-up: replay the daemon's buffered output
+        // (in-memory chunks) through the chunk pipeline.
+        self.spawn_catch_up_from_buffer(&session);
+    }
+
+    /// BUG-206: replay the session's in-memory `get_buffered_output`
+    /// through the chunk pipeline so a freshly re-opened tab lands on
+    /// the live conversation. Fire-and-forget; silently no-ops in
+    /// non-runtime contexts (synchronous unit-test fallback).
+    pub(crate) fn spawn_catch_up_from_buffer(&mut self, session: &SessionId) {
+        if tokio::runtime::Handle::try_current().is_err() {
+            return;
+        }
+        let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let session = session.clone();
+        let handle = tokio::spawn(async move {
+            let chunks = backend
+                .get_buffered_output(session.clone(), 1000)
+                .await
+                .unwrap_or_default();
+            for chunk in chunks {
+                let _ = action_tx.send(Action::ChunkReceived(session.clone(), chunk));
+            }
+        });
+        self.pending_tasks.push(handle);
     }
 
     /// RPC-049: react to the success outcome of `backend.resume_session`

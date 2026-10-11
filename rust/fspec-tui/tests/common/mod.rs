@@ -217,6 +217,9 @@ type ScriptedCheckpointFileDiff = (String, String, String, Option<String>);
 pub struct MockBackend {
     work_units: Mutex<Vec<WorkUnitInfo>>,
     sessions: Mutex<Vec<SessionInfo>>,
+    /// BUG-206: per-call counter for `list_sessions` (the disk-merging
+    /// /resume list). The auto-restore path must NEVER call it.
+    list_sessions_calls: AtomicUsize,
     /// RPC-415: wrapped in `Mutex<Option>` (mirroring `chunks_tx`) so the
     /// reconnect-resubscribe tests can drop the Sender via
     /// `disconnect_all()` (subscribers observe `RecvError::Closed`) and
@@ -402,6 +405,13 @@ pub struct MockBackend {
     /// (RPC-037 default returns `Ok(None)` — the mock overrides so
     /// bootstrap/reconnect restore tests can script a daemon pointer).
     scripted_active_session: Mutex<Option<SessionId>>,
+    /// BUG-206: scripted live-session IDs returned by
+    /// `list_live_sessions` (the daemon's in-memory session map). The
+    /// auto-restore liveness gate — a restore candidate must appear
+    /// here to be restored; closed/manifest-only sessions must NOT.
+    scripted_live_sessions: Mutex<Vec<SessionId>>,
+    /// BUG-206: per-call counter for `list_live_sessions`.
+    list_live_sessions_calls: AtomicUsize,
     /// TUI-113: per-call counter for `set_active_session`.
     set_active_session_calls: AtomicUsize,
     /// TUI-113: capture of the last SessionId passed to
@@ -763,6 +773,7 @@ impl Default for MockBackend {
         Self {
             work_units: Mutex::new(Vec::new()),
             sessions: Mutex::new(Vec::new()),
+            list_sessions_calls: AtomicUsize::new(0),
             work_units_tx: Mutex::new(Some(work_units_tx)),
             chunks_tx: Mutex::new(Some(chunks_tx)),
             logs_tx: Mutex::new(Some(logs_tx)),
@@ -846,6 +857,8 @@ impl Default for MockBackend {
             get_buffered_output_calls: AtomicUsize::new(0),
             last_get_buffered_output: Mutex::new(None),
             scripted_active_session: Mutex::new(None),
+            scripted_live_sessions: Mutex::new(Vec::new()),
+            list_live_sessions_calls: AtomicUsize::new(0),
             set_active_session_calls: AtomicUsize::new(0),
             last_set_active_session: Mutex::new(None),
             set_work_unit_context_calls: AtomicUsize::new(0),
@@ -1670,6 +1683,29 @@ impl MockBackend {
             .scripted_active_session
             .lock()
             .expect("MockBackend mutex") = Some(session);
+    }
+
+    /// BUG-206: script the daemon's in-memory session IDs returned by
+    /// `list_live_sessions` (the auto-restore liveness gate). Default
+    /// is an empty list (no live sessions — nothing restorable).
+    pub fn seed_live_sessions(&self, sessions: Vec<SessionId>) {
+        *self
+            .scripted_live_sessions
+            .lock()
+            .expect("MockBackend mutex") = sessions;
+    }
+
+    /// BUG-206: how many times `list_live_sessions` was awaited (the
+    /// auto-restore liveness gate must be consulted exactly on the
+    /// restore path, never elsewhere).
+    pub fn list_live_sessions_calls(&self) -> usize {
+        self.list_live_sessions_calls.load(Ordering::SeqCst)
+    }
+
+    /// BUG-206: how many times `list_sessions` (the disk-merging /resume
+    /// list) was awaited — the auto-restore path must keep this at 0.
+    pub fn list_sessions_calls(&self) -> usize {
+        self.list_sessions_calls.load(Ordering::SeqCst)
     }
 
     /// TUI-113: how many times `set_active_session` was awaited.
@@ -2689,11 +2725,22 @@ impl FspecBackend for MockBackend {
     }
 
     async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
+        self.list_sessions_calls.fetch_add(1, Ordering::SeqCst);
         *self
             .last_list_sessions_project
             .lock()
             .expect("MockBackend mutex") = Some(project_path);
         Ok(self.sessions.lock().expect("MockBackend mutex").clone())
+    }
+
+    /// BUG-206: scripted in-memory session IDs (auto-restore liveness gate).
+    async fn list_live_sessions(&self) -> Result<Vec<SessionId>> {
+        self.list_live_sessions_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(self
+            .scripted_live_sessions
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn create_session(&self, _role: Option<String>) -> Result<SessionId> {

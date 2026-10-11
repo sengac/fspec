@@ -1294,6 +1294,10 @@
           "description": "Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll"
         },
         {
+          "name": "@bug-206",
+          "description": "Work unit BUG-206 — session auto-restore must only restore sessions LIVE in the daemon's in-memory session map: liveness-gated candidate verification via the new list_live_sessions RPC, close invalidates the daemon active-session pointer, and NOTHING restorable means land on the board (no list_sessions disk scan, no resume-from-disk, no create_session fallback). Supersedes TUI-113's disk-aware fallback chain."
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -3238,7 +3242,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-10T15:40:42.030Z",
+    "lastUpdated": "2026-10-10T23:52:00.596Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

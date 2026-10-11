@@ -1,26 +1,28 @@
-//! TUI-113 — auto-restore of the last active session on client startup and
-//! reconnect.
+//! BUG-206 — auto-restore of the last active session on client startup and
+//! reconnect. MEMORY-ONLY.
 //!
 //! Feature: spec/features/auto-restore-last-active-session-on-client-startup-and-reconnect.feature
 //!
-//! Resolution order (R2):
-//! 1. the client's focused session (reconnect path only — tabs survive
-//!    transient WS drops; another client may have moved the daemon pointer
-//!    meanwhile),
-//! 2. the daemon's in-memory active-session pointer (RPC-037
-//!    `get_active_session`),
-//! 3. the most-recent entry of `list_sessions(daemon_cwd)` where
-//!    `daemon_cwd` comes from `get_workspace_info().cwd` (RPC-018) with
-//!    fallback to the empty string (no project filter). NEVER the
-//!    client-side cwd — on a remote client machine that path matches no
-//!    daemon session (the RPC-427 filter would empty the list).
+//! Resolution (R1): the candidates are (a) on the reconnect path, the
+//! client's focused session (tabs survive transient WS drops; another
+//! client may have moved the daemon pointer meanwhile), and (b) the
+//! daemon's in-memory active-session pointer (RPC-037
+//! `get_active_session`). The first candidate that is verified LIVE via
+//! `list_live_sessions()` (BUG-206 R3 — the daemon's in-memory session
+//! map ONLY, never persisted manifests) wins and is attached through the
+//! EXISTING `Action::AttachToSession` path (RPC-049 durable restore:
+//! `resume_session` + `get_buffered_output` replay).
 //!
-//! The winner is attached through the EXISTING `Action::AttachToSession`
-//! path (RPC-049 durable restore: `resume_session` +
-//! `get_buffered_output` replay). `create_session(None)` is the
-//! reconnect-only fallback (R4/R5 — supersedes the RPC-011
-//! create-on-reconnect contract) and is NOT run on bootstrap, where the
-//! RPC-012 lazy create-on-enter-work-unit path remains the safety net.
+//! NO FALLBACKS (BUG-206 R1): a candidate that is not live (closed, or
+//! lost to a daemon restart) is NOT restorable — nothing happens, the
+//! client lands on the board. No `list_sessions` disk scan, no
+//! resume-from-disk, no `create_session` fallback: the RPC-012 lazy
+//! create-on-enter-work-unit path is the only session-creation path on
+//! startup/reconnect.
+//!
+//! (Supersedes the TUI-113 fallback chain: the `list_sessions(daemon_cwd)`
+//! most-recent entry and the empty-daemon `create_session(None)` were
+//! disk-aware fallbacks that resurrected sessions the user had closed.)
 
 use std::sync::Arc;
 
@@ -31,104 +33,80 @@ use crate::transport::FspecBackend;
 
 use super::state::App;
 
-/// TUI-113 R2: resolve the restore target from the backend.
+/// BUG-206 R1/R3: resolve the restore target from the backend.
 ///
 /// `focused_override` is `Some` on the reconnect path (the client's
-/// focused session wins); bootstrap passes `None`. Pure function of the
-/// backend — no App state — so it can run inside the spawned task.
+/// focused session is the first candidate); bootstrap passes `None`.
+/// A candidate is restorable ONLY if it is in the daemon's in-memory
+/// session map (`list_live_sessions` — never persisted manifests).
+/// Returns `None` when nothing is restorable: the client lands on the
+/// board and the RPC-012 lazy create-on-enter-work-unit path remains
+/// the only way a session gets created.
 pub(crate) async fn resolve_restore_target(
     backend: &Arc<dyn FspecBackend>,
     focused_override: Option<SessionId>,
 ) -> Option<SessionId> {
+    let mut candidates: Vec<SessionId> = Vec::new();
     if let Some(sid) = focused_override {
-        return Some(sid);
+        candidates.push(sid);
     }
     // (b) the daemon's in-memory active-session pointer (RPC-037).
     match backend.get_active_session().await {
-        Ok(Some(sid)) => return Some(sid),
+        Ok(Some(sid)) => candidates.push(sid),
         Ok(None) => {}
         Err(err) => {
             tracing::debug!("restore: get_active_session failed: {err}");
         }
     }
-    // (c) most-recent session of the daemon's WORKSPACE (TUI-099 sorts
-    // list_sessions by updated_at DESC, most-recent first). The project
-    // filter uses the daemon cwd — never the client cwd (R2).
-    let daemon_cwd = match backend.get_workspace_info().await {
-        Ok(info) => info.cwd,
+    if candidates.is_empty() {
+        return None;
+    }
+    // Liveness gate (BUG-206 R3): the daemon's in-memory session map
+    // ONLY. A candidate that is not live (closed / manifest-only /
+    // lost to a daemon restart) is not a candidate at all — no disk
+    // fallback, no create fallback (BUG-206 R1).
+    let live = match backend.list_live_sessions().await {
+        Ok(live) => live,
         Err(err) => {
-            tracing::debug!("restore: get_workspace_info failed, retrying unfiltered: {err}");
-            String::new()
+            tracing::debug!("restore: list_live_sessions failed, nothing restorable: {err}");
+            return None;
         }
     };
-    match backend.list_sessions(daemon_cwd).await {
-        Ok(sessions) => sessions
-            .into_iter()
-            .next()
-            .map(|info| SessionId::new(info.id)),
-        Err(err) => {
-            tracing::debug!("restore: list_sessions failed: {err}");
-            None
-        }
-    }
+    candidates
+        .into_iter()
+        .find(|sid| live.iter().any(|live_id| live_id == sid))
 }
 
 impl App {
-    /// TUI-113 R1/R4: spawn the restore round-trip. Fire-and-forget —
+    /// BUG-206 R1: spawn the restore round-trip. Fire-and-forget —
     /// bootstrap never awaits it, so the Board first frame renders
     /// immediately (mirrors the lazy create_session spawn pattern).
     ///
-    /// `create_fallback` (reconnect only, R5): when resolution yields
-    /// nothing, run the RPC-011 `create_session(None)` safety net.
-    /// Bootstrap passes `false` — the RPC-012 lazy create-on-enter-work-unit
-    /// path is the safety net there.
-    pub fn spawn_session_restore(
-        &mut self,
-        focused_override: Option<SessionId>,
-        create_fallback: bool,
-    ) {
+    /// When resolution yields a live target the existing
+    /// `Action::AttachToSession` path is dispatched (RPC-049 durable
+    /// restore). When nothing is restorable NOTHING is dispatched:
+    /// the client lands on the board — no create fallback, no disk
+    /// resume (the RPC-012 lazy create-on-enter-work-unit path is the
+    /// only session-creation path on a fresh start / reconnect).
+    pub fn spawn_session_restore(&mut self, focused_override: Option<SessionId>) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let active_session_tx = self.active_session_tx.clone();
-        // Reconnect path (focused_override set) re-attaches WITHOUT
-        // re-opening a closed tab; bootstrap/fresh-start restores
-        // re-open the last-viewed session (RPC-049 durable-restore).
-        let reattach = focused_override.is_some();
         let handle = tokio::spawn(async move {
             match resolve_restore_target(&backend, focused_override).await {
                 Some(target) => {
                     tracing::info!(
                         session_id = %target.value,
-                        "TUI-113: restore target resolved, dispatching restore action"
+                        "BUG-206: restore target resolved (live in the daemon), dispatching ReattachSession"
                     );
-                    let action = if reattach {
-                        Action::ReattachSession(target)
-                    } else {
-                        Action::RestoreSession(target)
-                    };
-                    let _ = action_tx.send(action);
+                    let _ = action_tx.send(Action::ReattachSession(target));
                 }
                 None => {
-                    if create_fallback {
-                        // R4/R5: RPC-011 safety net — a genuinely empty
-                        // daemon still gets a session on reconnect.
-                        // The routed SessionCreated action goes through
-                        // the idempotent fold (dedup guard), so an
-                        // already-open focused session is never
-                        // re-created or focus-stolen.
-                        if let Ok(session) = backend.create_session(None).await {
-                            super::session_creation::route_bootstrap_create_session(
-                                session,
-                                &active_session_tx,
-                                &action_tx,
-                            );
-                        }
-                    } else {
-                        tracing::debug!("TUI-113: nothing restorable; staying on the board");
-                    }
+                    tracing::debug!(
+                        "BUG-206: nothing restorable in the daemon's memory; landing on the board"
+                    );
                 }
             }
         });

@@ -494,6 +494,21 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         let _ = (session_id, text);
     }
 
+    /// BUG-206: the session IDs of every session that is currently
+    /// ALIVE in the handle's in-memory session map. Used by the
+    /// TUI's auto-restore path (bootstrap + reconnect) as the liveness
+    /// gate for restore candidates — a candidate session that is not
+    /// in this set is NOT running in the daemon right now (closed or
+    /// manifest-only) and must never be re-opened / resumed.
+    ///
+    /// The default returns an empty list so handles without a session
+    /// table (`StubSessionManagerHandle` overrides; test-only handles)
+    /// compile unchanged. Implementations MUST NOT read persisted
+    /// manifests — this list is the daemon's live memory, period.
+    fn list_live_sessions(&self) -> Vec<SessionId> {
+        Vec::new()
+    }
+
     /// RPC-037: set the active session for the application.
     fn set_active_session(&self, session_id: &SessionId) {
         let _ = session_id;
@@ -1565,6 +1580,13 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             });
         }
         id
+    }
+
+    fn list_live_sessions(&self) -> Vec<SessionId> {
+        self.sessions
+            .lock()
+            .map(|sessions| sessions.iter().map(|r| r.id.clone()).collect())
+            .unwrap_or_default()
     }
 
     fn send_input(&self, session_id: &SessionId, _text: String) {
