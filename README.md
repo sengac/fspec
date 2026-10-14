@@ -284,6 +284,12 @@ Watch the whole factory at once: mux mode splits the TUI screen into a grid of l
 
 ---
 
+## One daemon, many clients
+
+Run the factory on one machine and attach TUIs from any number of others: the daemon hosts the sessions, clients are just frontends. Reach the loopback-only daemon across your machines with a Tailscale tailnet (no exposed ports, WireGuard-encrypted), and monitor from your phone through the separate Telegram/relay bridge. See [docs/CLIENT_SERVER.md](docs/CLIENT_SERVER.md) for the client/server architecture, daemon/client modes, and the Tailscale setup.
+
+---
+
 ## Using with external agents
 
 fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
