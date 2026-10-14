@@ -1084,6 +1084,26 @@ impl FspecBackend for EmbeddedFspecBackend {
         }
     }
 
+    /// RPC-437: subscribe to the session manager's session-cleared
+    /// broadcast (zero-cost embedded path — the same direct handle read
+    /// `status_changes_rx` / `session_created_rx` use). A session
+    /// cleared on the daemon (from ANY connected machine, including
+    /// the NAPI/Telegram entry point) fires `SessionEvent::Cleared`
+    /// on every connected client; the embedded TUI observes it here.
+    /// Unlike `session_removed_rx`, the session stays LIVE — clear is
+    /// repeatable, so the receiver must never be treated as
+    /// terminal.
+    fn session_cleared_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionId> {
+        match self.service.session_manager() {
+            Some(handle) => handle.session_cleared_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
+
     /// RPC-434: the connect-time open-session snapshot — delegates to
     /// the shared service's in-memory live map (no disk merge, no
     /// project filter — parity with the BUG-206 liveness gate).

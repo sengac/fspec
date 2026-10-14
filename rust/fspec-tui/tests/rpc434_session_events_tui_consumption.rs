@@ -305,10 +305,10 @@ async fn bootstrap_spawns_the_session_removed_subscriber_with_degenerate_default
     // @step Then the session-removed subscriber task is alive alongside the other seven
     // (work_units + chunks + logs + status_changes + session_created +
     // checkpoints_progress + git_state = 7; RPC-434 adds the 8th:
-    // session_removed).
+    // session_removed; RPC-437 adds the 9th: session_cleared).
     assert_eq!(
         app.subscriber_task_count(),
-        8,
+        9,
         "bootstrap must spawn the new session-removed subscriber task (7 pre-RPC-434)"
     );
 

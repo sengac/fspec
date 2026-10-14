@@ -199,13 +199,14 @@ async fn the_subscriber_recovers_from_a_lagged_broadcast_receiver() {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.bootstrap().await.expect("bootstrap");
-    // RPC-385 adds a fifth subscriber task (session_created_rx) alongside the
-    // existing four (work_units / chunks / logs / status_changes).
-    // TUI-109 adds a sixth (checkpoints_progress_rx); BUG-181 a seventh
-    // (checkpoint_counts_changed_rx).
+    // The bootstrap spawns nine subscriber tasks: work_units / chunks /
+    // logs / status_changes (RPC-045), session_created (RPC-385),
+    // checkpoints_progress (TUI-109), git_state (BUG-182),
+    // session_removed (RPC-434 — bumped 7 -> 8) and session_cleared
+    // (RPC-437 — bumped 8 -> 9).
     assert_eq!(
         app.subscriber_task_count(),
-        7,
+        9,
         "bootstrap must spawn the new session-created subscriber task"
     );
     // Overflow the session-created broadcast to force RecvError::Lagged.

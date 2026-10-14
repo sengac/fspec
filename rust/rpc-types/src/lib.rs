@@ -323,6 +323,12 @@ pub enum SessionEvent {
     Created(SessionInfo),
     /// A session was destroyed / removed from the daemon's live map.
     Removed(SessionId),
+    /// A session's history was cleared (/clear). APPENDED after Removed so
+    /// existing bincode variant indices (Created=0, Removed=1) stay stable.
+    /// Carries only the id (RPC-436): a connected client already holds all
+    /// tab state for that session and needs nothing else to react to the
+    /// clear (mirrors `Removed`).
+    Cleared(SessionId),
 }
 
 /// Structured log event payload pushed to subscribers via the

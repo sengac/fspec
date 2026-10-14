@@ -1,7 +1,8 @@
-//! RPC-434 — `Action::SessionRemoved` handler + connect-time snapshot
-//! replay.
+//! RPC-434 / RPC-437 — `Action::SessionRemoved` / `Action::SessionCleared`
+//! handlers + connect-time snapshot replay.
 //!
 //! Feature: spec/features/session-events-tui-consumption.feature
+//! Feature: spec/features/session-events-tui-cleared-consumption.feature
 //!
 //! Two RPC-434 behaviors live here (factored from `app/dispatch.rs` /
 //! `app/bootstrap.rs` to keep those files under the 300-LoC ceiling):
@@ -47,7 +48,7 @@
 
 use std::sync::Arc;
 
-use codelet_rpc_types::{SessionId, SessionInfo};
+use codelet_rpc_types::{SessionId, SessionInfo, SessionStatus};
 
 use crate::components::Action;
 use crate::transport::FspecBackend;
@@ -139,5 +140,49 @@ impl App {
         // session list (focus already clamped inside
         // `remove_session_if_open` — step 1 above).
         self.mux_sync_window();
+    }
+
+    /// RPC-437 (R3): fold a daemon-side session clear (the RPC-436
+    /// `SessionEvent::Cleared` frame). IDEMPOTENT and per-session —
+    /// a double-fire (local /clear + echoed event, or two consecutive
+    /// clears) is a no-op on the second pass. Never touches focus or
+    /// other sessions.
+    ///
+    /// 1. Gate on the session's `SessionContext` — a session whose tab
+    ///    is not open (never opened, or closed locally) makes the
+    ///    WHOLE handler a no-op (no tab creation, no panic).
+    /// 2. Per-session reset: scrollback + in-flight slots +
+    ///    `input_draft` (complete for background sessions too).
+    /// 3. Focused session only: the AgentView-local step (input
+    ///    buffer + popups) through the shared
+    ///    `AgentView::reset_local_scrollback` — the SAME code path
+    ///    the local /clear uses (DRY).
+    /// 4. RPC-100 chrome mirror (the chunk-side Cleared state reset):
+    ///    status → Cleared + token state reset + compaction reduction
+    ///    cleared, so the SessionHeader badge returns to [0%] even
+    ///    when the chunk stream lags the lifecycle event.
+    pub(crate) fn handle_session_cleared(&mut self, session: SessionId) {
+        // Step 1: the gate — no open tab is a complete no-op.
+        if self.agent_view_store.session_context_for(&session).is_none() {
+            return;
+        }
+        // Step 2: per-session reset (store-side, focus-independent).
+        if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session) {
+            ctx.reset_scrollback();
+            ctx.input_draft.clear();
+        }
+        // Step 3: focused-session view-local reset — ONE shared code
+        // path with the local /clear (DRY). A background-session
+        // clear never touches the focused input buffer.
+        if self.agent_view_store.current_session() == Some(&session) {
+            self.navigator.agent.reset_local_scrollback(&mut self.agent_view_store);
+        }
+        // Step 4: RPC-100 chrome mirror — the SessionHeader badge
+        // returns to the cleared state even when the chunk stream
+        // lags (or never delivers) the SessionStateChange frame.
+        self.agent_view_store
+            .set_session_status(session.clone(), SessionStatus::Cleared);
+        self.agent_view_store.reset_token_state(&session);
+        self.agent_view_store.clear_compaction_reduction(&session);
     }
 }

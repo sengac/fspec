@@ -146,6 +146,17 @@ pub enum Action {
     /// onto per-variant receivers); `App::dispatch` routes it to the
     /// idempotent `handle_session_removed` (app/dispatch_session_lifecycle.rs).
     SessionRemoved(codelet_rpc_types::SessionId),
+    /// RPC-437: a session's history was cleared on the daemon (from
+    /// this client or from ANY other connected machine, including the
+    /// NAPI/Telegram clear entry point). Folded onto the action bus by
+    /// the bootstrap's session-cleared subscriber (both transports —
+    /// the WS transport splits the RPC-433 `SessionEvent` wire stream
+    /// onto per-variant receivers); `App::dispatch` routes it to the
+    /// idempotent `handle_session_cleared`
+    /// (app/dispatch_session_lifecycle.rs). Appended after
+    /// `SessionRemoved` (RPC-434) so the existing variant order is
+    /// untouched.
+    SessionCleared(codelet_rpc_types::SessionId),
     /// PROV-101: `create_session` returned an EMPTY `SessionId` because no
     /// default model was set (decline). The TUI must NOT append an empty-id
     /// session — every caller maps the empty id to THIS action via

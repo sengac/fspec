@@ -80,6 +80,9 @@ pub struct SessionCreationParams<'a> {
         codelet_rpc_types::SessionId,
         codelet_rpc_types::SessionStatus,
     )>,
+    /// RPC-436: session-cleared lifecycle event broadcast sender
+    /// (the owning `SessionManager`'s `session_cleared_tx` clone)
+    pub session_cleared_tx: broadcast::Sender<codelet_rpc_types::SessionId>,
 }
 
 /// Create a BackgroundSession with all shared initialization logic.
@@ -124,6 +127,7 @@ pub async fn create_background_session_inner(
         isolation,
         chunks_tx,
         status_changes_tx,
+        session_cleared_tx,
     } = params;
 
     let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
@@ -245,6 +249,7 @@ pub async fn create_background_session_inner(
         lifecycle_hooks.clone(),
         chunks_tx,
         status_changes_tx,
+        session_cleared_tx,
     ));
 
     // TUI-002: re-apply the persisted default thinking level

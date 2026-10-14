@@ -4,9 +4,11 @@
 //!
 //! Lives in a sibling file so `store/board.rs` stays under the 300 LoC
 //! file-size invariant. Operates on the `pub(super)` field surface of
-//! [`BoardStore`] declared in `board.rs`.
+//! [`BoardStore`] declared in `board.rs`. RPC-434's session-attachment
+//! inverse lookup (`session_attachments_for`) lives here too — the same
+//! ceiling forced its move out of `board.rs`.
 
-use codelet_rpc_types::WorkUnitInfo;
+use codelet_rpc_types::{SessionId, WorkUnitInfo};
 
 use super::board::{column_index, BoardStore};
 use super::COLUMN_ORDER;
@@ -137,6 +139,20 @@ impl BoardStore {
             return;
         };
         self.select_index_in_focused(pos, viewport_height);
+    }
+
+    /// RPC-434: every `(work-unit id, attached session)` pair whose
+    /// session is `session` — the inverse lookup `handle_session_removed`
+    /// needs to release ALL of the removed session's board attachments
+    /// (a session may be attached to several units; `attach_session`'s
+    /// migration rule usually keeps it to one). Lives in this sibling
+    /// file because the 300-LoC ceiling forced it out of `board.rs`.
+    pub fn session_attachments_for(&self, session: &SessionId) -> Vec<(&str, &SessionId)> {
+        self.session_attachments
+            .iter()
+            .filter(|(_, attached)| **attached == *session)
+            .map(|(wu, sid)| (wu.as_str(), sid))
+            .collect()
     }
 }
 

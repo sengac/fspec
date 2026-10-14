@@ -56,6 +56,9 @@ fn fresh_session() -> (Arc<BackgroundSession>, ChunksRx, StatusRx) {
 
     let (chunks_tx, chunks_rx) = broadcast::channel::<(SessionId, StreamChunk)>(1024);
     let (status_tx, status_rx) = broadcast::channel::<(SessionId, SessionStatus)>(1024);
+    // RPC-436: manager-owned session-cleared lifecycle event channel —
+    // the test never clears the session, so a local unused sender is fine.
+    let (session_cleared_tx, _session_cleared_rx) = broadcast::channel::<SessionId>(1024);
     let (input_tx, _input_rx) = mpsc::channel(8);
 
     let session = Arc::new(BackgroundSession::new(
@@ -71,6 +74,7 @@ fn fresh_session() -> (Arc<BackgroundSession>, ChunksRx, StatusRx) {
         None,
         chunks_tx,
         status_tx,
+        session_cleared_tx,
     ));
     (session, chunks_rx, status_rx)
 }

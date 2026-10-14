@@ -323,6 +323,13 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         SessionManager::session_removed_tx(self).subscribe()
     }
 
+    /// RPC-436: subscribe to the session-cleared broadcast. The WS
+    /// server's per-connection fan-out task drains this and wraps each
+    /// id in `Envelope::SessionEvent(SessionEvent::Cleared(_))`.
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        SessionManager::session_cleared_tx(self).subscribe()
+    }
+
     /// RPC-433: the in-memory live session map as a snapshot — the
     /// connect-time replay source for `Envelope::SessionSnapshot`
     /// (rule R3: no disk merge, no project filter).

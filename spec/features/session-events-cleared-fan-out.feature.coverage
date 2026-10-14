@@ -1,0 +1,119 @@
+{
+  "scenarios": [
+    {
+      "name": "Session cleared on any client is pushed to all connected clients",
+      "testMappings": [
+        {
+          "file": "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs",
+          "lines": "84-129",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs",
+          "lines": "84-129",
+          "implMappings": [
+            {
+              "file": "rust/rpc-server/src/server.rs",
+              "lines": [
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-server/tests/rpc436_session_cleared_fan_out.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-server/src/server.rs"
+    ],
+    "totalLinesCovered": 168
+  }
+}

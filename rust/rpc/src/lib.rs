@@ -1081,6 +1081,24 @@ impl SharedFspecService {
         }
     }
 
+    /// RPC-436: subscribe to session-cleared events. When a session
+    /// manager is attached, delegates to its per-process broadcast so the
+    /// WS server's per-connection fan-out task can wrap each id in
+    /// `Envelope::SessionEvent(SessionEvent::Cleared(_))` and push it to
+    /// every connected client. Without a session manager, returns a
+    /// degenerate receiver whose sender has been dropped (subscribers
+    /// immediately observe `RecvError::Closed`).
+    pub fn session_cleared_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionId> {
+        match &self.session_manager {
+            Some(handle) => handle.session_cleared_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
+
     /// RPC-433: the in-memory live session map as a snapshot
     /// (`Vec<SessionInfo>`), the connect-time replay source for
     /// `Envelope::SessionSnapshot` (rule R3: no disk merge, no project

@@ -362,6 +362,32 @@ impl FspecBackend for WebSocketFspecBackend {
         sub_rx
     }
 
+    /// RPC-437: sibling of `session_created_rx` / `session_removed_rx`
+    /// — splits the RPC-433 session-event wire stream onto a
+    /// per-subscriber `SessionId` broadcast (the `Cleared` variant
+    /// only, the RPC-436 daemon-side fan-out frame). Same
+    /// closed-on-disconnect degradation (R2/R5): when the client slot
+    /// is `None` the closed receiver lets the bootstrap subscriber
+    /// exit and it is respawned on Reconnected.
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (sub_tx, sub_rx) = broadcast::channel::<SessionId>(SESSION_EVENT_SPLITS_CAPACITY);
+        let Some(mut events_rx) = self.client_session_events_rx() else {
+            return empty_broadcast_rx();
+        };
+        tokio::spawn(async move {
+            while let Ok(event) = events_rx.recv().await {
+                if let codelet_rpc_types::SessionEvent::Cleared(id) = event {
+                    if sub_tx.send(id).is_err() {
+                        break;
+                    }
+                }
+            }
+            // `RecvError::Closed` — the wire stream closed (WS drop).
+            // Dropping `sub_tx` here closes the per-subscriber channel.
+        });
+        sub_rx
+    }
+
     /// RPC-434: the connect-time open-session snapshot. Reads the
     /// fresh client's cached `SessionSnapshot` frame (the pump's
     /// watch-backed `session_snapshot_rx` replays it even when the

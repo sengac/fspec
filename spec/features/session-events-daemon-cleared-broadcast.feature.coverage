@@ -1,0 +1,219 @@
+{
+  "scenarios": [
+    {
+      "name": "Clearing an unknown session id pushes no cleared event",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc436_session_cleared_broadcast.rs",
+          "lines": "73-112",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446,
+                1447,
+                1448,
+                1449,
+                1450,
+                1451,
+                1452
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clearing a live session pushes exactly one cleared event carrying its id",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/rpc436_session_cleared_broadcast.rs",
+          "lines": "114-163",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1735,
+                1736,
+                1737,
+                1738,
+                1739,
+                1740,
+                1741,
+                1742,
+                1743,
+                1744,
+                1745,
+                1746,
+                1747,
+                1748,
+                1749,
+                1750,
+                1751,
+                1752,
+                1753,
+                1754,
+                1755,
+                1756,
+                1757,
+                1758,
+                1759,
+                1760,
+                1761,
+                1762,
+                1763,
+                1764,
+                1765,
+                1766,
+                1767,
+                1768,
+                1769,
+                1770,
+                1771,
+                1772,
+                1773,
+                1774,
+                1775,
+                1776,
+                1777,
+                1778,
+                1779,
+                1780,
+                1781,
+                1782,
+                1783,
+                1784
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/rpc436_session_cleared_broadcast.rs",
+          "lines": "114-163",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446,
+                1447,
+                1448,
+                1449,
+                1450,
+                1451,
+                1452
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/sessions/tests/rpc436_session_cleared_broadcast.rs",
+          "lines": "114-163",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1735,
+                1736,
+                1737,
+                1738,
+                1739,
+                1740,
+                1741,
+                1742,
+                1743,
+                1744,
+                1745,
+                1746,
+                1747,
+                1748,
+                1749,
+                1750,
+                1751,
+                1752,
+                1753,
+                1754,
+                1755,
+                1756,
+                1757,
+                1758,
+                1759,
+                1760,
+                1761,
+                1762,
+                1763,
+                1764,
+                1765,
+                1766,
+                1767,
+                1768,
+                1769,
+                1770,
+                1771,
+                1772,
+                1773,
+                1774,
+                1775,
+                1776,
+                1777,
+                1778,
+                1779,
+                1780,
+                1781,
+                1782,
+                1783,
+                1784
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/rpc436_session_cleared_broadcast.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/background_session.rs"
+    ],
+    "totalLinesCovered": 338
+  }
+}

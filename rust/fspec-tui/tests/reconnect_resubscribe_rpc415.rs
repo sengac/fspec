@@ -38,8 +38,8 @@ use common::MockBackend;
 /// The full set of broadcast subscriber streams
 /// (work_units + chunks + logs + status_changes + session_created
 /// + checkpoints_progress (TUI-109) + git_state (BUG-182)
-/// + session_removed (RPC-434)).
-const SUBSCRIBER_STREAM_COUNT: usize = 8;
+/// + session_removed (RPC-434) + session_cleared (RPC-437)).
+const SUBSCRIBER_STREAM_COUNT: usize = 9;
 
 fn wu(id: &str, status: &str) -> WorkUnitInfo {
     WorkUnitInfo {

@@ -18,7 +18,9 @@
 
 pub mod bootstrap;
 pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
+pub mod bootstrap_model; // PROV-120: initialize_startup_model body (300-LoC ceiling)
 pub mod bootstrap_session_removed; // RPC-434: (h) session_removed_rx subscriber (300-LoC ceiling)
+pub mod bootstrap_session_cleared; // RPC-437: (i) session_cleared_rx subscriber (300-LoC ceiling)
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;

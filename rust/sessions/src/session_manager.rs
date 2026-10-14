@@ -176,6 +176,18 @@ pub struct SessionManager {
     /// `Envelope::SessionEvent(SessionEvent::Removed(_))` (rule R2 of
     /// session-events-daemon-fanout.feature).
     session_removed_tx: broadcast::Sender<SessionId>,
+    /// RPC-436: per-manager broadcast of session-cleared events. Fires
+    /// from the clear path (`BackgroundSession::clear_history` — the event
+    /// sender is injected at session creation, so the event lands on the
+    /// broadcast of the manager that owns the session) ONLY when the
+    /// clear actually succeeded (a clear of an unknown id emits nothing,
+    /// mirroring the removed-broadcast idempotency). Payload is the
+    /// cleared session's [`SessionId`]. The WS server fans it out to
+    /// every client as
+    /// `Envelope::SessionEvent(SessionEvent::Cleared(_))`. Unlike
+    /// removal, a clear is REPEATABLE (a cleared session stays live), so
+    /// exactly one event per successful clear.
+    session_cleared_tx: broadcast::Sender<SessionId>,
     /// RPC-040: NAPI-side subsystems injected via the hooks trait.
     hooks: ArcSwap<Arc<dyn SessionManagerHooks>>,
     /// RPC-386: Weak self-reference, populated via [`SessionManager::init_self_weak`]
@@ -212,6 +224,11 @@ impl SessionManager {
         // a wrong tab state (a missed removal is healed by the next
         // connect-time SessionSnapshot on reconnect).
         let (session_removed_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
+        // RPC-436: cleared events share the same capacity + lag-recovery
+        // contract — the TUI clear path is idempotent (resetting an
+        // already-empty scrollback is a no-op), so a lagged receiver
+        // recovers via RecvError::Lagged without producing a wrong state.
+        let (session_cleared_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let default_hooks: Arc<dyn SessionManagerHooks> = Arc::new(NoopSessionManagerHooks);
         Self {
             sessions: RwLock::new(IndexMap::new()),
@@ -227,6 +244,7 @@ impl SessionManager {
             status_changes_tx,
             session_created_tx,
             session_removed_tx,
+            session_cleared_tx,
             hooks: ArcSwap::from_pointee(default_hooks),
             self_weak: OnceLock::new(),
         }
@@ -289,6 +307,13 @@ impl SessionManager {
     /// each id in `Envelope::SessionEvent(SessionEvent::Removed(_))`.
     pub fn session_removed_tx(&self) -> &broadcast::Sender<SessionId> {
         &self.session_removed_tx
+    }
+
+    /// RPC-436: accessor for the session-cleared broadcast sender. The WS
+    /// server's per-connection fan-out task subscribes to this and wraps
+    /// each id in `Envelope::SessionEvent(SessionEvent::Cleared(_))`.
+    pub fn session_cleared_tx(&self) -> &broadcast::Sender<SessionId> {
+        &self.session_cleared_tx
     }
 
     /// RPC-433: the in-memory live session map as a snapshot
@@ -774,6 +799,7 @@ impl SessionManager {
             isolation: None,
             chunks_tx: self.chunks_tx.clone(),
             status_changes_tx: self.status_changes_tx.clone(),
+            session_cleared_tx: self.session_cleared_tx.clone(),
         };
 
         // WT-012: shared provider-manager funnel (registry selection vs
@@ -974,6 +1000,7 @@ impl SessionManager {
             isolation: resume_isolation.context.clone(),
             chunks_tx: self.chunks_tx.clone(),
             status_changes_tx: self.status_changes_tx.clone(),
+            session_cleared_tx: self.session_cleared_tx.clone(),
         };
 
         // WT-012: shared provider-manager funnel (registry selection vs
@@ -1164,6 +1191,7 @@ impl SessionManager {
             isolation: Some(isolation),
             chunks_tx: self.chunks_tx.clone(),
             status_changes_tx: self.status_changes_tx.clone(),
+            session_cleared_tx: self.session_cleared_tx.clone(),
         };
 
         // WT-012: shared provider-manager funnel — single source of truth in
@@ -1396,6 +1424,33 @@ impl SessionManager {
             );
             Err(format!("Session not found: {}", id))
         }
+    }
+
+    /// RPC-436: clear a session's history through the manager, firing the
+    /// session-cleared broadcast.
+    ///
+    /// Liveness gate (rule R2 of session-events-daemon-cleared-broadcast):
+    /// the event fires ONLY when the clear actually succeeded — an unknown
+    /// id returns the pre-existing `Err("Session not found: …")` contract
+    /// and emits nothing, mirroring `destroy_session`'s removed-broadcast
+    /// idempotency (rule R2 of session-events-daemon-fanout.feature).
+    ///
+    /// The clear itself runs through `BackgroundSession::clear_history`
+    /// (the documented single source of truth for clear, TUI-065), which
+    /// fires the event on this manager's `session_cleared_tx` — the sender
+    /// is injected at session creation (RPC-041 idiom, like `chunks_tx`),
+    /// so a session created by THIS manager always fires on this manager's
+    /// broadcast.
+    /// `block_in_place` mirrors the RPC-073 contract for the handle path
+    /// (`clear_history` takes `self.inner.blocking_lock()`).
+    pub fn clear_session_history(&self, id: &str) -> Result<(), String> {
+        let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
+
+        tracing::debug!(session_id = %uuid, "clear_session_history: starting");
+
+        let session = self.get_session(id)?;
+        tokio::task::block_in_place(|| session.clear_history());
+        Ok(())
     }
 
     // === ChainOfCommand delegation methods (WATCH-002) ===

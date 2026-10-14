@@ -115,6 +115,11 @@ impl App {
                 // — idempotent tab close + board/WU cleanup (R3).
                 self.handle_session_removed(session.clone());
             }
+            Action::SessionCleared(session) => {
+                // RPC-437: daemon-side session clear (any client) —
+                // idempotent per-session local reset (R3).
+                self.handle_session_cleared(session.clone());
+            }
             Action::SessionCreationDeclined => {
                 // PROV-101 FIX 1: create_session declined (no default model).
                 // Surface it explicitly instead of swallowing an empty id.

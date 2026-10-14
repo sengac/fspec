@@ -102,34 +102,12 @@ impl App {
         }
     }
 
-    /// PROV-120: restore the TS-parity "first-available" startup model before
-    /// the lazy `create_session` (the AgentView-mount analogue of TS
-    /// `initializeModels`). Reads the persisted `tui.lastUsedModel` (legacy
-    /// `default-model.json` back-compat), lists providers, resolves
-    /// restore-persisted → first-available, and commits the result via
-    /// `set_default_model`. Mirroring TS, the commit is UNCONDITIONAL
-    /// (idempotent; corrects a stale value) and there is NO hardcoded
-    /// anthropic/claude fallback — a `None` resolution leaves the default
-    /// unset so the PROV-101 decline path is preserved. Best-effort: any
-    /// failure is surfaced to tracing and never blocks bootstrap.
-    async fn initialize_startup_model(&mut self) {
-        let persisted =
-            codelet_sessions::last_used_model_persistence::load_persisted_model_string();
-        let sections = match self.backend.list_providers().await {
-            Ok(sections) => sections,
-            Err(err) => {
-                debug!("bootstrap: backend.list_providers() failed: {err}");
-                return;
-            }
-        };
-        if let Some(resolved) = codelet_sessions::startup_model_resolution::resolve_startup_model(
-            &sections,
-            persisted.as_deref(),
-        ) {
-            if let Err(err) = self.backend.set_default_model(resolved.model_string).await {
-                debug!("bootstrap: backend.set_default_model() failed: {err}");
-            }
-        }
+    /// PROV-120: restore the TS-parity "first-available" startup model
+    /// before the lazy `create_session` (the AgentView-mount analogue of
+    /// TS `initializeModels`). Body in app/bootstrap_model.rs
+    /// (300-LoC ceiling).
+    pub(crate) async fn initialize_startup_model(&mut self) {
+        super::bootstrap_model::initialize_startup_model(self).await
     }
 
     /// TUI-093: restore the persisted default thinking level to the active
@@ -308,5 +286,11 @@ impl App {
         // daemon-side session destruction (any client). Body in
         // app/bootstrap_session_removed.rs (300-LoC ceiling).
         self.spawn_session_removed_subscriber();
+
+        // (i) RPC-437: session_cleared_rx → Action::SessionCleared —
+        // daemon-side session clear (any client, including the
+        // NAPI/Telegram entry point; the session stays LIVE). Body in
+        // app/bootstrap_session_cleared.rs (300-LoC ceiling).
+        self.spawn_session_cleared_subscriber();
     }
 }

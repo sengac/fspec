@@ -51,7 +51,7 @@ Feature: Live checkpoint counts in the board header
     Given an App constructed with a backend whose git-state push channel is live, bootstrapped so the BoardStore holds CheckpointCounts { manual: 0, auto: 0 }
     When a GitState frame with checkpoint_counts { manual: 1, auto: 0 } is pushed onto the channel
     Then app.board_store().checkpoint_counts() returns CheckpointCounts { manual: 1, auto: 0 }
-    And bootstrap spawns exactly 7 subscriber tasks with the git-state stream replacing the checkpoint-changed stream (no separate checkpoint-changed subscriber remains)
+    And bootstrap spawns exactly 9 subscriber tasks with the git-state stream replacing the checkpoint-changed stream (no separate checkpoint-changed subscriber remains; RPC-434 adds session_removed; RPC-437 adds session_cleared)
 
 
   Scenario: Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore

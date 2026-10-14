@@ -742,6 +742,22 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         rx
     }
 
+    /// RPC-436: subscribe to session-cleared events. Each event carries
+    /// the cleared session's [`SessionId`] — a connected client already
+    /// holds all tab state for that session and needs nothing else to
+    /// reset its scrollback for it (mirrors `session_removed_rx`). The
+    /// default returns a degenerate receiver whose sender has been
+    /// dropped (subscribers observe `RecvError::Closed`) so handles that
+    /// do not push session-cleared events degrade gracefully. The real
+    /// `SessionManager` handle overrides this to forward
+    /// `session_cleared_tx().subscribe()`; `StubSessionManagerHandle`
+    /// overrides it so multi-client fan-out tests can drive clears.
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (tx, rx) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        drop(tx);
+        rx
+    }
+
     /// RPC-433: the in-memory live session map as a snapshot
     /// (`Vec<SessionInfo>`), WITHOUT the persisted-manifest merge and
     /// WITHOUT project filtering. This is the connect-time replay source
@@ -1018,6 +1034,10 @@ pub struct StubSessionManagerHandle {
     /// session actually existed (mirrors the real `SessionManager`).
     session_created_tx: broadcast::Sender<SessionInfo>,
     session_removed_tx: broadcast::Sender<SessionId>,
+    /// RPC-436: session-cleared event sender. `clear_history` fires
+    /// `session_cleared_tx` only when the session exists in `sessions`
+    /// (mirrors the `destroy_session` liveness gate).
+    session_cleared_tx: broadcast::Sender<SessionId>,
     sessions: Arc<Mutex<Vec<SessionRecord>>>,
     next_id: AtomicU64,
     next_iso_id: AtomicU64,
@@ -1171,12 +1191,15 @@ impl StubSessionManagerHandle {
         // status changes; both are low-rate control-plane events.
         let (session_created_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
         let (session_removed_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        // RPC-436: cleared events share the same low-rate capacity.
+        let (session_cleared_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
         Self {
             chunks_tx,
             logs_tx,
             status_changes_tx,
             session_created_tx,
             session_removed_tx,
+            session_cleared_tx,
             sessions: Arc::new(Mutex::new(Vec::new())),
             next_id: AtomicU64::new(1),
             next_iso_id: AtomicU64::new(1),
@@ -1838,6 +1861,20 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             session_id.clone(),
             StreamChunk::session_state_change(SessionState::Cleared),
         ));
+        // RPC-436: fire the session-cleared event ONLY when the session
+        // actually exists (mirrors the `destroy_session` liveness gate) —
+        // so multi-client fan-out tests observe exactly one Cleared event
+        // per live clear, and an unknown-id clear emits nothing.
+        let existed = {
+            let mut found = false;
+            if let Ok(sessions) = self.sessions.lock() {
+                found = sessions.iter().any(|r| &r.id == session_id);
+            }
+            found
+        };
+        if existed {
+            let _ = self.session_cleared_tx.send(session_id.clone());
+        }
         Ok(())
     }
 
@@ -2200,6 +2237,11 @@ impl SessionManagerHandle for StubSessionManagerHandle {
     /// RPC-433: subscribe to the stub's session-removed events.
     fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
         self.session_removed_tx.subscribe()
+    }
+
+    /// RPC-436: subscribe to the stub's session-cleared events.
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        self.session_cleared_tx.subscribe()
     }
 
     fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {

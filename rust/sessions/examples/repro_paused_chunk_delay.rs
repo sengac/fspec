@@ -40,6 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         codelet_rpc_types::SessionId,
         codelet_rpc_types::SessionStatus,
     )>(1024);
+    // RPC-436: manager-owned session-cleared lifecycle event channel —
+    // this repro never clears the session, so a local unused sender is fine.
+    let (session_cleared_tx, _session_cleared_rx) =
+        broadcast::channel::<codelet_rpc_types::SessionId>(1024);
     let (input_tx, _input_rx) = mpsc::channel(8);
 
     let id = Uuid::new_v4();
@@ -56,6 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None,
         chunks_tx,
         status_tx,
+        session_cleared_tx,
     ));
 
     // Watchers.

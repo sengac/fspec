@@ -235,6 +235,21 @@ async fn handle_connection(
         Arc::clone(&stats.lag_session_events),
     ));
 
+    // RPC-436: per-connection fanout for the session-cleared lifecycle
+    // event (rule R2 of session-events-cleared-fan-out.feature). Mirrors
+    // `session_created_fanout` / `session_removed_fanout`: drains
+    // `SharedFspecService::session_cleared_rx` and wraps each id in
+    // `Envelope::SessionEvent(SessionEvent::Cleared(_))`, fanning out to
+    // EVERY connected client (no per-client filtering) and sharing the
+    // `lag_session_events` counter with the created/removed fanouts.
+    let session_cleared_rx = service.session_cleared_rx();
+    let envelope_out_tx_for_session_cleared = envelope_out_tx.clone();
+    let session_cleared_fanout = tokio::spawn(session_cleared_fanout(
+        session_cleared_rx,
+        envelope_out_tx_for_session_cleared,
+        Arc::clone(&stats.lag_session_events),
+    ));
+
     let transport = ChannelTransport::new(rpc_bytes_rx, server_out_tx);
     let service_impl = FspecServiceImpl::new(Arc::clone(&service));
     let server = BaseChannel::with_defaults(transport);
@@ -269,12 +284,14 @@ async fn handle_connection(
     status_fanout.abort();
     session_created_fanout.abort();
     session_removed_fanout.abort();
+    session_cleared_fanout.abort();
     let _ = watcher_fanout.await;
     let _ = chunks_fanout.await;
     let _ = logs_fanout.await;
     let _ = status_fanout.await;
     let _ = session_created_fanout.await;
     let _ = session_removed_fanout.await;
+    let _ = session_cleared_fanout.await;
     result
 }
 
@@ -453,6 +470,41 @@ async fn session_removed_fanout(
             Err(RecvError::Lagged(skipped)) => {
                 lag_session_events.fetch_add(skipped, Ordering::SeqCst);
                 tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-removed fan-out lagged; some events dropped");
+                continue;
+            }
+            Err(RecvError::Closed) => break,
+        }
+    }
+}
+
+/// RPC-436: drain session-cleared events and forward as
+/// `Envelope::SessionEvent(Cleared(id))` to every connected client
+/// (rule R2 of session-events-cleared-fan-out.feature). Mirrors
+/// `session_removed_fanout`; a missed clear is healed by the client's
+/// reactive reset already riding the `SessionStateChange { Cleared }`
+/// chunks stream (the wire event is the cross-client lifecycle signal,
+/// not the local UI-reset source of truth).
+async fn session_cleared_fanout(
+    mut cleared_rx: tokio::sync::broadcast::Receiver<SessionId>,
+    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
+    lag_session_events: Arc<std::sync::atomic::AtomicU64>,
+) {
+    use tokio::sync::broadcast::error::RecvError;
+    loop {
+        match cleared_rx.recv().await {
+            Ok(session_id) => {
+                if envelope_out_tx
+                    .send(Envelope::SessionEvent(
+                        codelet_rpc_types::SessionEvent::Cleared(session_id),
+                    ))
+                    .is_err()
+                {
+                    break;
+                }
+            }
+            Err(RecvError::Lagged(skipped)) => {
+                lag_session_events.fetch_add(skipped, Ordering::SeqCst);
+                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws session-cleared fan-out lagged; some events dropped");
                 continue;
             }
             Err(RecvError::Closed) => break,

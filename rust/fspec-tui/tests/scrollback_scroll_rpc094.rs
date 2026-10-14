@@ -683,9 +683,18 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     variants + doc stanzas — the reconnect re-attach / bootstrap
     //     restore bus tokens) — the assertion tracks the measured file
     //     (1454).
+    //   - RPC-434 netted +4 measured lines: the `SessionRemoved` variant +
+    //     its 6-line doc stanza landed, and the TUI-113 `RestoreSession`
+    //     variant + doc block was reworded into the BUG-206
+    //     `ReattachSession` doc (one variant net removed) — the
+    //     assertion tracks the measured file (1458).
+    //   - RPC-437 added 11 lines (the `SessionCleared` variant + its
+    //     10-line doc stanza — the remote session-clear bus token,
+    //     appended after `SessionRemoved`) — the assertion tracks the
+    //     measured file (1469).
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1454,
-        "components/mod.rs has {n_components} lines — measured ceiling 1454 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant + MENU-009 MenuZoneCActivate variant + TUI-112 2 dialog hit-test module lines + TUI-113 reattach/restore action variants)"
+        n_components <= 1469,
+        "components/mod.rs has {n_components} lines — measured ceiling 1469 (802 baseline + itemized card deltas + documented reconciliation drift through the 0.10.7 release + BUG-182 git-state action variants + MUX-009 OpenMuxConfigDialog + BOARD-023 board-keybinding-dialog action variants + MENU-001 `pub mod menu_bar;` module line + MENU-002 8 menu ring action variants + MENU-004 MenuFocusPane variant + BUG-196 MenuDismissBar variant + MENU-009 MenuZoneCActivate variant + TUI-112 2 dialog hit-test module lines + TUI-113 reattach/restore action variants + RPC-434 SessionRemoved action variant + RPC-437 SessionCleared action variant)"
     );
 }

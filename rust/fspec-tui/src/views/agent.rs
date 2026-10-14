@@ -58,6 +58,7 @@ pub mod pause_prompt;
 pub mod popups;
 pub mod reflow_cache;
 pub mod rendered_chunk;
+mod reset_scrollback; // RPC-437: scrollback-reset methods (300-LoC ceiling)
 pub mod resume_session_view;
 pub mod resume_session_view_mouse;
 pub mod role_banner;
@@ -237,15 +238,6 @@ impl AgentView {
         if let Some(ctx) = store.current_session_context_mut() {
             ctx.push_line(line);
         }
-    }
-
-    pub fn reset_scrollback(&mut self, store: &mut AgentViewStore) {
-        if let Some(ctx) = store.current_session_context_mut() {
-            ctx.reset_scrollback();
-        }
-        self.input.reset();
-        self.slash_popup = None;
-        self.file_popup = None;
     }
 
     pub(crate) fn emit(&self, action: Action) {

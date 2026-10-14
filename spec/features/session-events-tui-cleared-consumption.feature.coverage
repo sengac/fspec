@@ -1,0 +1,332 @@
+{
+  "scenarios": [
+    {
+      "name": "A session cleared from another client resets its local tab live (no poll)",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+          "lines": "114-189",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A clear event for a background session resets only that session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+          "lines": "191-262",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear events for a session without an open tab are a no-op",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+          "lines": "264-305",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Consecutive clear events for the same live session are idempotent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+          "lines": "307-357",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bootstrap spawns the session-cleared subscriber and degenerate defaults leak nothing",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+          "lines": "359-391",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/bootstrap_session_cleared.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/app/bootstrap_session_cleared.rs"
+    ],
+    "totalLinesCovered": 503
+  }
+}

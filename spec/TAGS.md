@@ -357,6 +357,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
+| `@clear` | Session history clear (/clear) scenarios and the SessionEvent::Cleared lifecycle event |
 | `@clipboard` | Clipboard integration (OSC 52 escape-sequence clipboard writes) |
 | `@cmpct-049` | Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO) |
 | `@code-review` | Code review and quality analysis features |
@@ -725,6 +726,8 @@ Tags tracking development status of features.
 | `@rpc-377` | Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer |
 | `@rpc-408` | Work unit identifier tag for RPC-408 — send_hitl_response wire-to-internal answer mapping fix |
 | `@rpc-419` | Work unit identifier tag for RPC-419 — context-fill badge oscillation fix: local recompute switched from the compaction cost proxy (input − 0.9·cache_read, round) to the backend physical-occupancy formula trunc((input+output+reasoning)/threshold*100) |
+| `@rpc-436` | Work unit RPC-436 — Session cleared event fan-out (SessionEvent::Cleared): daemon-side cleared broadcast (liveness-gated) + per-connection WS fan-out completing the Created/Cleared/Removed session lifecycle coverage over the RPC-433 wire stream |
+| `@rpc-437` | Work unit RPC-437 — TUI consumes the SessionEvent::Cleared lifecycle event: FspecBackend::session_cleared_rx on both transports (embedded zero-cost handle read + WS splitter over the RPC-433 wire stream), bootstrap 9th subscriber task, Action::SessionCleared, and the idempotent App::handle_session_cleared fold that resets a cleared session's local scrollback + input + RPC-100 chrome (DRY with the local /clear reset step) |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -830,4 +833,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-10T23:52:00.596Z_
+_Last updated: 2026-10-12T04:40:52.967Z_

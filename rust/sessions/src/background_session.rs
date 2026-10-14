@@ -343,6 +343,18 @@ pub struct BackgroundSession {
         codelet_rpc_types::SessionStatus,
     )>,
 
+    /// RPC-436: Mandatory broadcast sender used by `clear_history` to fire
+    /// the session-cleared lifecycle event (`SessionEvent::Cleared`) on the
+    /// owning `SessionManager`'s `session_cleared_tx`, so every connected
+    /// client (embedded + WS) observes the clear via the RPC-433
+    /// session-events wire stream. Firing inside `clear_history` (the
+    /// documented single source of truth for clear, TUI-065) means every
+    /// clear entry point (RPC handle, NAPI `session_clear_history`,
+    /// agent-loop bridge control "clear") emits exactly ONE event.
+    /// Populated by `SessionManager` via constructor injection (RPC-041
+    /// idiom, like `chunks_tx` / `status_changes_tx`).
+    session_cleared_tx: broadcast::Sender<codelet_rpc_types::SessionId>,
+
     /// Session role - simple string overlay for system prompt (AMGR-008: simplified from SupervisorRole struct)
     role: RwLock<Option<String>>,
 
@@ -505,6 +517,7 @@ impl BackgroundSession {
             codelet_rpc_types::SessionId,
             codelet_rpc_types::SessionStatus,
         )>,
+        session_cleared_tx: broadcast::Sender<codelet_rpc_types::SessionId>,
     ) -> Self {
         // Create supervisor input channel (WATCH-006)
         let (incoming_message_tx, incoming_message_rx) = mpsc::channel::<IncomingMessage>(16);
@@ -542,6 +555,7 @@ impl BackgroundSession {
             supervisor_broadcast: broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY).0,
             chunks_tx,
             status_changes_tx,
+            session_cleared_tx,
             role: RwLock::new(None),
             incoming_message_tx,
             incoming_message_rx: Mutex::new(incoming_message_rx),
@@ -1753,6 +1767,22 @@ impl BackgroundSession {
 
         // TUI-066: Emit chunk so React updates state as side effect
         self.handle_output(StreamChunk::session_state_change(SessionState::Cleared));
+
+        // RPC-436: Fire the session-cleared lifecycle event on the owning
+        // manager's broadcast so every connected client (embedded + WS)
+        // observes `SessionEvent::Cleared` — the wire-side sibling of the
+        // Created/Removed events (RPC-433). Firing here (inside the
+        // documented single source of truth for clear) means every clear
+        // entry point (RPC handle, NAPI `session_clear_history`,
+        // agent-loop bridge control "clear") emits exactly ONE event
+        // without touching each caller. The sender is injected at session
+        // creation by the manager that owns the session (RPC-041 idiom,
+        // like `chunks_tx`), so a session created by the global singleton
+        // fires on the singleton's broadcast — the same manager those
+        // sessions live in (RPC-386 contract).
+        let _ = self
+            .session_cleared_tx
+            .send(codelet_rpc_types::SessionId::from(self.id.to_string()));
     }
 
     /// CMPCT-046: lock-free count of COMPLETED turns (Done chunks in the

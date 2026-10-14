@@ -258,6 +258,16 @@ pub struct MockBackend {
     ///
     /// RPC-415: `Mutex<Option>` for the disconnect/reconnect swap.
     session_removed_tx: Mutex<Option<broadcast::Sender<SessionId>>>,
+    /// RPC-437: push-driven session-cleared broadcast Sender. Tests use
+    /// `push_session_cleared` to drive synthetic session-clear events
+    /// (a session cleared from ANOTHER client, or the NAPI/Telegram
+    /// entry point) without a real SessionManager. Mirrors
+    /// `session_removed_tx` (RPC-434) exactly — the payload is the
+    /// cleared session's SessionId. Unlike removal, the session stays
+    /// LIVE (clear is repeatable).
+    ///
+    /// RPC-415: `Mutex<Option>` for the disconnect/reconnect swap.
+    session_cleared_tx: Mutex<Option<broadcast::Sender<SessionId>>>,
     /// RPC-434: scripted connect-time open-session snapshot — the mock
     /// equivalent of the server-pushed `Envelope::SessionSnapshot`
     /// frame (WS) / `SharedFspecService::live_sessions_snapshot`
@@ -783,6 +793,7 @@ impl Default for MockBackend {
         let (status_changes_tx, _) = broadcast::channel(64);
         let (session_created_tx, _) = broadcast::channel(64);
         let (session_removed_tx, _) = broadcast::channel(64);
+        let (session_cleared_tx, _) = broadcast::channel(64);
         let (checkpoints_progress_tx, _) = broadcast::channel(64);
         let (git_state_changed_tx, _) = broadcast::channel(64);
         Self {
@@ -795,6 +806,7 @@ impl Default for MockBackend {
             status_changes_tx: Mutex::new(Some(status_changes_tx)),
             session_created_tx: Mutex::new(Some(session_created_tx)),
             session_removed_tx: Mutex::new(Some(session_removed_tx)),
+            session_cleared_tx: Mutex::new(Some(session_cleared_tx)),
             scripted_session_snapshot: Mutex::new(Vec::new()),
             checkpoints_progress_tx: Mutex::new(Some(checkpoints_progress_tx)),
             git_state_changed_tx: Mutex::new(Some(git_state_changed_tx)),
@@ -1164,6 +1176,23 @@ impl MockBackend {
         }
     }
 
+    /// RPC-437: push a session-cleared broadcast frame so the new
+    /// session-cleared subscriber task can be exercised (a session
+    /// cleared from ANOTHER client) without a real SessionManager.
+    /// Mirrors `push_session_removed` — the payload is the cleared
+    /// session's SessionId (the session stays LIVE: clear is
+    /// repeatable, unlike removal).
+    pub fn push_session_cleared(&self, id: SessionId) {
+        if let Some(tx) = self
+            .session_cleared_tx
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+        {
+            let _ = tx.send(id);
+        }
+    }
+
     /// RPC-434: seed the connect-time open-session snapshot that
     /// `session_snapshot()` will hand to the App bootstrap. The mock's
     /// equivalent of the server-pushed `Envelope::SessionSnapshot` frame
@@ -1230,6 +1259,7 @@ impl MockBackend {
         *self.status_changes_tx.lock().expect("MockBackend mutex") = None;
         *self.session_created_tx.lock().expect("MockBackend mutex") = None;
         *self.session_removed_tx.lock().expect("MockBackend mutex") = None;
+        *self.session_cleared_tx.lock().expect("MockBackend mutex") = None;
         *self
             .checkpoints_progress_tx
             .lock()
@@ -1252,6 +1282,7 @@ impl MockBackend {
         let (status_changes_tx, _) = broadcast::channel(64);
         let (session_created_tx, _) = broadcast::channel(64);
         let (session_removed_tx, _) = broadcast::channel(64);
+        let (session_cleared_tx, _) = broadcast::channel(64);
         let (checkpoints_progress_tx, _) = broadcast::channel(64);
         let (git_state_changed_tx, _) = broadcast::channel(64);
         *self.work_units_tx.lock().expect("MockBackend mutex") = Some(work_units_tx);
@@ -1260,6 +1291,7 @@ impl MockBackend {
         *self.status_changes_tx.lock().expect("MockBackend mutex") = Some(status_changes_tx);
         *self.session_created_tx.lock().expect("MockBackend mutex") = Some(session_created_tx);
         *self.session_removed_tx.lock().expect("MockBackend mutex") = Some(session_removed_tx);
+        *self.session_cleared_tx.lock().expect("MockBackend mutex") = Some(session_cleared_tx);
         *self
             .checkpoints_progress_tx
             .lock()
@@ -2910,6 +2942,21 @@ impl FspecBackend for MockBackend {
     /// session's `SessionId`).
     fn session_removed_rx(&self) -> broadcast::Receiver<SessionId> {
         let guard = self.session_removed_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
+    }
+
+    /// RPC-437: subscribe to the push-driven session-cleared channel
+    /// (mirrors `session_removed_rx` — the payload is the cleared
+    /// session's `SessionId`; the session stays LIVE).
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        let guard = self.session_cleared_tx.lock().expect("MockBackend mutex");
         match guard.as_ref() {
             Some(tx) => tx.subscribe(),
             None => {

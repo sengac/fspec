@@ -1014,6 +1014,24 @@ pub trait FspecBackend: Send + Sync {
         rx
     }
 
+    /// RPC-437: subscribe to session-cleared events — a session's
+    /// history was cleared on the daemon (from this client or ANY other
+    /// connected machine, including the NAPI/Telegram clear entry
+    /// point). The payload is the cleared session's `SessionId` (the
+    /// session stays LIVE — unlike `Removed`, nothing is destroyed).
+    /// The embedded backend forwards the SessionManager's
+    /// `session_cleared_tx()`; the WebSocket backend splits the RPC-433
+    /// `SessionEvent` wire stream onto this per-variant receiver. The
+    /// default returns a closed receiver so transports that do not yet
+    /// wire the channel compile unchanged (RPC-037 / PROV-109
+    /// convention) — the App subscriber observes `RecvError::Closed`
+    /// and exits (respawned on Reconnected per R5).
+    fn session_cleared_rx(&self) -> broadcast::Receiver<SessionId> {
+        let (tx, rx) = broadcast::channel(1);
+        drop(tx);
+        rx
+    }
+
     /// RPC-434: the connect-time open-session snapshot — the
     /// in-memory live session set the daemon holds at connect time
     /// (WS: the server-pushed `Envelope::SessionSnapshot` frame;

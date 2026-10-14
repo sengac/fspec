@@ -148,11 +148,11 @@ async fn app_bootstrap_subscriber_folds_pushed_checkpoint_counts_into_the_board_
         CheckpointCounts { manual: 1, auto: 0 }
     );
 
-    // @step And bootstrap spawns exactly 8 subscriber tasks with the git-state stream replacing the checkpoint-changed stream (no separate checkpoint-changed subscriber remains; RPC-434 adds session_removed)
+    // @step And bootstrap spawns exactly 9 subscriber tasks with the git-state stream replacing the checkpoint-changed stream (no separate checkpoint-changed subscriber remains; RPC-434 adds session_removed; RPC-437 adds session_cleared)
     assert_eq!(
         app.subscriber_task_count(),
-        8,
-        "bootstrap must spawn the git-state subscriber (replacing BUG-181's checkpoint-changed stream) + the RPC-434 session-removed subscriber"
+        9,
+        "bootstrap must spawn the git-state subscriber (replacing BUG-181's checkpoint-changed stream) + the RPC-434 session-removed subscriber + the RPC-437 session-cleared subscriber"
     );
 }
 

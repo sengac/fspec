@@ -61,7 +61,9 @@ pub struct BoardStore {
     /// column until move_selection / scroll_focused_column / End
     /// advances it.
     pub(super) scroll_offsets: HashMap<String, usize>,
-    session_attachments: HashMap<String, SessionId>,
+    /// RPC-434: the inverse lookup `session_attachments_for` lives in
+    /// `board_viewport.rs` (300-LoC ceiling; `pub(super)` grants access).
+    pub(super) session_attachments: HashMap<String, SessionId>,
     last_changed_id: Option<String>,
     /// RPC-015: aggregate manual + auto checkpoint counts populated by
     /// `App::bootstrap` via `Action::CheckpointCountsLoaded`; the
@@ -246,19 +248,6 @@ impl BoardStore {
     /// Detach any session currently attached to `work_unit_id`.
     pub fn detach_session(&mut self, work_unit_id: &str) {
         self.session_attachments.remove(work_unit_id);
-    }
-
-    /// RPC-434: every `(work-unit id, attached session)` pair whose
-    /// session is `session` — the inverse lookup `handle_session_removed`
-    /// needs to release ALL of the removed session's board attachments
-    /// (a session may be attached to several units; `attach_session`'s
-    /// migration rule usually keeps it to one).
-    pub fn session_attachments_for(&self, session: &SessionId) -> Vec<(&str, &SessionId)> {
-        self.session_attachments
-            .iter()
-            .filter(|(_, attached)| **attached == *session)
-            .map(|(wu, sid)| (wu.as_str(), sid))
-            .collect()
     }
 
     /// Mark the most-recently-changed work unit id (drives the `⏩`
