@@ -1,0 +1,58 @@
+{
+  "scenarios": [
+    {
+      "name": "Live gpt-6-astra agent conversation with all production tools produces a response",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_gpt6_astra_live_test.rs",
+          "lines": "262-363",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+              "lines": [
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/codex_gpt6_astra_live_test.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs"
+    ],
+    "totalLinesCovered": 128
+  }
+}

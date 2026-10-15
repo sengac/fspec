@@ -2490,6 +2490,10 @@
           "description": "Work unit BUG-204 — agent-bar 'Close Agent' button: the button ALWAYS mounts the 'Exit Session?' ExitConfirmationDialog (RPC-098) instead of running the AgentEscPressed cascade (superseding BUG-199 R2); the interrupt/draft-clear branches belong to the physical Esc key only"
         },
         {
+          "name": "@bug-208",
+          "description": "Work unit BUG-208 — Codex models silently terminate: rig swallows SSE {\"type\":\"error\"} events and the AstGrepRefactor tool schema is rejected. Fix: patched rig-core parses SSE error events into CompletionError (mirrors codex-api sse) + schema sanitizer (properties:{}/items defaults) + strict:false in ResponsesToolDefinition, mirroring codex tool_definition_to_responses_api_tool."
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -3254,7 +3258,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-12T04:40:52.967Z",
+    "lastUpdated": "2026-10-15T10:46:15.916Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

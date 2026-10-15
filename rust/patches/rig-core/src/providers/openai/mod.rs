@@ -167,6 +167,34 @@ fn sanitize_node(schema: &mut serde_json::Value) {
             }
         }
 
+        // BUG-208 (live-discovered, Decision tool): the backend also rejects property
+        // schemas that specify no type at all ("schema must specify a type"). Mirror
+        // codex-rs tools/src/json_schema.rs sanitize_json_schema: infer the type from
+        // structural hints; when there are no hints (e.g. description-only nodes),
+        // reduce the node to the accept-all schema `{}` (codex: map.clear()).
+        // Skipped for $ref/composition nodes, which codex also leaves alone.
+        if !obj.contains_key("type")
+            && !obj.contains_key("$ref")
+            && !obj.contains_key("anyOf")
+            && !obj.contains_key("oneOf")
+        {
+            let has = |keys: [&str; 3]| keys.iter().any(|k| obj.contains_key(*k));
+            if has(["properties", "required", "additionalProperties"]) {
+                obj.insert("type".to_string(), Value::String("object".to_string()));
+            } else if obj.contains_key("items") || obj.contains_key("prefixItems") {
+                obj.insert("type".to_string(), Value::String("array".to_string()));
+            } else if obj.contains_key("enum") || obj.contains_key("format") {
+                obj.insert("type".to_string(), Value::String("string".to_string()));
+            } else if ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"]
+                .iter()
+                .any(|k| obj.contains_key(*k))
+            {
+                obj.insert("type".to_string(), Value::String("number".to_string()));
+            } else {
+                obj.clear();
+            }
+        }
+
         let is_object_schema = obj.get("type") == Some(&Value::String("object".to_string()))
             || obj.contains_key("properties");
 
@@ -191,6 +219,17 @@ fn sanitize_node(schema: &mut serde_json::Value) {
                 sanitize_node(def_schema);
             }
         }
+
+        // BUG-208: the Codex backend validates every tool schema and rejects the WHOLE
+        // request when an object-typed schema has no "properties" key (it answers with a
+        // single SSE {"type":"error",...} event over HTTP 200, code
+        // `invalid_function_parameters`: "object schema must define properties").
+        // schemars 0.8 emits exactly that shape for `Option<HashMap<String, T>>`:
+        // {"type":["object","null"],"additionalProperties":{...}}.
+        // Mirrors codex-rs tools/src/json_schema.rs ensure_default_children_for_schema_types.
+        // Done AFTER the `required` block above so synthesized empty children do not add
+        // noise (`required: []`) to schemas that never declared properties.
+        ensure_default_children_for_schema_types(obj);
 
         if let Some(properties) = obj.get_mut("properties")
             && let Value::Object(props) = properties
@@ -235,6 +274,50 @@ fn sanitize_node(schema: &mut serde_json::Value) {
                     sanitize_node(variant);
                 }
             }
+        }
+    }
+}
+
+/// Insert default child keys required by strict schema validators (BUG-208).
+///
+/// The Codex backend (chatgpt.com/backend-api/codex/responses) validates every tool
+/// input schema and rejects the whole request when an object-typed schema lacks a
+/// `"properties"` key, or an array-typed schema lacks `"items"`. Type may be a string
+/// (`"object"`) or a type array (`["object","null"]`, as schemars 0.8 emits for
+/// `Option<T>`), so both forms are checked.
+///
+/// Mirrors codex-rs `tools/src/json_schema.rs::ensure_default_children_for_schema_types`.
+fn ensure_default_children_for_schema_types(obj: &mut serde_json::Map<String, serde_json::Value>) {
+    use serde_json::Value;
+
+    let (has_object, has_array) = match obj.get("type") {
+        Some(Value::String(t)) => (t == "object", t == "array"),
+        Some(Value::Array(types)) => {
+            let has = |wanted: &str| {
+                types
+                    .iter()
+                    .any(|t| matches!(t, Value::String(t) if t == wanted))
+            };
+            (has("object"), has("array"))
+        }
+        _ => (false, false),
+    };
+
+    if has_object && !obj.contains_key("properties") {
+        obj.insert("properties".to_string(), Value::Object(serde_json::Map::new()));
+    }
+
+    if has_array && !obj.contains_key("items") {
+        obj.insert("items".to_string(), serde_json::json!({"type": "string"}));
+    }
+
+    // The backend's strict-schema validator rejects property-count bounds
+    // (schemars emits these for bounded HashMaps, e.g. the Decision tool's
+    // `questions` map): "keyword \"minProperties\" is not supported for strict
+    // schemas" (code: invalid_function_parameters).
+    if has_object {
+        for keyword in ["minProperties", "maxProperties"] {
+            obj.remove(keyword);
         }
     }
 }

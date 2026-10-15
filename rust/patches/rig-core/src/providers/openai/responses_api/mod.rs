@@ -539,7 +539,14 @@ impl From<completion::ToolDefinition> for ResponsesToolDefinition {
             parameters,
             description,
             kind: "function".to_string(),
-            strict: true,
+            // BUG-208: register tools NON-strict, exactly like the Codex client
+            // (codex-rs tools/src/responses_api.rs tool_definition_to_responses_api_tool
+            // sets strict:false). With strict:true the backend's strict-schema
+            // validator rejects shapes the Codex backend otherwise accepts — even the
+            // accept-all `{}` schema that codex itself sends ("schema must specify a
+            // type", code: invalid_function_parameters). The sanitizer above still
+            // runs, so the schema stays well-formed for strict and non-strict alike.
+            strict: false,
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-15T06:23:34.864Z",
+    "lastUpdated": "2026-10-15T10:47:54.794Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 207,
+    "BUG": 208,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1771,7 +1771,8 @@
       "RPC-434",
       "RPC-436",
       "RPC-437",
-      "BUG-207"
+      "BUG-207",
+      "BUG-208"
     ],
     "blocked": [
       "QUERY-001",
@@ -238617,6 +238618,150 @@
       ],
       "nextExampleId": 4,
       "estimate": 5
+    },
+    "BUG-208": {
+      "id": "BUG-208",
+      "title": "Codex models silently terminate: rig swallows SSE error events and AstGrepRefactor tool schema is rejected",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-15T08:17:56.498Z",
+      "updatedAt": "2026-10-15T10:47:54.794Z",
+      "description": "Conversations with Codex-backend models (gpt-6-astra) end silently with no output and no error. Root cause (confirmed via live test rust/providers/tests/codex_gpt6_astra_live_test.rs + raw SSE capture): the Codex backend rejects the whole request because the AstGrepRefactor tool schema is invalid for it — SSE event {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for function 'AstGrepRefactor': At schema path /properties/transforms/type/0, object schema must define properties\",\"code\":\"invalid_function_parameters\"}}. schemars 0.8 emits for Option<HashMap<String,Transform>>: {\"type\":[\"object\",\"null\"],\"additionalProperties\":{...}} — an object-typed schema without properties, which the backend's strict validator rejects. rig's patched responses_api streaming (rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs) cannot deserialize the {\"type\":\"error\"} SSE event (untagged StreamingCompletionChunk match fails -> debug! + continue), so the stream completes with zero chunks -> empty FinalResponse -> silent termination. Codex's own client does the opposite: codex-api/src/sse/responses.rs:349 matches \"error\" => and turns it into an ApiError surfaced to the user (stream loop at :549/:576 sends Err(error) on stream close), and codex-rs/tools/src/json_schema.rs sanitize_json_schema + ensure_default_children_for_schema_types (:187) inserts properties:{} for every object-typed schema missing it — exactly the sanitizer we lack. Fix has two parts: (1) rig patch: parse {\"type\":\"error\",...} SSE events and yield a CompletionError instead of silently skipping (mirrors codex ErrorEvent handling); (2) tool-schema sanitizer before sending to Codex: add properties:{} to object-typed schemas lacking it (mirrors codex ensure_default_children_for_schema_types). Red test already exists: live_gpt6_astra_full_agent_path (items=1, text_len=0, final_len=Some(0)). Control tests pass: no-tools and single-clean-tool streaming both work, proving token/model/streaming are healthy. Note: gpt-5.1-codex is separately unsupported on ChatGPT-plan accounts (400 model not supported). See attached analysis doc for full evidence and codex reference code.",
+      "epic": "provider-resilience",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-208/bug-208-codex-silent-termination-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-15T08:24:56.232Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-15T08:46:13.351Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-15T09:16:26.345Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-15T09:55:17.035Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-15T10:14:12.213Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-15T10:14:25.637Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-15T10:32:50.667Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-15T10:47:54.794Z"
+        }
+      ],
+      "userStory": {
+        "role": "agent user",
+        "action": "converse with Codex-backend models (gpt-6-astra) with tools enabled",
+        "benefit": "the conversation either works or fails with a clear error, instead of silently terminating with no output"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Every tool input schema sent through the rig Responses API path MUST be sanitized: any object-typed schema (including type:[\"object\",\"null\"]) lacking a \"properties\" key gets \"properties\":{} inserted, recursively through properties/items/additionalProperties (mirrors codex tools/json_schema.rs ensure_default_children_for_schema_types:183-197)",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:27:36.886Z"
+        },
+        {
+          "id": 1,
+          "text": "An SSE {\"type\":\"error\",...} event from the Codex backend MUST surface as a stream error (CompletionError) carrying the backend message and code — never be silently skipped (mirrors codex-api sse/responses.rs:349 + stream loop sending Err(error))",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:27:37.874Z"
+        },
+        {
+          "id": 2,
+          "text": "Sanitize at the rig responses_api layer (ResponsesToolDefinition::from in the patched rig-core), covering both Codex and plain OpenAI responses models via one shared code path — confirmed by user.",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:44:26.782Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool definitions sent through the rig Responses API path MUST use strict:false, mirroring codex tool_definition_to_responses_api_tool (codex-rs tools/src/responses_api.rs:168) — the Codex backend's strict-schema validator is then not applied to our hand-written/schemars schemas (confirmed by live test: even the accept-all {} criteria schema is rejected under strict:true with 'schema must specify a type')",
+          "deleted": false,
+          "createdAt": "2026-10-15T09:55:37.463Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Unit: an SSE stream containing {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for function 'AstGrepRefactor'...\",\"code\":\"invalid_function_parameters\"}} yields a stream Err containing that message instead of completing with zero chunks",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:03.304Z"
+        },
+        {
+          "id": 1,
+          "text": "Live: gpt-6-astra full agent path (create_rig_agent with all ~25 tools + multi_turn) produces non-empty final text — the existing red test live_gpt6_astra_full_agent_path turns green",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:04.275Z"
+        },
+        {
+          "id": 2,
+          "text": "Unit: a tool schema {\"type\":[\"object\",\"null\"],\"additionalProperties\":{...}} (what schemars 0.8 emits for Option<HashMap<String,Transform>> in AstGrepRefactor) is sanitized so every object-typed branch gains \"properties\":{} before the request is serialized",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:05.237Z"
+        },
+        {
+          "id": 3,
+          "text": "TUI: if the backend still rejects a request for another reason, the conversation ends with a visible provider error containing the backend message (e.g. invalid_function_parameters), not a silent empty turn",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:24.610Z"
+        },
+        {
+          "id": 4,
+          "text": "Unit: ResponsesToolDefinition::from(tool) produces strict:false in the serialized request payload (mirrors codex); the sanitizer still runs so schemas remain well-formed",
+          "deleted": false,
+          "createdAt": "2026-10-15T09:55:48.253Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Sanitizer lives in the patched rig-core responses_api (ResponsesToolDefinition::from / create_completion_request in rust/patches/rig-core/src/providers/openai/responses_api/mod.rs:527), so BOTH the streaming and non-streaming front doors serialize sanitized schemas — mirrors codex tools/src/json_schema.rs prepare_tool_input_schema. Minimal scope: fill properties:{} for object-typed schemas (incl. type arrays containing \"object\") and items default for array-typed, recursively — not a full port of codex sanitize_json_schema.",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:23.631Z"
+        },
+        {
+          "id": 1,
+          "text": "Error-event handling also lives in the patched rig streaming.rs: add an ErrorChunk variant matched BEFORE the untagged StreamingCompletionChunk fallthrough, yielding CompletionError::ProviderError(message+code) and ending the stream — mirrors codex-api/src/sse/responses.rs:349 and the stream loop at :549/:576-580.",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:25.581Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the schema sanitizer apply to all Responses-API providers (OpenAI + Codex) at the rig layer, or only to the Codex provider path?",
+          "deleted": false,
+          "createdAt": "2026-10-15T08:28:36.227Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Sanitize at the rig responses_api layer (ResponsesToolDefinition::from in the patched rig-core), covering both Codex and plain OpenAI responses models via one shared code path — confirmed by user."
+        }
+      ],
+      "nextQuestionId": 1,
+      "estimate": 3,
+      "assumptions": [
+        "The backend accepts non-strict tool schemas (codex sends strict:false to the same backend successfully); the sanitizer remains as defense-in-depth for plain OpenAI responses models where rig keeps strict:true behavior unchanged? No — strict:false applies to all ResponsesToolDefinition conversions in the patch (shared path, confirmed by user for sanitizer scope)."
+      ]
     }
   }
 }

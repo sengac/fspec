@@ -22,14 +22,53 @@ use super::{CompletionResponse, Output};
 // ================================================================
 
 /// A streaming completion chunk.
-/// Streaming chunks can come in one of two forms:
+/// Streaming chunks can come in one of three forms:
 /// - A response chunk (where the completed response will have the total token usage)
 /// - An item chunk commonly referred to as a delta. In the completions API this would be referred to as the message delta.
+/// - An error chunk: the Codex backend reports request-level failures (e.g. rejected tool
+///   schemas) as a single SSE `{"type":"error",...}` event over HTTP 200. Without this
+///   variant the untagged enum cannot deserialize it and the event is silently skipped,
+///   terminating the conversation with an empty response (BUG-208).
+///   Mirrors codex-api/src/sse/responses.rs:349 (`Error` event => `ApiError`).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum StreamingCompletionChunk {
+    Error(ErrorChunk),
     Response(Box<ResponseChunk>),
     Delta(ItemChunk),
+}
+
+/// An error event from the Responses API backend (BUG-208).
+/// Shape: `{"type":"error","error":{"message":"...","code":"..."}}` — the `code` field
+/// is optional (the OpenAI API sometimes omits it; the Codex backend includes it, e.g.
+/// `invalid_function_parameters`).
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ErrorChunk {
+    /// Always "error" — the discriminator that makes the untagged match precise.
+    #[serde(rename = "type")]
+    pub kind: ErrorChunkKind,
+    /// The backend error payload.
+    pub error: BackendError,
+}
+
+/// Discriminator for [`ErrorChunk`].
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum ErrorChunkKind {
+    #[serde(rename = "error")]
+    Error,
+}
+
+/// The error payload of an [`ErrorChunk`].
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BackendError {
+    /// Human-readable message from the backend (e.g. "Invalid schema for function 'X'…").
+    pub message: String,
+    /// Machine-readable error code (e.g. "invalid_function_parameters"), when provided.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    /// Parameter the error refers to, when provided.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub param: Option<String>,
 }
 
 /// The final streaming response from the OpenAI Responses API.
@@ -260,6 +299,9 @@ where
 
         let stream = stream! {
             let mut final_usage = ResponsesUsage::new();
+            // BUG-208: set when a backend error event terminated the stream; in that
+            // case no (silent, empty) FinalResponse may be emitted afterwards.
+            let mut stream_errored = false;
 
             let mut tool_calls: Vec<RawStreamingChoice<StreamingCompletionResponse>> = Vec::new();
             let mut combined_text = String::new();
@@ -282,9 +324,27 @@ where
 
                         let Ok(data) = data else {
                             let err = data.unwrap_err();
-                            debug!("Couldn't serialize data as StreamingCompletionResponse: {:?}", err);
+                            debug!("Couldn't serialize data as StreamingCompletionResponse: {err:?}\nRAW SSE DATA: {}", &evt.data);
                             continue;
                         };
+
+                        // BUG-208: a backend error event must surface as a stream error,
+                        // never be silently skipped (mirrors codex-api sse/responses.rs
+                        // stream loop sending Err(error) on an Error event).
+                        if let StreamingCompletionChunk::Error(err_chunk) = data {
+                            let code = err_chunk
+                                .error
+                                .code
+                                .as_deref()
+                                .map(|c| format!(" (code: {c})"))
+                                .unwrap_or_default();
+                            yield Err(CompletionError::ProviderError(format!(
+                                "Responses API backend error: {}{code}",
+                                err_chunk.error.message
+                            )));
+                            stream_errored = true;
+                            break;
+                        }
 
                         if let StreamingCompletionChunk::Delta(chunk) = &data {
                             match &chunk.data {
@@ -384,6 +444,13 @@ where
 
             // Ensure event source is closed when stream ends
             event_source.close();
+
+            // BUG-208: after a backend error event the stream must end with the Err
+            // only — emitting an empty FinalResponse afterwards is exactly the
+            // silent-termination symptom (the agent treats it as a completed turn).
+            if stream_errored {
+                return;
+            }
 
             for tool_call in &tool_calls {
                 yield Ok(tool_call.to_owned())

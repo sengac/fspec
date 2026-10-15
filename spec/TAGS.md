@@ -668,6 +668,7 @@ Tags tracking development status of features.
 | `@bug-199` | Work unit BUG-199 — agent-bar Zone C button semantics: 'New Agent' mounts the CreateSessionDialog (start a new agent, board-button parity) instead of re-entering the current session; 'Close Agent' shows the Esc exit-confirmation cascade (Exit Session dialog / interrupt / clear) instead of the direct Close Session teardown; the button label reads 'Close Agent [esc]' |
 | `@bug-203` | Work unit BUG-203 — board 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown row, the 'u' menu-bar-help row) must ALWAYS mount the CreateSessionDialog instead of silently resuming/attaching to an already-open agent; Shift+Right stays the CYCLE gesture (resume) and is unchanged |
 | `@bug-204` | Work unit BUG-204 — agent-bar 'Close Agent' button: the button ALWAYS mounts the 'Exit Session?' ExitConfirmationDialog (RPC-098) instead of running the AgentEscPressed cascade (superseding BUG-199 R2); the interrupt/draft-clear branches belong to the physical Esc key only |
+| `@bug-208` | Work unit BUG-208 — Codex models silently terminate: rig swallows SSE {"type":"error"} events and the AstGrepRefactor tool schema is rejected. Fix: patched rig-core parses SSE error events into CompletionError (mirrors codex-api sse) + schema sanitizer (properties:{}/items defaults) + strict:false in ResponsesToolDefinition, mirroring codex tool_definition_to_responses_api_tool. |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@cmpct-020` | Work unit CMPCT-020 — Compaction Convergence Guarantee (watchdog + escalation, Level-3 force-inject fallback shape) |
 | `@cmpct-039` | Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire |
@@ -833,4 +834,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-12T04:40:52.967Z_
+_Last updated: 2026-10-15T10:46:15.916Z_
