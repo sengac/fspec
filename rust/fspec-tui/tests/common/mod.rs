@@ -364,6 +364,10 @@ pub struct MockBackend {
     last_history_query: Mutex<Option<String>>,
     /// RPC-022: scripted providers returned by `list_providers`.
     providers: Mutex<Vec<ProviderInfo>>,
+    /// BUG-207: method names recorded in await order (currently
+    /// `list_providers` and `refresh_models_cache`) so tests can assert
+    /// cross-method ordering, not just per-method counts.
+    call_log: Mutex<Vec<String>>,
     /// RPC-022: counters + captures for the five new RPC methods.
     list_providers_calls: AtomicUsize,
     set_session_model_calls: AtomicUsize,
@@ -938,6 +942,7 @@ impl Default for MockBackend {
             delete_provider_credentials_calls: AtomicUsize::new(0),
             test_provider_connection_calls: AtomicUsize::new(0),
             refresh_models_cache_calls: AtomicUsize::new(0),
+            call_log: Mutex::new(Vec::new()),
             last_set_provider_credentials: Mutex::new(None),
             last_delete_provider_credentials: Mutex::new(None),
             last_test_provider_connection: Mutex::new(None),
@@ -1589,6 +1594,11 @@ impl MockBackend {
     /// RPC-022: how many times `list_providers` was awaited.
     pub fn list_providers_calls(&self) -> usize {
         self.list_providers_calls.load(Ordering::SeqCst)
+    }
+
+    /// BUG-207: method names in await order (see `call_log` field).
+    pub fn call_log(&self) -> Vec<String> {
+        self.call_log.lock().expect("MockBackend mutex").clone()
     }
 
     /// RPC-022: how many times `set_session_model` was awaited.
@@ -3224,6 +3234,10 @@ impl FspecBackend for MockBackend {
 
     async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
         self.list_providers_calls.fetch_add(1, Ordering::SeqCst);
+        self.call_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push("list_providers".to_string());
         Ok(self.providers.lock().expect("MockBackend mutex").clone())
     }
 
@@ -3959,6 +3973,10 @@ impl FspecBackend for MockBackend {
     async fn refresh_models_cache(&self, provider_id: String) -> Result<Vec<ModelEntry>> {
         self.refresh_models_cache_calls
             .fetch_add(1, Ordering::SeqCst);
+        self.call_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push("refresh_models_cache".to_string());
         *self
             .last_refresh_models_cache
             .lock()

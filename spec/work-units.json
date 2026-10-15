@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-12T05:44:41.433Z",
+    "lastUpdated": "2026-10-15T06:23:34.864Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 206,
+    "BUG": 207,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1770,7 +1770,8 @@
       "RPC-433",
       "RPC-434",
       "RPC-436",
-      "RPC-437"
+      "RPC-437",
+      "BUG-207"
     ],
     "blocked": [
       "QUERY-001",
@@ -238518,6 +238519,103 @@
       "attachments": [
         "spec/attachments/RPC-437/ast-research-session-cleared-tui-consumption.md"
       ],
+      "estimate": 5
+    },
+    "BUG-207": {
+      "id": "BUG-207",
+      "title": "Model selector never sees newly released models: models.dev snapshot is cached forever and the refresh action is a no-op",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-14T23:31:15.773Z",
+      "updatedAt": "2026-10-15T06:23:34.864Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-14T23:31:25.562Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-14T23:38:44.815Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-15T05:27:16.438Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-15T05:32:55.133Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-15T06:23:34.864Z"
+        }
+      ],
+      "userStory": {
+        "role": "user",
+        "action": "see newly released models in the model selector",
+        "benefit": "I can select a model the day it appears in the models.dev catalog without clearing caches or restarting"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A models.dev snapshot is fresh for at most DEFAULT_CACHE_TTL (24h); a snapshot older than the TTL must never keep being served unchanged",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:31:40.037Z"
+        },
+        {
+          "id": 1,
+          "text": "Stale-while-revalidate: a stale snapshot is served IMMEDIATELY (no UI blocking) and a revalidation is kicked off; the next read sees the new data",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:31:45.445Z"
+        },
+        {
+          "id": 2,
+          "text": "Revalidation attempts are throttled process-wide (5-minute cooldown) because every list_providers() call builds a new ModelCache; the throttle protects the network, not correctness",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:31:51.652Z"
+        },
+        {
+          "id": 3,
+          "text": "An explicit refresh (ModelCache::refresh / ModelRegistry::refreshing) is a SYNCHRONOUS fetch that bypasses both the TTL and the cooldown — it must actually hit the network",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:31:57.912Z"
+        },
+        {
+          "id": 4,
+          "text": "The model selector's refresh action ('r') must FORCE a catalog re-fetch before re-listing providers; refresh_models_cache(provider_id) force-refreshes the catalog and returns the freshly-sourced entries for that provider (empty provider_id = refresh the shared catalog only)",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:32:04.846Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A models.dev snapshot on disk is 30 days old and contains no gpt-6; opening the model selector serves the old snapshot immediately AND revalidates in the background; the next open lists gpt-6",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:32:13.730Z"
+        },
+        {
+          "id": 1,
+          "text": "A user presses 'r' in the model selector while a months-old snapshot is on disk: the newly released model appears in the list immediately — no restart, no manual cache deletion",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:32:20.704Z"
+        },
+        {
+          "id": 2,
+          "text": "A snapshot written minutes ago is fresh: opening the model selector performs no network request at all",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:32:27.509Z"
+        },
+        {
+          "id": 3,
+          "text": "The catalog endpoint is unreachable and the snapshot is stale: the stale list is still served (never an empty selector) and the failure is only logged",
+          "deleted": false,
+          "createdAt": "2026-10-14T23:32:34.064Z"
+        }
+      ],
+      "nextExampleId": 4,
       "estimate": 5
     }
   }

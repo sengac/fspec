@@ -79,45 +79,6 @@
       ]
     },
     {
-      "name": "Codex (ChatGPT) continues to list the allowlisted cloud OpenAI models when OPENAI_API_KEY is also set",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/prov146_openai_cloud_excluded.rs",
-          "lines": "277-337",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/handle_impl.rs",
-              "lines": [
-                1244,
-                1245,
-                1246,
-                1247,
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264,
-                1265,
-                1266
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "cloud_model_entries still serves the openai catalog to the Codex re-parenting path",
       "testMappings": [
         {
@@ -201,12 +162,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Codex (ChatGPT) continues to list the full cloud OpenAI catalog when OPENAI_API_KEY is also set",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 4,
-    "coveragePercent": 100,
+    "coveredScenarios": 3,
+    "coveragePercent": 75,
     "testFiles": [
       "rust/sessions/tests/prov146_openai_cloud_excluded.rs"
     ],

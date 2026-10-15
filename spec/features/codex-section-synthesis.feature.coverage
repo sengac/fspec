@@ -115,169 +115,6 @@
       ]
     },
     {
-      "name": "Non-allowlisted OpenAI models are excluded from Codex (ChatGPT)",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
-          "lines": "163-200",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/codex_allowlist.rs",
-              "lines": [
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Allowlisted Codex models are ordered by allowlist priority",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
-          "lines": "205-239",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/codex_allowlist.rs",
-              "lines": [
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "A hidden allowlist entry is excluded from Codex (ChatGPT)",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/prov129_codex_section_synthesis.rs",
-          "lines": "244-270",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/codex_allowlist.rs",
-              "lines": [
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Without Codex credentials the standalone OpenAI API section is suppressed",
       "testMappings": [
         {
@@ -315,12 +152,20 @@
           ]
         }
       ]
+    },
+    {
+      "name": "All OpenAI models from models.dev appear in Codex (ChatGPT)",
+      "testMappings": []
+    },
+    {
+      "name": "Codex (ChatGPT) models are ordered newest-first by release date",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
-    "coveragePercent": 100,
+    "totalScenarios": 4,
+    "coveredScenarios": 2,
+    "coveragePercent": 50,
     "testFiles": [
       "rust/sessions/tests/prov129_codex_section_synthesis.rs"
     ],

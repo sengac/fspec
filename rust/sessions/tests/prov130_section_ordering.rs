@@ -30,8 +30,8 @@ use codelet_sessions::SessionManager;
 /// openai: o3, google: gemini-2.5-pro) shared with PROV-101.
 const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
 
-/// models.dev catalog fixture whose OpenAI provider carries allowlisted
-/// (`gpt-5.4`, `gpt-5.2-codex`) + excluded models, plus an anthropic entry.
+/// models.dev catalog fixture whose OpenAI provider carries cloud models
+/// (gpt-5.4, gpt-5.2-codex, ...) plus an anthropic entry.
 const CODEX_MODELS_FIXTURE: &str = include_str!("fixtures/prov129_codex_models.json");
 
 /// Serializes the tests that swap the process-global data directory

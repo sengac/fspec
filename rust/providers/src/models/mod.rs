@@ -12,7 +12,7 @@ mod cache;
 mod registry;
 mod types;
 
-pub use cache::{get_cache_dir, ModelCache};
+pub use cache::{get_cache_dir, reset_revalidation_throttle, ModelCache, DEFAULT_CACHE_TTL};
 pub use registry::ModelRegistry;
 pub use types::{
     Capability, CostInfo, InterleavedConfig, LimitInfo, Modalities, Modality, ModelInfo,

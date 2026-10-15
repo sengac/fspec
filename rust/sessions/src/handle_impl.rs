@@ -1361,10 +1361,10 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 // (OAuth or Codex API key) are present. Mirrors TS
                 // `cloudSectionBuilder.ts` `extractCodexSection` (:191-237) +
                 // the `openai.hasCredentials = hasCodexCredentials` override
-                // (:117-119): the OpenAI catalog is allowlist-filtered under a
-                // synthetic Codex identity, the standalone OpenAI section is
-                // removed, and (PROV-130) the Codex section LEADS the cloud
-                // group. Applied to the CLOUD bucket only (customs are never
+                // (:117-119): the full OpenAI models.dev catalog is re-parented
+                // under a synthetic Codex identity (no allowlist filtering), the
+                // standalone OpenAI section is removed, and (PROV-130) the Codex
+                // section LEADS the cloud group. Applied to the CLOUD bucket only (customs are never
                 // re-parented) and BEFORE the PROV-127 drop-empty filter so the
                 // now-populated codex header survives and the now-empty openai
                 // header is dropped.
@@ -1910,31 +1910,64 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     }
 
     fn refresh_models_cache(&self, provider_id: &str) -> Result<Vec<ModelEntry>, String> {
-        // Built-in providers don't publish a dynamic model catalog; we
-        // re-list the providers and return the matching model entries.
-        // Custom providers DO have dynamic catalogs but lifting the
-        // OpenAI-compatible `/models` round-trip into a typed
-        // `ModelEntry` list is a follow-up — for now return the
-        // statically-declared list.
-        let provider_info = codelet_providers::custom::list_providers_info()
+        // BUG-207: this surface used to re-list STATIC provider info, so
+        // against a months-old models.dev snapshot it was a no-op: it never
+        // touched the network and returned an empty list for every built-in.
+        // It now FORCES a catalog re-fetch (bypassing the cache TTL and the
+        // revalidation cooldown), persists the new snapshot to disk, and
+        // sources the returned entries from that fresh registry — the same
+        // `cloud_models::cloud_model_entries` path `list_providers` uses, so
+        // there is one sourcing rule for built-in models.
+        //
+        // An empty `provider_id` means "refresh the shared catalog only":
+        // the model selector's refresh spans every provider, so there is no
+        // single provider's list to return.
+        let registry = force_refresh_cloud_registry().or_else(|| {
+            // An unreachable catalog must never empty the selector: fall
+            // back to the on-disk snapshot (which `build_cloud_registry`
+            // serves while revalidating) rather than erroring out.
+            tracing::warn!(
+                "refresh_models_cache: models.dev force-refresh failed; falling back to the on-disk snapshot"
+            );
+            build_cloud_registry()
+        });
+        let registry = registry.ok_or_else(|| {
+            "refresh_models_cache: models.dev catalog unavailable (no network and no usable snapshot)"
+                .to_string()
+        })?;
+
+        if provider_id.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Custom providers declare their models in their own config file,
+        // not in models.dev — the force-refresh cannot add to them, so keep
+        // the statically-declared list as their fallback.
+        let custom = codelet_providers::custom::list_providers_info()
             .map_err(|e| format!("list_providers_info failed: {e}"))?
             .into_iter()
-            .find(|p| p.name == provider_id);
-        Ok(provider_info
-            .map(|p| {
-                p.models
-                    .into_iter()
-                    .map(|m| ModelEntry {
-                        id: m.id,
-                        display_name: String::new(),
-                        context_window: m.context_window as u32,
-                        supports_reasoning: m.supports_thinking,
-                        supports_vision: m.supports_vision,
-                        is_custom: true,
-                    })
-                    .collect()
-            })
-            .unwrap_or_default())
+            .find(|p| p.name == provider_id && p.is_custom);
+        if let Some(p) = custom {
+            return Ok(p
+                .models
+                .into_iter()
+                .map(|m| ModelEntry {
+                    id: m.id,
+                    display_name: String::new(),
+                    context_window: m.context_window as u32,
+                    supports_reasoning: m.supports_thinking,
+                    supports_vision: m.supports_vision,
+                    is_custom: true,
+                })
+                .collect());
+        }
+
+        let has_credentials = crate::cloud_models::provider_has_credentials(provider_id);
+        Ok(crate::cloud_models::cloud_model_entries(
+            &registry,
+            provider_id,
+            has_credentials,
+        ))
     }
 
     // ========================================================================
@@ -2494,6 +2527,33 @@ fn build_cloud_registry() -> Option<codelet_providers::models::ModelRegistry> {
         handle.block_on(async {
             match codelet_providers::models::ModelCache::new() {
                 Ok(cache) => codelet_providers::models::ModelRegistry::new(&cache)
+                    .await
+                    .ok(),
+                Err(_) => None,
+            }
+        })
+    })
+}
+
+/// BUG-207: build a models.dev `ModelRegistry` after FORCING a catalog
+/// re-fetch, for `refresh_models_cache`.
+///
+/// Unlike [`build_cloud_registry`] (which goes through the TTL-aware cache and
+/// may serve a stale snapshot), this reaches `ModelCache::refresh` — a
+/// synchronous fetch that bypasses both the TTL and the revalidation cooldown.
+/// Without it, "refresh" builds a fresh registry from the SAME stale snapshot
+/// on disk, which is exactly the reported no-op.
+///
+/// Returns `None` when no tokio runtime is available or the fetch failed; the
+/// caller decides whether to fall back to the on-disk snapshot.
+fn force_refresh_cloud_registry() -> Option<codelet_providers::models::ModelRegistry> {
+    let Ok(handle) = tokio::runtime::Handle::try_current() else {
+        return None;
+    };
+    tokio::task::block_in_place(|| {
+        handle.block_on(async {
+            match codelet_providers::models::ModelCache::new() {
+                Ok(cache) => codelet_providers::models::ModelRegistry::refreshing(&cache)
                     .await
                     .ok(),
                 Err(_) => None,

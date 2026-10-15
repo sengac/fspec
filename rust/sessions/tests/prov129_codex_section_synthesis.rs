@@ -1,23 +1,22 @@
-//! PROV-129 — synthesize the Codex (ChatGPT) section by re-parenting +
-//! allowlist-filtering the OpenAI cloud models (TS parity).
+//! PROV-129 — synthesize the Codex (ChatGPT) section by re-parenting the
+//! OpenAI cloud models (TS parity).
 //!
 //! Feature: spec/features/codex-section-synthesis.feature
 //!
-//! Rust performs NO Codex-section synthesis: `codex` is a static, known-absent
+//! Rust performs NO Codex-section filtering: `codex` is a static, known-absent
 //! header that always renders `(0 models)` while the full models.dev OpenAI
 //! catalog sits under a standalone `openai` section. TS
 //! (`cloudSectionBuilder.ts` `extractCodexSection` :191-237) forces
 //! `openai.hasCredentials = hasCodexOAuth || hasCodexApiKey`, then REMOVES the
-//! standalone openai section and rebuilds its models — filtered by the Codex
-//! allowlist (`filterByCodexAllowlist` :210-221) — under a synthetic
-//! `Codex (ChatGPT)` section.
+//! standalone openai section and re-parents the full OpenAI models.dev catalog
+//! (no allowlist filtering) under a synthetic `Codex (ChatGPT)` section.
 //!
 //! These tests drive the public `list_providers()` surface with an isolated
 //! data dir + seeded models.dev cache + Codex OAuth file (no `OPENAI_API_KEY`),
-//! and assert TS parity: a populated `codex` section, an allowlist-filtered
-//! model list, and NO standalone `openai` section (fixes discrepancies #1, #5,
-//! #6). Reuses the PROV-128 unified credential predicate so Codex OAuth alone
-//! yields a non-empty selectable list.
+//! and assert TS parity: a populated `codex` section, the full allowlist-free
+//! OpenAI catalog, and NO standalone `openai` section (fixes discrepancies
+//! #1, #5, #6). Reuses the PROV-128 unified credential predicate so Codex
+//! OAuth alone yields a non-empty selectable list.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -27,9 +26,9 @@ use std::sync::{Arc, Mutex};
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::SessionManager;
 
-/// models.dev catalog fixture whose OpenAI provider carries a mix of
-/// allowlisted (`gpt-5.4` list p0, `gpt-5.2-codex` list p3) and excluded
-/// (`gpt-5.1-codex` hide, `gpt-5-mini`/`gpt-4o` absent) models.
+/// models.dev catalog fixture whose OpenAI provider carries a mix of models
+/// (gpt-5.4, gpt-5.2-codex, gpt-5.1-codex, gpt-5-mini, gpt-4o) — all of which
+/// must appear in the synthesized Codex section (no allowlist filtering).
 const MODELS_FIXTURE: &str = include_str!("fixtures/prov129_codex_models.json");
 
 /// Serializes tests that mutate the process-global data directory
@@ -167,10 +166,10 @@ async fn codex_oauth_yields_populated_codex_section_and_no_openai_section() {
 }
 
 // =============================================================================
-// Scenario: Non-allowlisted OpenAI models are excluded from Codex (ChatGPT)
+// Scenario: All OpenAI models from models.dev appear in Codex (ChatGPT)
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
-async fn codex_section_excludes_non_allowlisted_models() {
+async fn codex_section_lists_all_openai_models_from_models_dev() {
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -181,7 +180,7 @@ async fn codex_section_excludes_non_allowlisted_models() {
     std::env::set_var("FSPEC_HOME", fspec_empty.path());
     clear_api_keys();
 
-    // @step And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5-mini"
+    // @step And the models.dev catalog offers the OpenAI models "gpt-5.4", "gpt-5-mini" and "gpt-4o"
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
@@ -193,26 +192,28 @@ async fn codex_section_excludes_non_allowlisted_models() {
     // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4"
     assert!(
         codex_models.iter().any(|id| id == "gpt-5.4"),
-        "PROV-129: allowlisted 'gpt-5.4' must appear; got {codex_models:?}",
+        "PROV-129: 'gpt-5.4' must appear in the Codex section; got {codex_models:?}",
     );
 
-    // @step And the "Codex (ChatGPT)" section does not list "gpt-5-mini"
+    // @step And the "Codex (ChatGPT)" section lists "gpt-5-mini"
+    // (no allowlist filtering — the full OpenAI models.dev catalog is shown)
     assert!(
-        !codex_models.iter().any(|id| id == "gpt-5-mini"),
-        "PROV-129: non-allowlisted 'gpt-5-mini' must be filtered out; got {codex_models:?}",
+        codex_models.iter().any(|id| id == "gpt-5-mini"),
+        "PROV-129: the full OpenAI catalog must appear (no allowlist filter); got {codex_models:?}",
     );
-    // gpt-4o is likewise not on the allowlist and must be excluded.
+
+    // @step And the "Codex (ChatGPT)" section lists "gpt-4o"
     assert!(
-        !codex_models.iter().any(|id| id == "gpt-4o"),
-        "PROV-129: non-allowlisted 'gpt-4o' must be filtered out; got {codex_models:?}",
+        codex_models.iter().any(|id| id == "gpt-4o"),
+        "PROV-129: 'gpt-4o' must appear in the Codex section (no allowlist filter); got {codex_models:?}",
     );
 }
 
 // =============================================================================
-// Scenario: Allowlisted Codex models are ordered by allowlist priority
+// Scenario: Codex (ChatGPT) models are ordered newest-first by release date
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
-async fn codex_section_orders_models_by_allowlist_priority() {
+async fn codex_section_orders_models_newest_first() {
     let _guard = DATA_DIR_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -224,6 +225,7 @@ async fn codex_section_orders_models_by_allowlist_priority() {
     clear_api_keys();
 
     // @step And the models.dev catalog offers the OpenAI models "gpt-5.4" and "gpt-5.2-codex"
+    // (gpt-5.4 release_date 2026-05-01, gpt-5.2-codex release_date 2026-03-01)
     let _data_dir = seed_models_cache();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
@@ -233,48 +235,18 @@ async fn codex_section_orders_models_by_allowlist_priority() {
     let codex_models = section_model_ids(&providers, "codex").expect("codex section present");
 
     // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4" before "gpt-5.2-codex"
+    // (newest-first by release date: 2026-05-01 > 2026-03-01)
     let pos_54 = codex_models
         .iter()
         .position(|id| id == "gpt-5.4")
-        .expect("gpt-5.4 present (allowlist priority 0)");
+        .expect("gpt-5.4 present");
     let pos_52 = codex_models
         .iter()
         .position(|id| id == "gpt-5.2-codex")
-        .expect("gpt-5.2-codex present (allowlist priority 3)");
+        .expect("gpt-5.2-codex present");
     assert!(
         pos_54 < pos_52,
-        "PROV-129: allowlist priority ordering must put gpt-5.4 (p0) before gpt-5.2-codex (p3); got {codex_models:?}",
-    );
-}
-
-// =============================================================================
-// Scenario: A hidden allowlist entry is excluded from Codex (ChatGPT)
-// =============================================================================
-#[tokio::test(flavor = "multi_thread")]
-async fn codex_section_excludes_hidden_allowlist_entry() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
-
-    // @step Given I am signed in with a Codex (ChatGPT) OAuth credential
-    let _codex = seed_codex_oauth();
-    let fspec_empty = tempfile::tempdir().expect("empty fspec home");
-    std::env::set_var("FSPEC_HOME", fspec_empty.path());
-    clear_api_keys();
-
-    // @step And the models.dev catalog offers the OpenAI model "gpt-5.1-codex" that is a hidden allowlist entry
-    let _data_dir = seed_models_cache();
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
-
-    // @step When I open the model selector
-    let providers = handle.list_providers();
-    let codex_models = section_model_ids(&providers, "codex").expect("codex section present");
-
-    // @step Then the "Codex (ChatGPT)" section does not list "gpt-5.1-codex"
-    assert!(
-        !codex_models.iter().any(|id| id == "gpt-5.1-codex"),
-        "PROV-129: a visibility='hide' allowlist entry must not match; got {codex_models:?}",
+        "PROV-129: newest-first ordering must put gpt-5.4 (2026-05-01) before gpt-5.2-codex (2026-03-01); got {codex_models:?}",
     );
 }
 

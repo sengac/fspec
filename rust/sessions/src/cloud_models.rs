@@ -164,7 +164,7 @@ const CODEX_PROVIDER_LABEL: &str = "Codex (ChatGPT)";
 const OPENAI_PROVIDER_ID: &str = "openai";
 
 /// PROV-129: build the Codex-supported model list by sourcing the OpenAI cloud
-/// catalog (as if credentialed) and filtering it through the Codex allowlist.
+/// catalog (as if credentialed).
 ///
 /// The OpenAI catalog is loaded with `has_credentials = true` unconditionally:
 /// the caller ([`synthesize_codex_section`]) has already confirmed Codex
@@ -172,9 +172,11 @@ const OPENAI_PROVIDER_ID: &str = "openai";
 /// (`cloudSectionBuilder.ts:117-119`) so the models flow purely from the Codex
 /// gate — independent of `OPENAI_API_KEY`. That is what fixes discrepancy #6
 /// (Codex OAuth login previously yielded zero selectable models).
+///
+/// No allowlist filtering is applied — the full OpenAI models.dev catalog is
+/// exposed under the Codex section, ordered newest-first by release date.
 pub fn codex_reparented_models(registry: &ModelRegistry) -> Vec<ModelEntry> {
-    let openai_models = cloud_model_entries(registry, OPENAI_PROVIDER_ID, true);
-    crate::codex_allowlist::filter_by_codex_allowlist(openai_models)
+    cloud_model_entries(registry, OPENAI_PROVIDER_ID, true)
 }
 
 /// PROV-129: synthesize the "Codex (ChatGPT)" section by re-parenting the
@@ -186,14 +188,14 @@ pub fn codex_reparented_models(registry: &ModelRegistry) -> Vec<ModelEntry> {
 /// * With NO Codex credentials, `sections` is returned unchanged — the standalone
 ///   OpenAI section keeps its existing (API-key-gated) behaviour and the empty
 ///   `codex` header is left for the PROV-127 drop-empty filter to remove.
-/// * With Codex credentials but no allowlisted models to re-parent, `sections`
+/// * With Codex credentials but no OpenAI models to re-parent, `sections`
 ///   is likewise returned unchanged (nothing to synthesize; the empty `codex`
 ///   header is dropped downstream and a legitimate standalone OpenAI section is
 ///   preserved).
-/// * With Codex credentials AND >=1 allowlisted OpenAI model, the standalone
+/// * With Codex credentials AND >=1 OpenAI cloud model, the standalone
 ///   `openai` section and the static empty `codex` header are removed and a
-///   freshly-built Codex section (allowlist-filtered models) is PREPENDED so it
-///   LEADS the cloud group — mirroring TS `[codexSection, ...remaining]`
+///   freshly-built Codex section (full OpenAI models.dev catalog) is PREPENDED
+///   so it LEADS the cloud group — mirroring TS `[codexSection, ...remaining]`
 ///   (PROV-130 ordering parity). The OpenAI models are moved, not duplicated.
 ///
 /// The Codex gate reuses the PROV-128 unified credential predicate

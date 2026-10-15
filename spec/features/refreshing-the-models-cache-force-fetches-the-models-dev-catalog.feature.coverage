@@ -1,0 +1,168 @@
+{
+  "scenarios": [
+    {
+      "name": "Refreshing the models cache force-fetches the catalog and returns the provider's models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug207_models_catalog_force_refresh.rs",
+          "lines": "151-203",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1912,
+                1913,
+                1914,
+                1915,
+                1916,
+                1917,
+                1918,
+                1919,
+                1920,
+                1921,
+                1922,
+                1923,
+                1924,
+                1925,
+                1926,
+                1927,
+                1928,
+                1929,
+                1930,
+                1931,
+                1932,
+                1933,
+                1934,
+                1935,
+                1936,
+                1937,
+                1938,
+                1939,
+                1940,
+                1941,
+                1942,
+                1943,
+                1944,
+                1945,
+                1946,
+                1947,
+                1948,
+                1949,
+                1950,
+                1951,
+                1952,
+                1953,
+                1954,
+                1955,
+                1956,
+                1957,
+                1958,
+                1959,
+                1960,
+                1961,
+                1962,
+                1963,
+                1964,
+                1965,
+                1966,
+                1967,
+                1968,
+                1969,
+                1970,
+                1971,
+                2549,
+                2550,
+                2551,
+                2552,
+                2553,
+                2554,
+                2555,
+                2556,
+                2557,
+                2558,
+                2559,
+                2560,
+                2561,
+                2562,
+                2563
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refreshing with no provider refreshes the shared catalog only",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug207_models_catalog_force_refresh.rs",
+          "lines": "206-238",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1912,
+                1913,
+                1914,
+                1915,
+                1916,
+                1917,
+                1918,
+                1919,
+                1920,
+                1921,
+                1922,
+                1923,
+                1924,
+                1925,
+                1926,
+                1927,
+                1928,
+                1929,
+                1930,
+                1931,
+                1932,
+                1933,
+                1934,
+                1935,
+                1936,
+                1937,
+                1938,
+                1939,
+                1940,
+                1941,
+                2549,
+                2550,
+                2551,
+                2552,
+                2553,
+                2554,
+                2555,
+                2556,
+                2557,
+                2558,
+                2559,
+                2560,
+                2561,
+                2562,
+                2563
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug207_models_catalog_force_refresh.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 206
+  }
+}

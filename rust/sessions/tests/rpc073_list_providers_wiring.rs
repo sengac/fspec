@@ -50,18 +50,27 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 /// reads `~/.fspec/fspec-config.json`) cannot leak into the assertion that
 /// every returned section carries >= 1 model (unreachable profile sections
 /// legitimately carry zero models).
-fn seed_populated_cloud_env() -> (tempfile::TempDir, tempfile::TempDir) {
+///
+/// Also isolates `CODEX_HOME` to an empty temp dir: without it, the
+/// developer's real Codex OAuth (`~/.codex/auth.json`) satisfies the PROV-128
+/// credential predicate, and since PROV-129 re-parents the full OpenAI
+/// models.dev catalog under the synthetic Codex section (no allowlist filter),
+/// `codex` legitimately appears with >=1 model — breaking the "codex is
+/// dropped" precondition this file relies on.
+fn seed_populated_cloud_env() -> (tempfile::TempDir, tempfile::TempDir, tempfile::TempDir) {
     std::env::set_var("OPENAI_API_KEY", "sk-openai-test-dummy");
     std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
     std::env::set_var("GEMINI_API_KEY", "AIza-test-dummy");
     let user_dir = tempfile::tempdir().expect("create empty FSPEC_USER_DIR");
     std::env::set_var("FSPEC_USER_DIR", user_dir.path());
+    let codex_home = tempfile::tempdir().expect("create empty CODEX_HOME");
+    std::env::set_var("CODEX_HOME", codex_home.path());
     let data_dir = tempfile::tempdir().expect("create temp data dir");
     let cache_dir = data_dir.path().join("cache");
     fs::create_dir_all(&cache_dir).expect("create cache dir");
     fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models cache");
     codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
-    (data_dir, user_dir)
+    (data_dir, user_dir, codex_home)
 }
 
 /// Workspace root (one level above `rust/sessions/`).
@@ -177,7 +186,7 @@ async fn list_providers_returns_all_six_built_in_providers() {
     // when they expose >=1 model (credentialed + present in the models.dev
     // cache). We seed openai/anthropic/gemini so they populate; zai/codex/
     // github-copilot are left uncredentialed/absent so they are dropped.
-    let (_data_dir, _user_dir) = seed_populated_cloud_env();
+    let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 
@@ -243,7 +252,7 @@ async fn list_providers_entries_have_populated_fields() {
         .unwrap_or_else(std::sync::PoisonError::into_inner);
 
     // @step Given list_providers has been called with seeded credentials and returned a non-empty Vec
-    let (_data_dir, _user_dir) = seed_populated_cloud_env();
+    let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
     let providers = handle.list_providers();
@@ -296,7 +305,7 @@ async fn list_providers_maps_provider_info_fields_correctly() {
     // `reasoning` flag maps to `supports_thinking` on the source struct and
     // to `supports_reasoning` on the wire `ModelEntry`; the `usize` limit
     // maps to `u32` (saturating).
-    let (_data_dir, _user_dir) = seed_populated_cloud_env();
+    let (_data_dir, _user_dir, _codex_home) = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 

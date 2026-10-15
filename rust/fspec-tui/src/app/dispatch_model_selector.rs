@@ -33,8 +33,34 @@ impl App {
     /// RPC-337: re-spawn `backend.list_providers()` for the open
     /// ModelSelector mode-view (the `r` refresh keybind). The view has
     /// already flipped its `is_refreshing` flag.
+    ///
+    /// BUG-207: re-listing alone is a no-op — `list_providers` sources its
+    /// models from the on-disk models.dev snapshot, so a months-old snapshot
+    /// would be re-rendered unchanged. The refresh action must FORCE a
+    /// catalog re-fetch (`refresh_models_cache("")` — empty provider id,
+    /// because the selector spans every provider) and only then re-list.
     pub(crate) fn handle_refresh_model_selector(&mut self) {
-        self.spawn_list_providers_for_selector();
+        if tokio::runtime::Handle::try_current().is_err() {
+            return;
+        }
+        let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let handle = tokio::spawn(async move {
+            // Ordering matters: the force-refresh must complete before the
+            // re-list, otherwise the list is built from the stale snapshot.
+            // A failed refresh is not fatal — the subsequent list still
+            // renders whatever snapshot is on disk.
+            if let Err(e) = backend.refresh_models_cache(String::new()).await {
+                tracing::warn!(
+                    error = %e,
+                    "model selector refresh: models.dev force-refresh failed; re-listing the existing snapshot"
+                );
+            }
+            if let Ok(providers) = backend.list_providers().await {
+                let _ = action_tx.send(Action::ListProvidersLoaded(providers));
+            }
+        });
+        self.pending_tasks.push(handle);
     }
 
     /// RPC-337: fold a backend-fetched provider list into the open

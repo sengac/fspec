@@ -34,6 +34,16 @@ impl ModelRegistry {
         Ok(Self::from_response(data))
     }
 
+    /// Create a new registry after FORCING a catalog refresh (user-initiated).
+    ///
+    /// Bypasses the cache TTL entirely — this is what the model selector's
+    /// refresh action must reach, otherwise a fresh registry is built from the
+    /// same stale on-disk snapshot and the refresh is a no-op.
+    pub async fn refreshing(cache: &ModelCache) -> Result<Self, ProviderError> {
+        let data = cache.refresh().await?;
+        Ok(Self::from_response(data))
+    }
+
     /// Create a registry from a models.dev response
     pub fn from_response(response: ModelsDevResponse) -> Self {
         let mut registry = Self {

@@ -4,11 +4,10 @@
 //!
 //! The default blocklist (version 1.0.0, 68 rules covering Windows and
 //! Linux dangerous commands, sensitive file paths, and agent-loop
-//! protection) is embedded at compile time via `include_str!`, mirroring
-//! the `codex_allowlist.rs` precedent (bundled JSON + user override at
-//! `~/.fspec`). [`install_default_system_blocklist`] writes the template
-//! to the system path only when the file is missing; failures are logged
-//! and swallowed so a failed install never breaks command checking.
+//! protection) is embedded at compile time via `include_str!`.
+//! [`install_default_system_blocklist`] writes the template to the system
+//! path only when the file is missing; failures are logged and swallowed
+//! so a failed install never breaks command checking.
 
 use std::path::Path;
 

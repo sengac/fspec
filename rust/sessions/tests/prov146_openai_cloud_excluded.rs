@@ -264,11 +264,11 @@ async fn scenario_raw_openai_key_yields_no_openai_cloud_section() {
 }
 
 // =============================================================================
-// Scenario: Codex (ChatGPT) continues to list the allowlisted cloud OpenAI
-// models when OPENAI_API_KEY is also set
+// Scenario: Codex (ChatGPT) continues to list the full cloud OpenAI catalog
+// when OPENAI_API_KEY is also set
 // =============================================================================
 #[tokio::test(flavor = "multi_thread")]
-async fn scenario_codex_section_still_lists_allowlisted_models_when_openai_key_set() {
+async fn scenario_codex_section_still_lists_all_openai_models_when_openai_key_set() {
     let _guard = ENV_GUARD
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -300,13 +300,14 @@ async fn scenario_codex_section_still_lists_allowlisted_models_when_openai_key_s
     // @step Then the "Codex (ChatGPT)" section lists "gpt-5.4"
     assert!(
         codex_models.iter().any(|id| id == "gpt-5.4"),
-        "PROV-146: allowlisted 'gpt-5.4' must appear under Codex; got {codex_models:?}",
+        "PROV-146: 'gpt-5.4' must appear under Codex; got {codex_models:?}",
     );
 
-    // @step And the "Codex (ChatGPT)" section does not list "gpt-5-mini"
+    // @step And the "Codex (ChatGPT)" section lists "gpt-5-mini"
+    // (no allowlist filtering — the full OpenAI models.dev catalog is shown)
     assert!(
-        !codex_models.iter().any(|id| id == "gpt-5-mini"),
-        "PROV-146: non-allowlisted 'gpt-5-mini' must be filtered out of Codex; got {codex_models:?}",
+        codex_models.iter().any(|id| id == "gpt-5-mini"),
+        "PROV-146: the full OpenAI catalog must appear under Codex (no allowlist filter); got {codex_models:?}",
     );
 
     // @step And no section with key "openai" and no profile name appears in the list
