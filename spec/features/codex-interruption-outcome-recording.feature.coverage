@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "name": "Interrupted batches retain completed results and cancel every remaining call",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/codex_interruption_outcomes.rs",
+          "lines": "74-240",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                18,
+                24,
+                28,
+                37,
+                52,
+                57,
+                66,
+                77,
+                78,
+                88,
+                89,
+                96,
+                101,
+                106
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                762,
+                763,
+                764,
+                765,
+                766,
+                767,
+                768,
+                769
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupting before any committed tool call creates no cancellation",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/codex_interruption_outcomes.rs",
+          "lines": "242-284",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                24,
+                25,
+                42,
+                52,
+                54,
+                55,
+                77,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupted batches publish missing committed calls before their outcomes",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/codex_interruption_call_pairs.rs",
+          "lines": "34-121",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                18,
+                24,
+                28,
+                37,
+                52,
+                57,
+                66,
+                77,
+                78,
+                88,
+                89,
+                96,
+                101,
+                106
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history_tool_calls.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancellation hooks receive the matching committed tool metadata",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/codex_interruption_hook_pairs.rs",
+          "lines": "43-163",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                66,
+                77,
+                78,
+                79,
+                80,
+                81,
+                83,
+                89,
+                101,
+                106
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history_tool_calls.rs",
+              "lines": [
+                6,
+                13,
+                19,
+                20,
+                28,
+                29,
+                30,
+                31,
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/codex_interruption_outcomes.rs",
+      "rust/cli/tests/codex_interruption_call_pairs.rs",
+      "rust/agent-loop/tests/codex_interruption_hook_pairs.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/interruption.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/providers/src/codex/history_tool_calls.rs",
+      "rust/providers/src/codex/history.rs"
+    ],
+    "totalLinesCovered": 521
+  }
+}

@@ -34,6 +34,7 @@
 
 mod exec_stdin;
 mod output;
+mod owner_scope;
 mod process_store;
 mod reaper;
 mod spawning;
@@ -48,6 +49,7 @@ pub use exec_stdin::{
     ExecStdinRequest, ExecStdinRequestCallback, EXEC_STDIN_COOLDOWN_SECS,
     EXEC_STDIN_QUIET_THRESHOLD_SECS,
 };
+pub use owner_scope::ProcessOwnerScope;
 pub use process_store::{global_store, session_id_to_evict, ChildHandle, ProcessStore};
 pub use reaper::{generate_session_id, spawn_reaper};
 pub use tool::{poll_session, poll_session_interruptible, UnifiedExecTool};

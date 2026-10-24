@@ -363,7 +363,7 @@ impl LlmProvider for GeminiProvider {
         let (preamble, prompt) = extract_prompt_data(messages);
 
         // Convert tools to rig format using shared helper (REFAC-013)
-        let rig_tools = convert_tools_to_rig(tools);
+        let rig_tools = convert_tools_to_rig(tools)?;
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)

@@ -27,6 +27,22 @@
 
 use serde::{Deserialize, Serialize};
 
+mod transcript;
+mod transcript_assembler;
+pub use transcript::{
+    TranscriptCursor, TranscriptError, TranscriptFragment, TranscriptOriginal, TranscriptPage,
+};
+pub use transcript_assembler::TranscriptAssembler;
+
+mod committed_compaction;
+mod provider_settings;
+pub use committed_compaction::CommittedContextSnapshot;
+pub use provider_settings::{ProviderProfileConfig, ProviderSettingsConfig};
+mod request_context;
+pub use request_context::{ContextProvenance, RequestContextSnapshot};
+mod work_unit_focus;
+pub use work_unit_focus::WorkUnitFocus;
+
 /// Work unit information shared across all transports and the NAPI surface.
 ///
 /// Field order and naming match the original NAPI definition so that the
@@ -57,6 +73,14 @@ pub struct WorkUnitInfo {
     /// directly so this field is invisible on the TS side.
     #[serde(rename = "lastStateChangeAt")]
     pub last_state_change_at: Option<String>,
+}
+
+#[cfg_attr(feature = "napi", napi_derive::napi(string_enum = "camelCase"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum InterruptionReason {
+    User,
+    LoopDetector,
 }
 
 /// RPC-015: paired manual + automatic checkpoint counts across all work
@@ -187,7 +211,19 @@ pub struct CheckpointsProgress {
 /// shape stays a plain string but the type system distinguishes session
 /// IDs from arbitrary strings.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+)]
 pub struct SessionId {
     pub value: String,
 }
@@ -286,7 +322,7 @@ impl From<u8> for SessionStatus {
 /// re-export this type without changing the existing TypeScript shape.
 /// `id` is a plain `String` rather than a [`SessionId`] newtype so the
 /// TS shape stays a flat string.
-#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[cfg_attr(feature = "napi", napi_derive::napi(object, object_from_js = false))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionInfo {
     pub id: String,
@@ -304,6 +340,8 @@ pub struct SessionInfo {
     pub role: Option<String>,
     /// TUI-096: optional timestamp (epoch milliseconds) for time-ago display.
     pub updated_at_ms: Option<i64>,
+    #[serde(default)]
+    pub work_unit_focus: WorkUnitFocus,
 }
 
 /// RPC-433: a session lifecycle event pushed to ALL connected clients.
@@ -329,6 +367,10 @@ pub enum SessionEvent {
     /// tab state for that session and needs nothing else to react to the
     /// clear (mirrors `Removed`).
     Cleared(SessionId),
+    FocusChanged {
+        session_id: SessionId,
+        focus: WorkUnitFocus,
+    },
 }
 
 /// Structured log event payload pushed to subscribers via the
@@ -425,7 +467,9 @@ pub struct ModelInfo {
 /// `JsThinkingLevel` enum that the existing TS code consumes via
 /// `@sengac/codelet-napi` (`rust/napi/src/thinking_config.rs`).
 #[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema,
+)]
 pub enum ThinkingLevel {
     #[default]
     Off,
@@ -494,7 +538,7 @@ pub struct ModelEntry {
 /// `id` is the only required field; every other field is optional and, when
 /// `None`, is omitted from the persisted `CustomModelDef` JSON.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct CustomModelDefinition {
     pub id: String,
     pub display_name: Option<String>,
@@ -523,7 +567,7 @@ pub struct CustomModelDefinition {
 /// `compaction_threshold_value`) so the `napi(object)` projection stays a
 /// plain struct (mirroring [`CustomModelDefinition`]).
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ProfileDefinition {
     pub base_url: String,
     pub api_key: String,
@@ -763,7 +807,7 @@ pub struct OAuthDeviceStart {
 ///   * `"oauth"`       — `oauth_token` MUST be Some; `oauth_refresh_token` optional
 ///   * `"custom"`      — `custom_endpoint` MUST be Some; `custom_api_key` optional
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ProviderCredentialInput {
     /// "api_key" | "oauth" | "custom"
     pub kind: String,
@@ -863,6 +907,7 @@ pub struct BlocklistRuleInfo {
 #[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(schemars::JsonSchema)]
 pub enum MergeStrategy {
     #[default]
     FastForward,
@@ -952,7 +997,7 @@ pub struct SessionChangesSummary {
 /// so the struct stays `napi_derive::napi(object)`-compatible (no
 /// discriminated enums on the wire).
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ScheduledJob {
     pub name: String,
     pub cron: String,
@@ -1005,9 +1050,12 @@ pub struct RegisteredLoop {
 
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Compaction activity; legacy count fields are not measured completion units.
 pub struct CompactionProgress {
     pub phase: String,
+    /// Retained for wire compatibility; zero with total zero means unknown work.
     pub current: u32,
+    /// Retained for wire compatibility; not a turn count or percentage basis.
     pub total: u32,
 }
 
@@ -1086,7 +1134,7 @@ pub struct ContinueStateInfo {
 }
 
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct IncomingMessageImage {
     pub data: String,
     #[serde(rename = "mediaType")]
@@ -1099,7 +1147,7 @@ pub struct IncomingMessageImage {
 /// supervisor → subordinate injection path round-trips identically
 /// across both embedded and WebSocket transports.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct IncomingMessageInput {
     #[serde(rename = "sourceSessionId")]
     pub source_session_id: String,
@@ -1150,7 +1198,7 @@ pub struct FspecRequest {
 }
 
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FspecResult {
     pub success: bool,
     pub data: String,
@@ -1232,7 +1280,7 @@ pub struct SessionTokens {
 /// cumulative-billed counters and cache totals so the SessionFooter's
 /// context-fill / billing badges keep their numbers across reopens.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct TokenRestoreState {
     pub current_context: i64,
     pub cumulative_billed_output: i64,
@@ -1258,7 +1306,7 @@ pub struct SessionModel {
 /// The work-unit this session is currently attached to (BoardView →
 /// AgentView attach path). `None` when the session is detached.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct WorkUnitContext {
     pub id: String,
     pub title: String,
@@ -1272,7 +1320,7 @@ pub struct WorkUnitContext {
 /// `serde_json` runtime dependency. Mirrors the precedent set by
 /// `FspecRequest::args_json`.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ThinkingConfig {
     pub provider_id: String,
     pub level: ThinkingLevel,
@@ -1320,7 +1368,7 @@ pub enum PauseResponse {
 
 /// Per-blocklist approval choice surfaced by the triple-pause dialog.
 #[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub enum ApprovalChoice {
     Approve,
     ApproveSession,
@@ -1366,7 +1414,7 @@ pub struct HitlRequest {
 /// "Other..." answers carry `selected: []` and the typed text in
 /// `other`.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct HitlAnswer {
     pub id: String,
     pub selected: Vec<String>,
@@ -1378,7 +1426,7 @@ pub struct HitlAnswer {
 /// an empty `answers` vec; submit is `cancelled: false` with one
 /// answer per question.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct HitlResponse {
     pub cancelled: bool,
     #[serde(default)]
@@ -1431,9 +1479,14 @@ pub struct IsolatedSessionInfo {
 
 /// Streaming chunk discriminated union shared by the embedded transport,
 /// the WebSocket transport, and the NAPI re-exports.
-#[cfg_attr(feature = "napi", napi_derive::napi(discriminant = "type"))]
+#[cfg_attr(
+    feature = "napi",
+    napi_derive::napi(discriminant = "type", object_from_js = false)
+)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum StreamChunk {
+    ResponseAttemptStarted,
+    ResponseAttemptAborted,
     Text {
         text: String,
         #[serde(rename = "correlationId")]
@@ -1490,6 +1543,9 @@ pub enum StreamChunk {
         #[serde(rename = "contextFill")]
         context_fill: ContextFillInfo,
     },
+    ContextSnapshot {
+        snapshot: RequestContextSnapshot,
+    },
     Done,
     Error {
         error: String,
@@ -1508,6 +1564,9 @@ pub enum StreamChunk {
     CompactionComplete {
         #[serde(rename = "compactionResult")]
         compaction_result: CompactionResult,
+    },
+    CommittedCompaction {
+        snapshot: CommittedContextSnapshot,
     },
     FspecCommandRequest {
         #[serde(rename = "fspecRequest")]
@@ -1565,6 +1624,17 @@ pub enum StreamChunk {
     /// alive-check, successful `write_exec_stdin`, explicit clear) so
     /// the TUI unmounts the overlay. Never rendered into the transcript.
     ExecStdinRequestCleared,
+    CompactionProgressUpdate {
+        progress: Option<CompactionProgress>,
+    },
+    InterruptedWithReason {
+        #[serde(rename = "queuedInputs")]
+        queued_inputs: Vec<String>,
+        reason: InterruptionReason,
+    },
+    ProviderWaiting {
+        message: Option<String>,
+    },
 }
 
 impl StreamChunk {

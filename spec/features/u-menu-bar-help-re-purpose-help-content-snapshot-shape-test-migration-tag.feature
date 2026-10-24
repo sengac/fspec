@@ -44,15 +44,14 @@ Feature: 'u' → menu-bar help re-purpose + help content + snapshot/shape test m
 
   @menu-bar
   @menu-registry
+  @menu-bar
+  @menu-registry
+  Scenario: Enter on the New Agent row substitutes the session snapshot (superseded by BUG-203 — the row now mounts the CreateSessionDialog)
   # NOTE (BUG-203 supersedes this scenario): the 'u' dialog is now payload-free
   # — Enter on the '. New Agent' row ALWAYS mounts the CreateSessionDialog
   # (registry MenuAction::NewAgent → OpenCreateSessionDialog { preselect: None
   # }); it never substitutes a session snapshot or re-enters a session (that is
   # the Shift+Right CYCLE gesture's job). See the BUG-203 feature.
-
-  @menu-bar
-  @menu-registry
-  Scenario: Enter on the New Agent row substitutes the session snapshot (superseded by BUG-203 — the row now mounts the CreateSessionDialog)
     Given a board with a focused work unit that has an open agent session
     When I open the 'Menu bar' dialog with 'u' and press Enter on the '. New Agent' row
     Then the dialog is closed

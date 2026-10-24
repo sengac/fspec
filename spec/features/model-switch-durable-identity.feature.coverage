@@ -1,0 +1,374 @@
+{
+  "scenarios": [
+    {
+      "name": "Published identity is adopted despite a lost durability acknowledgement",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/fixtures/model_switch_failure_paths.rs",
+          "lines": "43-79",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed profile preparation preserves the prior request environment",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/fixtures/model_switch_failure_paths.rs",
+          "lines": "81-106",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to a profile preserves its identity through compaction",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "171-182",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to a cloud model preserves its identity through compaction",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "184-195",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected model selection preserves the prior durable identity",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "197-209",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1246,
+                1247,
+                1248,
+                1249,
+                1250,
+                1251,
+                1252,
+                1253,
+                1254,
+                1255,
+                1256,
+                1257,
+                1258,
+                1259
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A busy session preserves the prior durable identity",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "246-261",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1242,
+                1243,
+                1244,
+                1245
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Durable identity write failure preserves the prior runtime selection",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "263-294",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching an existing committed identity is rejected without rewriting ancestry",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/model_switch_durable_identity.rs",
+          "lines": "211-244",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/model_switch.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/fixtures/model_switch_failure_paths.rs",
+      "rust/sessions/tests/model_switch_durable_identity.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/model_switch.rs",
+      "rust/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 410
+  }
+}

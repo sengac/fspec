@@ -6,7 +6,7 @@ Feature: Per-Model Configurable Compaction Threshold
   Add CompactionThresholdConfig enum (Tokens/Percentage) to compaction_threshold.rs with resolve(context_window) method
   Add compaction_threshold_config: Option<CompactionThresholdConfig> field to ProviderManager and a compaction_threshold() method that implements the priority chain
   stream_loop.rs changes from calculate_usable_context(context_window, max_output) to session.provider_manager().compaction_threshold() — one-line change, all downstream consumers automatically use the new value
-  Model family detection uses ProviderManager::selected_model_info().family for registry models; for profile models (no registry) use model_id string prefix matching as fallback
+  All model identities, including Claude, custom models and missing identities, use an 80 percent default bounded by usable context after output reservation
   CTX-006 added context_window/max_output_tokens to SessionModel NAPI struct. CTX-007 will also expose compaction_threshold through the same mechanism for display in CTX-008
   """
 
@@ -16,8 +16,8 @@ Feature: Per-Model Configurable Compaction Threshold
   #
   # BUSINESS RULES:
   #   1. Compaction threshold can be configured as either absolute tokens (e.g., 200000) or percentage of context window (e.g., 80%)
-  #   2. Resolution priority: user-configured override > built-in model family default > legacy calculate_usable_context formula
-  #   3. Built-in defaults: Claude family = context_window minus output reservation (legacy behavior retained); Gemini/OpenAI/others = 80% of context_window
+  #   2. Resolution priority: user-configured override > universal 80 percent default, bounded by calculate_usable_context
+  #   3. Built-in default: every model family, unknown model and absent identity uses 80% of context_window
   #   4. All compaction trigger paths (pre-prompt, CompactionHook, emergency, retry) must use the same resolved threshold
   #   5. Context fill percentage must be computed relative to the compaction threshold, not the raw context window
   #   6. If a user-configured threshold exceeds context_window, it should be clamped to context_window minus output reservation
@@ -25,12 +25,12 @@ Feature: Per-Model Configurable Compaction Threshold
   #   8. Post-compaction budget (summarization_budget) should be relative to the threshold, not the context_window
   #
   # EXAMPLES:
-  #   1. Claude Sonnet 4 with 200k context → threshold = 200k - 8k = 191,808 (legacy behavior retained, no change)
+  #   1. Claude Sonnet 4 with 200k context → threshold = 160,000 (80% of 200k)
   #   2. Gemini 2.5 Pro with 1M context → threshold = 800,000 (80% of 1M)
   #   3. GPT-4o with 128k context → threshold = 102,400 (80% of 128k)
   #   4. User sets absolute threshold of 150,000 tokens on a custom model with 200k context → compaction fires at 150k regardless of model family
   #   5. User sets percentage threshold of 60% on a 200k context model → compaction fires at 120,000
-  #   6. Unknown model with 100k context and no family info → threshold falls through to legacy formula: 100k - 32k = 68,000
+  #   6. Unknown model with 100k context and 8192 max output → threshold = 80,000; missing output limits leave no usable threshold
   #   7. User sets threshold of 300,000 on a model with 200k context → clamped to 200k - output_reservation (168,000)
   #   8. Context fill shows 50% when at 100k tokens with 200k threshold — not when at 500k tokens with 1M context
   #
@@ -42,12 +42,12 @@ Feature: Per-Model Configurable Compaction Threshold
 
   @core
   @regression
-  Scenario: Claude model retains legacy threshold behavior
+  Scenario: Claude model uses 80% built-in default
     Given a Claude Sonnet 4 model with 200000 context window and 8192 max output
     And no user-configured compaction threshold override
     When the compaction threshold is resolved
-    Then the threshold should equal 191808 tokens
-    And the calculation should use context_window minus min(max_output, 32000)
+    Then the threshold should equal 160000 tokens
+    And the calculation should use eighty percent of context_window bounded by usable context
 
   @core
   Scenario: Gemini model uses 80% built-in default
@@ -79,13 +79,13 @@ Feature: Per-Model Configurable Compaction Threshold
     Then the threshold should equal 120000 tokens
 
   @core
-  Scenario: Unknown model falls through to legacy formula
-    Given an unknown model with 100000 context window and 0 max output
+  Scenario: Unknown model uses 80% built-in default
+    Given an unknown model with 100000 context window and 8192 max output
     And no model family information is available
     And no user-configured compaction threshold override
     When the compaction threshold is resolved
-    Then the threshold should equal 68000 tokens
-    And the legacy calculate_usable_context formula should be used
+    Then the threshold should equal 80000 tokens
+    And the universal eighty percent default should be used
 
   @edge-case
   Scenario: User threshold exceeding context window is clamped

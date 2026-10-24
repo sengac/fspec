@@ -1,6 +1,8 @@
+@rust
+@oauth
+@wip
 @authentication
 @providers
-@done
 @PROV-016
 Feature: Codex Custom Fetch - Token Refresh and API Rewriting
   """
@@ -8,6 +10,7 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
   CodexProvider struct is UNIFIED: both OAuth and API key modes use RefreshingCodexClient. Fields become CompletionModel<RefreshingCodexClient> and CompletionsClient<RefreshingCodexClient>. RefreshingCodexClient has an internal TokenMode enum: OAuth{token_state, issuer_url} for refresh+rewrite+headers, ApiKey for pass-through to reqwest. No enum wrapper or generics needed on CodexProvider itself.
   refresh_access_token_at() from codex_oauth.rs is the refresh function used — it takes an issuer URL (testable with wiremock) and returns TokenRefreshResponse with expires_in. The RefreshingCodexClient stores the issuer URL for testability.
   The rig CompletionsClient builder accepts the generic H via ClientBuilder<OpenAICompletionsExtBuilder, OpenAIApiKey, H> — we pass RefreshingCodexClient as H. The builder's .api_key() sets a dummy key (RefreshingCodexClient replaces it). No .base_url() needed since RefreshingCodexClient rewrites URLs itself.
+  PROV-159 supersedes historical file-only writes and per-client refresh assumptions above. Its primary scenarios and coverage now live in prov159-live-clients, prov159-refresh-races and prov159-credential-storage features. This feature retains PROV-016's historical scenarios and coverage. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its upstream companions.
   """
 
   # ========================================
@@ -65,7 +68,7 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
   @happy-path
   Scenario: Expired token is automatically refreshed before request
     Given a RefreshingCodexClient in OAuth mode with an expired access token
-    And a valid refresh token
+    And a valid refresh token bound to the currently persisted OAuth credentials
     When the client sends a request to "https://api.openai.com/v1/chat/completions"
     Then the client should refresh the access token via the OAuth token endpoint
     And the refreshed tokens should be persisted to auth.json
@@ -147,9 +150,9 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
     And the 30-second buffer should still apply
     And a request sent 3571 seconds later should trigger a refresh
 
-  Scenario: Tokens loaded from disk trigger immediate refresh via Some(0)
+  Scenario: Explicit zero lifetime triggers immediate refresh via Some(0)
     Given OAuth tokens exist in ~/.codex/auth.json from a previous session
-    When CodexProvider passes Some(0) for expires_in_secs to RefreshingCodexClient
+    When a caller explicitly passes Some(0) for expires_in_secs to RefreshingCodexClient
     Then the token is immediately considered expired
     Given the access token may be expired
     Then the first API request triggers a token refresh before sending

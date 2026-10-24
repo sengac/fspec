@@ -20,6 +20,9 @@ use crate::session_search_handler::resolve_message_content;
 use codelet_sessions::background_session::IncomingMessage;
 use codelet_sessions::session_manager::SessionManager;
 
+#[path = "agent_manager_wait.rs"]
+mod agent_manager_wait;
+
 /// Create an AgentManagerHandler closure for a specific session.
 ///
 /// The handler operates on the owning `SessionManager` for session
@@ -128,34 +131,6 @@ fn handle_spawn(
             );
         }
     };
-
-    // Create a persistence manifest for the subordinate session BEFORE creating
-    // the in-memory session. Without this, the subordinate's messages would not
-    // be persisted to disk, making its conversation history unsearchable via
-    // SessionSearch. Normal sessions have their persistence created by TypeScript
-    // before calling create_session_with_id, but subordinate sessions are created
-    // entirely in Rust so we must handle persistence here.
-    {
-        let project_path = std::path::PathBuf::from(project);
-        // Extract provider name from model string (e.g. "anthropic/claude-opus-4-6" -> "anthropic")
-        let provider = model_str.split('/').next().unwrap_or("");
-        let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
-            &name,
-            project_path,
-            provider,
-        );
-        // Override the auto-generated UUID with our specific subordinate_id
-        manifest.id = subordinate_id;
-
-        if let Err(e) = codelet_core::persistence::save_session(&manifest) {
-            tracing::warn!(
-                "Failed to create persistence manifest for subordinate {}: {}",
-                subordinate_id,
-                e
-            );
-            // Continue anyway — the session will work but won't be searchable
-        }
-    }
 
     // Create the session using tokio runtime (handler is called from sync context)
     let create_result = {
@@ -278,76 +253,13 @@ fn spawn_subordinate_forwarding_task(
     // parent's — only the root has a bridge connection with select! loop.
     let root_parent_id = find_root_parent(session_manager, parent_session_id);
 
-    // Subscribe to the subordinate's broadcast channel
-    let mut sub_rx = subordinate_session.subscribe_to_stream();
-    let sub_id = subordinate_id;
-
-    // Spawn the forwarding task
-    tokio::spawn(async move {
-        tracing::debug!(
-            "SESS-015: Forwarding task started for subordinate {} → root parent {}",
-            sub_id,
-            root_parent_id
-        );
-
-        loop {
-            // AMGR-017: instrumented hot-loop marker — sub-1ns cost when no profile session is active.
-            // This is the prime suspect for the PROV-053/054 CPU spike. The scope entry will appear
-            // in scopes_by_calls as `codelet_napi::agent_manager_handler::spawn_subordinate_forwarding_task::recv_loop`
-            // during any profile window so an AI agent can diagnose runaway iterations.
-            codelet_tools::profile_scope!("spawn_subordinate_forwarding_task::recv_loop");
-            match sub_rx.recv().await {
-                Ok(chunk) => {
-                    // Convert StreamChunk to JSON
-                    let mut chunk_json =
-                        crate::stream_chunk_json::stream_chunk_to_json_value(&chunk);
-
-                    // Inject _relay_session_id so process_outbound_envelope uses
-                    // the subordinate's session_id in the relay envelope
-                    if let Some(obj) = chunk_json.as_object_mut() {
-                        obj.insert(
-                            "_relay_session_id".to_string(),
-                            serde_json::Value::String(sub_id.to_string()),
-                        );
-                    }
-
-                    // Send to all registered relay connections for the root parent
-                    let senders = codelet_tools::get_subordinate_chunk_senders(root_parent_id);
-                    if senders.is_empty() {
-                        // AMGR-017: counter-only witness scope — if this scope shows high call_count
-                        // during a profile window, the subordinate is emitting chunks into the void.
-                        codelet_tools::profile_scope!(
-                            "spawn_subordinate_forwarding_task::empty_senders_continue"
-                        );
-                        // No relay connections yet — this is fine for late bridge
-                        // connections. Chunks emitted before Bridge connect are lost,
-                        // but chunks after connect will be forwarded.
-                        continue;
-                    }
-
-                    for tx in &senders {
-                        // Fire-and-forget: if channel is closed, the relay disconnected
-                        let _ = tx.send((sub_id, chunk_json.clone()));
-                    }
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                    tracing::debug!(
-                        "SESS-015: Forwarding task terminating — subordinate {} broadcast closed",
-                        sub_id
-                    );
-                    break;
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
-                    tracing::warn!(
-                        "SESS-015: Forwarding task lagged {} messages for subordinate {}",
-                        n,
-                        sub_id
-                    );
-                    // Continue receiving — we'll catch up
-                }
-            }
-        }
-    });
+    if let Err(error) = codelet_sessions::subordinate_forwarding::spawn_forwarding(
+        &subordinate_session,
+        root_parent_id,
+        crate::stream_chunk_json::stream_chunk_to_json_value,
+    ) {
+        tracing::error!(%error, %subordinate_id, "BUG-217: cannot start subordinate forwarding");
+    }
 }
 
 /// Walk up the supervisor chain to find the root parent session.
@@ -543,14 +455,15 @@ fn handle_set_role(
 ///
 /// Any session can send a message to any other session by ID. No access control
 /// on sending — supervisor→subordinate, subordinate→supervisor, and peer-to-peer
-/// are all allowed. Self-messaging is also allowed.
+/// are all allowed when the recipient is idle, including self-messaging.
 ///
 /// When context references are provided (AMGR-011), they are resolved at send time
 /// using the persistence layer. Resolved content is appended after the sender's
 /// message text as XML-style <quoted-context> blocks.
 ///
 /// Messages are delivered through the target session's existing incoming_message
-/// channel (mpsc, capacity 16). If the channel is full, returns delivery_failed.
+/// channel. Busy recipients return session_busy without queueing the message.
+/// Admission claims the recipient as running before publishing the message.
 fn handle_message(
     session_manager: &SessionManager,
     calling_session_id: Uuid,
@@ -589,8 +502,7 @@ fn handle_message(
         images: None,
     };
 
-    // Deliver via the target's incoming_message channel (non-blocking try_send)
-    match target_session.receive_incoming_message(incoming) {
+    match target_session.receive_agent_message(incoming) {
         Ok(()) => match context_info {
             Some(resolved_count) => AgentManagerResult::MessageDeliveredWithContext {
                 delivered: true,
@@ -602,9 +514,7 @@ fn handle_message(
                 session_id: target_session_id.to_string(),
             },
         },
-        Err(_) => AgentManagerResult::delivery_failed(&format!(
-            "Incoming message channel full for session {target_session_id}"
-        )),
+        Err(error) => error.into(),
     }
 }
 
@@ -930,7 +840,6 @@ async fn handle_await_idle(
     session_ids: Vec<String>,
     timeout: Option<u64>,
 ) -> AgentManagerResult {
-    use codelet_rpc_types::SessionState;
     use std::time::Duration;
     use tokio::time::Instant;
 
@@ -943,10 +852,7 @@ async fn handle_await_idle(
 
     // Phase 1: Validate all sessions exist and check which are already idle
     let mut results: Vec<AwaitSessionResult> = Vec::new();
-    let mut pending: Vec<(
-        String,
-        tokio::sync::broadcast::Receiver<codelet_rpc_types::StreamChunk>,
-    )> = Vec::new();
+    let mut pending = Vec::new();
 
     for id in &session_ids {
         let session = match session_manager.get_session(id) {
@@ -954,14 +860,16 @@ async fn handle_await_idle(
             Err(_) => return AgentManagerResult::session_not_found(id),
         };
 
-        if session.get_status().as_str() == "idle" {
+        if let Some(receiver) = agent_manager_wait::subscribe_before_check(
+            || session.subscribe_to_stream(),
+            || session.get_status().as_str() == "idle",
+        ) {
+            pending.push((id.clone(), receiver, Arc::downgrade(&session)));
+        } else {
             results.push(AwaitSessionResult {
                 session_id: id.clone(),
                 status: AwaitOutcome::Idle,
             });
-        } else {
-            let rx = session.subscribe_to_stream();
-            pending.push((id.clone(), rx));
         }
     }
 
@@ -981,34 +889,15 @@ async fn handle_await_idle(
 
     // Spawn a task per pending session that watches its broadcast channel
     let mut join_set = tokio::task::JoinSet::new();
-    for (id, mut rx) in pending {
+    for (id, receiver, session) in pending {
         join_set.spawn(async move {
-            loop {
-                // AMGR-017: instrumented hot-loop marker — sub-1ns cost when no profile session is active.
-                // One of the prime suspects from the PROV-053/054 CPU spike investigation. If this scope
-                // shows a high call_count during a profile window, the per-session broadcast receiver is
-                // spinning without making progress.
-                codelet_tools::profile_scope!("handle_await_idle::per_session_recv_loop");
-                match rx.recv().await {
-                    Ok(chunk) => {
-                        if let codelet_rpc_types::StreamChunk::SessionStateChange { state } = &chunk
-                        {
-                            if *state == SessionState::Idle {
-                                return (id, AwaitOutcome::Idle);
-                            }
-                        }
-                    }
-                    Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                        return (id, AwaitOutcome::Destroyed);
-                    }
-                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
-                        // AMGR-017: counter-only witness scope — tracks silent-continue events so a
-                        // profile run can distinguish "spinning doing nothing" from "receiving chunks fast".
-                        codelet_tools::profile_scope!("handle_await_idle::lagged_continue");
-                        continue;
-                    }
-                }
-            }
+            let outcome = agent_manager_wait::wait(receiver, || {
+                session
+                    .upgrade()
+                    .map(|session| session.get_status().as_str() == "idle")
+            })
+            .await;
+            (id, outcome)
         });
     }
 

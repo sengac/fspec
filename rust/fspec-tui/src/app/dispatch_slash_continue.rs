@@ -6,13 +6,11 @@
 //! auto-continue state, prints the new state (or the rejection/error
 //! notice) into the scrollback, and — when the state changed — round-trips
 //! the absolute `(enabled, budget)` pair to the backend via
-//! `FspecBackend::set_continue_state` (the `/compact` fire-and-forget
-//! pattern: only the Err branch emits, via `Action::EmitSessionNotice` so
-//! the error lands on the originating session even after a focus switch).
+//! `FspecBackend::set_continue_state`. Unknown relative commands wait for
+//! hydration; ordered writes reconcile failures using revision-guarded
+//! responses bound to the originating session.
 //!
 //! `RejectZero` / `Invalid` never reach the backend — state unchanged.
-
-use crate::components::Action;
 
 use super::continue_parser::{apply_continue_subcommand, ContinueSubcommand};
 use super::state::App;
@@ -26,6 +24,35 @@ impl App {
             return;
         };
 
+        let pending = !self
+            .continue_sync
+            .entry(session_id.clone())
+            .or_default()
+            .pending
+            .is_empty();
+        let unknown_relative = self
+            .agent_view_store
+            .continue_state_loaded_for(&session_id)
+            .is_none()
+            && matches!(sub, ContinueSubcommand::Toggle | ContinueSubcommand::Off);
+        if pending || unknown_relative {
+            self.continue_sync
+                .entry(session_id.clone())
+                .or_default()
+                .pending
+                .push(sub);
+            self.spawn_hydrate_continue_state(session_id);
+            return;
+        }
+        self.apply_session_continue_subcommand(session_id, sub);
+    }
+
+    pub(crate) fn apply_session_continue_subcommand(
+        &mut self,
+        session_id: codelet_rpc_types::SessionId,
+        sub: ContinueSubcommand,
+    ) {
+        let previous = self.agent_view_store.continue_state_loaded_for(&session_id);
         let (enabled, budget) = self.agent_view_store.continue_state_for(&session_id);
         // CONT-003: /continue off is refused while a goal is active.
         let goal_active = self.agent_view_store.goal_state_for(&session_id).is_some();
@@ -37,10 +64,7 @@ impl App {
         } else {
             "[error]"
         };
-        self.navigator.agent.push_line(
-            &mut self.agent_view_store,
-            format!("{prefix} {}", outcome.message),
-        );
+        self.handle_emit_session_notice(&session_id, format!("{prefix} {}", outcome.message));
 
         if !outcome.changed {
             return;
@@ -56,24 +80,6 @@ impl App {
         // through an active stream; the next TurnStart emission re-syncs.
         self.agent_view_store.clear_continue_live(&session_id);
 
-        // Backend round-trip (fire-and-forget; /compact pattern).
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let (new_enabled, new_budget) = (outcome.enabled, outcome.budget);
-        let handle = tokio::spawn(async move {
-            if let Err(e) = backend
-                .set_continue_state(session_id.clone(), new_enabled, new_budget)
-                .await
-            {
-                let _ = action_tx.send(Action::EmitSessionNotice(
-                    session_id,
-                    format!("[error] /continue failed: {e}"),
-                ));
-            }
-        });
-        self.pending_tasks.push(handle);
+        self.spawn_continue_write(session_id, (outcome.enabled, outcome.budget), previous);
     }
 }

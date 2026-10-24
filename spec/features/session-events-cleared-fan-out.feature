@@ -6,7 +6,6 @@
 @clear
 @rpc-436
 Feature: Session cleared event fan-out (SessionEvent::Cleared) over the RPC-433 wire stream
-
   """
   Wire-side half of RPC-436: completes the RPC-433 session lifecycle event
   coverage with the third lifecycle transition: clear. SessionEvent gains a
@@ -45,7 +44,6 @@ Feature: Session cleared event fan-out (SessionEvent::Cleared) over the RPC-433 
   #   StreamChunk::SessionStateChange { state: Cleared } chunks stream.
   #
   # ========================================
-
   Background: User Story
     As a operator connected to the fspec daemon
     I want to clear a session's history from any machine

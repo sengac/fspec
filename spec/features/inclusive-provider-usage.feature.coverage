@@ -1,0 +1,229 @@
+{
+  "scenarios": [
+    {
+      "name": "Inclusive provider subsets count once",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct065_provider_usage.rs",
+          "lines": "59-85",
+          "implMappings": [
+            {
+              "file": "rust/core/src/token_usage.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                83,
+                84,
+                85
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic disjoint categories retain full occupancy",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct065_provider_usage.rs",
+          "lines": "87-102",
+          "implMappings": [
+            {
+              "file": "rust/core/src/token_usage.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini live and final usage preserve the same occupancy",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct065_provider_usage.rs",
+          "lines": "104-126",
+          "implMappings": [
+            {
+              "file": "rust/core/src/token_usage.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inconsistent provider subsets remain unknown",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct065_provider_usage.rs",
+          "lines": "128-150",
+          "implMappings": [
+            {
+              "file": "rust/core/src/token_usage.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inclusive subset normalization preserves detail across valid counts",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct065_provider_usage.rs",
+          "lines": "14-38",
+          "implMappings": [
+            {
+              "file": "rust/core/src/token_usage.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct065_provider_usage.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/token_usage.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+      "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+      "rust/patches/rig-core/src/providers/gemini/streaming.rs"
+    ],
+    "totalLinesCovered": 213
+  }
+}

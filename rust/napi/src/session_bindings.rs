@@ -70,7 +70,7 @@ static CHUNK_FANOUT_TSFN: OnceCell<
 > = OnceCell::new();
 
 /// BRIDGE-012: Arguments passed to the global chunk callback
-#[napi(object)]
+#[napi(object, object_from_js = false)]
 #[derive(Clone)]
 pub struct GlobalChunkCallbackArgs {
     pub session_id: String,
@@ -1963,14 +1963,8 @@ pub async fn session_set_model(
     let session = SessionManager::instance()
         .get_session(&session_id)
         .map_err(napi::Error::from_reason)?;
-
-    // Update metadata for display
-    session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
-
-    // Construct model string and update the inner ProviderManager
     let model_string = format!("{}/{}", provider_id, model_id);
     tracing::debug!("session_set_model: selecting model_string={}", model_string);
-
     let mut inner = session.inner.lock().await;
 
     // PROV-095: For custom Rhai providers, fetch all three script-set
@@ -1994,23 +1988,18 @@ pub async fn session_set_model(
         .map(|v| v as u32)
         .or(max_output_tokens);
 
-    // CTX-008: Set compaction threshold override from TUI configuration
+    // CTX-008: Resolve compaction threshold override from TUI configuration
     // PROV-095: When the TUI has not supplied an explicit threshold AND
     // the selected provider is a Rhai custom provider, consult the
     // script's `get_model_limits(config).compaction_threshold` return
     // value so scripts can surface their own defaults.
-    if let (Some(ct_type), Some(ct_value)) =
+    let threshold_override = if let (Some(ct_type), Some(ct_value)) =
         (&compaction_threshold_type, compaction_threshold_value)
     {
-        inner
-            .provider_manager_mut()
-            .set_compaction_threshold_override(Some((ct_type.clone(), ct_value as u64)));
+        Some((ct_type.clone(), ct_value as u64))
     } else {
-        inner
-            .provider_manager_mut()
-            .set_compaction_threshold_override(scripted.compaction_threshold.clone());
-    }
-
+        scripted.compaction_threshold
+    };
     // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
     let result = if provider_id == "codex" {
         inner.provider_manager_mut().set_model_direct(
@@ -2037,6 +2026,14 @@ pub async fn session_set_model(
     };
     match result {
         Ok(()) => {
+            if threshold_override.is_some() {
+                inner
+                    .provider_manager_mut()
+                    .set_compaction_threshold_override(threshold_override);
+            }
+            inner.apply_provider_runtime_settings();
+            session.inherit_continue_state(inner.continue_enabled, inner.continue_budget);
+            (inner.continue_enabled, inner.continue_budget) = session.get_continue_state();
             // CTX-006: Cache resolved model limits from ProviderManager for sync access
             let context_window = inner.provider_manager().context_window() as u32;
             let max_output = inner.provider_manager().max_output_tokens() as u32;
@@ -2053,6 +2050,7 @@ pub async fn session_set_model(
                 user_config.as_ref(),
             ) as u32;
             session.set_model_limits(context_window, max_output, compaction_thresh);
+            session.set_model(Some(provider_id), Some(model_id));
             tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
 
             // BUG-168: update the tool-layer capability registry on model switch
@@ -2129,9 +2127,6 @@ pub async fn session_set_model_profile(
         .get_session(&session_id)
         .map_err(napi::Error::from_reason)?;
 
-    // Update metadata for display
-    session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
-
     // Use set_model_direct which skips registry validation
     // MODEL-005: Pass context params through to ProviderManager
     // MODEL-004: Pass facade_override through to ProviderManager
@@ -2156,23 +2151,19 @@ pub async fn session_set_model_profile(
         .map(|v| v as u32)
         .or(max_output_tokens);
 
-    // CTX-008: Set compaction threshold override from TUI configuration.
+    // CTX-008: Resolve compaction threshold override from TUI configuration.
     // PROV-095: When the TUI has not supplied an explicit threshold,
     // consult the Rhai script's get_model_limits(config).compaction_threshold
     // so scripts can surface their own defaults through this profile
     // path too (the TUI routes custom providers through here, not
     // through session_set_model).
-    if let (Some(ct_type), Some(ct_value)) =
+    let threshold_override = if let (Some(ct_type), Some(ct_value)) =
         (&compaction_threshold_type, compaction_threshold_value)
     {
-        inner
-            .provider_manager_mut()
-            .set_compaction_threshold_override(Some((ct_type.clone(), ct_value as u64)));
+        Some((ct_type.clone(), ct_value as u64))
     } else {
-        inner
-            .provider_manager_mut()
-            .set_compaction_threshold_override(scripted.compaction_threshold.clone());
-    }
+        scripted.compaction_threshold
+    };
 
     match inner.provider_manager_mut().set_model_direct_with_profile(
         &provider_id,
@@ -2183,6 +2174,14 @@ pub async fn session_set_model_profile(
         facade_override.clone(),
     ) {
         Ok(()) => {
+            if threshold_override.is_some() {
+                inner
+                    .provider_manager_mut()
+                    .set_compaction_threshold_override(threshold_override);
+            }
+            inner.apply_provider_runtime_settings();
+            session.inherit_continue_state(inner.continue_enabled, inner.continue_budget);
+            (inner.continue_enabled, inner.continue_budget) = session.get_continue_state();
             // PROV-067: For custom providers, derive the facade from
             // api_style if no explicit facade_override was provided.
             // This ensures the agent loop dispatches through the correct
@@ -2243,6 +2242,7 @@ pub async fn session_set_model_profile(
                 resolved_max_output,
                 profile_compaction_thresh,
             );
+            session.set_model(Some(provider_id), Some(model_id));
             tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
 
             // BUG-168: update the tool-layer capability registry on model switch
@@ -2954,6 +2954,7 @@ pub async fn session_restore_token_state(
     let mut inner = session.inner.lock().await;
 
     inner.token_tracker.input_tokens = input_tokens as u64;
+    inner.token_tracker.input_accounting = codelet_core::compaction::InputAccounting::Restored;
     inner.token_tracker.output_tokens = output_tokens as u64;
     inner.token_tracker.cache_read_input_tokens = Some(cache_read_tokens as u64);
     inner.token_tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);

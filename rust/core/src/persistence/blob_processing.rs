@@ -142,75 +142,44 @@ pub fn process_envelope_for_blob_storage(
 /// Restores the original content that was replaced with blob references
 /// by [`process_envelope_for_blob_storage`].
 pub fn rehydrate_envelope_blobs(envelope_json: &str) -> Result<String, String> {
-    // Parse the envelope JSON.
-    let mut envelope: MessageEnvelope = serde_json::from_str(envelope_json)
-        .map_err(|e| format!("Failed to parse envelope for rehydration: {e}"))?;
-
-    match &mut envelope.message {
-        MessagePayload::User(user_msg) => {
-            for content in &mut user_msg.content {
-                match content {
-                    UserContent::ToolResult {
-                        content: result_content,
-                        ..
-                    } => {
-                        if let Some(hash) = extract_blob_hash(result_content) {
-                            let blob_data = get_blob(hash)?;
-                            *result_content = String::from_utf8_lossy(&blob_data).to_string();
-                        }
-                    }
-                    UserContent::Image {
-                        source: ImageSource::Base64 { data, .. },
-                    } => {
-                        if let Some(hash) = extract_blob_hash(data) {
-                            let blob_data = get_blob(hash)?;
-                            *data = String::from_utf8_lossy(&blob_data).to_string();
-                        }
-                    }
-                    UserContent::Document {
-                        source: DocumentSource::Base64 { data, .. },
-                        ..
-                    } => {
-                        if let Some(hash) = extract_blob_hash(data) {
-                            let blob_data = get_blob(hash)?;
-                            *data = String::from_utf8_lossy(&blob_data).to_string();
-                        }
-                    }
-                    _ => {}
+    serde_json::from_str::<MessageEnvelope>(envelope_json)
+        .map_err(|error| format!("Failed to parse envelope for rehydration: {error}"))?;
+    let mut envelope: serde_json::Value = serde_json::from_str(envelope_json)
+        .map_err(|error| format!("Failed to parse envelope for rehydration: {error}"))?;
+    if let Some(contents) = envelope["message"]["content"].as_array_mut() {
+        for content in contents {
+            if content["type"] == "tool_use" {
+                if let Some(hash) = content["input"]["_blob_ref"]
+                    .as_str()
+                    .and_then(extract_blob_hash)
+                {
+                    let blob_data = get_blob(hash)?;
+                    content["input"] = serde_json::from_str(&String::from_utf8_lossy(&blob_data))
+                        .map_err(|error| {
+                        format!("Failed to parse rehydrated tool input: {error}")
+                    })?;
                 }
+                continue;
             }
-        }
-        MessagePayload::Assistant(assistant_msg) => {
-            for content in &mut assistant_msg.content {
-                match content {
-                    AssistantContent::Thinking { thinking, .. } => {
-                        if let Some(hash) = extract_blob_hash(thinking) {
-                            let blob_data = get_blob(hash)?;
-                            *thinking = String::from_utf8_lossy(&blob_data).to_string();
-                        }
-                    }
-                    AssistantContent::ToolUse { input, .. } => {
-                        // Check if input contains a blob reference marker.
-                        if let Some(blob_ref) = input.get("_blob_ref").and_then(|v| v.as_str()) {
-                            if let Some(hash) = extract_blob_hash(blob_ref) {
-                                let blob_data = get_blob(hash)?;
-                                let input_str = String::from_utf8_lossy(&blob_data);
-                                // Parse the original input JSON and restore it.
-                                *input = serde_json::from_str(&input_str).map_err(|e| {
-                                    format!("Failed to parse rehydrated tool input: {e}")
-                                })?;
-                            }
-                        }
-                    }
-                    _ => {}
+            let value = match content["type"].as_str() {
+                Some("tool_result") => content.get_mut("content"),
+                Some("thinking") => content.get_mut("thinking"),
+                Some("image" | "document") if content["source"]["type"] == "base64" => {
+                    content.pointer_mut("/source/data")
+                }
+                _ => None,
+            };
+            if let Some(value) = value {
+                if let Some(hash) = value.as_str().and_then(extract_blob_hash) {
+                    let blob_data = get_blob(hash)?;
+                    *value =
+                        serde_json::Value::String(String::from_utf8_lossy(&blob_data).into_owned());
                 }
             }
         }
     }
-
-    // Serialize back to JSON.
     serde_json::to_string(&envelope)
-        .map_err(|e| format!("Failed to serialize rehydrated envelope: {e}"))
+        .map_err(|error| format!("Failed to serialize rehydrated envelope: {error}"))
 }
 
 #[cfg(test)]

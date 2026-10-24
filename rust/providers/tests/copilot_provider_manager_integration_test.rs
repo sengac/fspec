@@ -44,7 +44,7 @@ async fn install_fake_copilot_credential(enterprise_url: Option<String>) {
 #[serial]
 async fn test_login_github_com_copilot_routes_through_provider_manager() {
     // @step Given I have an active GitHub Copilot subscription on github.com
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And I have no existing github-copilot credential on disk
     let auth_path = get_copilot_auth_path();
@@ -93,7 +93,7 @@ async fn test_login_github_com_copilot_routes_through_provider_manager() {
 #[serial]
 async fn test_login_github_enterprise_routes_through_provider_manager() {
     // @step Given I have an active GitHub Copilot subscription on a GitHub Enterprise instance
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And I have no existing github-copilot credential on disk
     assert!(!get_copilot_auth_path().exists());
@@ -125,7 +125,7 @@ async fn test_login_github_enterprise_routes_through_provider_manager() {
 #[serial]
 async fn test_gpt_4o_copilot_routes_to_chat_completions_via_manager() {
     // @step Given I am logged in to github-copilot with a valid credential
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let _manager = ProviderManager::with_provider("github-copilot")
         .expect("manager should accept github-copilot once the credential file exists");
@@ -176,7 +176,7 @@ async fn test_gpt_4o_copilot_routes_to_chat_completions_via_manager() {
 #[serial]
 async fn test_gpt_5_routes_to_responses_endpoint_via_manager() {
     // @step Given I am logged in to github-copilot with a valid credential
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let _manager = ProviderManager::with_provider("github-copilot")
         .expect("manager should accept github-copilot once the credential file exists");
@@ -215,7 +215,7 @@ async fn test_gpt_5_routes_to_responses_endpoint_via_manager() {
 #[serial]
 async fn test_gpt_5_mini_uses_chat_completions_via_manager() {
     // @step Given I am logged in to github-copilot with a valid credential
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let _manager = ProviderManager::with_provider("github-copilot")
         .expect("manager should accept github-copilot once the credential file exists");
@@ -238,7 +238,7 @@ async fn test_gpt_5_mini_uses_chat_completions_via_manager() {
 #[serial]
 async fn test_image_attachment_triggers_vision_header_via_manager() {
     // @step Given I am logged in to github-copilot with a valid credential
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let _manager = ProviderManager::with_provider("github-copilot")
         .expect("manager should accept github-copilot once the credential file exists");
@@ -283,7 +283,7 @@ async fn test_image_attachment_triggers_vision_header_via_manager() {
 #[serial]
 async fn test_logout_deletes_credential_visible_to_manager() {
     // @step Given I am logged in to github-copilot with a credential at "~/.fspec/credentials/copilot_auth.json"
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let auth_path = get_copilot_auth_path();
     assert!(auth_path.exists());
@@ -320,7 +320,7 @@ async fn test_model_picker_fetches_live_catalog_via_manager() {
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
     // @step Given I am logged in to github-copilot with a valid credential
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
     let _manager = ProviderManager::with_provider("github-copilot")
         .expect("manager should accept github-copilot once the credential file exists");
@@ -436,7 +436,7 @@ fn provider_credentials_struct_exposes_github_copilot_field() {
 async fn provider_manager_get_github_copilot_returns_llm_provider() {
     use codelet_providers::LlmProvider;
 
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
 
     let manager = ProviderManager::with_provider_and_model(
@@ -466,7 +466,7 @@ async fn provider_manager_get_github_copilot_returns_llm_provider() {
 async fn provider_manager_get_github_copilot_honors_enterprise_deployment() {
     use codelet_providers::copilot::CopilotDeploymentType;
 
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(Some("ghe.example.com".to_string())).await;
 
     let manager = ProviderManager::with_provider_and_model(
@@ -495,7 +495,7 @@ async fn provider_manager_get_github_copilot_honors_enterprise_deployment() {
 #[tokio::test]
 #[serial]
 async fn provider_manager_get_github_copilot_requires_selected_model() {
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
 
     let manager = ProviderManager::with_provider("github-copilot")
@@ -510,7 +510,7 @@ async fn provider_manager_get_github_copilot_requires_selected_model() {
 #[tokio::test]
 #[serial]
 async fn provider_manager_get_github_copilot_rejects_wrong_current_provider() {
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     install_fake_copilot_credential(None).await;
 
     // Force a Copilot credential to be detected but then construct the

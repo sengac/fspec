@@ -4,7 +4,6 @@
 @astgrep
 @CLI-015
 Feature: Harness workflow guidance references the AstGrep tool
-
   """
   FSPEC_WORKFLOW_GUIDANCE (rust/tools/src/fspec_workflow_guidance.rs) is
   harness-only — it is injected into the native agent system prompt, never

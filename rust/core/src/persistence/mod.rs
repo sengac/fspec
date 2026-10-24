@@ -26,13 +26,35 @@
 //! 9-test persistence suites that previously lived under codelet-napi
 //! now live in `rust/core/src/persistence/{tests,lazy_init_tests}.rs`.
 
+pub mod archive;
 pub mod blob;
+pub use archive::{
+    get_session_archival_page, ArchiveCursor, ArchiveError, ArchiveFragment, ArchivePage,
+    ArchiveRecordKind,
+};
 pub mod blob_processing;
+pub mod compaction_boundary;
+pub mod compaction_commit;
+pub mod conversation_commit;
 pub mod history;
 pub mod manifest;
+pub mod manifest_commit;
+mod manifest_delete;
+mod manifest_updates;
+pub mod request_settlement;
+pub mod session_lifecycle;
+mod session_replay;
+pub use session_replay::envelopes_for_manifest;
 pub mod message_envelope;
 pub mod messages;
+mod original_blobs;
+pub mod originals;
+pub mod provider_state;
+pub use provider_state::{
+    migrate_provider_state, persist_provider_state, ProviderStateError, ProviderStateRef,
+};
 pub mod sessions;
+pub mod transcript;
 
 #[cfg(test)]
 mod tests;
@@ -44,6 +66,8 @@ pub use blob::*;
 pub use blob_processing::*;
 pub use history::{add, get, search, HistoryEntry, HistoryStore, PastedContent};
 pub use manifest::*;
+pub use manifest_commit::ManifestCommitError;
+pub use manifest_updates::update_session_manifest;
 pub use message_envelope::*;
 pub use messages::{compute_hash, MessageRef, MessageSource, MessageStore, StoredMessage};
 // RPC-033: `delete_session` now lives canonically in `manifest`. The

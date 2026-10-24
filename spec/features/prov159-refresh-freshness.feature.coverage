@@ -1,0 +1,105 @@
+{
+  "scenarios": [
+    {
+      "name": "Expired JWTs override stale future expiry metadata",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_freshness.rs",
+          "lines": "15-43",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unchanged refresh tokens still publish renewed freshness",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_freshness.rs",
+          "lines": "47-80",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov159_refresh_freshness.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_refresh.rs"
+    ],
+    "totalLinesCovered": 120
+  }
+}

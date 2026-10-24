@@ -57,7 +57,7 @@ Feature: Provider Settings screen renders empty — rich RPC-103 nav tree never 
     Then a "Logout from OAuth [Anthropic]" row appears beneath the "anthropic" provider
     And one or more OAuth login rows appear beneath the "anthropic" provider
 
-  Scenario: Expanding an uncredentialed OAuth provider reveals only login rows
+  Scenario: Expanding an uncredentialed OAuth provider reveals login rows
     Given the Provider Settings view has loaded a "codex" provider of credential type "oauth" that is not configured
     When the "codex" provider row is expanded
     Then no logout row appears beneath the "codex" provider
@@ -75,4 +75,4 @@ Feature: Provider Settings screen renders empty — rich RPC-103 nav tree never 
     Given the Provider Settings view has loaded a "gemini" provider of credential type "api_key"
     And the header item count reports 1 item
     When the "gemini" provider row is expanded
-    Then the header item count reports 2 items
+    Then the header item count reports 4 items

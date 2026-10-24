@@ -116,7 +116,6 @@ Feature: Add PDF Reading Support to Read Tool
   # ====================================================================
   # BUG-168: PDF pagination, configurable page cap, vision awareness
   # ====================================================================
-
   @bug-168
   @truncation
   Scenario: Visual mode honors offset and limit for PDF pages

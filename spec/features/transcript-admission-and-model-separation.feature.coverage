@@ -1,0 +1,123 @@
+{
+  "scenarios": [
+    {
+      "name": "Transcript outcomes never enter model originals",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug250_terminal_archive.rs",
+          "lines": "14-47",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                67,
+                81,
+                130,
+                160,
+                168,
+                184,
+                280,
+                289,
+                298,
+                302,
+                346,
+                350,
+                363,
+                376,
+                383,
+                387,
+                396,
+                400,
+                712,
+                727
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/stream_journal.rs",
+              "lines": [
+                3,
+                21,
+                40,
+                58,
+                69,
+                97,
+                186,
+                195,
+                204,
+                208,
+                212,
+                219
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transcript persistence failure blocks publication and dispatch",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug250_terminal_archive.rs",
+          "lines": "51-86",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                67,
+                81,
+                130,
+                160,
+                168,
+                184,
+                280,
+                289,
+                298,
+                302,
+                346,
+                350,
+                363,
+                376,
+                383,
+                387,
+                396,
+                400,
+                712,
+                727
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/stream_journal.rs",
+              "lines": [
+                3,
+                21,
+                40,
+                58,
+                69,
+                97,
+                186,
+                195,
+                204,
+                208,
+                212,
+                219
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug250_terminal_archive.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/background_output.rs",
+      "rust/agent-loop/src/stream_journal.rs"
+    ],
+    "totalLinesCovered": 134
+  }
+}

@@ -6,7 +6,6 @@
 @bug
 @git-ops
 Feature: Git capture is O(repo size): double lookup_entry_by_path passes, per-file sha1 over all indexed files, whole-worktree walkdir, and a fresh cold gix::open handle per call
-
   """
   1) codelet-git: add pub(crate) `*_with_repo(repo: &gix::Repository, ...)` internal variants in status.rs/change_type.rs that accept a shared handle; keep the public dir-based fns as thin wrappers (open_repo + delegate). 2) status.rs: get_staged_files returns the per-path in-HEAD verdict alongside the staged list; get_staged_files_with_change_type reuses it (single lookup pass). 3) status.rs: get_unstaged_files compares fs mtime+size against the index entry stat (Stat::mtime.secs/nsecs, size) before reading+hashing; hash only as fallback. 4) git_state.rs: capture_git_state opens ONE gix::Repository and calls the *_with_repo variants for staged/unstaged/untracked.
   """
@@ -29,7 +28,6 @@ Feature: Git capture is O(repo size): double lookup_entry_by_path passes, per-fi
   #   1. Out of scope this unit: gating get_untracked_files on a worktree fs-event (item 4) — that requires watching the worktree itself (today only .git is watched, recursively), a detection-semantics change that would silently stop surfacing newly-untracked files on steady-state ticks. The untracked walk still runs per capture, but items 1-3 (shared handle, single lookup pass, stat-first) make the common unchanged case cheap. BUG-188's signature gate means the capture only re-runs when .git actually changed.
   #
   # ========================================
-
   Background: User Story
     As an agent supervisor watching a large workspace
     I want a GitState capture to run on a repo with thousands of tracked files
@@ -41,13 +39,11 @@ Feature: Git capture is O(repo size): double lookup_entry_by_path passes, per-fi
     Then the staged, unstaged, and untracked collectors all ran against the SAME gix::Repository handle
     And the combined changed_files list is byte-identical to what the three separate public dir-based calls produce
 
-
   Scenario: Staged-with-change-type issues exactly one tree lookup per staged path
     Given a temp git repo with committed tracked files, some of which are staged with differing content
     When get_staged_files_with_change_type is called against that repo
     Then exactly one tree lookup is issued per staged path (the in-HEAD verdict is reused, not re-derived) and the returned paths + A/M/D letters match the previous double-pass result
     And a staged NEW file (absent from HEAD) is reported as Added, a staged MODIFIED file as Modified, and a staged file deleted from the working directory as Deleted
-
 
   Scenario: Unstaged detection is stat-first (no full-file read when the stat matches)
     Given a temp git repo with committed tracked files whose index stat matches the on-disk mtime+size

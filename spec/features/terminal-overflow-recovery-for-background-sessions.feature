@@ -9,10 +9,11 @@ Feature: Terminal overflow recovery for background sessions
   a provider context-overflow error the in-loop cascade could not
   resolve, the agent-loop terminal-error arm routes it through the SAME
   compactor recovery entry point the stream loop uses — the session's
-  context is cleared to reminders plus a DAG, the session returns to
-  Idle, and the next user message starts a fresh stream on the reduced
-  context (the oversized payload is never replayed). This feature also
-  carries the shared spawner contracts (handler registration
+  context is cleared to reminders plus a DAG, and unfinished work resumes
+  on the reduced context without a new user message (the oversized payload
+  is never replayed). BUG-210 owns that scenario and the bounded automatic
+  continuation contract in automatic-compaction-continuation.feature.
+  This feature retains the shared spawner contracts (handler registration
   lifecycle, the read-only tool surface, and the FRESH/INCREMENTAL
   prompt selection) that the compactor sub-agent must uphold on every
   path.
@@ -22,18 +23,6 @@ Feature: Terminal overflow recovery for background sessions
     As a background agent session
     I want my terminal context-overflow errors to route through the compactor recovery
     So that I compact and resume instead of dying when the in-loop recovery cannot resolve the overflow
-
-  @compaction
-  @context-management
-  @session
-  @integration
-  Scenario: Background session terminal overflow error compacts via the same entry point
-    Given a background agent-loop session whose turn dies with a context-overflow error that no classifier matched
-    When the agent-loop terminal-error arm processes the error
-    Then the compactor recovery entry point runs for that session
-    And the session's context is cleared to reminders plus a DAG
-    And the session returns to Idle
-    And the next user message starts a fresh stream on the reduced context
 
   @compaction
   @context-management

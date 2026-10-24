@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "Attempt boundaries retain their identity through JSON",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
+          "lines": "9-26",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/streaming_attempt_marker.rs",
+              "lines": [15, 18, 21, 24, 27, 30, 33, 36]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multi-turn envelopes preserve attempt boundaries",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
+          "lines": "28-44",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/streaming_attempt_marker.rs",
+              "lines": [15, 18, 21, 24, 27, 30, 33, 36]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing content encodings remain unchanged",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs",
+          "lines": "46-57",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/streaming.rs",
+              "lines": [668, 681]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/patches/rig-core/tests/response_attempt_marker_serialization.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/streaming_attempt_marker.rs",
+      "rust/patches/rig-core/src/streaming.rs"
+    ],
+    "totalLinesCovered": 47
+  }
+}

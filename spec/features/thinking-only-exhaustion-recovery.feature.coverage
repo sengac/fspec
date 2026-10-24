@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "Thinking-only length stop recovers without numerical reasoning usage",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "11-49",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352,
+                1353,
+                1354,
+                1355,
+                1356,
+                1357,
+                1358,
+                1359,
+                1360,
+                1361,
+                1362,
+                1363,
+                1364
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Repeated thinking-only length stops exhaust the bounded recovery budget",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "51-73",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352,
+                1353,
+                1354,
+                1355,
+                1356,
+                1357,
+                1358,
+                1359,
+                1360,
+                1361,
+                1362,
+                1363,
+                1364
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Useful answer progress and ordinary truncation do not trigger thinking-only recovery",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "75-98",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-length thinking-only completions do not enter exhaustion recovery",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "100-119",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terminal provider errors do not trigger thinking-only recovery",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "121-144",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1772,
+                1773,
+                1774,
+                1775
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User cancellation prevents a thinking-only recovery request",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "146-159",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                769,
+                770,
+                771,
+                772,
+                773,
+                774,
+                775,
+                776,
+                777,
+                778,
+                779,
+                780,
+                781,
+                782,
+                783,
+                784,
+                785,
+                786,
+                787,
+                788,
+                789,
+                790,
+                791,
+                792,
+                793,
+                794,
+                795,
+                796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool progress prevents thinking-only recovery",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug221_thinking_only_exhaustion.rs",
+          "lines": "161-179",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug221_thinking_only_exhaustion.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/recovery_thinking.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 295
+  }
+}

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "66-110",
+          "lines": "68-113",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -63,7 +63,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "116-139",
+          "lines": "120-145",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -121,7 +121,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "145-184",
+          "lines": "152-194",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -228,7 +228,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "190-223",
+          "lines": "201-233",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -335,7 +335,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "229-242",
+          "lines": "240-253",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -359,7 +359,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_retry_prompt_policy_test.rs",
-          "lines": "248-266",
+          "lines": "260-278",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -389,6 +389,6 @@
     "implFiles": [
       "rust/cli/src/interactive/recovery_compaction.rs"
     ],
-    "totalLinesCovered": 458
+    "totalLinesCovered": 463
   }
 }

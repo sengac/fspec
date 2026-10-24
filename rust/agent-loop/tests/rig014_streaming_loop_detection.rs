@@ -93,7 +93,7 @@ fn feed_words_until_fire(det: &mut StreamLoopDetector, words: &[String]) -> Opti
     let mut count = 0;
     for w in words {
         count += 1;
-        if det.feed(w).is_some() {
+        if det.feed(&format!("{w} ")).is_some() {
             return Some(count);
         }
     }
@@ -103,7 +103,7 @@ fn feed_words_until_fire(det: &mut StreamLoopDetector, words: &[String]) -> Opti
 /// Feed all words; assert whether any signal fired.
 fn feed_all(det: &mut StreamLoopDetector, words: &[String]) -> bool {
     for w in words {
-        if det.feed(w).is_some() {
+        if det.feed(&format!("{w} ")).is_some() {
             return true;
         }
     }
@@ -326,14 +326,14 @@ fn scenario_minimum_evidence_guard() {
 
     // @step When I feed the word "yes" 29 times in a single stream
     for _ in 0..29 {
-        assert!(det.feed("yes").is_none(), "must not fire before 30 words");
+        assert!(det.feed("yes ").is_none(), "must not fire before 30 words");
     }
 
     // @step Then the detector never reports any loop signal
     // (asserted above: 29 feeds produced no signal)
 
     // @step When I feed one more "yes"
-    let thirtieth = det.feed("yes");
+    let thirtieth = det.feed("yes ");
 
     // @step Then the detector reports a loop signal
     assert!(

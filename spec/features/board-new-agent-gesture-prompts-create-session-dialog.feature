@@ -38,17 +38,17 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
 
   Contract:
   - Confirming Yes / Yes - Isolated from a BOARD surface flips to the Agent
-    view on the fresh session (the existing handle_create_session_submitted
-    board→agent flip) and does NOT bind the session to the selected work
-    unit (the store's work-unit slots are untouched; no extra AttachSession
-    fires for the selected unit beyond the pre-existing current_work_unit_id
-    auto-attach, which is unchanged behavior).
+  view on the fresh session (the existing handle_create_session_submitted
+  board→agent flip) and does NOT bind the session to the selected work
+  unit (the store's work-unit slots are untouched; no extra AttachSession
+  fires for the selected unit beyond the pre-existing current_work_unit_id
+  auto-attach, which is unchanged behavior).
   - Cancel / Esc keeps the user on the board and leaves every open session
-    untouched (the RPC-097 reopen #1 overlay contract).
+  untouched (the RPC-097 reopen #1 overlay contract).
   - The dialog title follows the shared helper's documented contract
-    (RPC-060 / RPC-097 R6): context-aware from the store's current session's
-    WorkUnitContext ('Work on <id>?' when the current session is bound to a
-    unit, else 'Start New Agent?').
+  (RPC-060 / RPC-097 R6): context-aware from the store's current session's
+  WorkUnitContext ('Work on <id>?' when the current session is bound to a
+  unit, else 'Start New Agent?').
   """
 
   # ========================================
@@ -101,7 +101,6 @@ Feature: Board 'New Agent' gesture always prompts the CreateSessionDialog
   #      gesture changed
   #
   # ========================================
-
   Background: User Story
     As a TUI user on the Kanban board
     I want to start a new agent from the 'New Agent' gesture (the '.' key, the '[ New Agent ]' Zone C button, the Kanban dropdown row, or the 'u' menu-bar-help row)

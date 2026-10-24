@@ -6,7 +6,6 @@
 @git-integration
 @wt-004
 Feature: Isolation path-validation callback is never registered in the fspec binary — isolated sessions are not actually pinned to their worktree
-
   """
   codelet-sessions gains a NAPI-free module session_tool_callbacks (sibling of footer_poller, same manager-slot pattern): register_manager(Arc<SessionManager>) stores the manager in a std::sync::Mutex<Option<Arc<SessionManager>>>; a private fn session_by_id() consults the registered manager, falling back to SessionManager::instance() when unregistered (today's NAPI behavior); pub fn isolation_context(session_id_str) -> Option<codelet_tools::facade::IsolationContext> (Some only for isolated sessions: worktree_path from session.worktree_path, blocked_project_path from session.project), pub fn work_unit_stage(session_id_str) -> Option<String> (session.get_work_unit_context().and_then(|c| c.status)), and pub fn emit_block_notification(session_id_str, action, reason) (UserNotification(Warning) chunk "AI was blocked from {action} - {reason}" on the footer_poller chunk-sender slot, singleton fallback). All three are plain fn pointers matching codelet-tools' existing callback types, so no OnceLock type changes in codelet-tools.
   build_service (rust/fspec/src/common.rs) registers the tool callbacks immediately after manager construction + set_hooks + the WT-002 register_chunk_sender call: codelet_sessions::session_tool_callbacks::register_manager(manager.clone()); codelet_tools::facade::set_get_effective_cwd_callback(codelet_sessions::session_tool_callbacks::isolation_context); codelet_tools::facade::set_get_work_unit_stage_callback(codelet_sessions::session_tool_callbacks::work_unit_stage); codelet_tools::facade::set_block_notification_callback(codelet_sessions::session_tool_callbacks::emit_block_notification). build_service returns before any session exists, so registration ordering vs session creation is safe; the OnceLocks accept the first set only — build_service is the only caller in the binary's process.
@@ -31,7 +30,6 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
   #   3. A non-isolated session created under the fspec binary still reads/writes anywhere (e.g. /tmp) exactly as before — isolation only applies to sessions that have a worktree.
   #
   # ========================================
-
   Background: User Story
     As a developer running the fspec binary (combined/daemon mode)
     I want to create an isolated (worktree) session and have every per-session tool honor that isolation
@@ -41,7 +39,6 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
   # CORE FIX — the isolation callback resolves through the fspec binary's
   # non-singleton SessionManager (business rule 1, 3)
   # ============================================================================
-
   Scenario: Isolated session under the fspec binary exposes its isolation context to the tool layer
     Given a fresh git repository with one committed file
     And a non-singleton session manager whose tool callbacks are registered the way build_service registers them
@@ -69,7 +66,6 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
   # BEHAVIORAL ENFORCEMENT — file tools honor the boundary under the binary
   # (business rule 4)
   # ============================================================================
-
   Scenario: Write tool of an isolated session blocks absolute paths into the original project
     Given a non-singleton session manager registered as the tool-callbacks manager
     And an isolated session created against a fresh git repository that contains a tracked source file
@@ -99,7 +95,6 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
   # BLOCK-006 + notification parity — stage-gated writes and block
   # notifications are live in the fspec binary (business rule 6)
   # ============================================================================
-
   Scenario: Work unit stage lookup under the fspec binary reads the session's work unit context
     Given a non-singleton session manager registered as the tool-callbacks manager
     And a session with a work unit context whose status is testing
@@ -122,7 +117,6 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
   # ============================================================================
   # TWO FRONT DOORS — the NAPI front door keeps working (business rule 5)
   # ============================================================================
-
   Scenario: The NAPI front door registers the shared codelet-sessions callback functions
     Given the codelet-napi crate source after this fix
     When init_block_notification_callbacks is inspected
@@ -136,4 +130,3 @@ Feature: Isolation path-validation callback is never registered in the fspec bin
     And an isolated session created in the singleton manager against a fresh git repository
     When the tool layer resolves the isolation context for that session id
     Then the singleton manager's session is found and the context matches its worktree path and project root
-

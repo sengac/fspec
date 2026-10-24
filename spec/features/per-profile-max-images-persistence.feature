@@ -26,7 +26,6 @@ Feature: Per-profile Max Images persistence
   # ========================================
   # PERSISTENCE: wire <-> disk round trip
   # ========================================
-
   Scenario: The maxImages value round-trips through wire and disk
     Given a profile definition with maxImages 7
     When the profile is saved to fspec-config.json

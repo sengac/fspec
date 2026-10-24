@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "Streaming Chat preserves configured and absent output limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_output_limits.rs",
+          "lines": "39-47",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                1173,
+                1174,
+                1216,
+                1261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonstreaming Chat preserves configured and absent output limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_output_limits.rs",
+          "lines": "49-57",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                1173,
+                1174,
+                1216,
+                1261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct Chat completion preserves configured and absent output limits",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_output_limits.rs",
+          "lines": "59-96",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                1173,
+                1174,
+                1216,
+                1261
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct071_builtin_output_limits.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/openai/completion/mod.rs"
+    ],
+    "totalLinesCovered": 68
+  }
+}

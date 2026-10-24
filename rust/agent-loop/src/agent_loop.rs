@@ -47,7 +47,8 @@ use codelet_sessions::background_session::{
 };
 
 // RPC-043: persistence helpers live in `crate::persist`.
-use crate::persist::{persist_pending_annotations, persist_user_message};
+use crate::persist::persist_pending_annotations;
+use crate::user_persistence::persist_user_input;
 
 // RPC-043: bridge wiring + handler registration helpers live in
 // `crate::bridges`. The agent_loop body calls
@@ -64,6 +65,7 @@ use crate::is_global_chunk_callback_registered;
 use crate::background_output::BackgroundOutput;
 use crate::dispatch::InputWithImages;
 use crate::run_with_provider;
+use crate::terminal_overflow_recovery::RetryInput;
 
 /// Agent loop that runs in background tokio task
 /// WATCH-019: Modified to also process supervisor injections via supervisor_input_rx
@@ -82,8 +84,8 @@ pub async fn agent_loop(
     let mut mcp_channel_open = true;
 
     // CMPCT-020: Compaction convergence watchdog state
-    let mut compaction_watchdog_attempts: usize = 0;
-    let mut compaction_retry_input: Option<String> = None;
+    let mut compaction_retry_input: Option<RetryInput> = None;
+    let mut automatic_recoveries = 0usize;
 
     // RIG-014: Loop-abort auto-continue retry counter (prevents infinite
     // cycling if the model keeps degenerating into loops on retry).
@@ -107,7 +109,7 @@ pub async fn agent_loop(
         }
         for msg in &outcome.messages {
             if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
-                tracing::warn!("[HOOK-013] session_start hook: {}", msg.content);
+                tracing::warn!(content = %msg.content, "[HOOK-013] session_start hook warning or error");
                 session.handle_output(StreamChunk::user_notification(
                     format!("Hook: {}", msg.content),
                     NotificationSeverity::Warning,
@@ -117,16 +119,33 @@ pub async fn agent_loop(
     }
 
     loop {
+        let mut is_fresh_user_input = false;
+        let mut manual_compaction_epoch = None;
         // CMPCT-020: Check for compaction watchdog retry input before waiting for user input
         // RIG-014: `is_retry_input` distinguishes synthetic retry inputs (compaction
         // watchdog / loop-abort auto-continue) from real user input so the
         // loop-abort retry counter is only reset on genuine user turns.
-        let (input_to_process, is_retry_input): (Option<InputWithImages>, bool) = if let Some(
-            retry_text,
-        ) =
-            compaction_retry_input.take()
-        {
-            tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
+        let (input_to_process, is_retry_input, is_compaction_retry): (
+            Option<InputWithImages>,
+            bool,
+            bool,
+        ) = if let Some(retry) = compaction_retry_input.take() {
+            let (retry_text, is_compaction_retry) = match retry {
+                RetryInput::AutomaticCompaction(text) => {
+                    tracing::info!(
+                        "[AGENT-LOOP] Compaction watchdog: retrying with escalation input"
+                    );
+                    (text, true)
+                }
+                RetryInput::LoopAbort(epoch) => {
+                    if !session.admit_loop_retry(epoch) {
+                        continue;
+                    }
+                    manual_compaction_epoch = Some(epoch);
+                    tracing::info!("[AGENT-LOOP] Loop detector: retrying with corrective input");
+                    ("Continue".into(), true)
+                }
+            };
             (
                 Some(InputWithImages {
                     text: retry_text,
@@ -134,6 +153,7 @@ pub async fn agent_loop(
                     images: None,
                 }),
                 true,
+                is_compaction_retry,
             )
         } else {
             // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
@@ -148,11 +168,15 @@ pub async fn agent_loop(
                 // User input takes priority
                 result = input_rx.recv() => {
                     match result {
-                        Some(prompt_input) => Some(InputWithImages {
-                            text: prompt_input.input,
-                            thinking_config: prompt_input.thinking_config,
-                            images: None, // Regular user input doesn't have images (yet)
-                        }),
+                        Some(prompt_input) => {
+                            manual_compaction_epoch = prompt_input.compaction_epoch;
+                            is_fresh_user_input = manual_compaction_epoch.is_none();
+                            Some(InputWithImages {
+                                text: prompt_input.input,
+                                thinking_config: prompt_input.thinking_config,
+                                images: None,
+                            })
+                        }
                         None => {
                             // Channel closed, exit loop
                             drop(supervisor_rx);
@@ -172,7 +196,7 @@ pub async fn agent_loop(
                         Some(supervisor_input) => {
                             // FIX-6: Decrement pending counter when message is consumed
                             session.incoming_message_pending.fetch_sub(1, Ordering::Release);
-                            tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
+                            tracing::debug!(role = %supervisor_input.role_name, input_bytes = supervisor_input.message.len(), input = %supervisor_input.message, "agent_loop received supervisor input");
                             // Format supervisor input as a user message with structured prefix
                             let formatted = format_incoming_message(&supervisor_input);
 
@@ -208,7 +232,7 @@ pub async fn agent_loop(
                 result = mcp_injection_rx.recv(), if mcp_channel_open => {
                     match result {
                         Some(McpInjection::Notification(text)) => {
-                            tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
+                            tracing::info!(input_bytes = text.len(), input = %text, "[MCP] agent_loop received notification");
                             // Emit as supervisor input chunk so the UI shows it
                             session.handle_output(StreamChunk::incoming_message(text.clone()));
                             // Process as LLM input so the agent can react to the notification
@@ -259,19 +283,45 @@ pub async fn agent_loop(
             // Drop the lock before processing to avoid holding it during agent execution
             drop(supervisor_rx);
 
-            (input_to_process_inner, false)
+            (input_to_process_inner, false, false)
         }; // end CMPCT-020 if/else
 
-        // RIG-014: Reset the loop-abort retry counter on real user input
-        // (not on synthetic retry inputs from the watchdog or loop-abort).
-        if !is_retry_input {
-            loop_abort_retry_count = 0;
-        }
-
+        let is_compaction_retry = is_compaction_retry || manual_compaction_epoch.is_some();
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
         if let Some(input_with_images) = input_to_process {
             let input = &input_with_images.text;
+            if let Some(epoch) = manual_compaction_epoch {
+                if session.discard_cancelled_compaction(epoch).await {
+                    session.handle_output(StreamChunk::done());
+                    continue;
+                }
+            }
+            if is_compaction_retry && session.is_interrupted.load(Ordering::Acquire) {
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
+            }
+            if !is_retry_input && is_fresh_user_input {
+                if automatic_recoveries >= 3 {
+                    let mut inner_session = session.inner.lock().await;
+                    let restored = codelet_core::persistence::load_session(session.id)
+                        .map_err(anyhow::Error::msg)
+                        .and_then(|manifest| {
+                            inner_session
+                                .restore_compaction_boundary(&manifest)
+                                .map_err(anyhow::Error::new)
+                        });
+                    if let Err(error) = restored {
+                        session.handle_output(StreamChunk::error(format!("{error:#}")));
+                        session.set_status(SessionStatus::Idle);
+                        session.handle_output(StreamChunk::done());
+                        continue;
+                    }
+                }
+                loop_abort_retry_count = 0;
+                automatic_recoveries = 0;
+            }
 
             tracing::debug!(
                 "Session {} processing input: {}",
@@ -298,7 +348,7 @@ pub async fn agent_loop(
                         if msg.level == HookMessageLevel::Warning
                             || msg.level == HookMessageLevel::Error
                         {
-                            tracing::warn!("[HOOK-013] user_prompt_submit hook: {}", msg.content);
+                            tracing::warn!(content = %msg.content, "[HOOK-013] user_prompt_submit hook warning or error");
                         }
                     }
                     if !outcome.allow_prompt {
@@ -329,18 +379,40 @@ pub async fn agent_loop(
 
             // REFAC-007: Persist user message to Rust persistence layer
             // This replaces TypeScript's persistenceStoreMessageEnvelope call
-            if let Err(e) = persist_user_message(&session.id, input) {
+            if let Some(epoch) = manual_compaction_epoch {
+                if session.discard_cancelled_compaction(epoch).await {
+                    session.handle_output(StreamChunk::done());
+                    continue;
+                }
+            }
+            if is_compaction_retry && session.is_interrupted.load(Ordering::Acquire) {
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
+            }
+            if let Err(e) = persist_user_input(
+                &session.id,
+                input,
+                input_with_images.images.as_deref().unwrap_or_default(),
+            ) {
                 tracing::error!(
                     "Failed to persist user message for session {}: {}",
                     session.id,
                     e
                 );
-                // Continue processing even if persistence fails - don't block agent execution
+                session.handle_output(StreamChunk::error(
+                    "Conversation persistence requires recovery before inference".into(),
+                ));
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
             }
 
             // Set status to running
             session.set_status(SessionStatus::Running);
-            session.reset_interrupt();
+            if !is_compaction_retry {
+                session.reset_interrupt();
+            }
             tracing::debug!(
                 session_id = %session.id,
                 input_chars = input.chars().count(),
@@ -516,7 +588,12 @@ pub async fn agent_loop(
 
             // Re-acquire lock for the rest of processing
             let mut inner_session = session.inner.lock().await;
-
+            if let Err(error) = session.refresh_runtime_settings_for_turn(&mut inner_session) {
+                session.handle_output(StreamChunk::error(error));
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
+            }
             // CONT-002/CONT-003 (CONT-009): this is a real dispatched user
             // message — run the shared completion-contract sync (inner
             // continue/goal sync, per-turn nudge reset, done() registry
@@ -542,6 +619,17 @@ pub async fn agent_loop(
                     max_retries: resolved.max_retries.unwrap_or(10),
                 }
             };
+            if let Err(error) = inner_session.bind_provider_persistence(session.id) {
+                session.handle_output(StreamChunk::error(error.to_string()));
+                session.set_status(SessionStatus::Idle);
+                session.handle_output(StreamChunk::done());
+                continue;
+            }
+            inner_session.begin_provider_turn();
+            session.prepare_provider_status(
+                &inner_session.provider_session,
+                inner_session.current_provider_name(),
+            );
             let output = BackgroundOutput::with_provider(
                 session_for_output,
                 current_provider.clone(),
@@ -589,91 +677,10 @@ pub async fn agent_loop(
 
             // CODE-009: Set fspec handler for TypeScript command execution
             // Similar to pause handler - blocks until TypeScript executes and responds
-            let session_for_fspec = session.clone();
-            let fspec_handler: codelet_tools::FspecHandler =
-                std::sync::Arc::new(move |request: codelet_tools::FspecHandlerRequest| {
-                    // RPC-041: Check the napi-side TSFN registration via the
-                    // helper that consults CHUNK_FANOUT_TSFN.
-                    //
-                    // TOOL-019 / RPC-327 follow-up: when the chunk callback is
-                    // NOT registered (i.e. the standalone fspec Rust binary has
-                    // no TypeScript shell), fall through to the in-process Rust
-                    // dispatcher in `codelet_fspec_core`. Phase 1 stubs return a
-                    // structured `NotYetPorted` / `UnknownCommand` error per
-                    // command so the agent loop completes the turn instead of
-                    // hanging on a non-existent JS callback.
-                    //
-                    // We still emit `FspecCommandRequest` + `FspecCommandResult`
-                    // chunks here so the TUI / WS bridge subscribers can render
-                    // the tool call visually — this matters because the
-                    // standalone Rust binary is precisely the host where the
-                    // shim returns `false`, yet the TUI is the primary surface
-                    // that needs to see "Fspec(list-work-units) → <result>".
-                    if !is_global_chunk_callback_registered() {
-                        let tool_call_id = uuid::Uuid::new_v4().to_string();
-                        let fspec_request = codelet_rpc_types::FspecRequest {
-                            command: request.command.clone(),
-                            args_json: request.args_json.clone(),
-                            project_root: request.project_root.clone(),
-                            tool_call_id: tool_call_id.clone(),
-                        };
-                        session_for_fspec
-                            .handle_output(StreamChunk::fspec_command_request(fspec_request));
-
-                        let dispatch_req = codelet_fspec_core::DispatchRequest {
-                            command: request.command.clone(),
-                            args_json: request.args_json.clone(),
-                            project_root: std::path::PathBuf::from(&request.project_root),
-                        };
-                        let dispatch_result = codelet_fspec_core::dispatch_command(dispatch_req);
-
-                        let fspec_result_chunk = codelet_rpc_types::FspecResult {
-                            success: dispatch_result.success,
-                            data: dispatch_result.data.clone(),
-                            error: dispatch_result.error.clone(),
-                            system_reminder: dispatch_result.system_reminder.clone(),
-                            tool_call_id,
-                        };
-                        session_for_fspec
-                            .handle_output(StreamChunk::fspec_command_result(fspec_result_chunk));
-
-                        return codelet_tools::FspecHandlerResult {
-                            success: dispatch_result.success,
-                            data: dispatch_result.data,
-                            error: dispatch_result.error,
-                            system_reminder: dispatch_result.system_reminder,
-                        };
-                    }
-
-                    // Generate a unique tool call ID for correlation
-                    let tool_call_id = uuid::Uuid::new_v4().to_string();
-
-                    // Emit FspecCommandRequest chunk for TypeScript to process
-                    let fspec_request = codelet_rpc_types::FspecRequest {
-                        command: request.command.clone(),
-                        args_json: request.args_json.clone(),
-                        project_root: request.project_root.clone(),
-                        tool_call_id: tool_call_id.clone(),
-                    };
-
-                    session_for_fspec
-                        .handle_output(StreamChunk::fspec_command_request(fspec_request));
-
-                    // Block until TypeScript executes and calls sessionSendFspecResult
-                    let fspec_result = session_for_fspec.wait_for_fspec_response();
-
-                    // Emit FspecCommandResult chunk for UI display
-                    session_for_fspec
-                        .handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
-
-                    // Convert NAPI FspecResult to tools FspecHandlerResult
-                    codelet_tools::FspecHandlerResult {
-                        success: fspec_result.success,
-                        data: fspec_result.data,
-                        error: fspec_result.error,
-                        system_reminder: fspec_result.system_reminder,
-                    }
-                });
+            let fspec_handler = crate::fspec_handler::create_handler(
+                session.clone(),
+                is_global_chunk_callback_registered(),
+            );
 
             // REFAC-008-FIX: Use per-session handler storage to prevent race conditions
             // when multiple sessions run concurrently.
@@ -760,6 +767,8 @@ pub async fn agent_loop(
                 std::path::PathBuf::from(&session.project),
                 session.compaction_in_progress.clone(),
             );
+            let compactor_registration =
+                crate::terminal_overflow_recovery::CompactorRegistration::new(session.id);
 
             // CMPCT-045: Register the GenerateCompaction tool handler —
             // on-demand compaction of a target session (default: the
@@ -769,13 +778,14 @@ pub async fn agent_loop(
             // reach other live sessions' inner). Mirrors the DeepSearch
             // registration — re-registered after /model / /provider
             // changes.
-            crate::generate_compaction_handler::register_generate_compaction_handler(
-                session.id,
-                &inner_session,
-                std::path::PathBuf::from(&session.project),
-                session.clone(),
-                session.owning_manager(),
-            );
+            let turn_compaction =
+                crate::generate_compaction_handler::register_generate_compaction_handler(
+                    session.id,
+                    &inner_session,
+                    std::path::PathBuf::from(&session.project),
+                    session.clone(),
+                    session.owning_manager(),
+                );
 
             // AMGR-009: Register AgentManager handler for this session
             // The handler accesses SessionManager for spawn/list/get_status/close
@@ -798,33 +808,6 @@ pub async fn agent_loop(
                 let async_handler =
                     crate::agent_manager_handler::create_async_handler(session.owning_manager());
                 codelet_tools::set_agent_manager_async_handler(session.id, Some(async_handler));
-            }
-
-            // Register inject_summary handler — stores DAG in pending_dag_content
-            // and fires on_injected to clear the compaction progress spinner.
-            // CMPCT-038: on_injected does NOT emit CompactionComplete — only the
-            // summary size is known here. The honest chunk (compacted_tokens =
-            // recalculated post-injection tracker total) is emitted after the
-            // stream by apply_pending_dag_and_emit below.
-            {
-                let context_window = inner_session.provider_manager().context_window() as u64;
-                let session_for_inject = session.clone();
-                let on_injected: crate::inject_summary_handler::OnInjectedCallback =
-                    Arc::new(move |injected_tokens: u32| {
-                        session_for_inject.set_compaction_progress(None);
-                        tracing::debug!(
-                            "[AGENT-LOOP] inject_summary stored DAG ({} summary tokens) — \
-                             CompactionComplete deferred to apply_pending_dag_and_emit",
-                            injected_tokens
-                        );
-                    });
-                let inject_handler = crate::inject_summary_handler::create_handler(
-                    session.pending_dag_content.clone(),
-                    context_window,
-                    session.compaction_in_progress.clone(),
-                    Some(on_injected),
-                );
-                codelet_tools::set_inject_summary_handler(session.id, Some(inject_handler));
             }
 
             // SCHED-009: Register schedule handler for AI-callable Schedule tool
@@ -935,8 +918,8 @@ pub async fn agent_loop(
             // BRIDGE-008: Create control handler for interrupt/clear actions
             // BRIDGE-014: Also handles pause_response actions
             let session_for_control = session.clone();
-            let control_handler: codelet_tools::ControlHandler =
-                Arc::new(move |action: &str, response: Option<&str>| {
+            let control_handler: codelet_tools::ControlHandler = Arc::new(
+                move |action: &str, response: Option<&str>| {
                     match action {
                         "interrupt" => {
                             tracing::info!("Bridge control: interrupting session");
@@ -949,13 +932,13 @@ pub async fn agent_loop(
                             // from within a tokio runtime without this wrapper.
                             tokio::task::block_in_place(|| {
                                 // DRY: Use the shared clear_history method
-                                session_for_control.clear_history();
+                                crate::bridge_control::clear_history(&session_for_control);
                             });
                         }
                         "pause_response" => {
                             // BRIDGE-014: Handle pause response from Telegram
                             if let Some(resp) = response {
-                                tracing::info!("Bridge control: pause_response = {}", resp);
+                                tracing::info!(response = %resp, "Bridge control: pause_response received");
                                 let pause_resp = match resp {
                                     "allow_once" => PauseResponse::AllowOnce,
                                     "allow_session" => PauseResponse::AllowSession,
@@ -979,7 +962,8 @@ pub async fn agent_loop(
                             tracing::warn!("Bridge control: unknown action '{}'", action);
                         }
                     }
-                });
+                },
+            );
 
             // Set the session context for bridge relay tasks
             // BRIDGE-017: Create command emitter for fspec command execution via bridge
@@ -1078,7 +1062,22 @@ pub async fn agent_loop(
                 armed: true,
             };
 
-            let result = match current_provider.as_str() {
+            let builder_retry = if is_fresh_user_input {
+                codelet_cli::compactor_sub_agent::retry_failed_compactor_for_user_input(
+                    &mut inner_session,
+                    session.id,
+                    &session.compaction_in_progress,
+                    &session.is_interrupted,
+                    &session.interrupt_notify,
+                    &output,
+                )
+                .await
+            } else {
+                Ok(false)
+            };
+            let builder_retry_failed = builder_retry.is_err();
+            let mut result = match current_provider.as_str() {
+                _ if builder_retry_failed => builder_retry.map(|_| ()).map_err(anyhow::Error::new),
                 "claude" => run_with_provider!(
                     &mut inner_session,
                     get_claude,
@@ -1120,8 +1119,8 @@ pub async fn agent_loop(
                                 session.id,
                                 agent.tool_server_handle.clone(),
                             );
-                            let agent = codelet_core::RigAgent::with_default_depth(agent)
-                                .with_preserve_thinking(inner_session.preserve_thinking_enabled);
+                            let agent = inner_session
+                                .configure_agent(codelet_core::RigAgent::with_default_depth(agent));
                             codelet_cli::interactive::run_agent_stream_with_images(
                                 agent,
                                 input,
@@ -1260,7 +1259,8 @@ pub async fn agent_loop(
                             session.id,
                             agent.tool_server_handle.clone(),
                         );
-                        let agent = codelet_core::RigAgent::with_default_depth(agent);
+                        let agent = inner_session
+                            .configure_agent(codelet_core::RigAgent::with_default_depth(agent));
                         codelet_cli::interactive::run_agent_stream_with_images(
                             agent,
                             input,
@@ -1327,7 +1327,8 @@ pub async fn agent_loop(
                                 session.id,
                                 agent.tool_server_handle.clone(),
                             );
-                            let agent = codelet_core::RigAgent::with_default_depth(agent);
+                            let agent = inner_session
+                                .configure_agent(codelet_core::RigAgent::with_default_depth(agent));
                             codelet_cli::interactive::run_agent_stream_with_images(
                                 agent,
                                 input,
@@ -1358,193 +1359,38 @@ pub async fn agent_loop(
 
             persist_pending_annotations(&session.id, &mut inner_session);
 
-            // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner).
-            // CMPCT-038: this is also the CompactionComplete emit site — the tracker is
-            // recalculated by the apply, so compacted_tokens reflects the real
-            // post-injection context (reminders + summary), not the summary alone.
-            let pre_compaction_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
-            let has_pending_dag_before = session
-                .pending_dag_content
-                .lock()
-                .map(|guard| guard.is_some())
-                .unwrap_or(false);
-            let compaction_flag_before = session.compaction_in_progress.load(Ordering::Acquire);
-            tracing::debug!(
-                session_id = %session.id,
-                has_pending_dag_before,
-                compaction_flag_before,
-                pre_compaction_tokens,
-                "[compaction-status] turn END — checking for pending DAG to pin"
-            );
-            // CMPCT-046b: honest zero-basis guard. Providers that do not
-            // report usage (e.g. OpenAI streaming) leave the tracker at 0
-            // for the whole turn, so the pre-compaction snapshot (cached
-            // or tracker basis) is 0 and CompactionComplete would ship
-            // `0 -> post`. Estimate from the PRE-APPLY message list — the
-            // same count_tokens basis the post-pin recalculation uses —
-            // before apply_pending_dag_and_emit clears the messages.
-            let pre_compaction_tokens = if pre_compaction_tokens == 0 && has_pending_dag_before {
-                codelet_cli::interactive_helpers::pre_compaction_basis(0, &inner_session.messages)
-                    as u32
-            } else {
-                pre_compaction_tokens
-            };
-            if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag_and_emit(
-                &mut inner_session,
-                &session.pending_dag_content,
-                pre_compaction_tokens,
-                &|chunk| session.handle_output(chunk),
-            ) {
-                tracing::info!(
-                    "[AGENT-LOOP] Applied pending DAG for session {} — messages_len={}, tokens={}, dag_nodes={}",
-                    session.id,
-                    inner_session.messages.len(),
-                    inner_session.token_tracker.input_tokens,
-                    dag_nodes.len(),
-                );
-
-                // KGRAPH-021: Extract learnings from the DAG summary at compaction boundary.
-                // This is a session boundary event — the right time to extract knowledge.
-                // Uses the Residue methodology: sends the DAG text to the current LLM with
-                // LEARNINGS_EXTRACTION_PROMPT, then passes the response to the extraction pipeline.
-                // Fire-and-forget on a background thread to not block the agent loop.
-                // Errors are logged via tracing (not silently swallowed).
-                {
-                    let dag_text: String = dag_nodes
-                        .iter()
-                        .map(|n| n.label.as_str())
-                        .collect::<Vec<_>>()
-                        .join("\n");
-                    let learnings_provider = current_provider.clone();
-                    let learnings_model = current_model.clone();
-                    std::thread::spawn(move || {
-                        let rt = tokio::runtime::Builder::new_current_thread()
-                            .enable_all()
-                            .build();
-                        match rt {
-                            Ok(rt) => {
-                                rt.block_on(async {
-                                    // Make LLM call using the session's provider/model
-                                    let llm_response =
-                                        codelet_graph::call_learnings_extraction_llm(
-                                            &learnings_provider,
-                                            learnings_model.as_deref(),
-                                            &dag_text,
-                                        )
-                                        .await;
-                                    codelet_graph::extract_learnings_from_dag(
-                                        &dag_text,
-                                        llm_response.as_deref(),
-                                    )
-                                    .await;
-                                });
-                            }
-                            Err(e) => {
-                                tracing::warn!(
-                                    "[KGRAPH] Failed to create runtime for learnings extraction: {e}"
-                                );
-                            }
-                        }
-                    });
+            let application = turn_compaction.apply(&mut inner_session, &session);
+            let cancelled_after_reconciliation = session.is_interrupted.load(Ordering::Acquire)
+                && inner_session.ensure_compaction_inference_ready().is_ok();
+            let applied = match application {
+                Ok(applied) => applied,
+                Err(error) => {
+                    if !cancelled_after_reconciliation {
+                        inner_session.block_compaction_inference(error.clone());
+                    }
+                    result = Err(anyhow::anyhow!(error));
+                    false
                 }
-
-                // CompactionComplete was emitted by apply_pending_dag_and_emit above
-                // (CMPCT-038: Running → CompactionComplete with the recalculated
-                // basis). We only need to transition to Idle now that the DAG has
-                // been applied and the agent loop is finishing.
-                session.set_status(SessionStatus::Idle);
+            };
+            if cancelled_after_reconciliation {
+                compaction_retry_input = None;
+            }
+            if applied {
+                crate::turn_compaction::extract_committed_learnings(
+                    session.id,
+                    current_provider.clone(),
+                    current_model.clone(),
+                );
                 session.set_compaction_progress(None);
             }
 
-            // CMPCT-020: Compaction convergence watchdog
-            // Check if compaction was in progress but agent failed to call inject_summary.
-            // The flag is still true if inject_summary was never called during the stream.
             let was_compacting = session.compaction_in_progress.load(Ordering::Acquire);
-            let has_pending_dag = session
-                .pending_dag_content
-                .lock()
-                .map(|guard| guard.is_some())
-                .unwrap_or(false);
-
-            if was_compacting && !has_pending_dag {
-                // Agent failed to produce a DAG. Apply convergence escalation.
-                // compaction_watchdog_attempts tracks how many times we've tried.
-                compaction_watchdog_attempts += 1;
-                tracing::warn!(
-                    "[AGENT-LOOP] Compaction watchdog: agent failed to call inject_summary (attempt {})",
-                    compaction_watchdog_attempts
-                );
-
-                if compaction_watchdog_attempts == 1 {
-                    // Level 2: Inject escalation message and retry
-                    tracing::warn!(
-                        "[AGENT-LOOP] Compaction watchdog: Level 2 — injecting escalation message"
-                    );
-                    inner_session.messages.push(rig::message::Message::User {
-                        content: rig::OneOrMany::one(rig::message::UserContent::text(
-                            codelet_cli::compaction_dag::COMPACTION_ESCALATION_MESSAGE,
-                        )),
-                    });
-
-                    // Set up retry: inject a synthetic input so the loop runs another stream
-                    compaction_retry_input = Some("Continue".to_string());
-
-                    // Don't clear the flag — we're still in compaction mode
-                    // Skip the safety net below and go back to loop top
-                } else {
-                    // Level 3: Force-inject fallback DAG
-                    tracing::warn!(
-                        "[AGENT-LOOP] Compaction watchdog: Level 3 — force-injecting fallback DAG"
-                    );
-
-                    // Extract any partial dag-nodes from recent messages
-                    let partial_nodes = codelet_cli::compaction_dag::extract_partial_dag_nodes(
-                        &inner_session.messages,
-                    );
-
-                    // CMPCT-047: single-sourced Level-3 shape — the generic
-                    // auto-recovered node is built by the shared
-                    // compaction_dag helper (the 044 round, 045 handler,
-                    // and this watchdog all use the same node template so
-                    // the shape cannot drift).
-                    let last_turn = inner_session.messages.len().saturating_sub(1);
-                    let fallback_dag = if !partial_nodes.is_empty() {
-                        tracing::info!(
-                            "[AGENT-LOOP] Found {} partial dag-node blocks, assembling",
-                            partial_nodes.len()
-                        );
-                        partial_nodes.join("\n\n")
-                    } else {
-                        tracing::info!(
-                            "[AGENT-LOOP] No partial dag-nodes found, creating minimal fallback (turns 0-{})",
-                            last_turn
-                        );
-                        codelet_cli::compaction_dag::build_generic_fallback_dag_node(
-                            "Auto-recovered: compaction timeout",
-                            "Session was auto-compacted due to convergence timeout.",
-                            inner_session.messages.len() as u32,
-                        )
-                    };
-
-                    codelet_cli::compaction_dag::force_inject_fallback_dag(
-                        &mut inner_session,
-                        &session.compaction_in_progress,
-                        &fallback_dag,
-                    );
-
-                    compaction_watchdog_attempts = 0;
-                    compaction_retry_input = None;
-
-                    // Emit CompactionComplete for the force-inject
-                    session.set_status(SessionStatus::Idle);
-                    session.set_compaction_progress(None);
-                }
-            } else {
-                // Normal path: either not compacting, or inject_summary succeeded
-                if was_compacting || has_pending_dag {
-                    // Reset watchdog on success
-                    compaction_watchdog_attempts = 0;
-                }
+            if was_compacting && !applied && !cancelled_after_reconciliation {
+                let failure = codelet_cli::compaction_operation::CompactionFailure::Exhausted;
+                inner_session.block_compaction_inference(failure.to_string());
+                session.handle_output(StreamChunk::error(failure.to_string()));
+                compaction_retry_input = None;
+                session.set_compaction_progress(None);
             }
 
             // Unconditionally clear compaction_in_progress (safety net for agent failures)
@@ -1575,10 +1421,7 @@ pub async fn agent_loop(
             codelet_tools::set_fspec_handler_for_session(session.id, None);
             codelet_tools::set_session_search_handler(session.id, None);
             codelet_tools::set_graph_search_handler(session.id, None); // KGRAPH-003: Cleanup
-            codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
-            codelet_tools::set_generate_compaction_handler(session.id, None); // CMPCT-045: Cleanup
-            codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(session.id, None); // CMPCT-044: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
@@ -1596,28 +1439,31 @@ pub async fn agent_loop(
             idle_guard.armed = false;
 
             if let Err(e) = result {
-                // CMPCT-044: a terminal context-overflow error routes to the
-                // SAME compactor recovery entry point the stream loop uses —
-                // the session is reduced to reminders + a DAG (the oversized
-                // payload is never replayed) and the turn ends Idle.
-                // Without a match the error follows the existing terminal
-                // handling below.
-                // Clone the Arc — the turn's `inner_session` guard still
-                // borrows `session` and the recovery round takes its own
-                // lock.
-                let overflow_recovered =
-                    crate::terminal_overflow_recovery::try_terminal_overflow_recovery(
-                        session.clone(),
+                let recovery = if builder_retry_failed {
+                    Ok(false)
+                } else if codelet_cli::interactive::is_context_overflow_error(&e)
+                    && automatic_recoveries >= 3
+                {
+                    Err(crate::terminal_overflow_recovery::TerminalRecoveryError::Failed(
+                        "automatic recovery budget exhausted; reduce the task context or select a larger model, then submit a new task".into(),
+                    ))
+                } else {
+                    crate::terminal_overflow_recovery::try_terminal_overflow_recovery_owned(
+                        &session,
+                        &mut inner_session,
                         &e,
                     )
-                    .await;
-                if overflow_recovered {
-                    // The compactor round already emitted the lifecycle
-                    // events (CompactionComplete with the recalculated
-                    // basis) and set the session Idle — end the turn with
-                    // Done and do NOT replay the oversized payload.
-                    session.handle_output(StreamChunk::done());
+                    .await
+                };
+                if matches!(recovery, Ok(true)) {
+                    automatic_recoveries += 1;
+                    compaction_retry_input =
+                        crate::terminal_overflow_recovery::continuation(&session, &inner_session);
                 } else {
+                    let e = match recovery {
+                        Err(error) => anyhow::Error::new(error),
+                        _ => e,
+                    };
                     // PROV-009-DEBUG: Log full error with chain at warn level
                     tracing::warn!(
                         "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
@@ -1626,17 +1472,31 @@ pub async fn agent_loop(
                         e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
                     );
                     tracing::error!("Agent stream error for session {}: {}", session.id, e);
-                    session.handle_output(StreamChunk::error(e.to_string()));
+                    session.handle_output(StreamChunk::error(format!("{e:#}")));
                     // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
                     // This prevents race condition where JS receives Done before status is Idle
                     session.set_status(SessionStatus::Idle);
                     session.handle_output(StreamChunk::done());
+                }
+            } else if applied {
+                if automatic_recoveries >= 3 {
+                    session.handle_output(StreamChunk::error(
+                        "automatic recovery budget exhausted; submit a new task with reduced context".into(),
+                    ));
+                    session.set_status(SessionStatus::Idle);
+                    session.handle_output(StreamChunk::done());
+                } else {
+                    automatic_recoveries += 1;
+                    compaction_retry_input =
+                        crate::terminal_overflow_recovery::continuation(&session, &inner_session);
                 }
             } else {
                 // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
                 // Setting it again here is idempotent and ensures consistency
                 session.set_status(SessionStatus::Idle);
             }
+
+            drop(compactor_registration);
 
             // RIG-014: If the streaming loop detector aborted this turn,
             // auto-continue with a synthetic "Continue" input so the
@@ -1658,7 +1518,8 @@ pub async fn agent_loop(
                         loop_abort_retry_count,
                         loop_abort_retry_cap
                     );
-                    compaction_retry_input = Some("Continue".to_string());
+                    compaction_retry_input =
+                        Some(RetryInput::LoopAbort(session.compaction_epoch()));
                 } else {
                     tracing::warn!(
                         "[RIG-014] Loop abort retry limit reached (session={}) — giving up, waiting for user input",

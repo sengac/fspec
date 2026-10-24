@@ -6,7 +6,7 @@
 Feature: Local-profile model-probe resilience outside a tokio runtime
   """
   Fix location: rust/sessions/src/profile_sections.rs::probe_profile_models — guard the block_in_place/Handle::current bridge with Handle::try_current()+runtime_flavor()==MultiThread; when absent, log via tracing::warn and return (Vec::new(), true) instead of panicking.
-  No unwrap/expect/panic in the production path; the probe returns (discovered_ids, probe_failed) and callers already apply the MODEL-004 unreachable override in build_profile_provider_info.
+  BUG-218 deliberately narrows MODEL-004: only unsupported discovery (HTTP 404/405) with a nonblank configured custom model is nonfatal. Authentication, server, transport and response errors remain failures. Skipped probes remain failures even with custom models. See optional-profile-model-discovery.feature.
   """
 
   # ========================================

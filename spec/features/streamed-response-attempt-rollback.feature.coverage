@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "A reconnected response can be followed by another turn",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/codex_reconnect_lineage.rs",
+          "lines": "25-104",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/cli/tests/codex_reconnect_lineage.rs",
+          "lines": "25-104",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/codex_reconnect_lineage.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 206
+  }
+}

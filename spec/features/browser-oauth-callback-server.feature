@@ -62,8 +62,8 @@ Feature: Browser OAuth HTTP Server for PKCE Callback
     When the callback receives a request with state "wrong-state-xyz"
     Then the server should return an HTML error page with CSRF warning
     And no tokens should be persisted
-    And the OAuth server should shut down
-    And the login function should return a CSRF error
+    And the mismatched callback should not complete or cancel the current login
+    And the login function should keep waiting for the current attempt's valid callback
 
   Scenario: OAuth login times out after 5 minutes
     Given the OAuth server is running and waiting for callback

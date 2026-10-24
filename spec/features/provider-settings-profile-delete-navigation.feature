@@ -47,7 +47,7 @@ Feature: Profile delete restores cursor to parent provider row (PROV-036 parity)
     When the user presses "d" and confirms the delete with "y"
     And the backend delete succeeds and the nav tree refreshes
     Then the cursor is on the "openai" provider row
-    And the "+ Add Profile" row is the only child shown
+    And Settings and "+ Add Profile" are the only children shown
 
   @tui
   @provider-settings

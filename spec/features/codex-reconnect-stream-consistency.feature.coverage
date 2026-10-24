@@ -1,0 +1,92 @@
+{
+  "scenarios": [
+    {
+      "name": "Replacement output agrees with next-turn lineage on both transports",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov160_reconnect_stream_consistency.rs",
+          "lines": "57-158",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                118,
+                168,
+                169,
+                170,
+                171,
+                172,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming remains live before the attempt terminates",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov160_reconnect_stream_consistency.rs",
+          "lines": "160-201",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                118,
+                136,
+                137,
+                138,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continuation retries preserve earlier successful physical output",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov160_reconnect_stream_consistency.rs",
+          "lines": "203-231",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                118,
+                168,
+                169,
+                170,
+                171,
+                172,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov160_reconnect_stream_consistency.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/streaming.rs"
+    ],
+    "totalLinesCovered": 201
+  }
+}

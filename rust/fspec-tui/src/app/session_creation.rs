@@ -36,6 +36,18 @@ pub fn post_create_session_action(session: SessionId) -> Action {
     }
 }
 
+pub(crate) fn post_create_session_with_work_unit(
+    session: SessionId,
+    card: Option<String>,
+) -> Action {
+    match (post_create_session_action(session), card) {
+        (Action::SessionCreated(session), Some(card)) => {
+            Action::WorkUnitSessionCreated(session, card)
+        }
+        (action, _) => action,
+    }
+}
+
 /// Route a `create_session` result from a spawned bootstrap / lazy-session task.
 ///
 /// For a real id: seed the active-session watch channel AND emit

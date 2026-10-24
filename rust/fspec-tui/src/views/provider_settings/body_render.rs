@@ -26,10 +26,19 @@ pub(crate) fn render_mode_body(view: &mut ProviderSettingsView, body_area: Rect,
             detail::render_detail(view, body_area, buf, provider_id, sub);
         }
         ProviderSettingsMode::CreateProfile { form, .. } => {
-            profile_form_render::render_form(body_area, buf, "Create Profile", form);
+            profile_form_render::render_form(body_area, buf, "Create Profile", form, &view.status);
         }
         ProviderSettingsMode::EditProfile { form, .. } => {
-            profile_form_render::render_form(body_area, buf, "Edit Profile", form);
+            profile_form_render::render_form(body_area, buf, "Edit Profile", form, &view.status);
+        }
+        ProviderSettingsMode::EditSettings { provider_id, form } => {
+            profile_form_render::render_form(
+                body_area,
+                buf,
+                &format!("{provider_id} Settings"),
+                form,
+                &view.status,
+            );
         }
         ProviderSettingsMode::DisconnectOAuth { provider_id } => {
             oauth_confirm::render_disconnect_oauth(body_area, buf, provider_id);

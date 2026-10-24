@@ -1,0 +1,293 @@
+{
+  "scenarios": [
+    {
+      "name": "Fresh registration estimates content without an accounting warning",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "22-49",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive_helpers.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reported input preserves cache inclusive totals exactly once",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "52-83",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Observed unavailable input uses an honest diagnostic and estimate",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "86-118",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display snapshots and partial flushes do not invent observations",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "121-143",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restored accounting is not relabeled as provider reported",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "147-177",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/restore_compaction.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy accounting without provenance remains unknown",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "180-206",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/model.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reset accounting does not claim a missing provider response",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "209-230",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/model.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Post compaction recalculation is explicitly estimated",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "233-254",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty content legitimately has a zero basis",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "257-273",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive_helpers.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selection reset invalidates old input evidence",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_input_provenance.rs",
+          "lines": "276-294",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/provider.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug236_input_provenance.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/core/src/compaction/input_accounting.rs",
+      "rust/cli/src/session/restore_compaction.rs",
+      "rust/core/src/compaction/model.rs",
+      "rust/cli/src/session/provider.rs"
+    ],
+    "totalLinesCovered": 367
+  }
+}

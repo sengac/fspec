@@ -62,10 +62,19 @@ pub(super) fn route_edit_key(form: &mut ProfileForm, code: KeyCode) {
 fn toggle_on_key(form: &mut ProfileForm, code: KeyCode) {
     if matches!(code, KeyCode::Char(' ') | KeyCode::Left | KeyCode::Right) {
         match form.field_index {
-            STREAMING_FIELD_INDEX => form.streaming = !form.streaming,
-            PRESERVE_THINKING_FIELD_INDEX => form.preserve_thinking = !form.preserve_thinking,
+            STREAMING_FIELD_INDEX => {
+                form.streaming = !form.streaming;
+                form.context.streaming = Some(form.streaming);
+            }
+            PRESERVE_THINKING_FIELD_INDEX => {
+                form.preserve_thinking = !form.preserve_thinking;
+                form.context.preserve_thinking = Some(form.preserve_thinking);
+            }
             // PROV-145: the Loop Detection toggle flips on the same keys.
-            LOOP_DETECTION_FIELD_INDEX => form.loop_detection = !form.loop_detection,
+            LOOP_DETECTION_FIELD_INDEX => {
+                form.loop_detection = !form.loop_detection;
+                form.context.loop_detection = Some(form.loop_detection);
+            }
             _ => {}
         }
     }

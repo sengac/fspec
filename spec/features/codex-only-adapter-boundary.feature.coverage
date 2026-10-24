@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "Provider identity selects the Codex boundary",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov147_codex_transport.rs",
+          "lines": "181-200",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/agent.rs",
+              "lines": [
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing streamed responses remain unchanged",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov147_codex_transport.rs",
+          "lines": "103-141",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing direct completions remain unchanged",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov147_codex_transport.rs",
+          "lines": "143-179",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov147_codex_transport.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/agent.rs",
+      "rust/providers/src/codex/model.rs"
+    ],
+    "totalLinesCovered": 110
+  }
+}

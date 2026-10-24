@@ -946,6 +946,7 @@ fn test_tool_result_blob_storage_and_rehydration() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_test123".to_string(),
+                call_id: None,
                 content: large_content.clone(),
                 is_error: false,
                 tool_use_result: None,
@@ -1288,6 +1289,7 @@ fn test_small_content_not_blobified() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_small".to_string(),
+                call_id: None,
                 content: small_content.to_string(),
                 is_error: false,
                 tool_use_result: None,
@@ -1416,6 +1418,7 @@ fn test_blob_deduplication_across_envelopes() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_1".to_string(),
+                call_id: None,
                 content: identical_content.clone(),
                 is_error: false,
                 tool_use_result: None,
@@ -1434,6 +1437,7 @@ fn test_blob_deduplication_across_envelopes() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_2".to_string(),
+                call_id: None,
                 content: identical_content,
                 is_error: false,
                 tool_use_result: None,
@@ -1483,12 +1487,14 @@ fn test_multi_part_message_blob_storage() {
                 },
                 UserContent::ToolResult {
                     tool_use_id: "toolu_large1".to_string(),
+                    call_id: None,
                     content: large_content1.clone(),
                     is_error: false,
                     tool_use_result: None,
                 },
                 UserContent::ToolResult {
                     tool_use_id: "toolu_large2".to_string(),
+                    call_id: None,
                     content: large_content2.clone(),
                     is_error: false,
                     tool_use_result: None,
@@ -1580,6 +1586,7 @@ fn test_exact_10kb_threshold_not_blobified() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_exact".to_string(),
+                call_id: None,
                 content: exactly_10kb.clone(),
                 is_error: false,
                 tool_use_result: None,
@@ -1631,6 +1638,7 @@ fn test_one_byte_over_threshold_blobified() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_over".to_string(),
+                call_id: None,
                 content: just_over_10kb,
                 is_error: false,
                 tool_use_result: None,
@@ -1680,6 +1688,7 @@ fn test_tool_use_storage_and_retrieval() {
             model: Some("claude-opus-4-5-20251101".to_string()),
             content: vec![AssistantContent::ToolUse {
                 id: "toolu_bash123".to_string(),
+                call_id: None,
                 name: "Bash".to_string(),
                 input: serde_json::json!({
                     "command": "ls -la",
@@ -1705,7 +1714,9 @@ fn test_tool_use_storage_and_retrieval() {
     // Verify ToolUse content is preserved
     match &processed.message {
         MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
-            AssistantContent::ToolUse { id, name, input } => {
+            AssistantContent::ToolUse {
+                id, name, input, ..
+            } => {
                 assert_eq!(id, "toolu_bash123");
                 assert_eq!(name, "Bash");
                 assert_eq!(input["command"], "ls -la");
@@ -1722,7 +1733,9 @@ fn test_tool_use_storage_and_retrieval() {
 
     match &restored.message {
         MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
-            AssistantContent::ToolUse { id, name, input } => {
+            AssistantContent::ToolUse {
+                id, name, input, ..
+            } => {
                 assert_eq!(id, "toolu_bash123");
                 assert_eq!(name, "Bash");
                 assert_eq!(input["command"], "ls -la");

@@ -217,7 +217,7 @@
       ]
     },
     {
-      "name": "A backend clear error returns to list silently without leaking the RPC name",
+      "name": "A backend clear error returns to list with a safe failure message",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",

@@ -1,0 +1,181 @@
+{
+  "scenarios": [
+    {
+      "name": "Streamed input survives zero input final output settlement",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "15-35",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Post compaction input survives stale display settlement",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "37-73",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/input_accounting.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aborted attempt usage cannot supply a replacement response",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "74-93",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                944,
+                945,
+                946,
+                947
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Internal tool followup starts independent input accounting",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "95-122",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "lines": [
+                590
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                933,
+                934,
+                935,
+                1205,
+                1206,
+                1207,
+                1208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Retry after a failed request discards provisional input",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "124-147",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1807,
+                1808,
+                1809
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini continuation attempts discard aborted input observations",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug236_request_settlement.rs",
+          "lines": "149-171",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug236_request_settlement.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/compaction/input_accounting.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+      "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs"
+    ],
+    "totalLinesCovered": 214
+  }
+}

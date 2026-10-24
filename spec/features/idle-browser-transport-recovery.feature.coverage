@@ -1,0 +1,96 @@
+{
+  "scenarios": [
+    {
+      "name": "Recover an idle expired launched browser",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/browser_recovery_tests.rs",
+          "lines": "45-73",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/browser_cache.rs",
+              "lines": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recover an idle expired connected browser",
+      "testMappings": [
+        {
+          "file": "rust/tools/src/browser_recovery_tests.rs",
+          "lines": "78-108",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/web_search.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/src/browser_recovery_tests.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/browser_cache.rs",
+      "rust/tools/src/web_search.rs"
+    ],
+    "totalLinesCovered": 107
+  }
+}

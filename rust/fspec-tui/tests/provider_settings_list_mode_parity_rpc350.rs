@@ -19,7 +19,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_fspec_tui::views::agent::ResumeSessionView;
-use codelet_fspec_tui::views::provider_settings::nav_item::ProviderDisplayInfo;
+use codelet_fspec_tui::views::provider_settings::nav_item::{NavItemKind, ProviderDisplayInfo};
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_rpc_types::SessionInfo;
 use ratatui::buffer::Buffer;
@@ -254,8 +254,13 @@ fn add_profile_row_label_reads_create_new_profile() {
     view.toggle_expansion("openai");
 
     // @step And the add-profile row is selected
-    // (with no profiles, the nav tree is [provider(0), add-profile(1)])
-    view.selected_index = 1;
+    view.selected_index = view
+        .nav_items
+        .iter()
+        .position(|item| {
+            item.provider_id == "openai" && matches!(item.kind, NavItemKind::AddProfile)
+        })
+        .expect("OpenAI add-profile row must be present");
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
@@ -458,6 +463,7 @@ fn fake_session(id: &str) -> SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: None,
+        work_unit_focus: Default::default(),
     }
 }
 

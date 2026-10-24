@@ -7,6 +7,7 @@
 //! in one place stops the two paths from drifting (the RPC-343 bug was exactly
 //! that drift: the mid-session path re-resolved nothing).
 
+pub use crate::profile_environment::apply_profile_env_vars;
 use codelet_providers::ProviderManager;
 
 /// BUG-168: resolve the vision capability of the manager's currently selected
@@ -28,7 +29,7 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
     // Profile selection: "provider:profile/model" (colon before the slash).
     let (colon, slash) = (composite.find(':'), composite.find('/'));
     if let (Some(colon), Some(slash)) = (colon, slash) {
-        if colon < slash {
+        if colon < slash && composite.starts_with("openai:") {
             let profile_name = &composite[colon + 1..slash];
             let model_id = &composite[slash + 1..];
             return crate::profile_sections::load_local_server_profiles()
@@ -42,7 +43,7 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
 
     // Custom provider model: registered config carries supports_vision.
     if let Some(slash) = composite.find('/') {
-        let provider = &composite[..slash];
+        let provider = pm.current_provider_name();
         let model_id = &composite[slash + 1..];
         if codelet_providers::custom_provider_registered(provider) {
             return codelet_providers::custom::discover_provider_configs()
@@ -64,39 +65,8 @@ pub fn resolve_model_vision(pm: &ProviderManager) -> bool {
         .unwrap_or(false)
 }
 
-/// PROV-144: resolve the active profile's stored `maxImages` (image budget
-/// for the Read tool), for the tool-layer session capability registry.
-///
-/// Resolution: for a profile model selection (composite
-/// `openai:<profile>/<model>`), read the profile's `maxImages` from
-/// `fspec-config.json` via [`crate::profile_sections::load_local_server_profiles`]:
-///
-/// * explicit `maxImages: n` (including the `Some(0)` no-vision sentinel)
-///   -> `Some(n)`
-/// * key absent (including pre-existing profiles) -> `None`
-///   (the tool layer applies the effective default of 4)
-///
-/// Non-profile selections (cloud / custom / codex) have no profile behind
-/// them and resolve to `None` — the tool layer then applies the uniform
-/// default of 4. The resolution follows the model on every re-resolution
-/// (mid-session switches), mirroring [`resolve_model_vision`]'s contract.
 pub fn resolve_profile_max_images(pm: &ProviderManager) -> Option<u32> {
-    let composite = pm.selected_model_string()?;
-
-    // Profile selection: "provider:profile/model" (colon before the slash).
-    let (colon, slash) = (composite.find(':'), composite.find('/'));
-    let (Some(colon), Some(slash)) = (colon, slash) else {
-        return None; // not a profile selection — no budget to resolve
-    };
-    if colon >= slash {
-        return None;
-    }
-    let profile_name = &composite[colon + 1..slash];
-
-    crate::profile_sections::load_local_server_profiles()
-        .into_iter()
-        .find(|p| p.name == profile_name)
-        .and_then(|p| p.max_images)
+    pm.runtime_options().max_images
 }
 
 /// PROV-145: the per-profile loop-detection values, resolved flat.
@@ -119,44 +89,13 @@ pub struct ProfileLoopDetection {
     pub max_retries: Option<u32>,
 }
 
-/// PROV-145: resolve the active profile's stored loop-detection values for
-/// the per-turn detector construction in the agent loop.
-///
-/// Resolution: for a profile model selection (composite
-/// `openai:<profile>/<model>`), read the four `loopDetection*` keys from
-/// `fspec-config.json` via
-/// [`crate::profile_sections::load_local_server_profiles`]. Every absent key
-/// yields `None` (the agent-loop layer applies the effective defaults:
-/// enabled, 160, 10, 10 — today's behavior). Non-profile selections (cloud
-/// / custom / codex) have no profile behind them and resolve to all `None`.
-/// The resolution follows the model on every call (mid-session switches),
-/// mirroring [`resolve_profile_max_images`]'s contract.
 pub fn resolve_profile_loop_detection(pm: &ProviderManager) -> ProfileLoopDetection {
-    let Some(composite) = pm.selected_model_string() else {
-        return ProfileLoopDetection::default();
-    };
-
-    // Profile selection: "provider:profile/model" (colon before the slash).
-    let (colon, slash) = (composite.find(':'), composite.find('/'));
-    let (Some(colon), Some(slash)) = (colon, slash) else {
-        return ProfileLoopDetection::default();
-    };
-    if colon >= slash {
-        return ProfileLoopDetection::default();
-    }
-    let profile_name = &composite[colon + 1..slash];
-
-    let Some(profile) = crate::profile_sections::load_local_server_profiles()
-        .into_iter()
-        .find(|p| p.name == profile_name)
-    else {
-        return ProfileLoopDetection::default();
-    };
+    let options = pm.runtime_options();
     ProfileLoopDetection {
-        enabled: profile.loop_detection_enabled,
-        window: profile.loop_detection_window,
-        max_repeats: profile.loop_detection_max_repeats,
-        max_retries: profile.loop_detection_max_retries,
+        enabled: options.loop_detection_enabled,
+        window: options.loop_detection_window,
+        max_repeats: options.loop_detection_max_repeats,
+        max_retries: options.loop_detection_max_retries,
     }
 }
 
@@ -166,6 +105,7 @@ pub fn resolve_profile_loop_detection(pm: &ProviderManager) -> ProfileLoopDetect
 pub struct ResolvedModelLimits {
     pub context_window: u32,
     pub max_output_tokens: u32,
+    pub compaction_threshold: u32,
 }
 
 /// Apply a `provider/model` selection to an existing [`ProviderManager`],
@@ -233,28 +173,19 @@ pub fn apply_model_selection(
             profile_name,
             "applying profile model via set_model_direct_with_profile + env bridge"
         );
-        pm.set_model_direct_with_profile(
+        crate::profile_model_limits::apply_profile_model(
+            pm,
             registry_provider,
+            profile_name,
             model_part,
-            Some(profile_name),
-            None,
-            None,
-            None,
-        )
-        .map_err(|e| format!("Failed to set profile model: {e}"))?;
-
-        // Single source of truth for the credential bridge — shared with the
-        // isolated-session create path (session_manager.rs).
-        apply_profile_env_vars(registry_provider, profile_name, model_part)?;
+        )?;
     } else if is_codex_model || is_custom_model {
         tracing::info!(
             target: "model_resolution",
             model,
             "applying model via set_model_direct (codex/custom)"
         );
-        pm.set_model_direct(registry_provider, model_part, None, None, None)
-            .map_err(|e| format!("Failed to set model: {e}"))?;
-
+        crate::profile_model_limits::apply_direct_model(pm, registry_provider, model_part)?;
         // RPC-348: re-resolve the per-selection facade override for custom
         // (registered custom-provider) models. `set_model_direct` was called
         // with `facade_override = None`, so without this step both the
@@ -286,6 +217,7 @@ pub fn apply_model_selection(
     } else {
         pm.select_model(model)
             .map_err(|e| format!("Failed to select model: {e}"))?;
+        pm.set_compaction_threshold_override(None);
         // RPC-348: `select_model` never touches `facade_override`, so a switch
         // from a previously-selected custom model would otherwise leave a stale
         // facade pointing at the old custom provider. Clear it for plain
@@ -293,10 +225,23 @@ pub fn apply_model_selection(
         pm.set_facade_override(None);
     }
 
-    Ok(ResolvedModelLimits {
+    Ok(resolve_current_model_limits(pm))
+}
+
+pub fn resolve_current_model_limits(pm: &ProviderManager) -> ResolvedModelLimits {
+    let threshold = pm.compaction_threshold_override().map(|(kind, value)| {
+        codelet_cli::compaction_threshold::CompactionThresholdConfig::from_type_value(kind, value)
+    });
+    ResolvedModelLimits {
         context_window: pm.context_window() as u32,
         max_output_tokens: pm.max_output_tokens() as u32,
-    })
+        compaction_threshold: codelet_cli::compaction_threshold::resolve_compaction_threshold(
+            pm.context_window() as u64,
+            pm.max_output_tokens() as u64,
+            pm.selected_model_id().as_deref(),
+            threshold.as_ref(),
+        ) as u32,
+    }
 }
 
 /// WT-012: build a `ProviderManager` for a model string, funneling the
@@ -321,75 +266,17 @@ pub fn apply_model_selection(
 /// Must be called AFTER `credentials::resolve_and_set_env_var` so the
 /// registry re-detects freshly set credentials (PROV-057 staleness rule).
 pub async fn resolve_provider_manager(model: &str) -> Result<ProviderManager, String> {
+    resolve_provider_manager_and_limits(model)
+        .await
+        .map(|(manager, _)| manager)
+}
+
+pub(crate) async fn resolve_provider_manager_and_limits(
+    model: &str,
+) -> Result<(ProviderManager, ResolvedModelLimits), String> {
     let mut provider_manager = ProviderManager::with_model_support()
         .await
         .map_err(|e| format!("Failed to create provider manager: {e}"))?;
-    apply_model_selection(&mut provider_manager, model)?;
-    Ok(provider_manager)
-}
-
-/// PROV-121: bridge a selected local-server profile's stored credentials into
-/// the process environment the OpenAI client reads at dispatch time. This is
-/// the SINGLE source of truth for the credential bridge — both the shared
-/// resolver ([`apply_model_selection`]'s profile branch) and the
-/// isolated-session create path (`SessionManager::create_isolated_session_with_id`)
-/// call it so the two paths can never drift.
-///
-/// Mirrors the TS `configureProfileEnvironment` and the custom-provider
-/// `apply_custom_provider_env_vars` pattern: looks the profile up by name in
-/// `~/.fspec/fspec-config.json` (`providers.openai.profiles.<name>`) and sets:
-/// * `OPENAI_BASE_URL` ← `profile.baseUrl`
-/// * `OPENAI_API_KEY`  ← `profile.apiKey` (only when present and non-empty)
-/// * `OPENAI_CONTEXT_WINDOW` ← `profile.contextWindow` (only when present)
-///
-/// Per the PROV-121 ruling `max_output_tokens` is intentionally NOT bridged
-/// (`OPENAI_MAX_OUTPUT_TOKENS` is left unset). A profile that cannot be found
-/// degrades gracefully (warn + `Ok`) rather than failing dispatch, matching the
-/// TS try/catch behaviour.
-pub fn apply_profile_env_vars(
-    provider: &str,
-    profile_name: &str,
-    model: &str,
-) -> Result<(), String> {
-    let Some(profile) = crate::profile_sections::load_local_server_profiles()
-        .into_iter()
-        .find(|p| p.name == profile_name)
-    else {
-        tracing::warn!(
-            target: "model_resolution",
-            provider,
-            profile_name,
-            model,
-            "apply_profile_env_vars: no stored profile found; leaving OPENAI_* env unchanged"
-        );
-        return Ok(());
-    };
-
-    std::env::set_var("OPENAI_BASE_URL", &profile.base_url);
-    if let Some(api_key) = profile.api_key.as_deref() {
-        if !api_key.is_empty() {
-            std::env::set_var("OPENAI_API_KEY", api_key);
-        }
-    }
-    if let Some(context_window) = profile.context_window {
-        std::env::set_var("OPENAI_CONTEXT_WINDOW", context_window.to_string());
-    }
-    // PROV-140: bridge the per-profile streaming flag. Export an explicit
-    // "true"/"false" when the profile carries the flag; when absent, REMOVE the
-    // var so a profile without the flag never forces streaming off (the
-    // provider defaults to streaming enabled).
-    match profile.streaming {
-        Some(enabled) => std::env::set_var("OPENAI_STREAMING", enabled.to_string()),
-        None => std::env::remove_var("OPENAI_STREAMING"),
-    }
-
-    tracing::info!(
-        target: "model_resolution",
-        provider,
-        profile_name,
-        model,
-        base_url = %profile.base_url,
-        "apply_profile_env_vars: bridged profile credentials into OPENAI_* env"
-    );
-    Ok(())
+    let limits = apply_model_selection(&mut provider_manager, model)?;
+    Ok((provider_manager, limits))
 }

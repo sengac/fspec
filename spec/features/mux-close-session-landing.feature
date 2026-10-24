@@ -6,7 +6,6 @@
 @mux
 @BUG-175
 Feature: Mux enabled=true in persisted config leaks into non-mux view routing â€” closing a session strands the user on a stale full-screen AgentView
-
   """
   View-routing decisions that gate on mux mode (BackToBoard landing + EnterWorkUnit flip) MUST read the LIVE view state (navigator.active_view == ViewMode::Mux), not mux.config().enabled. The persisted config flag survives across processes; the live view does not, so only the live view can answer 'are we in the grid right now'. BackToBoard: in the grid -> focus the Board pane within the grid (BUG-164 retained); any single view -> flip to the single Board view. The duplicated landing rule in App::dispatch and Navigator::apply_action MUST stay behaviorally identical (both gated on the live view).
   """
@@ -24,7 +23,6 @@ Feature: Mux enabled=true in persisted config leaks into non-mux view routing â€
   #   2. A persisted tui.mux block of enabled=true plus a saved Board|Agent 50/50 layout: on a fresh start the TUI boots on the single Board view with the mux layout DISABLED, and running /mux on re-enables the same saved 50/50 grid (the enabled flag is a saved layout preference, not a runtime mode)
   #
   # ========================================
-
   Background: User Story
     As a TUI user who saved a mux grid
     I want to close an agent session from single-view mode after a restart
@@ -35,7 +33,6 @@ Feature: Mux enabled=true in persisted config leaks into non-mux view routing â€
   # preference, not a runtime mode â€” it must never drive view routing
   # outside the mux grid.
   # =====================================================================
-
   @bug-175
   Scenario: bootstrap force-disables a persisted mux grid and keeps the saved layout for /mux on
     Given a fresh TUI bootstrap with a saved tui.mux config of Board and Agent at 50/50 with enabled true

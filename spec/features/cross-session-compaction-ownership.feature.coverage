@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "name": "Reciprocal streaming requests terminate without acquiring busy targets",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "18-89",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "Successful cross-target compaction restores Idle activity",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "91-138",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "Busy capture leaves the Idle target unchanged",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "140-164",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "Cancellation during generation releases target operation ownership",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "166-186",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "Busy commit rejects the candidate without awaiting the target",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "188-221",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "Failed builder cannot publish a cross-target fallback",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "269-296",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    },
+    {
+      "name": "A second operation cannot take ownership from an active builder",
+      "testMappings": [{
+        "file": "rust/agent-loop/tests/cmpct056_cross_session_locks.rs",
+        "lines": "223-267",
+        "implMappings": [
+          {
+            "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+            "lines": [103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164]
+          },
+          {
+            "file": "rust/agent-loop/src/turn_compaction.rs",
+            "lines": [177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 190, 191, 192, 193, 194, 195, 196]
+          }
+        ]
+      }]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": ["rust/agent-loop/tests/cmpct056_cross_session_locks.rs"],
+    "implFiles": ["rust/agent-loop/src/generate_compaction_handler.rs", "rust/agent-loop/src/turn_compaction.rs"],
+    "totalLinesCovered": 875
+  }
+}

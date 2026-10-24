@@ -24,7 +24,6 @@ Feature: Per-profile Max Images resolution
   # ========================================
   # RESOLUTION
   # ========================================
-
   Scenario: A profile model resolves its stored maxImages value
     Given a session against a profile with maxImages 7
     When the session creation path resolves the profile max-images value

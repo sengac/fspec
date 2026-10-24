@@ -1,0 +1,55 @@
+{
+  "scenarios": [
+    {
+      "name": "A3 Provider deletion clears preferred and fallback OAuth credentials",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov159_provider_deletion.rs",
+          "lines": "15-41",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                1856,
+                1857,
+                1858,
+                1859
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/prov159_provider_deletion.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/handle_impl.rs",
+      "rust/providers/src/codex/auth_storage.rs"
+    ],
+    "totalLinesCovered": 44
+  }
+}

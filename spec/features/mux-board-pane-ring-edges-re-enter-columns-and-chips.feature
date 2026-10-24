@@ -33,7 +33,6 @@ Feature: Mux board-pane ring — the columns re-enter the mux bar and the bar re
   #   A: Yes (user directive 2026-10-08): right off the last column → Kanban; right off the last chip → backlog; left off the first column → last chip; left off Kanban → blocked. Every seam crossing is a single step.
   #
   # ========================================
-
   Background: User Story
     As a TUI user (mux mode)
     I want to cycle the board column ⇄ menu-bar item ⇄ session-chip ring with Left/Right

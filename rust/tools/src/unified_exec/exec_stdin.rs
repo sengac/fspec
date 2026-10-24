@@ -170,7 +170,16 @@ pub fn spawn_exec_stdin_detector(
     exec_session_id: String,
     command_display: String,
 ) {
+    let mut observer = EXEC_STDIN_REQUEST_CALLBACKS.get(&agent_session_id);
     tokio::spawn(async move {
+        let mut emit = move |request| {
+            let callback = observer.get_or_insert_with(|| {
+                EXEC_STDIN_REQUEST_CALLBACKS
+                    .get(&agent_session_id)
+                    .unwrap_or_else(|| Arc::new(|_| {}))
+            });
+            callback(request);
+        };
         // True after this exec session has fired at least once — the
         // gate for the clear (BUG-171 rule [4]: "If the detector had
         // not fired yet, no clear is emitted").
@@ -183,7 +192,7 @@ pub fn spawn_exec_stdin_detector(
                 // (b) session removed from the store (reaper or
                 // `close`) — the clear is owed exactly once.
                 if fired {
-                    emit_exec_stdin_request(agent_session_id, None);
+                    emit(None);
                 }
                 break;
             }
@@ -198,7 +207,7 @@ pub fn spawn_exec_stdin_detector(
                     // (a) child exited (or the entry vanished) — clear,
                     // then stop.
                     if fired {
-                        emit_exec_stdin_request(agent_session_id, None);
+                        emit(None);
                     }
                     break;
                 }
@@ -206,7 +215,7 @@ pub fn spawn_exec_stdin_detector(
             let Some(quiet) = store.quiet_secs(&exec_session_id).await else {
                 // Entry gone between checks — same as (b).
                 if fired {
-                    emit_exec_stdin_request(agent_session_id, None);
+                    emit(None);
                 }
                 break;
             };
@@ -219,7 +228,7 @@ pub fn spawn_exec_stdin_detector(
                     // watching: the detector is NOT done with this
                     // session.
                     reset_cooldown(&exec_session_id);
-                    emit_exec_stdin_request(agent_session_id, None);
+                    emit(None);
                     fired = false;
                 }
                 continue;
@@ -235,7 +244,7 @@ pub fn spawn_exec_stdin_detector(
             };
             record_fire(&exec_session_id);
             fired = true;
-            emit_exec_stdin_request(agent_session_id, Some(request));
+            emit(Some(request));
         }
     });
 }

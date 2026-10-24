@@ -33,7 +33,7 @@ use codelet_rpc_types::{
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionState, SessionStatus,
     SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig,
-    ThinkingLevel, TokenRestoreState, WorkUnitContext,
+    ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitFocus,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -66,6 +66,10 @@ fn status_str(status: SessionStatus) -> &'static str {
 /// machinery (LLM streams, tool execution, compaction) is owned by
 /// the implementation and runs on the host runtime.
 pub trait SessionManagerHandle: Send + Sync + 'static {
+    fn reconcile_work_units(&self, _project: &std::path::Path) -> Result<(), String> {
+        Ok(())
+    }
+
     /// Return public metadata for every session currently tracked, filtered by
     /// `project_path`. RPC-427: added `project_path` parameter so `/resume` only
     /// shows sessions belonging to the current project.
@@ -219,7 +223,22 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// write path — including the stub — compile without per-test wiring. The
     /// rust/sessions `SessionManager` overrides this to delegate to
     /// `profile_persistence::save_profile` (preserving `customModels` and all
-    /// sibling keys), returning `Err` for a non-openai provider.
+    /// sibling keys) for built-in and custom providers.
+    fn list_provider_settings(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, String> {
+        Err("Provider settings are unavailable on this session manager".into())
+    }
+
+    fn save_provider_settings(
+        &self,
+        provider_id: &str,
+        definition: &ProfileDefinition,
+    ) -> Result<(), String> {
+        let _ = (provider_id, definition);
+        Err("Provider settings are unavailable on this session manager".into())
+    }
+
     fn save_profile(
         &self,
         provider_id: &str,
@@ -245,8 +264,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// compile without per-test wiring. The rust/sessions `SessionManager`
     /// overrides this to delegate to `profile_persistence::rename_profile`
     /// (moving the old key to `new_name`, preserving `customModels`, rejecting a
-    /// collision with an existing different profile), returning `Err` for a
-    /// non-openai provider.
+    /// collision with an existing different profile).
     fn rename_profile(
         &self,
         provider_id: &str,
@@ -394,6 +412,19 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         None
     }
 
+    fn get_transcript_page(
+        &self,
+        session_id: &SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> Result<codelet_rpc_types::TranscriptPage, codelet_rpc_types::TranscriptError> {
+        let _ = (cursor, snapshot_end, max_bytes);
+        Err(codelet_rpc_types::TranscriptError::SessionUnavailable(
+            session_id.value.clone(),
+        ))
+    }
+
     /// RPC-037: replay-buffer of recent stream chunks for a session.
     fn get_buffered_output(&self, session_id: &SessionId, limit: u32) -> Vec<StreamChunk> {
         let _ = (session_id, limit);
@@ -465,6 +496,26 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         self.restore_session_messages(session_id, envelopes)?;
         self.restore_session_token_state(session_id, state)?;
         Ok(())
+    }
+
+    fn get_work_unit_focus(&self, session_id: &SessionId) -> Result<WorkUnitFocus, String> {
+        Err(format!("Session focus unavailable: {}", session_id.value))
+    }
+
+    fn set_work_unit_focus(
+        &self,
+        session_id: &SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> Result<WorkUnitFocus, String> {
+        let _ = (work_unit_id, source);
+        Err(format!("Session focus unavailable: {}", session_id.value))
+    }
+
+    fn work_unit_focus_rx(&self) -> broadcast::Receiver<(SessionId, WorkUnitFocus)> {
+        let (sender, receiver) = broadcast::channel(1);
+        drop(sender);
+        receiver
     }
 
     /// RPC-037: read the work-unit context bound to a session.
@@ -618,6 +669,20 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     fn set_debug_directory(&self, path: PathBuf) -> Result<(), String> {
         let _ = path;
         Ok(())
+    }
+
+    /// Fail closed for handles without atomic interaction response support.
+    fn interaction_snapshot(&self, _session_id: &SessionId) -> Result<String, String> {
+        Err("Atomic interaction responses unsupported".into())
+    }
+    fn reply_interaction_checked(
+        &self,
+        _session_id: &SessionId,
+        _method: &str,
+        _request_id: &str,
+        _arguments: &str,
+    ) -> Result<(), String> {
+        Err("Atomic interaction responses unsupported".into())
     }
 
     /// RPC-037: resume a paused session.
@@ -1178,6 +1243,7 @@ impl StubSessionManagerHandle {
             worktree_path: r.worktree_path.clone(),
             role: r.role.clone(),
             updated_at_ms: None,
+            work_unit_focus: WorkUnitFocus::default(),
         }
     }
 

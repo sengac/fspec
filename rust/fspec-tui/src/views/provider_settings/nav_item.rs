@@ -28,6 +28,7 @@ pub enum OAuthMethod {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NavItemKind {
     Provider { expanded: bool },
+    Settings,
     Profile { profile_name: String },
     AddProfile,
     ApiKey,
@@ -109,13 +110,6 @@ pub fn build_nav_items(
             continue;
         }
 
-        // Child-row order (Rule 4):
-        //   1. oauth-status?  (only when is_oauth_provider && has_oauth_tokens)
-        //   2. oauth-login×N? (only when is_oauth_provider)
-        //   3. api-key?       (only when id != "openai" && (requires_api_key || env_var.is_some()))
-        //   4. profiles×N?    (openai only)
-        //   5. add-profile?   (openai only — always trails, so users can create the first)
-
         if provider.is_oauth_provider && provider.has_oauth_tokens {
             let label = provider
                 .oauth_status_label
@@ -126,7 +120,6 @@ pub fn build_nav_items(
                 kind: NavItemKind::OAuthStatus { label },
             });
         }
-
         if provider.is_oauth_provider {
             for (method, label) in &provider.oauth_login_methods {
                 items.push(NavItem {
@@ -146,22 +139,22 @@ pub fn build_nav_items(
             });
         }
 
-        if provider.id == "openai" {
-            for profile_name in &provider.profiles {
-                items.push(NavItem {
-                    provider_id: provider.id.clone(),
-                    kind: NavItemKind::Profile {
-                        profile_name: profile_name.clone(),
-                    },
-                });
-            }
-            // The trailing add-profile pseudo-row is ALWAYS present
-            // for openai when expanded (mirrors TS lines 196-200).
+        items.push(NavItem {
+            provider_id: provider.id.clone(),
+            kind: NavItemKind::Settings,
+        });
+        for profile_name in &provider.profiles {
             items.push(NavItem {
                 provider_id: provider.id.clone(),
-                kind: NavItemKind::AddProfile,
+                kind: NavItemKind::Profile {
+                    profile_name: profile_name.clone(),
+                },
             });
         }
+        items.push(NavItem {
+            provider_id: provider.id.clone(),
+            kind: NavItemKind::AddProfile,
+        });
     }
 
     items

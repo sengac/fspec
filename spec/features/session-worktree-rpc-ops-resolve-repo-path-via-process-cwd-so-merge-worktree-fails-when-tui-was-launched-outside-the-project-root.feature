@@ -6,7 +6,6 @@
 @session-merge
 @WT-003
 Feature: Session worktree RPC ops resolve repo path via process cwd, so /merge-worktree fails when TUI was launched outside the project root
-
   """
   handle_impl.rs (RPC-057 surface) resolves repo_path via std::env::current_dir() at call time. Fix: session-scoped ops (merge/discard/inspect) look up the in-memory BackgroundSession and use its `project` field; when the id is not in memory they fall back to codelet_git::read_manifest(session_id).project_root before the process cwd. list/prune have no session id: they enumerate the distinct projects of all in-memory sessions (deduplicated) and run per root, aggregating results; prune's active-session set is the ids of ALL in-memory sessions (no project filter, no persisted-only entries).
   """
@@ -29,7 +28,6 @@ Feature: Session worktree RPC ops resolve repo path via process cwd, so /merge-w
   #   5. Project X has a worktree whose session was closed (manifest terminated) while an active session lives in project Y; the process cwd is foreign; prune_orphaned_worktrees removes X's orphaned worktree and reports its session id, but Y's active session worktree is left untouched
   #
   # ========================================
-
   Background: User Story
     As a developer running the fspec binary from any directory
     I want to run the session-worktree RPC ops (merge, discard, inspect, list, prune)
@@ -75,4 +73,3 @@ Feature: Session worktree RPC ops resolve repo path via process cwd, so /merge-w
     When merge_session_worktree is called with that session id
     Then the merge succeeds by resolving the repository from the manifest's project root X
     And the worktree's changes are applied to X's main working tree
-

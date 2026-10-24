@@ -40,13 +40,13 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
   Scenario: Empty Context Window field shows a dim placeholder
     Given a new profile form is open with the Context Window field empty
     When the profile form is rendered
-    Then the Context Window row shows the placeholder "128000"
+    Then the Context Window row shows the placeholder "Automatic (model-specific)"
     Then the placeholder is rendered with the dim modifier
 
   Scenario: Empty Max Output Tokens field shows a dim placeholder
     Given a new profile form is open with the Max Output Tokens field empty
     When the profile form is rendered
-    Then the Max Output Tokens row shows the placeholder "16384"
+    Then the Max Output Tokens row shows the placeholder "Automatic (model-specific)"
     Then the placeholder is rendered with the dim modifier
 
   Scenario: Empty Compaction Threshold field shows a dim placeholder
@@ -60,7 +60,7 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
     Given the Max Output Tokens field contains the typed value "8192"
     When the profile form is rendered
     Then the Max Output Tokens row shows "8192"
-    Then the Max Output Tokens row does not show the placeholder "16384"
+    Then the Max Output Tokens row does not show the placeholder "Automatic (model-specific)"
 
   Scenario: Placeholder hints are never persisted into the saved profile
     Given a new profile form is open with base URL and API key filled in

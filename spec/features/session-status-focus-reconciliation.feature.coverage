@@ -1,0 +1,211 @@
+{
+  "scenarios": [
+    {
+      "name": "A successful legacy agent status command switches the issuing session",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "13-36",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                7,
+                55
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                670
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed status command does not imply a successful focus switch",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "40-52",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Same-card status refresh retains correct authorization stage",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "56-86",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/focus_reconciliation.rs",
+              "lines": [
+                135,
+                172
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "External completion or deletion clears only sessions focused on that card",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "90-134",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/focus_reconciliation.rs",
+              "lines": [
+                74,
+                98
+              ]
+            },
+            {
+              "file": "rust/napi/src/work_units_watcher.rs",
+              "lines": [
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit attribution takes precedence over administrative command targets",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "138-162",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/fspec_handler.rs",
+              "lines": [
+                12,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Late completion cannot erase newer activity or forbid later follow-up work",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "166-195",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/focus_reconciliation.rs",
+              "lines": [
+                14,
+                43,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessionless commands refresh metadata without claiming another card",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "199-230",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/focus_reconciliation.rs",
+              "lines": [
+                74,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Watcher reconciliation updates a busy session outside the runtime",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "234-270",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/activity_focus.rs",
+              "lines": [
+                145,
+                154
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                608
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Watcher replacement and lag recovery retain reconciliation",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug231_status_focus.rs",
+          "lines": "274-293",
+          "implMappings": [
+            {
+              "file": "rust/core/src/work_unit_subscription.rs",
+              "lines": [
+                15,
+                40,
+                60
+              ]
+            },
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                835,
+                914
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug231_status_focus.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/fspec_handler.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/sessions/src/focus_reconciliation.rs",
+      "rust/napi/src/work_units_watcher.rs",
+      "rust/sessions/src/activity_focus.rs",
+      "rust/sessions/src/background_session.rs",
+      "rust/core/src/work_unit_subscription.rs",
+      "rust/rpc/src/lib.rs"
+    ],
+    "totalLinesCovered": 281
+  }
+}

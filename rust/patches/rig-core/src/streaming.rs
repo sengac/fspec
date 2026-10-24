@@ -27,6 +27,9 @@ use std::sync::atomic::AtomicBool;
 use std::task::{Context, Poll};
 use tokio::sync::watch;
 
+#[path = "streaming_attempt_marker.rs"]
+mod attempt_marker;
+
 /// Control for pausing and resuming a streaming response
 pub struct PauseControl {
     pub(crate) paused_tx: watch::Sender<bool>,
@@ -74,6 +77,8 @@ pub enum RawStreamingChoice<R>
 where
     R: Clone,
 {
+    ResponseAttemptStarted,
+    ResponseAttemptAborted,
     /// A text chunk from a message response
     Message(String),
 
@@ -189,6 +194,7 @@ where
     pub(crate) pause_control: PauseControl,
     text: String,
     reasoning: String,
+    attempt_snapshot: Option<(usize, usize)>,
     tool_calls: Vec<ToolCall>,
     /// The final aggregated message from the stream
     /// contains all text and tool calls generated
@@ -212,6 +218,7 @@ where
             abort_handle,
             pause_control,
             reasoning: String::new(),
+            attempt_snapshot: None,
             text: "".to_string(),
             tool_calls: vec![],
             choice: OneOrMany::one(AssistantContent::text("")),
@@ -293,6 +300,17 @@ where
                 Poll::Ready(Some(Err(err)))
             }
             Poll::Ready(Some(Ok(choice))) => match choice {
+                RawStreamingChoice::ResponseAttemptStarted => {
+                    stream.attempt_snapshot = Some((stream.text.len(), stream.reasoning.len()));
+                    Poll::Ready(Some(Ok(StreamedAssistantContent::ResponseAttemptStarted)))
+                }
+                RawStreamingChoice::ResponseAttemptAborted => {
+                    if let Some((text, reasoning)) = stream.attempt_snapshot.take() {
+                        stream.text.truncate(text);
+                        stream.reasoning.truncate(reasoning);
+                    }
+                    Poll::Ready(Some(Ok(StreamedAssistantContent::ResponseAttemptAborted)))
+                }
                 RawStreamingChoice::Message(text) => {
                     // Forward the streaming tokens to the outer stream
                     // and concat the text together
@@ -408,6 +426,12 @@ impl<R: Clone + Unpin + GetTokenUsage> Stream for StreamingResultDyn<R> {
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Ready(Some(Err(err))) => Poll::Ready(Some(Err(err))),
             Poll::Ready(Some(Ok(chunk))) => match chunk {
+                RawStreamingChoice::ResponseAttemptStarted => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::ResponseAttemptStarted)))
+                }
+                RawStreamingChoice::ResponseAttemptAborted => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::ResponseAttemptAborted)))
+                }
                 RawStreamingChoice::FinalResponse(res) => Poll::Ready(Some(Ok(
                     RawStreamingChoice::FinalResponse(FinalCompletionResponse {
                         usage: res.token_usage(),
@@ -480,7 +504,7 @@ where
             Ok(StreamedAssistantContent::Final(res)) => {
                 let json_res = serde_json::to_string_pretty(&res).unwrap_or_default();
                 println!();
-                tracing::info!("Final result: {json_res}");
+                tracing::info!(result = %json_res, "Final result");
             }
             Ok(StreamedAssistantContent::Reasoning(Reasoning { reasoning, .. })) => {
                 if !is_reasoning {
@@ -585,6 +609,10 @@ mod tests {
                     println!("Reasoning delta: {reasoning}");
                     chunk_count += 1;
                 }
+                Ok(
+                    StreamedAssistantContent::ResponseAttemptStarted
+                    | StreamedAssistantContent::ResponseAttemptAborted,
+                ) => {}
                 Ok(StreamedAssistantContent::Usage(_)) => {
                     // Usage events are for token tracking, ignore in this test
                 }
@@ -627,6 +655,16 @@ mod tests {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(untagged)]
 pub enum StreamedAssistantContent<R> {
+    #[serde(
+        serialize_with = "attempt_marker::serialize_started",
+        deserialize_with = "attempt_marker::deserialize_started"
+    )]
+    ResponseAttemptStarted,
+    #[serde(
+        serialize_with = "attempt_marker::serialize_aborted",
+        deserialize_with = "attempt_marker::deserialize_aborted"
+    )]
+    ResponseAttemptAborted,
     Text(Text),
     ToolCall(ToolCall),
     ToolCallDelta {

@@ -128,9 +128,9 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
   @PROV-111
   Scenario: Folding loaded credentials stores the per-profile config map for prefill
     Given a Provider Settings view
-    When a per-profile config map containing "fireworks" is stored on the view
-    Then profile_config_for("fireworks") returns the stored ProfileDefinition
-    And profile_config_for("missing") returns nothing
+    When a provider-qualified config map containing "openai" profile "fireworks" is stored on the view
+    Then profile_config_for("openai", "fireworks") returns the stored ProfileDefinition
+    And profile_config_for("openai", "missing") returns nothing
 
   @PROV-111
   Scenario: The profile row display string is split back to the bare name for lookup

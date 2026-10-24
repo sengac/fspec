@@ -30,6 +30,7 @@ pub mod deep_search;
 pub mod done; // CONT-002: auto-continue done() tool + armed/acceptance registries
 pub mod edit;
 pub mod error;
+pub mod execution_context;
 pub mod facade;
 pub mod file_type;
 pub mod fspec;
@@ -61,6 +62,8 @@ pub mod search_engine;
 pub mod serde_coerce;
 pub mod session_registry;
 pub mod session_search;
+pub mod tool_admission;
+pub mod tool_attribution;
 pub mod tool_pause;
 pub mod tool_progress;
 pub mod truncation;
@@ -158,12 +161,12 @@ pub use fspec_handler::{
     FspecResult as FspecHandlerResult,
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
-pub use glob::GlobTool;
 pub use generate_compaction::{
     clear_all_generate_compaction_handlers, has_generate_compaction_handler,
     set_generate_compaction_handler, GenerateCompactionArgs, GenerateCompactionHandler,
     GenerateCompactionTool,
 };
+pub use glob::GlobTool;
 pub use graph_search::{
     clear_all_graph_search_handlers, execute_graph_search, has_graph_search_handler,
     set_graph_search_handler, GraphSearchAction, GraphSearchArgs, GraphSearchHandler,

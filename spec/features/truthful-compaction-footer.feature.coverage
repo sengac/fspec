@@ -1,0 +1,35 @@
+{
+  "scenarios": [
+    {
+      "name": "Legacy progress counts never alter the activity presentation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/truthful_compaction_footer_bug213.rs",
+          "lines": "28-54",
+          "implMappings": [
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [64, 65, 109, 110, 111, 112, 113, 114]},
+            {"file": "rust/rpc-types/src/lib.rs", "lines": [1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truthful activity preserves workspace chrome and supervisor priority",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/truthful_compaction_footer_bug213.rs",
+          "lines": "56-86",
+          "implMappings": [
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [57, 58, 59, 60, 61, 62, 63, 64, 65, 76, 77, 78, 79, 80, 81, 86, 87, 88, 89, 90, 91, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 109, 110, 111, 112, 113, 114]}
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2, "coveredScenarios": 2, "coveragePercent": 100,
+    "testFiles": ["rust/fspec-tui/tests/truthful_compaction_footer_bug213.rs"],
+    "implFiles": ["rust/fspec-tui/src/views/agent/footer.rs", "rust/rpc-types/src/lib.rs"],
+    "totalLinesCovered": 115
+  }
+}

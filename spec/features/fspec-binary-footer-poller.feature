@@ -15,10 +15,10 @@ Feature: fspec binary runs the footer poller so the session footer reflects git 
   Architecture:
   - The shared poller lives in codelet-sessions (footer_poller module) — NAPI-free.
   - It resolves the chunks_tx sender via a process-global manager-sender slot
-    (codelet-sessions::footer_poller::register_chunk_sender), registered by
-    FspecAgentHooks in build_service (non-singleton manager) and by the NAPI
-    install path (SessionManager::instance()); when unregistered it falls back
-    to SessionManager::instance() (today's NAPI behavior).
+  (codelet-sessions::footer_poller::register_chunk_sender), registered by
+  FspecAgentHooks in build_service (non-singleton manager) and by the NAPI
+  install path (SessionManager::instance()); when unregistered it falls back
+  to SessionManager::instance() (today's NAPI behavior).
   - FspecAgentHooks::spawn_footer_poller / stop_footer_poller call the shared
   poller; NapiSessionManagerHooks keeps delegating to crate::footer_poller,
   which is now a thin shim over the shared poller.

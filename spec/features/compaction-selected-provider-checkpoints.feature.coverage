@@ -1,0 +1,368 @@
+{
+  "scenarios": [
+    {
+      "name": "OpenAI API compaction ignores inactive Codex state after switching providers",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug212_selected_provider_checkpoints.rs",
+          "lines": "88-123",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/session.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            },
+            {
+              "file": "rust/cli/src/session/compaction.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                124,
+                125,
+                126,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI API restore ignores an inactive Codex extension",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug212_selected_provider_checkpoints.rs",
+          "lines": "125-154",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/session.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            },
+            {
+              "file": "rust/cli/src/session/restore_compaction.rs",
+              "lines": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed OpenAI API publication reconciles without invoking inactive Codex state",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug212_selected_provider_checkpoints.rs",
+          "lines": "156-190",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/session.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            },
+            {
+              "file": "rust/cli/src/session/compaction.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected Codex compaction still rejects invalid checkpoint lineage",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug212_selected_provider_checkpoints.rs",
+          "lines": "192-238",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/session.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            },
+            {
+              "file": "rust/cli/src/session/compaction.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug212_selected_provider_checkpoints.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/session.rs",
+      "rust/cli/src/session/compaction.rs",
+      "rust/cli/src/session/restore_compaction.rs"
+    ],
+    "totalLinesCovered": 414
+  }
+}

@@ -171,8 +171,8 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
     // @step Then the row immediately after anthropic is NavItemKind::OAuthLogin { method: Browser }
     assert_eq!(
         items.len(),
-        4,
-        "expected provider + 2 oauth-login + 1 api-key"
+        6,
+        "expected provider + 2 oauth-login + api-key + settings + add-profile"
     );
     assert!(matches!(
         items[0].kind,
@@ -193,6 +193,8 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
     }
     // @step And the next row is NavItemKind::ApiKey
     assert!(matches!(items[3].kind, NavItemKind::ApiKey));
+    assert!(matches!(items[4].kind, NavItemKind::Settings));
+    assert!(matches!(items[5].kind, NavItemKind::AddProfile));
     // @step And no NavItemKind::OAuthStatus row appears in the anthropic child block
     for item in &items {
         assert!(
@@ -218,26 +220,27 @@ fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
     // @step When build_nav_items is called
     let items = build_nav_items(&providers, &expanded, "");
 
-    // @step Then the rows immediately after openai are NavItemKind::Profile { profile_name: "prof1" } then NavItemKind::Profile { profile_name: "prof2" }
+    // @step Then the first three child rows are NavItemKind::Settings then NavItemKind::Profile { profile_name: "prof1" } then NavItemKind::Profile { profile_name: "prof2" }
     assert_eq!(
         items.len(),
-        4,
-        "expected provider + 2 profiles + add-profile"
+        5,
+        "expected provider + settings + 2 profiles + add-profile"
     );
     assert!(matches!(
         items[0].kind,
         NavItemKind::Provider { expanded: true }
     ));
-    match &items[1].kind {
+    assert!(matches!(items[1].kind, NavItemKind::Settings));
+    match &items[2].kind {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "prof1"),
         other => panic!("expected Profile, got {other:?}"),
     }
-    match &items[2].kind {
+    match &items[3].kind {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "prof2"),
         other => panic!("expected Profile, got {other:?}"),
     }
     // @step And the next row is NavItemKind::AddProfile
-    assert!(matches!(items[3].kind, NavItemKind::AddProfile));
+    assert!(matches!(items[4].kind, NavItemKind::AddProfile));
     // @step And no NavItemKind::ApiKey row appears in the openai child block
     for item in &items {
         assert!(
@@ -276,8 +279,8 @@ fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
     // @step Then the row immediately after anthropic is NavItemKind::OAuthStatus
     assert_eq!(
         items.len(),
-        5,
-        "expected provider + oauth-status + 2 oauth-login + api-key"
+        7,
+        "expected provider + oauth-status + 2 oauth-login + api-key + settings + add-profile"
     );
     assert!(matches!(
         items[0].kind,
@@ -298,6 +301,8 @@ fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
     }
     // @step And the next row is NavItemKind::ApiKey
     assert!(matches!(items[4].kind, NavItemKind::ApiKey));
+    assert!(matches!(items[5].kind, NavItemKind::Settings));
+    assert!(matches!(items[6].kind, NavItemKind::AddProfile));
 }
 
 // ────────────────────────────────────────────────────────────────────────

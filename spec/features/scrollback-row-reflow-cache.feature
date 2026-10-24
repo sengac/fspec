@@ -47,7 +47,6 @@ Feature: Scrollback row reflow cache — steady-state 60fps repaint blits cached
   #   1. Whether the busy-state forces 60fps at all (is_session_busy tick cadence) is a product decision OUT of scope — this card keeps the 60fps cadence and makes each frame cheap.
   #
   # ========================================
-
   Background: User Story
     As a TUI developer running a long agent turn
     I want to watch the 60fps busy-state repaint

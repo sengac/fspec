@@ -39,6 +39,7 @@ fn test_token_tracker_field_restoration() {
         cumulative_billed_input: 10000,
         cumulative_billed_output: 8000,
         reasoning_tokens: 0,
+        input_accounting: Default::default(),
     };
 
     // @step Then the token state is restored to the session
@@ -63,6 +64,7 @@ fn test_effective_tokens_after_restoration() {
     // Restore state as session_restore_token_state would
     let tracker = TokenTracker {
         input_tokens: 10000,
+        input_accounting: Default::default(),
         output_tokens: 5000,
         cache_read_input_tokens: Some(4000), // 4000 cache reads
         cache_creation_input_tokens: Some(1000),
@@ -92,6 +94,7 @@ fn test_token_restoration_with_zero_cache() {
     // @step When I restore token state with zero cache values
     let tracker = TokenTracker {
         input_tokens: 3000,
+        input_accounting: Default::default(),
         output_tokens: 2000,
         cache_read_input_tokens: Some(0),
         cache_creation_input_tokens: Some(0),
@@ -120,6 +123,7 @@ fn test_token_tracker_value_preservation() {
     // @step Given I have restored token state to a session
     let tracker = TokenTracker {
         input_tokens: 15000,
+        input_accounting: Default::default(),
         output_tokens: 12000,
         cache_read_input_tokens: Some(5000),
         cache_creation_input_tokens: Some(2500),
@@ -158,6 +162,7 @@ fn test_large_token_value_conversion() {
     // @step When I restore the token state
     let tracker = TokenTracker {
         input_tokens: large_value,
+        input_accounting: Default::default(),
         output_tokens: large_value,
         cache_read_input_tokens: None,
         cache_creation_input_tokens: None,

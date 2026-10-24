@@ -68,17 +68,31 @@ fn save_preserves_custom_models_and_clears_stale_optional() {
 }
 
 #[test]
-fn save_non_openai_is_noop() {
-    let dir = TempDir::new().unwrap();
-    let path = write(
-        &dir,
-        json!({ "providers": { "openai": { "profiles": {
-            "work-vllm": { "baseUrl": "http://a", "apiKey": "k" }
-        } } } }),
+fn save_non_openai_preserves_other_providers() -> Result<(), Box<dyn std::error::Error>> {
+    // @step Given a config with an openai profile "work-vllm"
+    let directory = codelet_test_helpers::setup_temp_directory()?;
+    let path = directory.path().join("fspec-config.json");
+    let original = json!({ "providers": { "openai": { "profiles": {
+        "work-vllm": { "baseUrl": "http://a", "apiKey": "k" }
+    } } } });
+    fs::write(&path, serde_json::to_vec(&original)?)?;
+
+    // @step When I save a profile for provider "anthropic"
+    let result = save_profile_at(&path, "anthropic", "work-vllm", &basic("http://x", "y"));
+
+    // @step Then the call returns Ok
+    assert!(result.is_ok(), "Anthropic profile save failed: {result:?}");
+
+    // @step And the anthropic profile is saved and the existing openai profile is unchanged
+    let persisted: Value = serde_json::from_slice(&fs::read(&path)?)?;
+    assert_eq!(
+        persisted["providers"]["openai"],
+        original["providers"]["openai"]
     );
-    let before = fs::read_to_string(&path).unwrap();
-    save_profile_at(&path, "anthropic", "work-vllm", &basic("http://x", "y")).unwrap();
-    assert_eq!(before, fs::read_to_string(&path).unwrap());
+    let profile = &persisted["providers"]["anthropic"]["profiles"]["work-vllm"];
+    assert_eq!(profile["baseUrl"], "http://x");
+    assert_eq!(profile["apiKey"], "y");
+    Ok(())
 }
 
 #[test]

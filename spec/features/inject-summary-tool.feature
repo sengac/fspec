@@ -49,7 +49,7 @@ Feature: inject_summary Tool Definition and Schema
     Given a session with a registered InjectSummaryHandler
     When the agent calls inject_summary with DAG content
     Then the handler receives the session_id and content string
-    And the tool returns InjectSummaryResult with injected_tokens and remaining_budget
+    And the tool returns a queued summary estimate without a remaining request budget
 
   @error-handling
   Scenario: inject_summary with no handler returns error

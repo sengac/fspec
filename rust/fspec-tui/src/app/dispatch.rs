@@ -24,6 +24,7 @@ impl App {
             }
             Action::Interrupt => self.handle_interrupt(),
             Action::ChunkReceived(id, chunk) => self.handle_chunk_received(id, chunk),
+            Action::Transcript(action) => self.dispatch_transcript(action),
             Action::SessionStatusChanged(id, status) => {
                 self.handle_session_status_changed(id.clone(), *status);
             }
@@ -104,8 +105,7 @@ impl App {
                 self.agent_view_store.set_navigation_target(target.clone());
             }
             Action::AttachSession(work_unit_id, session) => {
-                self.board_store
-                    .attach_session(work_unit_id, session.clone());
+                self.handle_legacy_session_attachment(work_unit_id, session);
             }
             Action::SessionCreated(session) => {
                 self.handle_session_created(session.clone());

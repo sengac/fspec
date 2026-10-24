@@ -20,6 +20,12 @@ fn stream_loop_source() -> String {
     fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
 }
 
+fn error_cascade_source() -> String {
+    let source = stream_loop_source();
+    let start = find(&source, "let branch = classify_compaction_branch(");
+    source[start..].to_owned()
+}
+
 /// Locate the 1-based character offset of the first occurrence of `needle`.
 fn find(src: &str, needle: &str) -> usize {
     src.find(needle)
@@ -34,12 +40,12 @@ fn overflow_check_runs_before_network_retry_arm() {
     // @step When the stream loop classifies the error
     // @step Then the overflow branch is taken
     // @step And the error is NOT retried as a transient network error
-    let src = stream_loop_source();
+    let src = error_cascade_source();
 
     // The new robust overflow classifier must be invoked in the error arm...
-    let overflow_at = find(&src, "is_context_overflow_error(");
+    let overflow_at = find(&src, "let is_context_overflow = is_context_overflow_error(");
     // ...strictly before the NET-001 transient-network arm...
-    let network_at = find(&src, "is_transient_network_error(");
+    let network_at = find(&src, "provider_recovery::should_retry_network_error(");
 
     assert!(
         overflow_at < network_at,
@@ -53,7 +59,7 @@ fn overflow_check_runs_before_network_retry_arm() {
     // branch (AFTER the classifier, not the Path-B one above it) must sit
     // before the network arm.
     let recovery_at = src[overflow_at..]
-        .find("begin_compaction_recovery(")
+        .find("in_loop_compaction_restart!(")
         .map(|offset| overflow_at + offset)
         .unwrap_or_else(|| {
             panic!("CMPCT-044: no begin_compaction_recovery after the overflow classifier")
@@ -73,7 +79,7 @@ fn compaction_branch_classification_runs_before_overflow_string_classifier() {
     // @step When the stream loop classifies the error
     // @step Then classify_compaction_branch routes it to the compaction-cancel recovery path first
     // @step And the context-overflow string classifier is not the deciding signal for that error
-    let src = stream_loop_source();
+    let src = error_cascade_source();
 
     let branch_at = find(&src, "classify_compaction_branch(");
     let overflow_at = find(&src, "is_context_overflow_error(");
@@ -95,11 +101,11 @@ fn overflow_error_routes_to_compactor_sub_agent_recovery() {
     // @step Then is_context_overflow_error classifies it as a context overflow
     // @step And the compaction-recovery path runs for the session
     // @step And the session does NOT terminate with a terminal "Agent error"
-    let src = stream_loop_source();
+    let src = error_cascade_source();
 
     // The overflow branch must invoke the shared recovery entry
     // (begin_compaction_recovery) exactly like Paths B/C do today...
-    let recovery_at = find(&src, "begin_compaction_recovery(");
+    let recovery_at = find(&src, "in_loop_compaction_restart!(");
     let overflow_at = find(&src, "is_context_overflow_error(");
     assert!(
         overflow_at < recovery_at || recovery_at < overflow_at,
@@ -107,7 +113,7 @@ fn overflow_error_routes_to_compactor_sub_agent_recovery() {
     );
     // ...and must escalate to the compactor sub-agent handler when the
     // in-view path cannot resolve the overflow (registry lookup).
-    let compactor_at = find(&src, "compactor_sub_agent");
+    let compactor_at = find(&stream_loop_source(), "compactor_sub_agent");
     assert!(
         compactor_at > 0,
         "CMPCT-044: stream_loop.rs must reference the compactor sub-agent \
@@ -123,13 +129,13 @@ fn overflow_branch_is_gated_on_compactable_turns() {
     // @step When the stream loop processes the error
     // @step Then no compaction is triggered because there are no compactable turns
     // @step And the error follows the existing terminal error handling
-    let src = stream_loop_source();
+    let src = error_cascade_source();
 
     // The existing gate (has_compactable_turns via convert_messages_to_turns)
     // must still guard the overflow branch — the classifier alone must not
     // fire compaction on a session with no compactable turns.
     let gate = find(&src, "has_compactable_turns");
-    let overflow_at = find(&src, "is_context_overflow_error(");
+    let overflow_at = find(&src, "let is_context_overflow = is_context_overflow_error(");
     assert!(
         gate < overflow_at && (overflow_at - gate) < 4000,
         "CMPCT-044: the compactable-turns gate (char {gate}) must still guard the \
@@ -160,10 +166,11 @@ fn sub_agent_escalation_shares_the_compaction_retry_budget() {
         "sanity: macro def precedes the primary loop"
     );
 
-    let compactor_at = find(
-        &src,
-        "crate::compactor_sub_agent::run_compactor_sub_agent_round",
-    );
+    let compactor_at = macro_def_at
+        + find(
+            &src[macro_def_at..],
+            "crate::compactor_sub_agent::run_compactor_sub_agent_round",
+        );
     assert!(
         compactor_at > macro_def_at && compactor_at < macro_end_at,
         "CMPCT-044: the compactor sub-agent escalation (char {compactor_at}) must \

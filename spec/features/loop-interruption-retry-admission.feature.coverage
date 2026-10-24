@@ -1,0 +1,248 @@
+{
+  "scenarios": [
+    {
+      "name": "Genuine loop recovery remains typed and bounded",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug220_loop_retry.rs",
+          "lines": "28-68",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                1581,
+                1582,
+                1583,
+                1584,
+                1585,
+                1586,
+                1587,
+                1588,
+                1589,
+                1590,
+                1591,
+                1592,
+                1593,
+                1594,
+                1595,
+                1596,
+                1597,
+                1598,
+                1599,
+                1600
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User stop invalidates staged loop recovery and stale epochs",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug220_loop_retry.rs",
+          "lines": "72-113",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                1581,
+                1582,
+                1583,
+                1584,
+                1585,
+                1586,
+                1587,
+                1588,
+                1589,
+                1590,
+                1591,
+                1592,
+                1593,
+                1594,
+                1595,
+                1596,
+                1597,
+                1598,
+                1599,
+                1600
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug220_loop_retry.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/interruption.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/terminal_overflow_recovery.rs"
+    ],
+    "totalLinesCovered": 261
+  }
+}

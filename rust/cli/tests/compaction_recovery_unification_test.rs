@@ -63,7 +63,11 @@ impl StreamOutput for RecordingOutput {
 }
 
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    ))
 }
 
 fn fresh_token_state() -> Arc<Mutex<TokenState>> {
@@ -332,8 +336,8 @@ fn helper_emits_lifecycle_events_exactly_once_per_entry() {
     match progress {
         StreamEvent::CompactionProgress(info) => {
             assert_eq!(info.phase, "Context limit reached", "phase must match spec");
-            assert_eq!(info.current, 0, "current must be 0 at entry");
-            assert!(info.total >= 1, "total must be >=1 (max(1))");
+            // @step And its work counts are unknown rather than an approximate turn total
+            assert_eq!((info.current, info.total), (0, 0), "unknown work counts");
         }
         other => panic!("expected CompactionProgress, got {other:?}"),
     }

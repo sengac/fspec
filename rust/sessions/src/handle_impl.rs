@@ -82,6 +82,7 @@ fn session_worktree_repo_roots(manager: &SessionManager) -> Vec<String> {
             }
         }
     }
+
     roots.into_iter().collect()
 }
 
@@ -99,6 +100,9 @@ fn session_worktree_repo_roots(manager: &SessionManager) -> Vec<String> {
 /// message than the pre-RPC-070 "Cannot start a runtime from within
 /// a runtime" nested-runtime panic.
 impl codelet_core::SessionManagerHandle for SessionManager {
+    fn reconcile_work_units(&self, project: &std::path::Path) -> Result<(), String> {
+        SessionManager::reconcile_work_units(self, project).map_err(|error| error.to_string())
+    }
     fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo> {
         SessionManager::list_sessions(self, project_path)
     }
@@ -225,11 +229,21 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             );
         }
 
+        if !self
+            .get_session(&session_id.value)?
+            .requires_model_restore()
+        {
+            return Ok(());
+        }
+
         // Now restore messages and token state
         tracing::info!(
             session_id = %uuid,
             "resume_session: restoring messages and token state"
         );
+        self.get_session(&session_id.value)?
+            .restore_archival_transcript()
+            .map_err(|error| error.to_string())?;
         let envelopes = codelet_core::persistence::get_session_message_envelopes(uuid)?;
         tracing::info!(
             session_id = %uuid,
@@ -246,6 +260,8 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         };
         self.restore_session_messages(session_id, envelopes)?;
         self.restore_session_token_state(session_id, state)?;
+        self.get_session(&session_id.value)?
+            .complete_manifest_restore();
 
         tracing::info!(
             session_id = %uuid,
@@ -396,6 +412,20 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .map(CompactionProgress::from)
     }
 
+    fn get_transcript_page(
+        &self,
+        session_id: &SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> Result<codelet_rpc_types::TranscriptPage, codelet_rpc_types::TranscriptError> {
+        self.get_session(&session_id.value)
+            .map_err(|_| {
+                codelet_rpc_types::TranscriptError::SessionUnavailable(session_id.value.clone())
+            })?
+            .get_transcript_page(cursor, snapshot_end, max_bytes)
+    }
+
     fn get_buffered_output(&self, session_id: &SessionId, limit: u32) -> Vec<StreamChunk> {
         let uuid = uuid_from(session_id);
         self.get_session(&uuid.to_string())
@@ -419,8 +449,8 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 // file (`create_session`, `create_isolated_session`,
                 // `test_provider_connection`, the three `loop_*`
                 // methods).
-                tokio::task::block_in_place(|| session.clear_history());
-                Ok(())
+                tokio::task::block_in_place(|| session.clear_history())
+                    .map_err(|error| error.to_string())
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
         }
@@ -447,9 +477,13 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // returns the captured token counts so the `inner` lock is dropped
         // BEFORE `send_input` (the agent loop needs the lock — see the
         // `drop(inner)` at session_bindings.rs:3097).
+        let compaction_epoch = session.compaction_epoch();
         let original_tokens: u64 = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
                 let mut inner = session.inner.lock().await;
+                if session.compaction_cancelled(compaction_epoch) {
+                    return Err("manual compaction cancelled".into());
+                }
 
                 // Nothing to compact — leave the session untouched (no
                 // status change, no token snapshot).
@@ -501,21 +535,21 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             })
         })?;
 
-        // Status contract: on the happy path the session intentionally stays in
-        // `Compacting` here — `send_input("Continue")` below flips it to `Running`
-        // (NAPI parity, session_bindings.rs). Only the failure paths above revert to
-        // `Idle`. Do not add an unconditional Idle reset here or the agent-loop kick
-        // would race the status.
-
         // Lock dropped. Clear progress and kick the agent loop so it builds
         // the DAG via SessionSearch and calls the inject_summary tool.
         session.set_compaction_progress(None);
 
-        // Mirror NAPI: a failed `send_input` is logged, not fatal — the
-        // compaction itself already succeeded.
-        if let Err(e) = session.send_input("Continue".to_string(), None) {
-            tracing::warn!("[compact_session] Failed to send Continue to agent loop: {e}");
+        if let Err(error) = session.send_compaction_continuation(compaction_epoch) {
+            tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current().block_on(async {
+                    session.inner.lock().await.discard_compaction_working_view();
+                })
+            });
+            session
+                .compaction_in_progress
+                .store(false, std::sync::atomic::Ordering::Release);
             session.set_status(SessionStatus::Idle);
+            return Err(error);
         }
 
         // RPC-421: acknowledgement-shaped success on the unchanged wire
@@ -541,224 +575,17 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         session_id: &SessionId,
         envelopes: Vec<String>,
     ) -> Result<(), String> {
-        // RPC-081: NAPI-free port of rust/napi/src/session_bindings.rs:2401-2567.
-        // Walks each envelope JSON's message.content blocks, builds parallel
-        // rig::message::Message + StreamChunk vectors, then pushes rig messages
-        // into session.inner.messages and dispatches StreamChunks via
-        // session.handle_output. Preserves the system-reminder skip rule
-        // (text contains both "<system-reminder>" AND "<!-- type:") so stale
-        // reminders are NOT replayed — fresh ones are re-injected post-restore.
-        let uuid = uuid_from(session_id);
-        let session = self
-            .get_session(&uuid.to_string())
-            .map_err(|_| format!("Session not found: {}", session_id.value.as_str()))?;
-
-        let mut rig_messages: Vec<rig::message::Message> = Vec::new();
-        let mut stream_chunks: Vec<StreamChunk> = Vec::new();
-
-        for envelope_json in &envelopes {
-            let envelope: serde_json::Value = serde_json::from_str(envelope_json)
-                .map_err(|e| format!("Failed to parse envelope: {e}"))?;
-
-            let Some(message) = envelope.get("message") else {
-                continue;
-            };
-
-            let role = message
-                .get("role")
-                .and_then(|r| r.as_str())
-                .unwrap_or("user");
-
-            if role == "assistant" {
-                let Some(content) = message.get("content") else {
-                    continue;
-                };
-                let Some(arr) = content.as_array() else {
-                    continue;
-                };
-
-                let mut text_parts: Vec<String> = Vec::new();
-
-                for block in arr {
-                    let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
-
-                    match block_type {
-                        "thinking" => {
-                            if let Some(thinking) = block.get("thinking").and_then(|t| t.as_str()) {
-                                if !thinking.is_empty() {
-                                    stream_chunks.push(StreamChunk::thinking(thinking.to_string()));
-                                }
-                            }
-                        }
-                        "text" => {
-                            if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
-                                text_parts.push(text.to_string());
-                                if !text.is_empty() {
-                                    stream_chunks.push(StreamChunk::text(text.to_string()));
-                                }
-                            }
-                        }
-                        "tool_use" => {
-                            let id = block
-                                .get("id")
-                                .and_then(|i| i.as_str())
-                                .unwrap_or("")
-                                .to_string();
-                            let name = block
-                                .get("name")
-                                .and_then(|n| n.as_str())
-                                .unwrap_or("")
-                                .to_string();
-                            let input = block
-                                .get("input")
-                                .map(|i| serde_json::to_string(i).unwrap_or_default())
-                                .unwrap_or_default();
-
-                            if !id.is_empty() && !name.is_empty() {
-                                stream_chunks.push(StreamChunk::tool_call(
-                                    codelet_rpc_types::ToolCallInfo { id, name, input },
-                                ));
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
-                let joined_text = text_parts.join("");
-                if !joined_text.is_empty() {
-                    rig_messages.push(rig::message::Message::Assistant {
-                        id: None,
-                        content: rig::OneOrMany::one(rig::message::AssistantContent::text(
-                            joined_text,
-                        )),
-                    });
-                }
-
-                stream_chunks.push(StreamChunk::done());
-            } else {
-                let Some(content) = message.get("content") else {
-                    continue;
-                };
-
-                if let Some(arr) = content.as_array() {
-                    let mut text_parts: Vec<String> = Vec::new();
-                    let mut chunks_for_this_envelope: Vec<StreamChunk> = Vec::new();
-
-                    for block in arr {
-                        let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
-
-                        match block_type {
-                            "text" => {
-                                if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
-                                    text_parts.push(text.to_string());
-                                    if !text.is_empty() {
-                                        chunks_for_this_envelope
-                                            .push(StreamChunk::user_input(text.to_string()));
-                                    }
-                                }
-                            }
-                            "tool_result" => {
-                                let tool_use_id = block
-                                    .get("tool_use_id")
-                                    .and_then(|i| i.as_str())
-                                    .unwrap_or("")
-                                    .to_string();
-                                let result_content = block
-                                    .get("content")
-                                    .and_then(|c| c.as_str())
-                                    .unwrap_or("")
-                                    .to_string();
-                                let is_error = block
-                                    .get("is_error")
-                                    .and_then(serde_json::Value::as_bool)
-                                    .unwrap_or(false);
-
-                                if !tool_use_id.is_empty() {
-                                    chunks_for_this_envelope.push(StreamChunk::tool_result(
-                                        codelet_rpc_types::ToolResultInfo {
-                                            tool_call_id: tool_use_id,
-                                            content: result_content,
-                                            is_error,
-                                        },
-                                    ));
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    let joined_text = text_parts.join("");
-                    if !joined_text.is_empty() {
-                        // Skip system reminders — they'll be re-injected fresh after restore.
-                        if joined_text.contains("<system-reminder>")
-                            && joined_text.contains("<!-- type:")
-                        {
-                            continue;
-                        }
-                        rig_messages.push(rig::message::Message::User {
-                            content: rig::OneOrMany::one(rig::message::UserContent::text(
-                                joined_text,
-                            )),
-                        });
-                        stream_chunks.push(StreamChunk::done());
-                    }
-
-                    // Flush this envelope's stream chunks (text user_input +
-                    // tool_result). For system-reminder-text envelopes the
-                    // `continue` above skipped this block entirely, so no
-                    // chunks are emitted — matching the NAPI behaviour.
-                    stream_chunks.extend(chunks_for_this_envelope);
-                } else if let Some(s) = content.as_str() {
-                    if !s.is_empty() {
-                        if s.contains("<system-reminder>") && s.contains("<!-- type:") {
-                            continue;
-                        }
-                        stream_chunks.push(StreamChunk::user_input(s.to_string()));
-                        rig_messages.push(rig::message::Message::User {
-                            content: rig::OneOrMany::one(rig::message::UserContent::text(
-                                s.to_string(),
-                            )),
-                        });
-                        stream_chunks.push(StreamChunk::done());
-                    }
-                }
-            }
-        }
-
-        // Push rig messages into session.inner.messages.
-        // The trait method is sync; session.inner is a tokio::sync::Mutex,
-        // so we bridge via block_in_place + Handle::current.block_on. This
-        // mirrors the existing sync→async bridges in this file
-        // (create_session, clear_history, etc.).
-        if !rig_messages.is_empty() {
-            tokio::task::block_in_place(|| {
-                tokio::runtime::Handle::current().block_on(async {
-                    let mut inner = session.inner.lock().await;
-                    for msg in rig_messages {
-                        inner.messages.push(msg);
-                    }
-                });
-            });
-        }
-
-        // Dispatch stream chunks via session.handle_output for UI replay.
-        for chunk in stream_chunks {
-            session.handle_output(chunk);
-        }
-
-        Ok(())
+        self.restore_messages(session_id, envelopes)
+            .map_err(|error| error.to_string())
     }
 
     fn restore_session_token_state(
         &self,
         session_id: &SessionId,
-        _state: TokenRestoreState,
+        state: TokenRestoreState,
     ) -> Result<(), String> {
-        let uuid = uuid_from(session_id);
-        match self.get_session(&uuid.to_string()) {
-            Ok(_session) => Ok(()),
-            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
-        }
+        self.restore_tokens(session_id, state)
+            .map_err(|error| error.to_string())
     }
 
     fn get_work_unit_context(&self, session_id: &SessionId) -> Option<WorkUnitContext> {
@@ -777,6 +604,12 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
+                self.set_session_focus(
+                    session_id,
+                    ctx.as_ref().map(|context| context.id.as_str()),
+                    "board",
+                )
+                .map_err(|error| error.to_string())?;
                 match ctx {
                     Some(c) => {
                         session.set_work_unit_context(Some(c.id), Some(c.title), Some(c.status))
@@ -787,6 +620,30 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
         }
+    }
+
+    fn get_work_unit_focus(
+        &self,
+        session_id: &SessionId,
+    ) -> Result<codelet_rpc_types::WorkUnitFocus, String> {
+        self.get_session(&session_id.value)
+            .map(|session| session.activity_focus())
+    }
+
+    fn set_work_unit_focus(
+        &self,
+        session_id: &SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> Result<codelet_rpc_types::WorkUnitFocus, String> {
+        self.set_session_focus(session_id, work_unit_id.as_deref(), &source)
+            .map_err(|error| error.to_string())
+    }
+
+    fn work_unit_focus_rx(
+        &self,
+    ) -> broadcast::Receiver<(SessionId, codelet_rpc_types::WorkUnitFocus)> {
+        self.work_unit_focus_tx.subscribe()
     }
 
     fn get_pending_input(&self, session_id: &SessionId) -> Option<String> {
@@ -977,6 +834,55 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 Ok(())
             }
             Err(e) => Err(format!("Failed to access debug capture manager: {e}")),
+        }
+    }
+
+    fn interaction_snapshot(&self, session_id: &SessionId) -> Result<String, String> {
+        self.get_session(&uuid_from(session_id).to_string())
+            .map_err(|_| "Session unavailable")?
+            .interaction_snapshot()
+    }
+    fn reply_interaction_checked(
+        &self,
+        session_id: &SessionId,
+        method: &str,
+        request_id: &str,
+        arguments: &str,
+    ) -> Result<(), String> {
+        let session = self
+            .get_session(&uuid_from(session_id).to_string())
+            .map_err(|_| "Session unavailable")?;
+        let args: serde_json::Value =
+            serde_json::from_str(arguments).map_err(|_| "Invalid response arguments")?;
+        match method {
+            "pause_resume" => session.send_pause_response_checked(
+                request_id,
+                codelet_tools::tool_pause::PauseResponse::Resumed,
+            ),
+            "pause_confirm" => session.send_pause_response_checked(
+                request_id,
+                confirm_accept_to_pause_response(args["accept"].as_bool().ok_or("Missing accept")?),
+            ),
+            "pause_triple" => {
+                let choice: ApprovalChoice =
+                    serde_json::from_value(args["choice"].clone()).map_err(|_| "Invalid choice")?;
+                session.send_pause_response_checked(
+                    request_id,
+                    approval_choice_to_pause_response(choice),
+                )
+            }
+            "send_hitl_response" => {
+                let response: HitlResponse = serde_json::from_value(args["response"].clone())
+                    .map_err(|_| "Invalid response")?;
+                session.send_hitl_response_checked(
+                    request_id,
+                    crate::hitl_mapping::wire_response_to_internal(
+                        response.cancelled,
+                        response.answers,
+                    ),
+                )
+            }
+            _ => Err("Unknown interaction response".into()),
         }
     }
 
@@ -1399,6 +1305,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 let mut providers = crate::profile_sections::build_local_profile_sections();
                 providers.extend(custom_sections);
                 providers.extend(cloud_sections);
+                providers.extend(crate::profile_sections::build_inherited_profile_sections(
+                    &providers,
+                ));
                 providers
             }
             Err(e) => {
@@ -1439,15 +1348,6 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // model and its cached limits intact.
         let model = format!("{provider_id}/{model_id}");
         let project_path = std::path::PathBuf::from(&session.project);
-        if let Err(e) =
-            crate::credentials::resolve_and_set_env_var(provider_id, Some(project_path.as_path()))
-        {
-            tracing::error!(
-                "set_model: failed to resolve credentials for provider {}: {}",
-                provider_id,
-                e
-            );
-        }
 
         // session.inner is a tokio::sync::Mutex. This trait method is sync and
         // is invoked from the (idle) UI dispatch path, so take the lock without
@@ -1459,8 +1359,25 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 .inner
                 .try_lock()
                 .map_err(|_| "Session is busy; cannot switch model right now".to_string())?;
+            crate::model_switch::validate_selection(uuid, &model)?;
+            let environment = crate::model_switch::SelectionEnvironment::capture(provider_id);
+            if let Err(error) = crate::credentials::resolve_and_set_env_var(
+                provider_id,
+                Some(project_path.as_path()),
+            ) {
+                tracing::error!(%provider_id, %error, "set_model: failed to resolve credentials");
+            }
+            let (next_manager, resolved) = tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current()
+                    .block_on(crate::model_resolution::resolve_provider_manager_and_limits(&model))
+            })?;
+            crate::model_switch::persist_selection(&mut inner, uuid, &model)?;
+            environment.commit();
+            *inner.provider_manager_mut() = next_manager;
+            inner.apply_provider_runtime_settings();
+            session.inherit_continue_state(inner.continue_enabled, inner.continue_budget);
+            (inner.continue_enabled, inner.continue_budget) = session.get_continue_state();
             let pm = inner.provider_manager_mut();
-            let resolved = crate::model_resolution::apply_model_selection(pm, &model)?;
             // BUG-168: update the tool-layer capability registry on every
             // mid-session model switch so the Read tool's PDF default mode
             // follows the new model.
@@ -1478,18 +1395,11 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             resolved
         };
 
-        let compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            resolved.context_window as u64,
-            resolved.max_output_tokens as u64,
-            Some(model_id),
-            None,
-        ) as u32;
-
         session.set_model(Some(provider_id.to_string()), Some(model_id.to_string()));
         session.set_model_limits(
             resolved.context_window,
             resolved.max_output_tokens,
-            compaction_threshold,
+            resolved.compaction_threshold,
         );
 
         // PROV-123: keep the global default in sync so a NEW session created in
@@ -1569,21 +1479,36 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     // read-modify-write (preserving customModels + sibling keys), converting
     // the transport-portable `ProfileDefinition` via
     // `conversions::profile_def_from_wire`.
+    fn list_provider_settings(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, String> {
+        crate::provider_settings::list_provider_settings().map_err(|error| error.to_string())
+    }
+
+    fn save_provider_settings(
+        &self,
+        provider_id: &str,
+        definition: &codelet_rpc_types::ProfileDefinition,
+    ) -> Result<(), String> {
+        crate::provider_settings::save_provider_settings(provider_id, definition)
+            .map_err(|error| error.to_string())
+    }
+
     fn save_profile(
         &self,
         provider_id: &str,
         profile_name: &str,
         definition: &codelet_rpc_types::ProfileDefinition,
     ) -> Result<(), String> {
-        // TS parity (profile-management.ts saveProfile): profiles are only
-        // supported for the OpenAI API provider. The guard predicate and the
-        // user-facing message are single-sourced in `profile_persistence` so
-        // they cannot drift from the NAPI binding.
         if !crate::profile_persistence::profiles_supported(provider_id) {
             return Err(crate::profile_persistence::profiles_unsupported_error(
                 provider_id,
             ));
         }
+        crate::provider_settings::validate_definition(definition)
+            .map_err(|error| error.to_string())?;
+        crate::provider_settings::validate_definition(definition)
+            .map_err(|error| error.to_string())?;
         let def = crate::conversions::profile_def_from_wire(definition);
         crate::profile_persistence::save_profile(provider_id, profile_name, &def)
             .map_err(|e| e.to_string())
@@ -1594,10 +1519,6 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .map_err(|e| e.to_string())
     }
 
-    // PROV-136: rename (or in-place update) a profile. Guards on the openai-only
-    // predicate (single-sourced in `profile_persistence`) then delegates to the
-    // persistence-layer single read-modify-write which preserves customModels
-    // and rejects a collision with an existing different profile.
     fn rename_profile(
         &self,
         provider_id: &str,
@@ -1843,7 +1764,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     .map_err(|e| format!("failed to delete claude auth file: {e}"))?;
             }
             "codex" => {
-                codelet_providers::codex::codex_auth::delete_codex_auth()
+                codelet_providers::codex::codex_auth::clear_codex_oauth()
                     .map_err(|e| format!("failed to delete codex auth file: {e}"))?;
             }
             "github-copilot" => {

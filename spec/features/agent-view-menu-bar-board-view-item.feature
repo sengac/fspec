@@ -32,17 +32,17 @@ Feature: Agent view menu bar — single 'Board View' item instead of board-only 
   The board bar (MENU-002) and the mux bar (MENU-004) are UNCHANGED —
   they keep their Zone A items + dropdowns ('Kanban'/'Tools'/'Settings'/'Help' after MENU-008, was 'Actions'/'Help'). The change is
   surface-local to the agent view:
-    - views/agent/menu_render.rs — build the agent bar's MenuSnapshot
-      with a single 'Board View' Zone A item instead of CATEGORIES.
-    - views/agent/menu_keys.rs   — Enter on Item(0) emits
-      Action::BackToBoard instead of opening a dropdown; the ring
-      length is 1 item + chips; the dropdown key arms are unreachable
-      (no dropdown can open in the agent view).
-    - views/agent/menu_mouse.rs  — clicking the item emits
-      Action::BackToBoard (no focus+open, no close-outside panel).
-    - paint.rs — Zone A items are painted from a per-surface item
-      list (board/mux keep CATEGORIES; the agent passes its own
-      single-item list), so the shared painter stays surface-agnostic.
+  - views/agent/menu_render.rs — build the agent bar's MenuSnapshot
+  with a single 'Board View' Zone A item instead of CATEGORIES.
+  - views/agent/menu_keys.rs   — Enter on Item(0) emits
+  Action::BackToBoard instead of opening a dropdown; the ring
+  length is 1 item + chips; the dropdown key arms are unreachable
+  (no dropdown can open in the agent view).
+  - views/agent/menu_mouse.rs  — clicking the item emits
+  Action::BackToBoard (no focus+open, no close-outside panel).
+  - paint.rs — Zone A items are painted from a per-surface item
+  list (board/mux keep CATEGORIES; the agent passes its own
+  single-item list), so the shared painter stays surface-agnostic.
 
   Architecture note: the shared MenuCategories registry
   (components/menu_bar/items.rs) stays the single source of truth for

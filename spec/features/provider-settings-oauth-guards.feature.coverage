@@ -268,7 +268,7 @@
       ]
     },
     {
-      "name": "Expanding an OAuth provider shows OAuth items and API key but no profiles",
+      "name": "Expanding an OAuth provider shows authentication settings and profile creation",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
@@ -355,7 +355,7 @@
       ]
     },
     {
-      "name": "Expanding an OAuth provider with stale profiles in config ignores them",
+      "name": "Expanding an OAuth provider displays saved profiles",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
@@ -442,7 +442,7 @@
       ]
     },
     {
-      "name": "Expanding a cloud API-key provider shows only the API key row",
+      "name": "Expanding a cloud API-key provider shows authentication settings and profile creation",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
@@ -616,7 +616,7 @@
       ]
     },
     {
-      "name": "Expanding OpenAI API with no profiles shows only create button",
+      "name": "Expanding OpenAI API with no profiles shows settings and create button",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
@@ -703,7 +703,7 @@
       ]
     },
     {
-      "name": "saveProfile rejects non-OpenAI-API providers",
+      "name": "saveProfile accepts cloud API providers",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
@@ -740,7 +740,7 @@
       ]
     },
     {
-      "name": "saveProfile rejects OAuth providers",
+      "name": "saveProfile accepts OAuth providers with inherited authentication",
       "testMappings": [
         {
           "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",

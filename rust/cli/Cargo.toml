@@ -15,6 +15,7 @@ codelet-common.workspace = true
 codelet-tools.workspace = true
 codelet-providers.workspace = true
 codelet-core.workspace = true
+codelet-rpc-types.workspace = true
 codelet-tui.workspace = true
 
 # CLI Framework
@@ -57,6 +58,10 @@ regex.workspace = true
 once_cell.workspace = true
 
 [dev-dependencies]
+proptest.workspace = true
+codelet-test-helpers.workspace = true
+wiremock = "0.6.5"
+http = "1"
 tempfile.workspace = true
 assert_cmd.workspace = true
 predicates.workspace = true

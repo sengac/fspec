@@ -139,7 +139,7 @@ fn parse_update_file(path: &str, lines: &[&str], start: usize) -> Result<(PatchO
             in_change = true;
             additions.push(stripped.to_string());
             i += 1;
-        } else if line.starts_with("@@ ") {
+        } else if line == "@@" || line.starts_with("@@ ") {
             // Hunk header — flush any in-progress hunk
             if in_change {
                 hunks.push(Hunk {
@@ -152,8 +152,10 @@ fn parse_update_file(path: &str, lines: &[&str], start: usize) -> Result<(PatchO
             }
             // The @@ line itself becomes context_before for the next hunk
             // Strip the @@ prefix — the rest is a context line
-            let ctx = line.strip_prefix("@@ ").unwrap_or(line);
-            context_before.push(ctx.to_string());
+            context_before.clear();
+            if let Some(context) = line.strip_prefix("@@ ") {
+                context_before.push(context.to_string());
+            }
             i += 1;
         } else {
             // Plain context line (space-prefixed or literal)
@@ -204,127 +206,6 @@ fn parse_update_file(path: &str, lines: &[&str], start: usize) -> Result<(PatchO
     ))
 }
 
-// ============================================================================
-// Tests
-// ============================================================================
-
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_add_file() {
-        let patch = "\
-*** Begin Patch
-*** Add File: /tmp/test/new_file.rs
-+fn main() {
-+    println!(\"hello\");
-+}
-*** End Patch";
-
-        let ops = parse_patch(patch).unwrap();
-        assert_eq!(ops.len(), 1);
-        match &ops[0] {
-            PatchOp::Add { path, lines } => {
-                assert_eq!(path, "/tmp/test/new_file.rs");
-                assert_eq!(lines.len(), 3);
-                assert_eq!(lines[0], "fn main() {");
-                assert_eq!(lines[1], "    println!(\"hello\");");
-                assert_eq!(lines[2], "}");
-            }
-            _ => panic!("Expected PatchOp::Add"),
-        }
-    }
-
-    #[test]
-    fn test_parse_update_file() {
-        let patch = "\
-*** Begin Patch
-*** Update File: /tmp/test/existing.rs
-@@ fn main() {
--    println!(\"old\");
-+    println!(\"new\");
-*** End Patch";
-
-        let ops = parse_patch(patch).unwrap();
-        assert_eq!(ops.len(), 1);
-        match &ops[0] {
-            PatchOp::Update { path, hunks } => {
-                assert_eq!(path, "/tmp/test/existing.rs");
-                assert_eq!(hunks.len(), 1);
-                assert_eq!(hunks[0].context_before, vec!["fn main() {"]);
-                assert_eq!(hunks[0].removals, vec!["    println!(\"old\");"]);
-                assert_eq!(hunks[0].additions, vec!["    println!(\"new\");"]);
-            }
-            _ => panic!("Expected PatchOp::Update"),
-        }
-    }
-
-    #[test]
-    fn test_parse_delete_file() {
-        let patch = "\
-*** Begin Patch
-*** Delete File: /tmp/test/to_delete.rs
-*** End Patch";
-
-        let ops = parse_patch(patch).unwrap();
-        assert_eq!(ops.len(), 1);
-        match &ops[0] {
-            PatchOp::Delete { path } => {
-                assert_eq!(path, "/tmp/test/to_delete.rs");
-            }
-            _ => panic!("Expected PatchOp::Delete"),
-        }
-    }
-
-    #[test]
-    fn test_parse_multi_file_patch() {
-        let patch = "\
-*** Begin Patch
-*** Add File: /tmp/test/new.rs
-+// new file
-*** Update File: /tmp/test/update_me.rs
-@@ fn foo() {
--    old();
-+    new();
-*** Delete File: /tmp/test/delete_me.rs
-*** End Patch";
-
-        let ops = parse_patch(patch).unwrap();
-        assert_eq!(ops.len(), 3);
-        assert!(matches!(&ops[0], PatchOp::Add { path, .. } if path == "/tmp/test/new.rs"));
-        assert!(
-            matches!(&ops[1], PatchOp::Update { path, .. } if path == "/tmp/test/update_me.rs")
-        );
-        assert!(matches!(&ops[2], PatchOp::Delete { path } if path == "/tmp/test/delete_me.rs"));
-    }
-
-    #[test]
-    fn test_parse_malformed_no_begin() {
-        let patch = "*** Add File: /foo\n+hello\n*** End Patch";
-        let result = parse_patch(patch);
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(
-            err.contains("Begin Patch"),
-            "Error should mention missing Begin Patch marker, got: {err}"
-        );
-    }
-
-    #[test]
-    fn test_parse_malformed_no_end() {
-        let patch = "*** Begin Patch\n*** Add File: /foo\n+hello";
-        let result = parse_patch(patch);
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(err.contains("End Patch"));
-    }
-
-    #[test]
-    fn test_parse_empty_patch() {
-        let patch = "*** Begin Patch\n*** End Patch";
-        let ops = parse_patch(patch).unwrap();
-        assert!(ops.is_empty());
-    }
-}
+#[path = "parser_tests.rs"]
+mod tests;

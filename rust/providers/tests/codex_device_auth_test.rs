@@ -34,7 +34,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 #[serial]
 async fn test_successful_device_auth_login_completes_end_to_end() {
     // @step Given no Codex credentials exist in auth.json
-    let (temp_dir, _guard) = setup_codex_home();
+    let (temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("auth.json");
     assert!(!auth_path.exists(), "auth.json should not exist initially");
 
@@ -430,7 +430,7 @@ async fn test_polling_stops_on_access_denied_error() {
 #[serial]
 async fn test_device_auth_flow_times_out() {
     // @step Given a device auth login is in progress with a short timeout
-    let (temp_dir, _guard) = setup_codex_home();
+    let (temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("auth.json");
 
     let mock_server = MockServer::start().await;
@@ -525,7 +525,7 @@ async fn test_usercode_endpoint_network_failure() {
 async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
     // @step Given a device auth login received a successful polling response
     // @step And the response contains authorization_code and code_verifier
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
 
     let mock_server = MockServer::start().await;
     let account_id = "acct_exchange_test";
@@ -623,7 +623,7 @@ async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
 #[serial]
 async fn test_device_auth_produces_same_codex_tokens_output_as_browser_oauth() {
     // @step Given a device auth login completes successfully
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
 
     let mock_server = MockServer::start().await;
     let account_id = "acct_struct_test";

@@ -96,7 +96,7 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
     //          sixth: checkpoints_progress_rx; BUG-182 a seventh:
     //          git_state_changed_rx; RPC-434 an eighth: session_removed_rx;
     //          RPC-437 a ninth: session_cleared_rx)
-    assert_eq!(app.subscriber_task_count(), 9);
+    assert_eq!(app.subscriber_task_count(), 10);
     // RPC-012 lazy-session: prime the chunks filter with a session id
     // so the chunks subscriber forwards.
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
@@ -262,7 +262,7 @@ async fn subscriber_tasks_honour_recverror_lagged_by_logging_at_debug_and_contin
     // 5th (session_created_rx); TUI-109 a 6th (checkpoints_progress_rx);
     // BUG-182 a 7th (git_state_changed_rx); RPC-434 a 8th (session_removed_rx);
     // RPC-437 a 9th (session_cleared_rx).
-    assert_eq!(app.subscriber_task_count(), 9);
+    assert_eq!(app.subscriber_task_count(), 10);
     // @step And the task subsequently re-fetches a snapshot via `backend.list_work_units()` and emits a fresh `Action::WorkUnitsLoaded`
     mock.seed_work_units(vec![wu("FRESH-001", "done")]);
     let action = wait_for_action(&mut app, |a| matches!(a, Action::WorkUnitsLoaded(_)))

@@ -171,13 +171,18 @@ pub fn convert_assistant_content(
 ///
 /// This eliminates the ~10 lines of duplicated code in each provider's
 /// `complete_with_tools()` method.
-pub fn convert_tools_to_rig(tools: &[OurToolDefinition]) -> Vec<rig::completion::ToolDefinition> {
+pub fn convert_tools_to_rig(
+    tools: &[OurToolDefinition],
+) -> Result<Vec<rig::completion::ToolDefinition>, ProviderError> {
     tools
         .iter()
-        .map(|t| rig::completion::ToolDefinition {
-            name: t.name.clone(),
-            description: t.description.clone(),
-            parameters: t.input_schema.clone(),
+        .map(|t| {
+            codelet_tools::tool_attribution::decorate_definition(rig::completion::ToolDefinition {
+                name: t.name.clone(),
+                description: t.description.clone(),
+                parameters: t.input_schema.clone(),
+            })
+            .map_err(|error| ProviderError::config("tool attribution", error.to_string()))
         })
         .collect()
 }
@@ -192,6 +197,13 @@ pub fn convert_tools_to_rig(tools: &[OurToolDefinition]) -> Vec<rig::completion:
 /// Implementing this trait ensures consistent behavior across providers
 /// and reduces code duplication by ~30%.
 pub trait ProviderAdapter {
+    fn with_session(self, _session: &crate::session::ProviderSession) -> Self
+    where
+        Self: Sized,
+    {
+        self
+    }
+
     /// Provider name for error messages and logging
     fn provider_name(&self) -> &'static str;
 

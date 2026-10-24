@@ -77,6 +77,8 @@ pub enum UserContent {
     /// Tool execution result
     ToolResult {
         tool_use_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        call_id: Option<String>,
         content: String,
         #[serde(default)]
         is_error: bool,
@@ -136,6 +138,8 @@ pub enum AssistantContent {
     /// Tool use request
     ToolUse {
         id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        call_id: Option<String>,
         name: String,
         input: serde_json::Value,
     },
@@ -245,6 +249,7 @@ mod tests {
     fn test_tool_use_serialization() {
         let content = AssistantContent::ToolUse {
             id: "toolu_123".to_string(),
+            call_id: None,
             name: "read_file".to_string(),
             input: serde_json::json!({"path": "/foo.ts"}),
         };
@@ -338,6 +343,7 @@ mod tests {
     fn test_tool_result_serialization() {
         let content = UserContent::ToolResult {
             tool_use_id: "toolu_01AyTnm7YLfybhnhEhwwZvAY".to_string(),
+            call_id: None,
             content: r#"{"port": 8080}"#.to_string(),
             is_error: false,
             tool_use_result: None,
@@ -365,6 +371,7 @@ mod tests {
     fn test_tool_error_result_preserved() {
         let content = UserContent::ToolResult {
             tool_use_id: "toolu_xyz789".to_string(),
+            call_id: None,
             content: "Permission denied".to_string(),
             is_error: true,
             tool_use_result: None,
@@ -385,6 +392,7 @@ mod tests {
     fn test_tool_result_with_metadata() {
         let content = UserContent::ToolResult {
             tool_use_id: "toolu_abc123".to_string(),
+            call_id: None,
             content: "formatted output".to_string(),
             is_error: false,
             tool_use_result: Some(ToolUseResultMetadata::with_output(
@@ -524,6 +532,7 @@ mod tests {
                 },
                 AssistantContent::ToolUse {
                     id: "toolu_read".to_string(),
+                    call_id: None,
                     name: "read_file".to_string(),
                     input: serde_json::json!({"path": "/foo.ts"}),
                 },
@@ -654,6 +663,7 @@ mod tests {
     fn test_interrupted_tool_execution_metadata() {
         let content = UserContent::ToolResult {
             tool_use_id: "toolu_abc123".to_string(),
+            call_id: None,
             content: "partial output".to_string(),
             is_error: true,
             tool_use_result: Some(ToolUseResultMetadata {

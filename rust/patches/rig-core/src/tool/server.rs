@@ -1,10 +1,14 @@
-use futures::{StreamExt, TryStreamExt, channel::oneshot::Canceled, stream};
+use futures::channel::oneshot::Canceled;
+use std::sync::Arc;
 use tokio::sync::mpsc::{Sender, error::SendError};
+
+#[path = "server_configuration.rs"]
+mod configuration;
 
 use crate::{
     completion::{CompletionError, ToolDefinition},
-    tool::{Tool, ToolDyn, ToolError, ToolSet, ToolSetError},
-    vector_store::{VectorSearchRequest, VectorStoreError, VectorStoreIndexDyn, request::Filter},
+    tool::{Tool, ToolDyn, ToolError, ToolMiddleware, ToolSet, ToolSetError},
+    vector_store::{VectorSearchRequest, VectorStoreIndexDyn, request::Filter},
 };
 
 pub struct ToolServer {
@@ -112,12 +116,41 @@ impl ToolServer {
         } = message;
 
         match data {
+            ToolServerRequestMessageKind::ConfigureMiddleware(middleware) => {
+                let response = match self.toolset.configure_middleware(middleware).await {
+                    Ok(()) => ToolServerResponse::MiddlewareConfigured,
+                    Err(error) => ToolServerResponse::ToolError {
+                        error: error.to_string(),
+                    },
+                };
+                let _ = callback_channel.send(response);
+            }
             ToolServerRequestMessageKind::AddTool(tool) => {
-                self.static_tool_names.push(tool.name().to_lowercase());
+                if let Err(error) = self.toolset.validate_addition(tool.as_ref()).await {
+                    let _ = callback_channel.send(ToolServerResponse::ToolError {
+                        error: error.to_string(),
+                    });
+                    return;
+                }
+                let name = tool.name().to_lowercase();
+                if !self.static_tool_names.contains(&name) {
+                    self.static_tool_names.push(name);
+                }
                 self.toolset.add_tool_boxed(tool);
                 let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
             ToolServerRequestMessageKind::AppendToolset(tools) => {
+                if let Err(error) = self.toolset.validate_append(&tools).await {
+                    let _ = callback_channel.send(ToolServerResponse::ToolError {
+                        error: error.to_string(),
+                    });
+                    return;
+                }
+                for name in tools.tools.keys() {
+                    if !self.static_tool_names.contains(name) {
+                        self.static_tool_names.push(name.clone());
+                    }
+                }
                 self.toolset.add_tools(tools);
                 let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
@@ -159,43 +192,41 @@ impl ToolServer {
         text: Option<String>,
     ) -> Result<Vec<ToolDefinition>, CompletionError> {
         let static_tool_names = self.static_tool_names.clone();
-        let mut tools = if let Some(text) = text {
-            stream::iter(self.dynamic_tools.iter())
-                        .then(|(num_sample, index)| async {
-                            let req =
-                                VectorSearchRequest::builder()
-                                    .query(text.clone())
-                                    .samples(*num_sample as u64)
-                                    .build()
-                                    .expect("Creating VectorSearchRequest here shouldn't fail since the query and samples to return are always present");
-                            Ok::<_, VectorStoreError>(
-                        index.as_ref()
-                                    .top_n_ids(req.map_filter(Filter::interpret))
-                                    .await?
-                                    .into_iter()
-                                    .map(|(_, id)| id)
-                                    .collect::<Vec<String>>(),
-                            )
-                        })
-                        .try_fold(vec![], |mut acc, docs| async {
-                            for doc in docs {
-                                if let Some(tool) = self.toolset.get(&doc) {
-                                    acc.push(tool.definition(text.clone()).await)
-                                } else {
-                                    tracing::warn!("Tool implementation not found in toolset: {}", doc);
-                                }
-                            }
-                            Ok(acc)
-                        })
-                        .await
-                        .map_err(|e| CompletionError::RequestError(Box::new(e)))?
-        } else {
-            Vec::new()
-        };
+        let mut tools = Vec::new();
+        if let Some(text) = text {
+            for (sample, index) in &self.dynamic_tools {
+                let request = VectorSearchRequest::builder()
+                    .query(text.clone())
+                    .samples(*sample as u64)
+                    .build()
+                    .map_err(|error| CompletionError::RequestError(Box::new(error)))?;
+                let selected = index
+                    .top_n_ids(request.map_filter(Filter::interpret))
+                    .await
+                    .map_err(|error| CompletionError::RequestError(Box::new(error)))?;
+                for (_, name) in selected {
+                    if self.toolset.contains(&name) {
+                        tools.push(
+                            self.toolset
+                                .get_tool_definition(&name, text.clone())
+                                .await
+                                .map_err(|error| CompletionError::RequestError(Box::new(error)))?,
+                        );
+                    } else {
+                        tracing::warn!("Tool implementation not found in toolset: {}", name);
+                    }
+                }
+            }
+        }
 
         for toolname in static_tool_names {
-            if let Some(tool) = self.toolset.get(&toolname) {
-                tools.push(tool.definition(String::new()).await)
+            if self.toolset.contains(&toolname) {
+                tools.push(
+                    self.toolset
+                        .get_tool_definition(&toolname, String::new())
+                        .await
+                        .map_err(|error| CompletionError::RequestError(Box::new(error)))?,
+                )
             } else {
                 tracing::warn!("Tool implementation not found in toolset: {}", toolname);
             }
@@ -224,7 +255,7 @@ impl ToolServerHandle {
         let res = rx.await?;
 
         let ToolServerResponse::ToolAdded = res else {
-            return Err(ToolServerError::InvalidMessage(res));
+            return Err(ToolServerError::from_response(res));
         };
 
         Ok(())
@@ -243,7 +274,7 @@ impl ToolServerHandle {
         let res = rx.await?;
 
         let ToolServerResponse::ToolAdded = res else {
-            return Err(ToolServerError::InvalidMessage(res));
+            return Err(ToolServerError::from_response(res));
         };
 
         Ok(())
@@ -310,7 +341,7 @@ impl ToolServerHandle {
         let res = rx.await?;
 
         let ToolServerResponse::ToolDefinitions(tooldefs) = res else {
-            return Err(ToolServerError::InvalidMessage(res));
+            return Err(ToolServerError::from_response(res));
         };
 
         Ok(tooldefs)
@@ -323,6 +354,7 @@ pub struct ToolServerRequest {
 }
 
 pub enum ToolServerRequestMessageKind {
+    ConfigureMiddleware(Arc<dyn ToolMiddleware>),
     AddTool(Box<dyn ToolDyn>),
     AppendToolset(ToolSet),
     RemoveTool { tool_name: String },
@@ -332,6 +364,7 @@ pub enum ToolServerRequestMessageKind {
 
 #[derive(PartialEq, Debug)]
 pub enum ToolServerResponse {
+    MiddlewareConfigured,
     ToolAdded,
     ToolDeleted,
     ToolExecuted { result: String },

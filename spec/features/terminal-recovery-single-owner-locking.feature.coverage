@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "Ordinary terminal errors release the session lock",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct053_terminal_lock.rs",
+          "lines": "15-48",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                1425, 1426, 1427, 1428, 1429, 1430, 1431, 1432, 1433, 1434,
+                1435, 1436, 1437, 1438, 1439, 1440, 1441, 1442, 1443, 1444,
+                1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452, 1453, 1454,
+                1455, 1456, 1457, 1458, 1459, 1460, 1461, 1462, 1463
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed overflow recovery preserves committed context",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct053_terminal_lock.rs",
+          "lines": "50-102",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+                71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+                81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+                91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+                101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+                111, 112, 113, 114, 115, 116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancellation releases recovery ownership without replacing context",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct053_terminal_lock.rs",
+          "lines": "104-172",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+                71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+                81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+                91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+                101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+                111, 112, 113, 114, 115, 116
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": ["rust/agent-loop/tests/cmpct053_terminal_lock.rs"],
+    "implFiles": [
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/agent-loop/src/terminal_overflow_recovery.rs"
+    ],
+    "totalLinesCovered": 307
+  }
+}

@@ -1,0 +1,103 @@
+use crate::request_admission::{
+    admit_complete_request, AdmissionLimits, AdmissionProvenance, RequestAdmissionError,
+};
+use rig::completion::{CompletionModel, CompletionRequest};
+use rig::message::Message;
+use serde_json::Value;
+use std::sync::Arc;
+
+type Prepare =
+    dyn Fn(&[Message], u64) -> Result<PreparedSelectedRequest, RequestAdmissionError> + Send + Sync;
+
+#[derive(Clone)]
+pub struct SelectedRequestPreparer(Arc<Prepare>);
+
+impl std::fmt::Debug for SelectedRequestPreparer {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("SelectedRequestPreparer")
+    }
+}
+
+#[derive(Debug)]
+pub struct PreparedSelectedRequest {
+    bytes: Vec<u8>,
+    input_tokens: u64,
+    output_reservation: u64,
+    generation: u64,
+}
+
+impl PreparedSelectedRequest {
+    pub fn request_bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
+    pub fn input_tokens(&self) -> u64 {
+        self.input_tokens
+    }
+
+    pub fn output_reservation(&self) -> u64 {
+        self.output_reservation
+    }
+
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    pub fn provenance(&self) -> AdmissionProvenance {
+        AdmissionProvenance::Estimated
+    }
+}
+
+impl SelectedRequestPreparer {
+    pub fn new<M: CompletionModel + 'static>(
+        model: M,
+        template: CompletionRequest,
+        limits: AdmissionLimits,
+    ) -> Self {
+        Self(Arc::new(move |messages, generation| {
+            if generation == 0 {
+                return Err(RequestAdmissionError::Preparation(
+                    "a replacement requires an advancing generation".into(),
+                ));
+            }
+            let mut request = template.clone();
+            request.chat_history = rig::OneOrMany::many(messages.to_vec())
+                .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))?;
+            let bytes = model
+                .prepare_request_for_generation(request, generation)
+                .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))?;
+            let admitted = admit_complete_request(&bytes, limits)?;
+            let input_tokens = admitted.input_tokens();
+            let output_reservation = admitted.output_reservation();
+            Ok(PreparedSelectedRequest {
+                bytes,
+                input_tokens,
+                output_reservation,
+                generation,
+            })
+        }))
+    }
+
+    pub fn map_history(
+        self,
+        transform: impl Fn(&[Message]) -> Vec<Message> + Send + Sync + 'static,
+    ) -> Self {
+        Self(Arc::new(move |messages, generation| {
+            self.prepare(&transform(messages), generation)
+        }))
+    }
+
+    pub fn prepare(
+        &self,
+        messages: &[Message],
+        generation: u64,
+    ) -> Result<PreparedSelectedRequest, RequestAdmissionError> {
+        self.0(messages, generation)
+    }
+}
+
+pub fn media_occupancy(value: &Value) -> Option<u64> {
+    crate::request_admission::media::estimate(&mut value.clone(), true)
+        .ok()
+        .map(|estimate| estimate.tokens)
+}

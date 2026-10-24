@@ -1,0 +1,143 @@
+{
+  "scenarios": [
+    {
+      "name": "A10 Cancellation stops browser and device authentication at every pending phase",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_login_lifecycle.rs",
+          "lines": "39-113",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/codex_device_auth.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A17 Local logout is isolated from retained browser SSO",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_login_lifecycle.rs",
+          "lines": "142-184",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov159_login_lifecycle.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_lifecycle.rs",
+      "rust/providers/src/codex/codex_oauth_server.rs",
+      "rust/providers/src/codex/codex_device_auth.rs",
+      "rust/providers/src/codex/auth_storage.rs"
+    ],
+    "totalLinesCovered": 195
+  }
+}

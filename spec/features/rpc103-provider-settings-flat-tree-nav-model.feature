@@ -7,7 +7,7 @@
 @RPC-103
 Feature: Provider settings: flat tree nav model with expand/collapse and child rows
   """
-  Rust ProviderSettingsView replaces `ProviderSettingsMode::Detail { sub: DetailSub }` with a flat `Vec<NavItem>` where `NavItemKind` enum has six variants: Provider{expanded}, Profile{profile_name}, AddProfile, ApiKey, OAuthLogin{method,label}, OAuthStatus{label}. The old DetailSub::{Summary, EditApiKey, OAuthNotice} are removed — their UX is now inline child rows that dispatch Actions when Enter is pressed.
+  Rust ProviderSettingsView replaces `ProviderSettingsMode::Detail { sub: DetailSub }` with a flat `Vec<NavItem>` where `NavItemKind` enum has seven variants: Provider{expanded}, Settings, Profile{profile_name}, AddProfile, ApiKey, OAuthLogin{method,label}, OAuthStatus{label}. PROV-161 adds Settings for every provider without changing authentication row order. The old DetailSub::{Summary, EditApiKey, OAuthNotice} are removed — their UX is now inline child rows that dispatch Actions when Enter is pressed.
   Expansion is stored in a `HashSet<String> expanded` field on ProviderSettingsView (TS analog: useRef<Set<string>> expandedProviderIds). build_nav_items reads `expanded.contains(&p.id)` to decide whether to emit children. Toggle flow: Enter on Provider row → flip membership in `expanded` → rebuild nav_items → adjust scroll only if needed; selected_index is left untouched.
   PanelMode (modal overlay enum) shrinks to ONLY destructive/edit overlays: EditApiKey, DeleteApiKey, DeleteProfile, DisconnectOAuth, ProfileForm, OAuth waiting/success/error. List-mode navigation is no longer a PanelMode variant — list mode is the default and is always active when no overlay is showing.
   """
@@ -18,17 +18,17 @@ Feature: Provider settings: flat tree nav model with expand/collapse and child r
   #
   # BUSINESS RULES:
   #   1. buildNavItems (useProviderSettingsState.ts:132-206) is a pure function of (providers, filter) — the Rust port must be a pure `fn build_nav_items(&[ProviderDisplayInfo], &str) -> Vec<NavItem>` with NO interior mutability
-  #   2. The flat list contains six row variants (provider, profile, add-profile, api-key, oauth-login, oauth-status) per ProviderSettingsPanel.tsx:120-135 — Rust NavItemKind enum must have the same six variants and NO additional ones
+  #   2. PROV-161 adds settings to the original six row variants (provider, profile, add-profile, api-key, oauth-login, oauth-status).
   #   3. Expansion state persists across reload() per useProviderSettingsState.ts:243 and :340 — Rust must keep a HashSet<String> expanded field that is NOT cleared by set_providers(...) calls
   #   4. Enter on a provider row toggles expansion (listModeHandler.ts:119-121) and does NOT mutate selectedIndex — the cursor stays on the same provider row while children appear/disappear below it
-  #   5. Child-row ordering when expanded is fixed (useProviderSettingsState.ts:158-201): [oauth-status?, oauth-login×N?, api-key?, profiles×N?, add-profile?] — Rust builder must emit children in exactly this order
+  #   5. Child-row ordering when expanded is fixed: [oauth-status?, oauth-login×N?, api-key?, settings, profiles×N?, add-profile] for every provider.
   #   6. Filter is parent-anchored (useProviderSettingsState.ts:141-147): if provider.name and provider.id both fail the substring match, the provider AND all its children are removed from navItems
   #
   # EXAMPLES:
   #   1. Fresh view, 17 providers all collapsed → build_nav_items returns 17 NavItems all of NavItemKind::Provider { expanded: false }, in canonical registry order
-  #   2. Cursor at index 3 (anthropic), press Enter → anthropic.expanded toggles to true, build_nav_items inserts [oauth-login(browser), oauth-login(headless), api-key] at indices 4,5,6; cursor STAYS at index 3
-  #   3. openai expanded with 2 profiles → child rows are [profile(prof1), profile(prof2), add-profile] in that order; no api-key row (openai is profile-only); no oauth rows (openai is not OAuth)
-  #   4. anthropic expanded with hasOAuthTokens=true → child rows are [oauth-status, oauth-login(browser), oauth-login(headless), api-key]; oauth-status appears FIRST in the child block
+  #   2. Cursor at index 3 (anthropic), press Enter → anthropic.expanded toggles to true, build_nav_items inserts [oauth-login(browser), oauth-login(headless), api-key, settings, add-profile]; cursor STAYS at index 3
+  #   3. openai expanded with 2 profiles → child rows are [settings, profile(prof1), profile(prof2), add-profile] in that order; no api-key row (openai is profile-only); no oauth rows (openai is not OAuth)
+  #   4. anthropic expanded with hasOAuthTokens=true → child rows are [oauth-status, oauth-login(browser), oauth-login(headless), api-key, settings, add-profile]; oauth-status appears FIRST in the child block
   #   5. User filters '/anth' while openai is also expanded → only the anthropic row (plus any anthropic children if anthropic is expanded) survives; openai children disappear because the openai PARENT was filtered out
   #   6. Reload triggered after destructive op: set_providers() rebuilds the providers Vec from disk; the `expanded: HashSet` is NOT cleared, so anthropic stays expanded across the reload (matches TS expandedProviderIds.current behavior)
   #
@@ -62,7 +62,7 @@ Feature: Provider settings: flat tree nav model with expand/collapse and child r
     And openai has 2 profiles named "prof1" and "prof2"
     And openai is in the expanded set
     When build_nav_items is called
-    Then the rows immediately after openai are NavItemKind::Profile { profile_name: "prof1" } then NavItemKind::Profile { profile_name: "prof2" }
+    Then the first three child rows are NavItemKind::Settings then NavItemKind::Profile { profile_name: "prof1" } then NavItemKind::Profile { profile_name: "prof2" }
     And the next row is NavItemKind::AddProfile
     And no NavItemKind::ApiKey row appears in the openai child block
     And no NavItemKind::OAuthLogin or NavItemKind::OAuthStatus row appears in the openai child block

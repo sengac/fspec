@@ -3,9 +3,8 @@
 @tui
 @tool-execution
 Feature: Exec-stdin push chunks drive the TUI composer overlay
-
   """
-  BUG-171 (TUI layer): handle_stream_chunk_state_updates branches on the two new state-only StreamChunk variants — ExecStdinRequest → Action::ExecStdinPromptFetched, ExecStdinRequestCleared → Action::ExecStdinDismissed. Reuses the existing reducer, precedence chain (HITL > exec-stdin > pause > composer), key handling and render path from TOOL-022 P2. The two existing pull probe sites (focus switch + Paused probe) are retained as belt-and-braces.
+  BUG-171 (TUI layer): handle_stream_chunk_state_updates applies the state-only ExecStdinRequest and ExecStdinRequestCleared chunks directly through the exec-stdin reducers. Reuses the existing precedence chain (HITL > exec-stdin > pause > composer), key handling and render path from TOOL-022 P2. BUG-209 makes push transitions invalidate older snapshots immediately. The two existing pull probe sites (focus switch + Paused probe) are retained with per-session generation checks.
   """
 
   # ========================================
@@ -16,7 +15,6 @@ Feature: Exec-stdin push chunks drive the TUI composer overlay
   #   3. The two existing pull probe sites (focus switch + Paused-state probe) are retained as belt-and-braces; the push chunk is the primary trigger
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust TUI agent
     I want to have the exec-stdin composer overlay appear automatically when a running command goes quiet waiting for input

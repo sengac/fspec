@@ -25,6 +25,9 @@ mod add_rule;
 mod astgrep;
 mod clear_dependencies;
 mod client;
+mod client_mcp_full;
+mod client_mcp_results;
+mod client_mcp_service;
 mod combined;
 mod common;
 // RPC-407: in-crate regression tests proving build_service initializes
@@ -259,6 +262,9 @@ enum Mode {
         /// client resolves daemon via `$XDG_RUNTIME_DIR/fspec/daemon.json`.
         #[arg(long, value_name = "URL")]
         connect: Option<String>,
+        /// Expose MCP tools over stdio; full RPC requires a matching daemon.
+        #[arg(long)]
+        mcp: bool,
     },
     /// RPC-011: print live daemon health and exit.
     #[command(about = "One-shot health probe against the running daemon")]
@@ -2434,7 +2440,13 @@ async fn main() -> std::process::ExitCode {
     let res = match cli.cmd {
         None => combined::run(cli.workspace).await,
         Some(Mode::Daemon { bind, pidfile }) => daemon::run(cli.workspace, bind, pidfile).await,
-        Some(Mode::Client { connect }) => client::run(connect).await,
+        Some(Mode::Client { connect, mcp }) => {
+            if mcp {
+                client::run_mcp(connect).await
+            } else {
+                client::run(connect).await
+            }
+        }
         Some(Mode::Status { connect }) => status::run(connect).await,
         Some(Mode::Update { check }) => update_cmd::run(check).await,
         Some(Mode::ListWorkUnits {

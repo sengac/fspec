@@ -9,6 +9,9 @@
 //! Legacy batch LLM compaction has been removed.
 
 pub mod annotation_detector;
+mod dag_syntax;
+mod dag_validation;
+mod input_accounting;
 mod model;
 pub mod trimmer;
 mod trimmer_base64;
@@ -81,12 +84,17 @@ mod token_tracker_proptest {
 }
 
 // Re-export public types from model
+pub use input_accounting::{InputAccounting, InputUsageObservation};
 pub use model::{
     ConversationTurn, DagDepth, DagNodeMeta, FileOp, StructuralAnnotation, TokenTracker, ToolCall,
     ToolResult,
 };
 
 // Re-export dag-node parser and DAG content wrapper
+pub use dag_validation::{
+    validate_dag_candidate, validate_dag_structure, DagValidationContext, DagValidationError,
+    ValidatedDagCandidate,
+};
 pub use model::parse_dag_nodes;
 pub use model::wrap_dag_content;
 

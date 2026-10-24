@@ -29,7 +29,18 @@ use crate::views::agent::{ChunkKind, ChunkSource};
 /// All variant-specific logic lives in [`super::chunk_processor`] /
 /// [`super::chunk_tool_result`].
 pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
+    if matches!(
+        chunk,
+        StreamChunk::Done
+            | StreamChunk::Error { .. }
+            | StreamChunk::Interrupted { .. }
+            | StreamChunk::InterruptedWithReason { .. }
+    ) {
+        ctx.response_attempt = None;
+    }
     match chunk {
+        StreamChunk::ResponseAttemptStarted => super::response_attempt::start(ctx),
+        StreamChunk::ResponseAttemptAborted => super::response_attempt::abort(ctx),
         StreamChunk::Text { text, .. } => {
             let clean = sanitize_for_terminal(text);
             append_assistant_text(ctx, &clean);
@@ -78,13 +89,24 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
             let clean = sanitize_for_terminal(error);
             handle_error(ctx, &clean);
         }
-        StreamChunk::Interrupted { .. } => {
+        StreamChunk::Interrupted { .. } | StreamChunk::InterruptedWithReason { .. } => {
             flush_in_flight_drop_empty(ctx);
             // RPC-093: Interrupted is a flush trigger. Clear the
             // thinking slot WITHOUT mutating the existing chunk.
             ctx.in_flight_thinking = None;
             ctx.push_chunk(ChunkSource {
-                text: "\u{26A0} Interrupted".to_string(),
+                text: match chunk {
+                    StreamChunk::InterruptedWithReason {
+                        reason: codelet_rpc_types::InterruptionReason::User,
+                        ..
+                    } => "⚠ Interrupted by user",
+                    StreamChunk::InterruptedWithReason {
+                        reason: codelet_rpc_types::InterruptionReason::LoopDetector,
+                        ..
+                    } => "⚠ Interrupted by loop detector",
+                    _ => "⚠ Interrupted",
+                }
+                .to_string(),
                 color: Color::White,
                 kind: ChunkKind::Interrupted,
                 is_streaming: false,
@@ -117,7 +139,8 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
             });
         }
         // State-only chunks — consumed elsewhere.
-        StreamChunk::SessionStateChange { .. }
+        StreamChunk::ProviderWaiting { .. }
+        | StreamChunk::SessionStateChange { .. }
         | StreamChunk::IsolationStateChange { .. }
         | StreamChunk::DebugStateChange { .. }
         | StreamChunk::FooterStateUpdate { .. }
@@ -126,9 +149,12 @@ pub fn record_chunk(ctx: &mut SessionContext, chunk: &StreamChunk) {
         | StreamChunk::WorkUnitsUpdate { .. }
         | StreamChunk::SupervisorPendingInjection { .. }
         | StreamChunk::CompactionComplete { .. }
+        | StreamChunk::CompactionProgressUpdate { .. }
+        | StreamChunk::CommittedCompaction { .. }
         | StreamChunk::TokenUpdate { .. }
         | StreamChunk::ContinueStateUpdate { .. }
         | StreamChunk::ContextFillUpdate { .. }
+        | StreamChunk::ContextSnapshot { .. }
         | StreamChunk::ExecStdinRequest { .. }
         | StreamChunk::ExecStdinRequestCleared => {}
     }

@@ -36,6 +36,13 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
+fn row_index(view: &ProviderSettingsView, kind: NavItemKind) -> usize {
+    view.nav_items
+        .iter()
+        .position(|item| item.provider_id == "openai" && item.kind == kind)
+        .expect("requested OpenAI navigation row must be present")
+}
+
 fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCredentialInfo {
     ProviderCredentialInfo {
         provider_id: id.to_string(),
@@ -80,7 +87,12 @@ fn openai_view(
     let mut view = ProviderSettingsView::new();
     view.set_providers(creds);
     view.set_provider_display_infos(display);
-    view.set_profile_configs(configs);
+    view.set_profile_configs(
+        configs
+            .into_iter()
+            .map(|(name, definition)| (("openai".to_string(), name), definition))
+            .collect(),
+    );
     // Expand openai so the profile + AddProfile child rows appear.
     view.handle_key(key(KeyCode::Enter));
     view
@@ -124,7 +136,12 @@ fn enter_on_profile_row_opens_edit_form_prefilled() {
     );
 
     // @step And the cursor is on the "fireworks" profile row
-    view.handle_key(key(KeyCode::Down));
+    view.selected_index = row_index(
+        &view,
+        NavItemKind::Profile {
+            profile_name: "fireworks → https://api.fireworks.ai/inference/v1".to_string(),
+        },
+    );
     assert!(matches!(focused_kind(&view), NavItemKind::Profile { .. }));
 
     // @step When I press Enter
@@ -161,8 +178,7 @@ fn enter_on_add_profile_opens_create_form_with_defaults() {
     let mut view = openai_view(&["fast → http://localhost:1"], HashMap::new());
 
     // @step And the cursor is on the Add Profile row
-    view.handle_key(key(KeyCode::Down)); // profile "fast"
-    view.handle_key(key(KeyCode::Down)); // AddProfile
+    view.selected_index = row_index(&view, NavItemKind::AddProfile);
     assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
 
     // @step When I press Enter
@@ -200,9 +216,12 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
     );
 
     // @step And the cursor is on the "home" profile row
-    // (BTreeMap-sorted: fireworks at idx 1, home at idx 2)
-    view.handle_key(key(KeyCode::Down));
-    view.handle_key(key(KeyCode::Down));
+    view.selected_index = row_index(
+        &view,
+        NavItemKind::Profile {
+            profile_name: "home → http://localhost:8888".to_string(),
+        },
+    );
     match focused_kind(&view) {
         NavItemKind::Profile { profile_name } => {
             assert_eq!(profile_name, "home → http://localhost:8888")
@@ -246,8 +265,7 @@ fn d_on_add_profile_row_has_no_delete_action() {
     let mut view = openai_view(&["fast → http://localhost:1"], HashMap::new());
 
     // @step And the cursor is on the Add Profile row
-    view.handle_key(key(KeyCode::Down)); // profile
-    view.handle_key(key(KeyCode::Down)); // AddProfile
+    view.selected_index = row_index(&view, NavItemKind::AddProfile);
     assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
 
     // @step When I press "d"
@@ -330,27 +348,27 @@ fn full_config_loader_project_overrides_user_by_name() {
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn stored_config_map_is_queryable_by_profile_name() {
+fn stored_config_map_is_queryable_by_provider_and_profile_name() {
     // @step Given a Provider Settings view
     let mut view = ProviderSettingsView::new();
 
-    // @step When a per-profile config map containing "fireworks" is stored on the view
+    // @step When a provider-qualified config map containing "openai" profile "fireworks" is stored on the view
     let mut configs = HashMap::new();
     configs.insert(
-        "fireworks".to_string(),
+        ("openai".to_string(), "fireworks".to_string()),
         def("https://api.fireworks.ai/inference/v1", "sk-stored"),
     );
     view.set_profile_configs(configs);
 
-    // @step Then profile_config_for("fireworks") returns the stored ProfileDefinition
+    // @step Then profile_config_for("openai", "fireworks") returns the stored ProfileDefinition
     let got = view
-        .profile_config_for("fireworks")
+        .profile_config_for("openai", "fireworks")
         .expect("fireworks present");
     assert_eq!(got.base_url, "https://api.fireworks.ai/inference/v1");
     assert_eq!(got.api_key, "sk-stored");
 
-    // @step And profile_config_for("missing") returns nothing
-    assert!(view.profile_config_for("missing").is_none());
+    // @step And profile_config_for("openai", "missing") returns nothing
+    assert!(view.profile_config_for("openai", "missing").is_none());
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -373,7 +391,12 @@ fn profile_row_display_string_is_split_back_to_bare_name_for_lookup() {
     );
 
     // @step And the cursor is on that profile row
-    view.handle_key(key(KeyCode::Down));
+    view.selected_index = row_index(
+        &view,
+        NavItemKind::Profile {
+            profile_name: "fireworks → https://api.fireworks.ai/inference/v1".to_string(),
+        },
+    );
     assert!(matches!(focused_kind(&view), NavItemKind::Profile { .. }));
 
     // @step When I press Enter

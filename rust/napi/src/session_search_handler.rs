@@ -42,6 +42,9 @@ pub fn create_handler(
     Arc::new(move |action: SessionSearchAction, session_id: Uuid| {
         let is_trimming = compaction_trimming.load(Ordering::Relaxed);
         match action {
+            SessionSearchAction::Originals { request } => {
+                persistence::originals::retrieve_originals(request).into()
+            }
             SessionSearchAction::Recent { count } => handle_recent(&project_path, count),
             SessionSearchAction::Search {
                 query,

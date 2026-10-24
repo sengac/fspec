@@ -7,7 +7,6 @@
 @rust
 @WT-007
 Feature: Isolated sessions are indistinguishable after restart — /resume loses worktree isolation
-
   """
   create_session_from_manifest reads the codelet-git session manifest via codelet_git::read_manifest(uuid) and, when worktree_path + the <repo>/.git/worktrees/<id> admin dir both exist, populates SessionCreationParams { worktree_path, base_commit, isolation: Some(IsolationContext) } and emits IsolationStateChange(true, worktree, base) after insert, mirroring create_isolated_session_with_id. When the worktree is gone, it marks the git manifest terminated (WT-005 prune hook) and resumes non-isolated.
   """
@@ -28,7 +27,6 @@ Feature: Isolated sessions are indistinguishable after restart — /resume loses
   #   3. A never-isolated session (no git manifest, or git manifest with worktree_path = null) → /resume → resumes non-isolated exactly as before the fix (IsolationStateChange(false, None), footer poller with project cwd)
   #
   # ========================================
-
   Background: User Story
     As a developer using isolated sessions
     I want to resume a formerly-isolated session after a restart
@@ -39,15 +37,12 @@ Feature: Isolated sessions are indistinguishable after restart — /resume loses
     When the manager resumes the session via create_session_from_manifest
     Then the resumed session carries worktree_path and base_commit and the IsolationStateChange(true, worktree, base) chunk is broadcast
 
-
   Scenario: Resuming an isolated session whose worktree was deleted falls back to non-isolated
     Given a persisted isolated session whose git manifest still claims a worktree_path, but the worktree directory has been deleted
     When the manager resumes the session via create_session_from_manifest
     Then the session resumes non-isolated with a warning and the git manifest is marked terminated so /worktrees prune can reclaim it
 
-
   Scenario: Resuming a never-isolated session keeps the non-isolated resume behavior
     Given a persisted session with no git-session manifest (or one whose worktree_path is null)
     When the manager resumes the session via create_session_from_manifest
     Then the session resumes non-isolated exactly as before (IsolationStateChange(false, None), footer poller with the project cwd)
-

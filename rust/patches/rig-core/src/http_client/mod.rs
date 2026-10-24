@@ -109,6 +109,10 @@ async fn error_body_text(response: reqwest::Response) -> String {
 
 /// A helper trait to make generic requests (both regular and SSE) possible.
 pub trait HttpClientExt: WasmCompatSend + WasmCompatSync {
+    fn prepare_request_body(&self, body: Vec<u8>) -> Result<Vec<u8>> {
+        Ok(body)
+    }
+
     /// Send a HTTP request, get a response back (as bytes). Response must be able to be turned back into Bytes.
     fn send<T, U>(
         &self,

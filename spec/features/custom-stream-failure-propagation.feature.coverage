@@ -1,0 +1,191 @@
+{
+  "scenarios": [
+    {
+      "name": "Fail transport before any output",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "14-30",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve partial deltas without flushing tools after transport failure",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "33-57",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Treat SSE decoding errors as fatal",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "60-73",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Do not conceal transport failure after explicit stop",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "76-89",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject EOF without terminal evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "92-113",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve clean DONE completion",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "116-132",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve explicit stop with clean EOF",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "135-152",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel a pending custom stream",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/bridge.rs",
+          "lines": "162-185",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug227/bridge.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/custom/stream_http.rs"
+    ],
+    "totalLinesCovered": 198
+  }
+}

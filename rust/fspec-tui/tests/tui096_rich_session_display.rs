@@ -28,6 +28,7 @@ fn make_session(
         worktree_path: None,
         role: None,
         updated_at_ms,
+        work_unit_focus: Default::default(),
     }
 }
 

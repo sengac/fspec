@@ -3,14 +3,21 @@
 //! Shared by `codelet-agent-loop`, `codelet-napi`, and `codelet-fspec-tui`.
 
 pub mod auto_continue; // CONT-002: auto-continue decision fn + /continue grammar
+pub mod compaction_handoff;
+mod compaction_retry_state;
+mod context_projection;
 pub mod continue_state; // CONT-007: live continue/goal counter snapshot builders
 pub mod done_early_exit; // CONT-005: done() immediate termination — early-exit decision + shared teardown
 mod error_classifiers;
 mod gemini_continuation;
 pub mod goal; // CONT-003: goal mode — derived mode, /goal grammar, escalation
+mod interruption;
 mod message_helpers;
 mod multimodal;
 pub mod output;
+mod overflow_classification;
+mod progressive_output;
+pub mod provider_recovery;
 mod recovery_compaction;
 mod recovery_image;
 mod recovery_network;
@@ -18,9 +25,11 @@ mod recovery_stall;
 mod recovery_thinking;
 mod recovery_truncation;
 mod recovery_unrecoverable; // BUG-170: strip failed tool-call tail on terminal API error
+mod request_failure;
 mod stream_handlers;
 pub mod stream_loop;
 
+pub use compaction_retry_state::retry_compaction_hook;
 pub use error_classifiers::{
     classify_compaction_branch, is_context_overflow_error, is_image_content_error,
     is_prompt_too_long_error, is_stall_timeout_error, is_transient_network_error,

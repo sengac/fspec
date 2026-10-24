@@ -15,6 +15,9 @@ test-fixture = []
 workspace = true
 
 [dependencies]
+schemars.workspace = true
+thiserror.workspace = true
+codelet-common.workspace = true
 codelet-rpc-types = { workspace = true }
 # RPC-006: SharedFspecService now reads from the lifted WorkUnitsWatcher
 # in codelet-core. The dependency arrow rpc → core is permitted; the

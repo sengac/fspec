@@ -17,6 +17,10 @@
 
 #[cfg(not(feature = "noop"))]
 mod napi_bindings;
+#[cfg(not(feature = "noop"))]
+mod provider_settings;
+#[cfg(not(feature = "noop"))]
+pub use provider_settings::*;
 
 #[cfg(feature = "noop")]
 pub mod testing;

@@ -780,16 +780,14 @@ fn claude_session_honours_user_threshold_override() {
         resolve_compaction_threshold(context_window, max_output, model_id, Some(&user_override));
     assert_eq!(
         threshold, 150_000,
-        "User override must take priority over Claude base formula (CTX-007)"
+        "User override must take priority over the universal default (CTX-007)"
     );
 
-    // Without override, Claude uses the base formula (200k - 8k = 191,808),
-    // proving the override actually changed behaviour.
     let default_threshold =
         resolve_compaction_threshold(context_window, max_output, model_id, None);
     assert_eq!(
-        default_threshold, 191_808,
-        "Claude default must be base formula (200k - min(8k, 32k) = 191,808)"
+        default_threshold, 160_000,
+        "Claude default must be 80% of the configured context window"
     );
     assert_ne!(
         threshold, default_threshold,
@@ -807,12 +805,11 @@ fn claude_session_honours_user_threshold_override() {
     let hook = CompactionHook::new(Arc::clone(&state), threshold);
     let cancel_sig = CancelSignal::new();
 
-    // @step Then the compaction hook fires at the override threshold, not the default base formula
     simulate_hook_check(&hook, &state, &cancel_sig);
     assert!(
         cancel_sig.is_cancelled(),
         "Hook must cancel at user-override threshold (151k > 150k), \
-         NOT wait until the base formula threshold (191,808)"
+         NOT wait until the default threshold (160,000)"
     );
 
     // Proof that the default would NOT have fired yet — same token count,
@@ -829,7 +826,7 @@ fn claude_session_honours_user_threshold_override() {
     simulate_hook_check(&hook_default, &state_default, &cancel_default);
     assert!(
         !cancel_default.is_cancelled(),
-        "Sanity: default threshold (191,808) would NOT have fired at 151k tokens; \
+        "Sanity: default threshold (160,000) would NOT have fired at 151k tokens; \
          proves user override actually lowered the trigger point"
     );
 

@@ -1,0 +1,151 @@
+{
+  "scenarios": [
+    {
+      "name": "Rig rejects interrupted and malformed HTTP streams",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/downstream.rs",
+          "lines": "9-52",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_streaming.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rig preserves successful clean terminal responses",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/downstream.rs",
+          "lines": "55-91",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_streaming.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rig preserves HTTP and Rhai error behavior",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/downstream.rs",
+          "lines": "94-126",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_streaming.rs",
+              "lines": [
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel a pending rig stream",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug227/downstream.rs",
+          "lines": "129-143",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/stream_http.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_streaming.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug227/downstream.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/custom/stream_http.rs",
+      "rust/providers/src/custom/rig_streaming.rs"
+    ],
+    "totalLinesCovered": 179
+  }
+}

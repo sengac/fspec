@@ -3,7 +3,6 @@
 @ui-enhancement
 @MUX-003
 Feature: Equal-division pane splits (no minimums) with live resize
-
   """
   Layout math lives in rust/fspec-tui/src/views/multiplex/layout.rs (calculate_pane_rects / calculate_pane_rects_with_override). The equal-division default replaces the 50% cascade: when splits has no entry for a pane (or the pane list was set without a trailing percent), each pane gets available/n and the last pane absorbs the integer-division remainder. The per-pane minimum clamps (MIN_BOARD_PANE_WIDTH=64, MIN_PANE_WIDTH=20, MIN_PANE_HEIGHT=10) are removed from the default path; only the mouse divider drag produces a non-equal split (its 10..=90 percent clamp is retained). Render (render.rs) already recomputes rects from the live frame area every draw, so terminal resizes re-divide automatically; recompute_rects (rects.rs) is the event-time path for config changes. Feature file: spec/features/equal-division-pane-splits-no-minimums-with-live-resize.feature. Tests: rust/fspec-tui/tests/mux003.rs (new) + mux001.rs clamping tests rewritten to expect equal division.
   """
@@ -24,7 +23,6 @@ Feature: Equal-division pane splits (no minimums) with live resize
   #   3. User types /mux board agent 40 on a 120-column terminal; the Board pane is 40% (47 cols) and the Agent pane takes the remainder (72 cols) — the percent is honored even though the Board pane is now narrower than the old 64-col minimum; the board view degrades gracefully (blank pane) if it cannot fit its columns.
   #
   # ========================================
-
   Background: User Story
     As a developer supervising multiple agents
     I want to see every mux pane at an equal share of the terminal width

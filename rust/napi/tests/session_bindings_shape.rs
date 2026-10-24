@@ -319,7 +319,7 @@ fn scenario_session_bindings_holds_66_napi_free_fns_and_12_napi_object_shapes() 
     }
     // And every one of those struct declarations must sit beneath a
     // `#[napi(object)]` attribute.
-    let napi_object_count = stripped.matches("#[napi(object)]").count();
+    let napi_object_count = stripped.matches("#[napi(object").count();
     assert!(
         napi_object_count >= 12,
         "RPC-043: session_bindings.rs must declare at least 12 `#[napi(object)]` shapes; found {napi_object_count}"
@@ -358,71 +358,29 @@ fn scenario_session_bindings_holds_66_napi_free_fns_and_12_napi_object_shapes() 
 }
 
 // =============================================================================
-// Scenario: agent_loop.rs owns the agent loop and its StreamOutput sinks
+// Scenario: agent_loop.rs reexports the shared agent loop and its StreamOutput sinks
 // =============================================================================
 
 #[test]
-fn scenario_agent_loop_rs_owns_loop_and_streamoutput_sinks() {
+fn scenario_agent_loop_rs_reexports_shared_loop_and_streamoutput_sinks() {
     // @step Given the RPC-043 changes are applied to the codelet workspace
     // @step When I open `rust/napi/src/agent_loop.rs`
     let src = read(&napi_src().join("agent_loop.rs"));
     let stripped = strip_line_comments(&src);
 
-    // @step Then the file declares `pub(crate) async fn agent_loop(session: Arc<BackgroundSession>, input_rx: mpsc::Receiver<PromptInput>, mcp_injection_rx: mpsc::Receiver<McpInjection>)`
-    assert!(
-        stripped.contains("async fn agent_loop("),
-        "RPC-043: agent_loop.rs must declare `async fn agent_loop(...)`"
-    );
-    assert!(
-        stripped.contains("session: Arc<BackgroundSession>"),
-        "RPC-043: agent_loop signature must take `session: Arc<BackgroundSession>`"
-    );
-    assert!(
-        stripped.contains("input_rx: mpsc::Receiver<PromptInput>"),
-        "RPC-043: agent_loop signature must take `input_rx: mpsc::Receiver<PromptInput>`"
-    );
-    assert!(
-        stripped.contains("mcp_injection_rx: mpsc::Receiver<McpInjection>"),
-        "RPC-043: agent_loop signature must take `mcp_injection_rx: mpsc::Receiver<McpInjection>`"
-    );
-
-    // @step And the file declares the `InputWithImages` helper struct
-    assert!(
-        stripped.contains("struct InputWithImages"),
-        "RPC-043: agent_loop.rs must declare `struct InputWithImages`"
-    );
-
-    // @step And the file declares the `BackgroundOutput` struct
-    assert!(
-        stripped.contains("struct BackgroundOutput"),
-        "RPC-043: agent_loop.rs must declare `struct BackgroundOutput`"
-    );
-
-    // @step And the file declares `impl codelet_cli::interactive::StreamOutput for BackgroundOutput`
-    assert!(
-        stripped.contains("impl codelet_cli::interactive::StreamOutput for BackgroundOutput")
-            || stripped.contains("impl StreamOutput for BackgroundOutput"),
-        "RPC-043: agent_loop.rs must declare `impl codelet_cli::interactive::StreamOutput for BackgroundOutput`"
-    );
-
-    // @step And the file declares the `BackgroundProgressEmitter` struct
-    assert!(
-        stripped.contains("struct BackgroundProgressEmitter"),
-        "RPC-043: agent_loop.rs must declare `struct BackgroundProgressEmitter`"
-    );
-
-    // @step And the file declares `impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter`
-    assert!(
-        stripped.contains("impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter")
-            || stripped.contains("impl StreamOutput for BackgroundProgressEmitter"),
-        "RPC-043: agent_loop.rs must declare `impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter`"
-    );
-
-    // @step And the file contains a `#[cfg(test)] mod agent_loop_dispatch_tests` section at the bottom
-    assert!(
-        stripped.contains("mod agent_loop_dispatch_tests"),
-        "RPC-043: agent_loop.rs must contain `mod agent_loop_dispatch_tests`"
-    );
+    // @step Then the file reexports the shared agent loop and provider dispatch predicate from codelet-agent-loop
+    assert!(stripped.contains("pub use codelet_agent_loop::{"));
+    for helper in ["agent_loop", "agent_loop_dispatch_supports_provider"] {
+        assert!(stripped.contains(helper));
+    }
+    // @step And the file reexports the shared BackgroundOutput and BackgroundProgressEmitter sinks
+    for sink in ["BackgroundOutput", "BackgroundProgressEmitter"] {
+        assert!(stripped.contains(sink));
+    }
+    // @step And the file does not maintain a duplicate agent loop or StreamOutput implementation
+    assert!(!stripped.contains("async fn agent_loop("));
+    assert!(!stripped.contains("impl StreamOutput"));
+    assert!(!stripped.contains("struct BackgroundOutput"));
 
     // @step And no `#[napi]` or `#[napi(object)]` attribute appears anywhere in the file
     assert!(
@@ -474,10 +432,10 @@ fn scenario_session_hooks_rs_owns_napi_session_manager_hooks() {
         );
     }
 
-    // @step And spawn_agent_loop invokes `crate::agent_loop::agent_loop(...)`
+    // @step And spawn_agent_loop invokes `codelet_agent_loop::agent_loop(...)`
     assert!(
-        stripped.contains("crate::agent_loop::agent_loop"),
-        "RPC-043: session_hooks.rs spawn_agent_loop must invoke `crate::agent_loop::agent_loop(...)`"
+        stripped.contains("codelet_agent_loop::agent_loop"),
+        "BUG-210: session_hooks.rs spawn_agent_loop must invoke the shared agent loop"
     );
 
     // @step And spawn_scheduler invokes `crate::scheduler::spawn_scheduler(...)`
@@ -499,9 +457,12 @@ fn scenario_session_hooks_rs_owns_napi_session_manager_hooks() {
     );
 
     // @step And cleanup_session_loops invokes `crate::scheduler::LoopStore::instance().remove_for_session(...)`
+    let compact_source: String = stripped
+        .chars()
+        .filter(|character| !character.is_whitespace())
+        .collect();
     assert!(
-        stripped.contains("LoopStore::instance().remove_for_session")
-            || stripped.contains("crate::scheduler::LoopStore::instance().remove_for_session"),
+        compact_source.contains("LoopStore::instance().remove_for_session"),
         "RPC-043: session_hooks.rs cleanup_session_loops must invoke `LoopStore::instance().remove_for_session(...)`"
     );
 

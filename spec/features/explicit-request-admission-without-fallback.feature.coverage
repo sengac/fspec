@@ -1,0 +1,239 @@
+{
+  "scenarios": [
+    {
+      "name": "Missing model limits cannot become usable defaults",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct082_explicit_admission.rs",
+          "lines": "7-17",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/model_limits.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown output capacity cannot become an output reservation",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct082_explicit_admission.rs",
+          "lines": "19-27",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_threshold.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unrelated provider text does not request compaction",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct082_explicit_admission.rs",
+          "lines": "29-38",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Declared typed overflow remains detectable through wrappers",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct082_explicit_admission.rs",
+          "lines": "40-62",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct082_explicit_admission.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/model_limits.rs",
+      "rust/cli/src/compaction_threshold.rs",
+      "rust/cli/src/interactive/error_classifiers.rs",
+      "rust/cli/src/interactive/overflow_classification.rs"
+    ],
+    "totalLinesCovered": 199
+  }
+}

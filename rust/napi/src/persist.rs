@@ -133,6 +133,7 @@ pub(crate) fn persist_assistant_message_internal(
 pub(crate) fn persist_tool_result_internal(
     session_id: &uuid::Uuid,
     tool_call_id: &str,
+    call_id: Option<&str>,
     content: &str,
     is_error: bool,
 ) -> std::result::Result<(), String> {
@@ -153,6 +154,7 @@ pub(crate) fn persist_tool_result_internal(
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: tool_call_id.to_string(),
+                call_id: call_id.map(str::to_owned),
                 content: content.to_string(),
                 is_error,
                 tool_use_result: None,

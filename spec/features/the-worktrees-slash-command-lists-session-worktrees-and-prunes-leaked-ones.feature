@@ -8,7 +8,6 @@
 @dialog
 @session-merge
 Feature: The /worktrees slash command lists session worktrees and prunes leaked ones
-
   """
   The TUI gains a /worktrees slash command that lists session
   worktrees (backend.list_session_worktrees) in a read-only

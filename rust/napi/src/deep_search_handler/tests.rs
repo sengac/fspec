@@ -92,7 +92,7 @@ async fn collect_final_response_from_stream_uses_final_response_only() {
     ]);
 
     // @step When the streaming collection completes
-    let collected = collect_final_response_from_stream(stream)
+    let collected = collect_final_response_from_stream(stream, "zai")
         .await
         .expect("stream should produce final response");
 
@@ -107,7 +107,7 @@ async fn collect_final_response_from_stream_errors_when_final_missing() {
         rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text("chunk without final"),
     ))]);
 
-    let result = collect_final_response_from_stream(stream).await;
+    let result = collect_final_response_from_stream(stream, "zai").await;
     assert!(result.is_err());
     assert!(result
         .expect_err("expected missing final response error")
@@ -121,7 +121,7 @@ async fn collect_final_response_from_stream_propagates_stream_errors() {
         anyhow::Error,
     >(anyhow::anyhow!("stream blew up"))]);
 
-    let result = collect_final_response_from_stream(stream).await;
+    let result = collect_final_response_from_stream(stream, "zai").await;
     assert!(result.is_err());
     assert!(result
         .expect_err("expected stream error")
@@ -219,7 +219,7 @@ async fn collect_final_response_stalled_stream_aborted_by_wall_clock_timeout() {
     // The wall-clock timeout wraps the ENTIRE collect_final_response call
     let result = tokio::time::timeout(
         std::time::Duration::from_millis(100),
-        collect_final_response_from_stream(stalled_stream),
+        collect_final_response_from_stream(stalled_stream, "zai"),
     )
     .await;
 

@@ -66,4 +66,3 @@ Feature: BUG-180 SessionHeader work-unit status sync
     Given an App with open session s-1 bound to AUTH-001 (title "AUTH-001", status "backlog")
     When Action::WorkUnitsLoaded carrying AUTH-001 with title "User Login" and status "specifying" is dispatched
     Then AgentViewStore.work_unit_context_for(s-1) returns Some with title "User Login" and status "specifying"
-

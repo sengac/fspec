@@ -1,18 +1,13 @@
 use async_stream::stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
-use super::completion::{
-    CompletionModel, Content, Message, SystemContent, ToolChoice, ToolDefinition, Usage,
-    apply_cache_control,
-};
+use super::completion::{CompletionModel, Content, Usage};
 use crate::completion::{CompletionError, CompletionRequest, GetTokenUsage};
 use crate::http_client::sse::{Event, GenericEventSource};
 use crate::http_client::{self, HttpClientExt};
-use crate::json_utils::merge_inplace;
 use crate::streaming::{
     self, RawStreamingChoice, RawStreamingToolCall, StreamingResult, ToolCallDeltaContent,
 };
@@ -59,12 +54,22 @@ pub struct MessageStart {
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ContentDelta {
-    TextDelta { text: String },
-    InputJsonDelta { partial_json: String },
-    ThinkingDelta { thinking: String },
-    SignatureDelta { signature: String },
+    TextDelta {
+        text: String,
+    },
+    InputJsonDelta {
+        partial_json: String,
+    },
+    ThinkingDelta {
+        thinking: String,
+    },
+    SignatureDelta {
+        signature: String,
+    },
     /// Server-side compaction delta (Opus 4.6+)
-    CompactionDelta { content: String },
+    CompactionDelta {
+        content: String,
+    },
     /// Catch-all for unknown delta types
     #[serde(other)]
     Unknown,
@@ -91,9 +96,13 @@ impl GetTokenUsage for PartialUsage {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
         let mut usage = crate::completion::Usage::new();
 
-        usage.input_tokens = self.input_tokens.unwrap_or_default() as u64;
+        usage.input_tokens = self.input_tokens? as u64;
         usage.output_tokens = self.output_tokens as u64;
-        usage.total_tokens = usage.input_tokens + usage.output_tokens;
+        usage.total_tokens = usage
+            .input_tokens
+            .checked_add(usage.output_tokens)?
+            .checked_add(self.cache_read_input_tokens.unwrap_or(0) as u64)?
+            .checked_add(self.cache_creation_input_tokens.unwrap_or(0) as u64)?;
         usage.cache_read_input_tokens = self.cache_read_input_tokens.map(|t| t as u64);
         usage.cache_creation_input_tokens = self.cache_creation_input_tokens.map(|t| t as u64);
         Some(usage)
@@ -123,16 +132,7 @@ pub struct StreamingCompletionResponse {
 
 impl GetTokenUsage for StreamingCompletionResponse {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-        usage.input_tokens = self.usage.input_tokens.unwrap_or(0) as u64;
-        usage.output_tokens = self.usage.output_tokens as u64;
-        usage.total_tokens =
-            self.usage.input_tokens.unwrap_or(0) as u64 + self.usage.output_tokens as u64;
-        // Copy cache tokens from PartialUsage to generic Usage
-        usage.cache_read_input_tokens = self.usage.cache_read_input_tokens.map(|t| t as u64);
-        usage.cache_creation_input_tokens = self.usage.cache_creation_input_tokens.map(|t| t as u64);
-
-        Some(usage)
+        self.usage.token_usage()
     }
 
     /// PROV-039: Return the captured stop_reason from the MessageDelta event
@@ -168,118 +168,15 @@ where
         } else {
             tracing::Span::current()
         };
-        let max_tokens = if let Some(tokens) = completion_request.max_tokens {
-            tokens
-        } else if let Some(tokens) = self.default_max_tokens {
-            tokens
-        } else {
-            return Err(CompletionError::RequestError(
-                "`max_tokens` must be set for Anthropic".into(),
-            ));
-        };
-
-        let mut full_history = vec![];
-        if let Some(docs) = completion_request.normalized_documents() {
-            full_history.push(docs);
-        }
-        full_history.extend(completion_request.chat_history);
-
-        let mut messages = full_history
-            .into_iter()
-            .map(Message::try_from)
-            .collect::<Result<Vec<Message>, _>>()?;
-
-        // Convert system prompt to array format for cache_control support
-        let mut system: Vec<SystemContent> =
-            if let Some(preamble) = completion_request.preamble.as_ref() {
-                if preamble.is_empty() {
-                    vec![]
-                } else {
-                    vec![SystemContent::Text {
-                        text: preamble.clone(),
-                        cache_control: None,
-                    }]
-                }
-            } else {
-                vec![]
-            };
-
-        // Apply cache control breakpoints if prompt_caching is enabled
-        // OAuth mode DOES support prompt caching (via prompt-caching-2024-07-31 beta header)
-        if self.prompt_caching {
-            apply_cache_control(&mut system, &mut messages);
-        }
-
-        let mut body = json!({
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "stream": true,
-        });
-
-        // Add system prompt if non-empty
-        if !system.is_empty() {
-            merge_inplace(&mut body, json!({ "system": system }));
-        }
-
-        // For OAuth mode, don't send temperature (Claude Code doesn't send it)
-        if !self.client.ext().oauth_mode
-            && let Some(temperature) = completion_request.temperature
-        {
-            merge_inplace(&mut body, json!({ "temperature": temperature }));
-        }
-
-        // Always include tools array (even if empty for OAuth mode)
-        // For OAuth mode, don't send tool_choice (Claude Code doesn't send it)
-        let tools: Vec<ToolDefinition> = completion_request
-            .tools
-            .into_iter()
-            .map(|tool| ToolDefinition {
-                name: tool.name,
-                description: Some(tool.description),
-                input_schema: tool.parameters,
-            })
-            .collect();
-
-        if self.client.ext().oauth_mode {
-            // OAuth mode: always include tools array (even if empty), no tool_choice
-            merge_inplace(&mut body, json!({ "tools": tools }));
-        } else if !tools.is_empty() {
-            // API key mode: only include tools if not empty, with tool_choice
-            merge_inplace(
-                &mut body,
-                json!({
-                    "tools": tools,
-                    "tool_choice": ToolChoice::Auto,
-                }),
-            );
-        }
-
-        if let Some(ref params) = completion_request.additional_params {
-            merge_inplace(&mut body, params.clone())
-        }
-
-        // Add metadata for OAuth mode
-        if self.client.ext().oauth_mode {
-            merge_inplace(
-                &mut body,
-                json!({
-                    "metadata": {
-                        "user_id": super::metadata::get_oauth_user_id()
-                    }
-                }),
-            );
-        }
+        let body = self.streaming_request_bytes(completion_request)?;
 
         if enabled!(Level::TRACE) {
             tracing::trace!(
                 target: "rig::completions",
                 "Anthropic completion request: {}",
-                serde_json::to_string_pretty(&body)?
+                String::from_utf8_lossy(&body)
             );
         }
-
-        let body: Vec<u8> = serde_json::to_vec(&body)?;
 
         let req = self
             .client
@@ -294,7 +191,7 @@ where
             let mut current_tool_call: Option<ToolCallState> = None;
             let mut current_thinking: Option<ThinkingState> = None;
             let mut sse_stream = Box::pin(stream);
-            let mut input_tokens = 0;
+            let mut request_usage = super::request_usage::RequestUsage::default();
             let mut final_usage = None;
 
             let mut text_content = String::new();
@@ -312,7 +209,7 @@ where
                         Err(_) => "Error",
                     }
                 );
-                
+
                 match sse_result {
                     Ok(Event::Open) => {
                         tracing::debug!("[anthropic/streaming] SSE Event::Open received");
@@ -323,35 +220,31 @@ where
                             "[anthropic/streaming] SSE Message raw data (first 500 chars): {}",
                             sse.data.chars().take(500).collect::<String>()
                         );
-                        
+
                         // Parse the SSE data as a StreamingEvent
                         match serde_json::from_str::<StreamingEvent>(&sse.data) {
                             Ok(event) => {
                                 match &event {
                                     StreamingEvent::MessageStart { message } => {
-                                        input_tokens = message.usage.input_tokens;
-
                                         let span = tracing::Span::current();
                                         span.record("gen_ai.response.id", &message.id);
                                         span.record("gen_ai.response.model_name", &message.model);
 
                                         // Emit Usage event for MessageStart (output_tokens=0 signals new API call)
                                         // This enables real-time token tracking during streaming
-                                        let mut usage = crate::completion::Usage::new();
-                                        usage.input_tokens = message.usage.input_tokens;
-                                        usage.output_tokens = 0;
-                                        usage.total_tokens = message.usage.input_tokens;
-                                        usage.cache_read_input_tokens = message.usage.cache_read_input_tokens;
-                                        usage.cache_creation_input_tokens = message.usage.cache_creation_input_tokens;
-                                        yield Ok(RawStreamingChoice::Usage(usage));
+                                        if let Some(usage) = request_usage.start(&message.usage) {
+                                            yield Ok(RawStreamingChoice::Usage(usage));
+                                        }
                                     },
                                     StreamingEvent::MessageDelta { delta, usage } => {
                                         // Emit Usage event for MessageDelta (streaming token updates)
-                                        let mut crate_usage = crate::completion::Usage::new();
-                                        crate_usage.input_tokens = input_tokens;
-                                        crate_usage.output_tokens = usage.output_tokens as u64;
-                                        crate_usage.total_tokens = input_tokens + usage.output_tokens as u64;
-                                        yield Ok(RawStreamingChoice::Usage(crate_usage));
+                                        let usage = match request_usage.merge(usage) {
+                                            Ok(usage) => usage,
+                                            Err(error) => { yield Err(error); return; }
+                                        };
+                                        if let Some(normalized) = usage.token_usage() {
+                                            yield Ok(RawStreamingChoice::Usage(normalized));
+                                        }
 
                                         // PROV-005-DEBUG: Log stop_reason for debugging Opus 4.6 compaction
                                         if let Some(ref reason) = delta.stop_reason {
@@ -360,7 +253,7 @@ where
                                                 reason,
                                                 delta.stop_sequence
                                             );
-                                            
+
                                             // PROV-009-DEBUG: Check if this is a compaction stop reason
                                             if reason == "compaction" {
                                                 tracing::warn!(
@@ -373,13 +266,6 @@ where
                                             // PROV-039: Capture stop_reason before breaking
                                             captured_stop_reason = delta.stop_reason.clone();
 
-                                            let usage = PartialUsage {
-                                                 output_tokens: usage.output_tokens,
-                                                 input_tokens: Some(input_tokens.try_into().expect("Failed to convert input_tokens to usize")),
-                                                 cache_read_input_tokens: None,
-                                                 cache_creation_input_tokens: None,
-                                            };
-
                                             let span = tracing::Span::current();
                                             span.record_token_usage(&usage);
                                             final_usage = Some(usage);
@@ -388,10 +274,7 @@ where
                                     }
                                     StreamingEvent::Unknown => {
                                         // PROV-005-DEBUG: Log unknown event type
-                                        tracing::warn!(
-                                            "[anthropic/streaming] Unknown StreamingEvent received - raw data: {}",
-                                            &sse.data
-                                        );
+                                        tracing::warn!(body_bytes = sse.data.len(), body = %sse.data, "[anthropic/streaming] Unknown StreamingEvent received");
                                     }
                                     _ => {}
                                 }
@@ -406,13 +289,9 @@ where
                             Err(e) => {
                                 if !sse.data.trim().is_empty() {
                                     // PROV-005-DEBUG: Log JSON parsing failures with full data
-                                    tracing::warn!(
-                                        "[anthropic/streaming] JSON parse error: {} - Raw data: {}",
-                                        e,
-                                        &sse.data
-                                    );
+                                    tracing::warn!(error = %e, body_bytes = sse.data.len(), body = %sse.data, "[anthropic/streaming] JSON parse error");
                                     yield Err(CompletionError::ResponseError(
-                                        format!("Failed to parse JSON: {} (Data: {})", e, sse.data)
+                                        format!("Failed to parse JSON: {} ({} bytes)", e, sse.data.len())
                                     ));
                                 }
                             }
@@ -424,8 +303,9 @@ where
                             "[anthropic/streaming] SSE ERROR received: {}",
                             e
                         );
-                        yield Err(CompletionError::ProviderError(format!("SSE Error: {e}")));
-                        break;
+                        sse_stream.close();
+                        yield Err(CompletionError::HttpError(e));
+                        return;
                     }
                 }
             }
@@ -451,8 +331,12 @@ where
                 ));
             }
 
+            let Some(usage) = final_usage else {
+                yield Err(CompletionError::ResponseError("incomplete Anthropic usage: missing terminal delta".into()));
+                return;
+            };
             yield Ok(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-                usage: final_usage.unwrap_or_default(),
+                usage,
                 // PROV-039: Propagate captured stop_reason through FinalResponse
                 stop_reason: captured_stop_reason,
             }))
@@ -527,47 +411,53 @@ fn handle_event(
                 None
             }
         },
-        StreamingEvent::ContentBlockStart { content_block, index } => {
+        StreamingEvent::ContentBlockStart {
+            content_block,
+            index,
+        } => {
             // PROV-005-DEBUG: Log all content block starts
             tracing::debug!(
                 "[anthropic/streaming] ContentBlockStart index={} type={:?}",
                 index,
                 std::mem::discriminant(content_block)
             );
-            
+
             match content_block {
-            Content::ToolUse { id, name, .. } => {
-                *current_tool_call = Some(ToolCallState {
-                    name: name.clone(),
-                    id: id.clone(),
-                    input_json: String::new(),
-                });
-                Some(Ok(RawStreamingChoice::ToolCallDelta {
-                    id: id.clone(),
-                    content: ToolCallDeltaContent::Name(name.clone()),
-                }))
+                Content::ToolUse { id, name, .. } => {
+                    *current_tool_call = Some(ToolCallState {
+                        name: name.clone(),
+                        id: id.clone(),
+                        input_json: String::new(),
+                    });
+                    Some(Ok(RawStreamingChoice::ToolCallDelta {
+                        id: id.clone(),
+                        content: ToolCallDeltaContent::Name(name.clone()),
+                    }))
+                }
+                Content::Thinking { .. } => {
+                    *current_thinking = Some(ThinkingState::default());
+                    None
+                }
+                Content::Compaction { content } => {
+                    // PROV-005-DEBUG: Server-side compaction block received
+                    tracing::debug!(
+                        "[anthropic/streaming] Server-side COMPACTION block received - content_len={}",
+                        content.len()
+                    );
+                    // For now, just log - we may need to handle this specially
+                    None
+                }
+                Content::Unknown => {
+                    // PROV-005-DEBUG: Unknown content block type
+                    tracing::debug!(
+                        "[anthropic/streaming] Unknown Content type in ContentBlockStart"
+                    );
+                    None
+                }
+                // Handle other content types - they don't need special handling
+                _ => None,
             }
-            Content::Thinking { .. } => {
-                *current_thinking = Some(ThinkingState::default());
-                None
-            }
-            Content::Compaction { content } => {
-                // PROV-005-DEBUG: Server-side compaction block received
-                tracing::debug!(
-                    "[anthropic/streaming] Server-side COMPACTION block received - content_len={}",
-                    content.len()
-                );
-                // For now, just log - we may need to handle this specially
-                None
-            }
-            Content::Unknown => {
-                // PROV-005-DEBUG: Unknown content block type
-                tracing::debug!("[anthropic/streaming] Unknown Content type in ContentBlockStart");
-                None
-            }
-            // Handle other content types - they don't need special handling
-            _ => None,
-        }},
+        }
         StreamingEvent::ContentBlockStop { .. } => {
             if let Some(thinking_state) = Option::take(current_thinking)
                 && !thinking_state.thinking.is_empty()
@@ -1049,7 +939,10 @@ mod tests {
         let result = handle_event(&event, &mut tool_call_state, &mut thinking_state);
 
         // The result should be an error (generic JSON parse error at this layer)
-        assert!(result.is_some(), "Should produce a result for truncated tool call");
+        assert!(
+            result.is_some(),
+            "Should produce a result for truncated tool call"
+        );
         let result = result.unwrap();
         assert!(result.is_err(), "Truncated JSON should produce an error");
 

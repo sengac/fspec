@@ -96,6 +96,7 @@ fn napi_shim_round_trips_envelope_via_flat_reexport_path() {
                 },
                 NapiReexportedAssistantContent::ToolUse {
                     id: "toolu_shim_disc".to_string(),
+                    call_id: None,
                     name: "read_file".to_string(),
                     input: serde_json::json!({"path": "/foo.ts"}),
                 },
@@ -144,6 +145,7 @@ fn napi_persistence_tests_continue_to_pass_after_the_lift() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_abc123".to_string(),
+                call_id: None,
                 content: "raw".to_string(),
                 is_error: false,
                 tool_use_result: Some(ToolUseResultMetadata::with_output("stdout", "stderr")),

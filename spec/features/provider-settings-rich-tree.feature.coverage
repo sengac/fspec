@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "74-114",
+          "lines": "77-115",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -60,7 +60,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "116-157",
+          "lines": "122-161",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
@@ -117,7 +117,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "159-187",
+          "lines": "168-194",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
@@ -216,11 +216,11 @@
       ]
     },
     {
-      "name": "Expanding an uncredentialed OAuth provider reveals only login rows",
+      "name": "Expanding an uncredentialed OAuth provider reveals login rows",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "189-217",
+          "lines": "201-230",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
@@ -303,7 +303,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "219-260",
+          "lines": "237-277",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
@@ -335,7 +335,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
-          "lines": "262-285",
+          "lines": "284-308",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/projection.rs",
@@ -370,6 +370,6 @@
       "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
       "rust/fspec-tui/src/views/provider_settings/projection.rs"
     ],
-    "totalLinesCovered": 464
+    "totalLinesCovered": 459
   }
 }

@@ -76,6 +76,13 @@ impl BlobStore {
                 .map_err(|e| format!("Failed to rename blob temp file: {e}"))?;
         }
 
+        super::messages::durability::perform("blob.sync", || File::open(&blob_path)?.sync_all())
+            .map_err(|error| format!("Failed to synchronize blob: {error}"))?;
+        super::messages::durability::perform("blob.directory", || {
+            super::messages::durability::sync_parent(&blob_path)?;
+            super::messages::durability::sync_parent(&self.blobs_dir)
+        })
+        .map_err(|error| format!("Failed to synchronize blob directories: {error}"))?;
         Ok(hash)
     }
 

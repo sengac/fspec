@@ -1,27 +1,11 @@
-//! RPC-049 — `/resume` durable restore via `restore_session_messages` +
-//! `restore_session_token_state` (Phase 6.4 of RPC-030).
-//!
 //! Feature: spec/features/slash-command-resume.feature
-//!
-//! Drives the App::dispatch routing for `Action::AttachToSession` so it
-//! reaches PAST the open_sessions move/append into a spawned
-//! `backend.resume_session(session_id)` round-trip. On success the
-//! follow-up `Action::SessionResumeComplete(id)` triggers a second
-//! spawned task that calls `backend.get_buffered_output(id, 1000)` and
-//! replays each returned chunk as `Action::ChunkReceived(id, chunk)` —
-//! so the resumed session's scrollback is seeded from the backend's
-//! replay buffer. On failure the error is surfaced via
-//! `Action::EmitSessionNotice` to the originating session.
-//!
-//! Mirrors the spawned-task + action-bus round-trip pattern established
-//! by `dispatch_slash_commands.rs::handle_slash_command(Clear/Compact)` and
-//! `dispatch_resume_search_views.rs::handle_confirm_delete_session`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::sync::Arc;
 use std::time::Duration;
 
+use codelet_fspec_tui::app::transcript_sync::TranscriptAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, StreamChunk};
 use tokio::time::timeout;
@@ -130,13 +114,8 @@ async fn attach_to_session_spawns_backend_resume_session() {
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: SessionResumeComplete seeds scrollback from
-// get_buffered_output on Ok
-// ─────────────────────────────────────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_resume_complete_seeds_scrollback_from_buffered_output() {
+async fn successful_resume_hydrates_the_complete_transcript_snapshot() {
     // @step Given an App wired to a MockBackend whose resume_session returns Ok(())
     let mock = Arc::new(MockBackend::new());
 
@@ -156,12 +135,13 @@ async fn session_resume_complete_seeds_scrollback_from_buffered_output() {
     assert_eq!(mock.resume_session_calls(), 1);
     assert_eq!(mock.last_resume_session(), Some(sid("s-1")));
 
-    // @step And within 1 second backend.get_buffered_output is called exactly once with session_id s-1 and limit 1000
-    assert_eq!(mock.get_buffered_output_calls(), 1);
-    assert_eq!(
-        mock.last_get_buffered_output(),
-        Some((sid("s-1"), 1000_u32))
-    );
+    // @step And bounded transcript pages are requested for session s-1 until the snapshot completes
+    assert!(mock.transcript_requests().len() >= 3);
+    assert!(mock
+        .transcript_requests()
+        .iter()
+        .all(|session| session == &sid("s-1")));
+    assert_eq!(mock.get_buffered_output_calls(), 0);
 
     // @step And within 1 second the SessionContext for s-1 contains a scrollback chunk whose text equals "hello"
     let text = session_scrollback_text(&app, &sid("s-1"));
@@ -177,13 +157,8 @@ async fn session_resume_complete_seeds_scrollback_from_buffered_output() {
     );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Scenario: SessionResumeFailed emits an error notice and skips
-// get_buffered_output
-// ─────────────────────────────────────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_resume_failed_emits_error_notice_and_skips_buffered_output() {
+async fn failed_resume_exposes_an_incomplete_transcript_notice() {
     // @step Given an App wired to a MockBackend whose resume_session returns Err("corrupt manifest")
     let mock = Arc::new(MockBackend::new());
     mock.set_resume_session_error("corrupt manifest".to_string());
@@ -194,20 +169,25 @@ async fn session_resume_failed_emits_error_notice_and_skips_buffered_output() {
     app.dispatch(Action::AttachToSession(sid("s-1")));
     drain_pending(&mut app).await;
 
-    // @step Then within 1 second the SessionContext for s-1 contains a scrollback chunk whose text equals "[error] /resume failed: corrupt manifest"
+    // @step Then the originating session contains an incomplete transcript notice with the corrupt manifest reason
     let text = session_scrollback_text(&app, &sid("s-1"));
     assert!(
-        text.lines()
-            .any(|l| l == "[error] /resume failed: corrupt manifest"),
-        "expected `[error] /resume failed: corrupt manifest` in s-1 scrollback, got {text:?}",
+        text.contains("Transcript incomplete") && text.contains("corrupt manifest"),
+        "expected an incomplete transcript notice in s-1 scrollback, got {text:?}",
     );
 
-    // @step And backend.get_buffered_output is NEVER called
-    assert_eq!(
-        mock.get_buffered_output_calls(),
-        0,
-        "get_buffered_output must not run when resume_session fails",
-    );
+    // @step And no transcript pages are requested before resume succeeds
+    assert!(mock.transcript_requests().is_empty());
+    // @step And periodic transcript polling and live notifications occur before another resume succeeds
+    for action in [
+        TranscriptAction::Poll,
+        TranscriptAction::Live(sid("s-1"), StreamChunk::text("pending response".into())),
+    ] {
+        app.dispatch(Action::Transcript(action));
+        drain_pending(&mut app).await;
+        assert!(mock.transcript_requests().is_empty());
+        assert_eq!(session_scrollback_text(&app, &sid("s-1")), text);
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

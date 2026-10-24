@@ -18,7 +18,7 @@
 //! Every clear is idempotent (a missing file/credential resolves to `Ok`).
 
 use codelet_providers::claude_auth::{get_claude_auth_path, read_claude_auth};
-use codelet_providers::codex::codex_auth::{read_codex_auth, write_codex_auth, CodexAuthJson};
+use codelet_providers::codex::codex_auth::{clear_codex_oauth, read_codex_auth};
 use codelet_providers::copilot::auth::{delete_copilot_auth, read_copilot_auth};
 
 /// Clear the OAuth tokens for `provider_id`. Errors are returned as `String`
@@ -67,19 +67,16 @@ async fn clear_claude_tokens() -> Result<(), String> {
 /// Strip the `tokens` field from the codex `auth.json`, preserving the cached
 /// `OPENAI_API_KEY`. Idempotent — a missing file resolves to `Ok`.
 fn clear_codex_tokens() -> Result<(), String> {
-    match read_codex_auth().map_err(|e| format!("read failed: {e}"))? {
-        Some(auth) => {
-            let stripped = strip_codex_tokens(auth);
-            write_codex_auth(&stripped).map_err(|e| format!("clear failed: {e}"))
-        }
-        None => Ok(()),
-    }
+    clear_codex_oauth().map_err(|error| format!("clear failed: {error}"))
 }
 
 /// Pure transform: drop the OAuth `tokens` while leaving every sibling field
 /// (notably `OPENAI_API_KEY`) untouched. Factored out so the
 /// preserve-API-key rule is unit-testable without touching the filesystem.
-pub(crate) fn strip_codex_tokens(mut auth: CodexAuthJson) -> CodexAuthJson {
+#[cfg(test)]
+pub(crate) fn strip_codex_tokens(
+    mut auth: codelet_providers::codex::codex_auth::CodexAuthJson,
+) -> codelet_providers::codex::codex_auth::CodexAuthJson {
     auth.tokens = None;
     auth
 }
@@ -87,7 +84,7 @@ pub(crate) fn strip_codex_tokens(mut auth: CodexAuthJson) -> CodexAuthJson {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use codelet_providers::codex::codex_auth::CodexTokens;
+    use codelet_providers::codex::codex_auth::{CodexAuthJson, CodexTokens};
 
     fn tokens() -> CodexTokens {
         CodexTokens {

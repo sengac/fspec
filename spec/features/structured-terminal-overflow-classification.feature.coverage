@@ -1,0 +1,244 @@
+{
+  "scenarios": [
+    {
+      "name": "Structured HTTP overflow survives streaming wrappers",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct054_structured_overflow.rs",
+          "lines": "15-29",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HTTP diagnostic wording does not authorize compaction",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct054_structured_overflow.rs",
+          "lines": "31-46",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare text cannot impersonate a provider rejection",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct054_structured_overflow.rs",
+          "lines": "48-56",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider overflow code survives agent context",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct054_structured_overflow.rs",
+          "lines": "58-68",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/overflow_classification.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct054_structured_overflow.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/overflow_classification.rs"
+    ],
+    "totalLinesCovered": 215
+  }
+}

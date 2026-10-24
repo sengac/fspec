@@ -32,6 +32,23 @@ pub fn extract_tool_args_display(tool_name: &str, input_json: &str) -> String {
 
     // Branch 1 — Edit/Write family → file_path only (content shown as diff).
     let tool_lower = tool_name.to_lowercase();
+    if tool_lower == "apply_patch" {
+        return obj
+            .get("patch")
+            .and_then(Value::as_str)
+            .map(|patch| {
+                patch
+                    .lines()
+                    .filter_map(|line| {
+                        ["*** Add File: ", "*** Update File: ", "*** Delete File: "]
+                            .iter()
+                            .find_map(|prefix| line.strip_prefix(prefix))
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            })
+            .unwrap_or_default();
+    }
     if matches!(
         tool_lower.as_str(),
         "edit" | "replace" | "write" | "write_file"

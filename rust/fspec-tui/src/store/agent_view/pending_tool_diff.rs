@@ -22,6 +22,9 @@ use crate::terminal::sanitize::sanitize_for_terminal;
 /// Which side of the Edit/Write family produced this pending entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PendingDiffKind {
+    Patch {
+        rows: Vec<super::diff_format::DiffDisplayRow>,
+    },
     Edit {
         old_string: String,
         new_string: String,
@@ -53,6 +56,13 @@ pub fn capture_pending_diff(tool_name: &str, input_json: &str) -> Option<Pending
     let lower = tool_name.to_lowercase();
 
     match lower.as_str() {
+        "apply_patch" => {
+            let rows = super::patch_diff::capture_patch_diff(obj.get("patch")?.as_str()?)?;
+            Some(PendingToolDiff {
+                kind: PendingDiffKind::Patch { rows },
+                start_line: 1,
+            })
+        }
         "edit" | "replace" => {
             let old_string = obj.get("old_string")?.as_str()?.to_string();
             let new_string = obj.get("new_string")?.as_str()?.to_string();
@@ -85,6 +95,7 @@ pub fn capture_pending_diff(tool_name: &str, input_json: &str) -> Option<Pending
 /// `toolResultFullContent`).
 pub fn produce_diff_strings(pending: &PendingToolDiff) -> (String, String) {
     match &pending.kind {
+        PendingDiffKind::Patch { rows } => super::patch_diff::produce_patch_diff(rows),
         PendingDiffKind::Edit {
             old_string,
             new_string,

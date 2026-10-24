@@ -11,6 +11,7 @@
 
 pub mod agent_view;
 pub mod board;
+mod board_focus;
 mod board_menu;
 mod board_viewport;
 pub mod mux_state;

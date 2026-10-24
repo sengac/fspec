@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "118-150",
+          "lines": "125-152",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -113,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "153-198",
+          "lines": "160-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -221,7 +221,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "200-249",
+          "lines": "213-261",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -329,7 +329,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "251-292",
+          "lines": "269-306",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -437,7 +437,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "294-340",
+          "lines": "314-352",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
@@ -467,7 +467,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "342-393",
+          "lines": "359-404",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
@@ -489,7 +489,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "395-441",
+          "lines": "412-460",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -535,7 +535,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_flat_tree_rpc103.rs",
-          "lines": "443-478",
+          "lines": "468-502",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -604,6 +604,6 @@
       "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 816
+    "totalLinesCovered": 793
   }
 }

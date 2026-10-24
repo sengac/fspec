@@ -33,7 +33,10 @@ use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_server::bind_and_serve;
 use tempfile::TempDir;
+mod transcript;
 use tokio::task::JoinHandle;
+mod focus_backend;
+mod provider_settings_backend;
 
 /// Default fixture body written into `<tempdir>/spec/work-units.json` —
 /// two `WorkUnitInfo` records, mirrored from
@@ -424,6 +427,7 @@ pub struct MockBackend {
     resume_session_error: Mutex<Option<String>>,
     /// RPC-049: scripted replay-buffer returned by `get_buffered_output`.
     buffered_output: Mutex<Vec<StreamChunk>>,
+    transcript_requests: Mutex<Vec<SessionId>>,
     /// RPC-049: per-call counter for `get_buffered_output`.
     get_buffered_output_calls: AtomicUsize,
     /// RPC-049: capture of the last (id, limit) pair passed to
@@ -456,6 +460,7 @@ pub struct MockBackend {
     /// reads back what `set_work_unit_context` wrote. Mirrors the
     /// production StubSessionManagerHandle's `work_unit_ctx` map.
     work_unit_contexts: Mutex<HashMap<SessionId, WorkUnitContext>>,
+    focus_state: focus_backend::FocusState,
     /// RPC-050: when `Some`, `set_work_unit_context` returns
     /// `Err(anyhow!(message))` so failure-path scenarios can exercise
     /// the error-notice branch without touching the in-memory store.
@@ -543,6 +548,7 @@ pub struct MockBackend {
     /// / `set_post_delete_provider_credentials` / `set_post_refresh_provider_credentials`
     /// to script the next list returned after the App's follow-up refresh.
     provider_credentials: Mutex<Vec<ProviderCredentialInfo>>,
+    provider_settings: Mutex<Vec<codelet_rpc_types::ProviderSettingsConfig>>,
     /// RPC-054: next-list-after-save override. When `Some`, the very next
     /// `list_provider_credentials` call after `set_provider_credentials`
     /// returns this value instead of the seeded list, then clears the
@@ -887,6 +893,7 @@ impl Default for MockBackend {
             last_resume_session: Mutex::new(None),
             resume_session_error: Mutex::new(None),
             buffered_output: Mutex::new(Vec::new()),
+            transcript_requests: Mutex::new(Vec::new()),
             get_buffered_output_calls: AtomicUsize::new(0),
             last_get_buffered_output: Mutex::new(None),
             scripted_active_session: Mutex::new(None),
@@ -898,6 +905,7 @@ impl Default for MockBackend {
             get_work_unit_context_calls: AtomicUsize::new(0),
             last_set_work_unit_context: Mutex::new(None),
             work_unit_contexts: Mutex::new(HashMap::new()),
+            focus_state: focus_backend::FocusState::default(),
             set_work_unit_context_error: Mutex::new(None),
             scripted_history: Mutex::new(HashMap::new()),
             set_pending_input_calls: AtomicUsize::new(0),
@@ -932,6 +940,7 @@ impl Default for MockBackend {
             write_exec_stdin_error: Mutex::new(None),
             // ── RPC-054 ──────────────────────────────────────────────
             provider_credentials: Mutex::new(Vec::new()),
+            provider_settings: Mutex::new(Vec::new()),
             provider_credentials_after_save: Mutex::new(None),
             provider_credentials_after_delete: Mutex::new(None),
             provider_credentials_after_refresh: Mutex::new(None),
@@ -1154,6 +1163,7 @@ impl MockBackend {
             worktree_path: None,
             role: None,
             updated_at_ms: None,
+            work_unit_focus: Default::default(),
         };
         if let Some(tx) = self
             .session_created_tx
@@ -1217,6 +1227,7 @@ impl MockBackend {
                 worktree_path: None,
                 role: None,
                 updated_at_ms: None,
+                work_unit_focus: Default::default(),
             })
             .collect();
         *self
@@ -1258,6 +1269,7 @@ impl MockBackend {
     /// live subscriber `Receiver` then observes `RecvError::Closed` on its
     /// next `recv().await`, so all App subscriber loops exit.
     pub fn disconnect_all(&self) {
+        self.focus_state.disconnect();
         *self.work_units_tx.lock().expect("MockBackend mutex") = None;
         *self.chunks_tx.lock().expect("MockBackend mutex") = None;
         *self.logs_tx.lock().expect("MockBackend mutex") = None;
@@ -1281,6 +1293,7 @@ impl MockBackend {
     /// events pushed after this call — which is exactly how we prove the
     /// respawn rebinds to the current client.
     pub fn reconnect_all(&self) {
+        self.focus_state.reconnect();
         let (work_units_tx, _) = broadcast::channel(64);
         let (chunks_tx, _) = broadcast::channel(64);
         let (logs_tx, _) = broadcast::channel(64);
@@ -2824,6 +2837,23 @@ impl MockBackend {
 
 #[async_trait]
 impl FspecBackend for MockBackend {
+    async fn list_provider_settings(
+        &self,
+    ) -> std::result::Result<
+        Vec<codelet_rpc_types::ProviderSettingsConfig>,
+        codelet_fspec_tui::transport::BackendError,
+    > {
+        self.provider_settings_snapshot()
+    }
+
+    async fn save_provider_settings(
+        &self,
+        provider_id: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> std::result::Result<(), codelet_fspec_tui::transport::BackendError> {
+        self.store_provider_settings(provider_id, definition)
+    }
+
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>> {
         self.list_work_units_calls.fetch_add(1, Ordering::SeqCst);
         Ok(self.work_units.lock().expect("MockBackend mutex").clone())
@@ -3352,6 +3382,19 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
+    async fn get_transcript_page(
+        &self,
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> std::result::Result<
+        codelet_rpc_types::TranscriptPage,
+        codelet_fspec_tui::transport::BackendError,
+    > {
+        self.scripted_transcript_page(session_id, cursor, snapshot_end, max_bytes)
+    }
+
     async fn get_buffered_output(
         &self,
         session_id: SessionId,
@@ -3389,6 +3432,43 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
+    async fn get_work_unit_focus(
+        &self,
+        session: SessionId,
+    ) -> std::result::Result<
+        codelet_rpc_types::WorkUnitFocus,
+        codelet_fspec_tui::transport::BackendError,
+    > {
+        self.focus_state.get(&session)
+    }
+
+    async fn set_work_unit_focus(
+        &self,
+        session: SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> std::result::Result<
+        codelet_rpc_types::WorkUnitFocus,
+        codelet_fspec_tui::transport::BackendError,
+    > {
+        let context = self
+            .work_unit_contexts
+            .lock()
+            .map_err(|error| {
+                codelet_fspec_tui::transport::BackendError::WorkUnitFocus(error.to_string())
+            })?
+            .get(&session)
+            .filter(|context| Some(&context.id) == work_unit_id.as_ref())
+            .cloned();
+        self.focus_state.set(session, context, source)
+    }
+
+    fn work_unit_focus_rx(
+        &self,
+    ) -> broadcast::Receiver<(SessionId, codelet_rpc_types::WorkUnitFocus)> {
+        self.focus_state.subscribe()
+    }
+
     async fn get_work_unit_context(
         &self,
         session_id: SessionId,
@@ -3423,14 +3503,17 @@ impl FspecBackend for MockBackend {
             return Err(anyhow::anyhow!("{msg}"));
         }
         let mut guard = self.work_unit_contexts.lock().expect("MockBackend mutex");
+        let focus_context = context.clone();
         match context {
             Some(c) => {
-                guard.insert(session_id, c);
+                guard.insert(session_id.clone(), c);
             }
             None => {
                 guard.remove(&session_id);
             }
         }
+        drop(guard);
+        self.focus_state.bind(session_id, focus_context)?;
         Ok(())
     }
 

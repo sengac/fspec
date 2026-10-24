@@ -23,6 +23,10 @@ use std::sync::Once;
 
 use anyhow::{anyhow, Context, Result};
 use codelet_agent_loop::FspecAgentHooks;
+use codelet_common::logging::{
+    privacy::{PrivacyFields, PrivacySpanLayer},
+    private_files,
+};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_core::SessionManagerHandle;
 use codelet_fspec_core::FspecCoreError;
@@ -214,19 +218,21 @@ fn env_filter() -> EnvFilter {
     })
 }
 
-/// Combined mode: tracing → rolling file under ~/.fspec/logs/ AND the
+/// Combined mode: tracing → private rolling file under ~/.fspec/logs/private/ AND the
 /// LogEvent broadcast inside SharedFspecService. NO stderr fmt subscriber
 /// (stderr is reserved for the PORT banner + panic backtraces).
 pub fn init_tracing_combined(service: &Arc<SharedFspecService>) -> Result<()> {
-    let logs_dir = home_fspec_dir()?.join("logs");
-    fs::create_dir_all(&logs_dir).with_context(|| format!("mkdir {}", logs_dir.display()))?;
-    let appender = tracing_appender::rolling::daily(&logs_dir, "fspec-combined.log");
+    let logs_dir = home_fspec_dir()?.join("logs/private");
+    let appender = private_files::appender(&logs_dir, "fspec-combined.log")?;
     let (nb, guard) = tracing_appender::non_blocking(appender);
     keep_guard(guard);
     let file_layer = tracing_subscriber::fmt::layer()
+        .fmt_fields(PrivacyFields::local())
+        .event_format(PrivacyFields::local())
         .with_writer(nb)
         .with_ansi(false);
     tracing_subscriber::registry()
+        .with(PrivacySpanLayer(PrivacyFields::local()))
         .with(BroadcastLogLayer)
         .with(file_layer)
         .with(env_filter())
@@ -239,8 +245,12 @@ pub fn init_tracing_combined(service: &Arc<SharedFspecService>) -> Result<()> {
 /// broadcast. Registry built FIRST, register_log_layer called SECOND so
 /// only the sender-push side-effect of register_log_layer lands.
 pub fn init_tracing_daemon(service: &Arc<SharedFspecService>) -> Result<()> {
-    let fmt_layer = tracing_subscriber::fmt::layer().with_writer(std::io::stderr);
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .fmt_fields(PrivacyFields::default())
+        .event_format(PrivacyFields::default())
+        .with_writer(std::io::stderr);
     tracing_subscriber::registry()
+        .with(PrivacySpanLayer(PrivacyFields::default()))
         .with(BroadcastLogLayer)
         .with(fmt_layer)
         .with(env_filter())
@@ -249,19 +259,21 @@ pub fn init_tracing_daemon(service: &Arc<SharedFspecService>) -> Result<()> {
     Ok(())
 }
 
-/// Client mode: tracing → rolling file under ~/.fspec/client.log; no
+/// Client mode: tracing → rolling file under ~/.fspec/logs/private/client.log; no
 /// SharedFspecService exists here (the daemon owns it).
 pub fn init_tracing_client() -> Result<()> {
-    let dir = home_fspec_dir()?;
-    fs::create_dir_all(&dir).with_context(|| format!("mkdir {}", dir.display()))?;
-    let appender = tracing_appender::rolling::daily(&dir, "client.log");
+    let dir = home_fspec_dir()?.join("logs/private");
+    let appender = private_files::appender(&dir, "client.log")?;
     let (nb, guard) = tracing_appender::non_blocking(appender);
     keep_guard(guard);
     let file_layer = tracing_subscriber::fmt::layer()
+        .fmt_fields(PrivacyFields::local())
+        .event_format(PrivacyFields::local())
         .with_writer(nb)
         .with_ansi(false);
     tracing_subscriber::registry()
         .with(file_layer)
+        .with(PrivacySpanLayer(PrivacyFields::local()))
         .with(env_filter())
         .init();
     Ok(())

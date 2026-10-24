@@ -55,6 +55,8 @@ use std::time::SystemTime;
 /// not incremental tokens added. Display should use input_tokens (current context).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TokenTracker {
+    #[serde(default = "super::InputAccounting::unknown")]
+    pub input_accounting: super::InputAccounting,
     /// Current context input tokens (latest from API - overwritten, not accumulated)
     /// CTX-003: This is what should be displayed to users and used for threshold checks
     pub input_tokens: u64,
@@ -120,6 +122,11 @@ impl TokenTracker {
     ) {
         // CTX-003: Overwrite current context (for display and threshold checks)
         self.input_tokens = input;
+        self.input_accounting = if input > 0 {
+            super::InputAccounting::Reported
+        } else {
+            super::InputAccounting::Unavailable
+        };
         self.output_tokens = output;
         // CTX-003: Accumulate for billing analytics
         self.cumulative_billed_input += input;
@@ -161,7 +168,7 @@ impl TokenTracker {
         cumulative_output: u64,
     ) {
         // PROV-001: Store TOTAL context for display and threshold checks
-        self.input_tokens = usage.total_input();
+        self.observe_input_usage(usage);
         // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value.
         self.output_tokens = cumulative_output;
         // Accumulate for billing analytics (raw uncached input, not total context)
@@ -175,39 +182,12 @@ impl TokenTracker {
         self.reasoning_tokens = usage.reasoning_tokens;
     }
 
-    /// Update token tracker for display only, without billing accumulation (CMPCT-001)
-    ///
-    /// This is used when preparing for a continuation/retry where we want to
-    /// update the display values but NOT accumulate billing (to avoid double-counting).
-    ///
-    /// Use cases:
-    /// - Before starting a Gemini continuation loop (display current state)
-    /// - After compaction resets (display post-compaction state)
-    ///
-    /// # Arguments
-    /// * `usage` - The ApiTokenUsage from the current turn/request
-    /// * `cumulative_output` - The session-wide cumulative output token count
-    pub fn update_display_only(
-        &mut self,
-        usage: &crate::token_usage::ApiTokenUsage,
-        cumulative_output: u64,
-    ) {
-        // Update display values only (no billing accumulation)
-        self.input_tokens = usage.total_input();
-        self.output_tokens = cumulative_output;
-        // Cache tokens are per-request values
-        self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
-        self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
-        // TOKEN-003: store the session-cumulative reasoning value supplied by
-        // the caller (via with_reasoning_tokens).
-        self.reasoning_tokens = usage.reasoning_tokens;
-    }
-
     /// Reset token tracker after compaction (CMPCT-001)
     ///
     /// After successful compaction, reset output and cache values while
     /// preserving cumulative billing (which tracks total spend across session).
     pub fn reset_after_compaction(&mut self) {
+        self.input_accounting = super::InputAccounting::Reset;
         self.output_tokens = 0;
         self.cache_read_input_tokens = None;
         self.cache_creation_input_tokens = None;

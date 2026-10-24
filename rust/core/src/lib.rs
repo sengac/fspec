@@ -13,12 +13,14 @@ pub mod lifecycle_hooks;
 pub mod loops;
 pub mod message_estimator;
 pub mod persistence;
+pub mod request_settlement_hook;
 pub mod rig_agent;
 pub mod scheduler;
 pub mod session_manager_handle;
 pub mod streaming_display;
 pub mod token_usage;
 pub mod tool_specs;
+pub mod work_unit_subscription;
 pub mod work_units;
 pub mod work_units_write;
 

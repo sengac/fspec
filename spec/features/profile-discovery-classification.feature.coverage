@@ -1,0 +1,281 @@
+{
+  "scenarios": [
+    {
+      "name": "Unsupported discovery without configured models does not claim failed inference",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "21-44",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                12,
+                20,
+                34,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                321
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Configured model survives cold startup and switching with unsupported discovery",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "46-96",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                12,
+                20,
+                34,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                321
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful discovery distinguishes populated and empty listings",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "98-128",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                12,
+                20,
+                34,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                321
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication server and protocol failures block selection without leaking payloads",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "130-178",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                12,
+                20,
+                34,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/error.rs",
+              "lines": [
+                9,
+                40,
+                86,
+                112
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                321
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transport failures remain visible without optimistic fallback",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "180-208",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai_discovery.rs",
+              "lines": [
+                12,
+                20,
+                34,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/error.rs",
+              "lines": [
+                9,
+                40,
+                86,
+                112
+              ]
+            },
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                321
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skipped probes cannot authorize configured models",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug252_discovery_classification.rs",
+          "lines": "210-235",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/profile_discovery.rs",
+              "lines": [
+                16,
+                32,
+                46,
+                67
+              ]
+            },
+            {
+              "file": "rust/sessions/src/profile_sections.rs",
+              "lines": [
+                26,
+                522,
+                566
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug252_discovery_classification.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/profile_discovery.rs",
+      "rust/sessions/src/profile_sections.rs",
+      "rust/providers/src/openai_discovery.rs",
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/error.rs"
+    ],
+    "totalLinesCovered": 285
+  }
+}

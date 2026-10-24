@@ -8,7 +8,8 @@ Feature: Model selector profile server data source
 
   # Work unit: RPC-338. Server-side list_providers() population — ports the
   # decision logic of TS profileSectionBuilder.ts (reachability probe +
-  # MODEL-004 custom-models override). rust/sessions/src/profile_sections.rs.
+  # MODEL-004 custom-models override, narrowed by BUG-218 to unsupported
+  # discovery only). rust/sessions/src/profile_sections.rs.
   Background: User Story
     As a codelet TUI user
     I want the server to report local-server profile sections and their reachability
@@ -46,7 +47,7 @@ Feature: Model selector profile server data source
   @server
   Scenario: A failed-probe profile with custom models is not marked unreachable
     Given the server builds the provider list
-    And a local-server "openai" profile named "custom-profile" whose /v1/models probe fails
+    And a local-server "openai" profile named "custom-profile" whose /v1/models probe returns unsupported discovery
     And that profile has at least one custom model
     When list_providers() returns the provider list
     Then the "custom-profile" entry has is_unreachable false

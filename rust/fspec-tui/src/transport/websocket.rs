@@ -64,6 +64,61 @@ pub struct WebSocketFspecBackend {
 }
 
 impl WebSocketFspecBackend {
+    /// Negotiate bounded read RPCs in the WebSocket handshake, never probe
+    /// an unknown tarpc variant on a legacy daemon. Legacy fallback is explicit.
+    pub async fn connect_mcp(url: url::Url) -> Result<(Self, bool)> {
+        let (backend, bounded, _) = Self::connect_mcp_full(url).await?;
+        Ok((backend, bounded))
+    }
+    pub async fn connect_mcp_full(mut url: url::Url) -> Result<(Self, bool, bool)> {
+        url.set_path("/fspec-read-v2");
+        let (ws, response) = tokio_tungstenite::connect_async(url.as_str()).await?;
+        let bounded = response
+            .headers()
+            .get("x-fspec-read-version")
+            .is_some_and(|v| v == "2");
+        let full = response
+            .headers()
+            .get("x-fspec-rpc-schema")
+            .is_some_and(|v| v == codelet_rpc::mcp_dispatch::INTERFACE);
+        let client = ws_client_connect(ws).await?;
+        Ok((
+            Self {
+                client: Arc::new(RwLock::new(Some(client))),
+                manual_reconnect: Arc::new(Notify::new()),
+            },
+            bounded,
+            full,
+        ))
+    }
+
+    /// Typed RPC dispatch without reconnect/retry; caller checks negotiated schema.
+    pub async fn invoke_mcp_rpc(
+        &self,
+        name: &str,
+        args: serde_json::Value,
+    ) -> std::result::Result<serde_json::Value, codelet_rpc::mcp_dispatch::InvokeError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or_else(|| {
+            codelet_rpc::mcp_dispatch::InvokeError::Transport("Disconnected".into())
+        })?;
+        codelet_rpc::mcp_dispatch::invoke(client.client(), name, args).await
+    }
+
+    /// Bounded response; callers must first negotiate read-v2 support.
+    pub async fn read_work_units_bounded(
+        &self,
+        detail: bool,
+        arguments: String,
+    ) -> Result<std::result::Result<String, String>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .read_work_units_bounded(context::current(), detail, arguments)
+            .await?)
+    }
+
     /// RPC-005..RPC-010 form: open a WebSocket connection to the
     /// fspec rpc-server at `url` and wrap it in a
     /// [`WebSocketFspecBackend`]. RPC-011 rule [16] preserves this
@@ -202,6 +257,34 @@ impl SupervisorHandle {
 
 #[async_trait]
 impl FspecBackend for WebSocketFspecBackend {
+    async fn list_provider_settings(
+        &self,
+    ) -> std::result::Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, BackendError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .list_provider_settings(context::current())
+            .await
+            .map_err(|error| BackendError::ProviderSettings(error.to_string()))?
+            .map_err(BackendError::ProviderSettings)
+    }
+
+    async fn save_provider_settings(
+        &self,
+        provider_id: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> std::result::Result<(), BackendError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .save_provider_settings(context::current(), provider_id, definition)
+            .await
+            .map_err(|error| BackendError::ProviderSettings(error.to_string()))?
+            .map_err(BackendError::ProviderSettings)
+    }
+
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
@@ -910,6 +993,29 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
+    async fn get_transcript_page(
+        &self,
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> std::result::Result<codelet_rpc_types::TranscriptPage, BackendError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .get_transcript_page(
+                context::current(),
+                session_id,
+                cursor,
+                snapshot_end,
+                max_bytes,
+            )
+            .await
+            .map_err(|error| BackendError::TranscriptTransport(error.to_string()))?
+            .map_err(BackendError::from)
+    }
+
     async fn get_buffered_output(
         &self,
         session_id: SessionId,
@@ -979,6 +1085,52 @@ impl FspecBackend for WebSocketFspecBackend {
             .resume_session(context::current(), session_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_work_unit_focus(
+        &self,
+        session_id: SessionId,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, BackendError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .get_work_unit_focus(context::current(), session_id)
+            .await
+            .map_err(|error| BackendError::WorkUnitFocus(error.to_string()))?
+            .map_err(BackendError::WorkUnitFocus)
+    }
+
+    async fn set_work_unit_focus(
+        &self,
+        session_id: SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, BackendError> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_work_unit_focus(context::current(), session_id, work_unit_id, source)
+            .await
+            .map_err(|error| BackendError::WorkUnitFocus(error.to_string()))?
+            .map_err(BackendError::WorkUnitFocus)
+    }
+
+    fn work_unit_focus_rx(
+        &self,
+    ) -> broadcast::Receiver<(SessionId, codelet_rpc_types::WorkUnitFocus)> {
+        let Ok(guard) = self.client.try_read() else {
+            return empty_broadcast_rx();
+        };
+        let Some(client) = guard.as_ref() else {
+            return empty_broadcast_rx();
+        };
+        super::focus_events::subscribe(
+            client.session_events_rx(),
+            client.session_snapshot_rx(),
+            client.client().clone(),
+        )
     }
 
     async fn get_work_unit_context(

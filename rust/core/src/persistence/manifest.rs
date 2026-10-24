@@ -21,11 +21,11 @@
 use chrono::{DateTime, Utc};
 use codelet_common::token_estimator::count_tokens;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 use uuid::Uuid;
 
 use crate::persistence::messages::{MessageRef, MessageSource, MessageStore, StoredMessage};
@@ -104,6 +104,20 @@ pub struct CompactionState {
 /// A session manifest — ordered list of message references.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionManifest {
+    #[serde(default)]
+    pub work_unit_authorization: Option<codelet_rpc_types::WorkUnitContext>,
+    #[serde(default)]
+    pub work_unit_focus: codelet_rpc_types::WorkUnitFocus,
+    #[serde(default)]
+    pub latest_request_usage: Option<rig::completion::Usage>,
+    #[serde(default)]
+    pub request_settlements: std::collections::BTreeMap<String, rig::completion::Usage>,
+    #[serde(default)]
+    pub compaction_commit: Option<super::compaction_boundary::CommittedGeneration>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provider_state: Option<super::provider_state::ProviderStateRef>,
+    #[serde(default)]
+    pub revision: u64,
     /// Unique session identifier.
     pub id: Uuid,
     /// Human-readable session name.
@@ -136,6 +150,13 @@ impl SessionManifest {
     pub fn new(name: &str, project: PathBuf) -> Self {
         let now = Utc::now();
         Self {
+            work_unit_authorization: None,
+            work_unit_focus: Default::default(),
+            latest_request_usage: None,
+            request_settlements: Default::default(),
+            compaction_commit: None,
+            provider_state: None,
+            revision: 0,
             id: Uuid::new_v4(),
             name: name.to_string(),
             project,
@@ -209,11 +230,12 @@ pub struct SessionLineage {
 /// are persisted as pretty-printed JSON at
 /// `{data_dir}/sessions/{uuid}.json`.
 pub struct SessionStore {
-    sessions_dir: PathBuf,
+    pub(super) sessions_dir: PathBuf,
+    pub(super) leases: HashMap<Uuid, std::sync::Arc<super::manifest_commit::WriterLease>>,
     /// In-memory cache of sessions by ID.
-    cache: HashMap<Uuid, SessionManifest>,
+    pub(super) cache: HashMap<Uuid, SessionManifest>,
     /// Track the last active session per project.
-    last_session: HashMap<PathBuf, Uuid>,
+    pub(super) last_session: HashMap<PathBuf, Uuid>,
 }
 
 impl SessionStore {
@@ -228,6 +250,7 @@ impl SessionStore {
             .map_err(|e| format!("Failed to create sessions dir {sessions_dir:?}: {e}"))?;
         let mut store = Self {
             sessions_dir,
+            leases: HashMap::new(),
             cache: HashMap::new(),
             last_session: HashMap::new(),
         };
@@ -252,20 +275,9 @@ impl SessionStore {
             let path = entry.path();
 
             if path.extension().is_some_and(|e| e == "json") {
-                let content = match fs::read_to_string(&path) {
-                    Ok(c) => c,
-                    Err(e) => {
-                        warn!("Skipping unreadable session file {:?}: {}", path, e);
-                        continue;
-                    }
-                };
-                let session: SessionManifest = match serde_json::from_str(&content) {
-                    Ok(s) => s,
-                    Err(e) => {
-                        warn!("Skipping incompatible session file {:?}: {}", path, e);
-                        continue;
-                    }
-                };
+                let session = super::manifest_commit::read_manifest(&path).map_err(|error| {
+                    format!("Failed to open committed manifest {path:?}: {error}")
+                })?;
 
                 self.last_session
                     .insert(session.project.clone(), session.id);
@@ -285,7 +297,7 @@ impl SessionStore {
     /// Create a new session.
     pub fn create(&mut self, name: &str, project: &Path) -> Result<SessionManifest, String> {
         let session = SessionManifest::new(name, project.to_path_buf());
-        self.save(&session)?;
+        let session = self.commit(&session).map_err(|error| error.to_string())?;
         self.last_session.insert(project.to_path_buf(), session.id);
         self.cache.insert(session.id, session.clone());
         Ok(session)
@@ -305,7 +317,7 @@ impl SessionStore {
             name = %name,
             "SessionStore::create_with_provider: created new session manifest"
         );
-        self.save(&session)?;
+        let session = self.commit(&session).map_err(|error| error.to_string())?;
         self.last_session.insert(project.to_path_buf(), session.id);
         self.cache.insert(session.id, session.clone());
         Ok(session)
@@ -313,35 +325,9 @@ impl SessionStore {
 
     /// Save a session to disk.
     pub fn save(&mut self, session: &SessionManifest) -> Result<(), String> {
-        let filename = format!("{}.json", session.id);
-        let path = self.sessions_dir.join(&filename);
-
-        tracing::info!(
-            session_id = %session.id,
-            session_name = %session.name,
-            provider = %session.provider,
-            project = %session.project.display(),
-            message_count = session.messages.len(),
-            save_path = %path.display(),
-            "SessionStore::save: persisting session manifest to disk"
-        );
-
-        let json = serde_json::to_string_pretty(session)
-            .map_err(|e| format!("Failed to serialize session: {e}"))?;
-
-        fs::write(&path, json).map_err(|e| format!("Failed to write session file: {e}"))?;
-
-        tracing::info!(
-            session_id = %session.id,
-            save_path = %path.display(),
-            "SessionStore::save: session manifest written to disk successfully"
-        );
-
-        self.cache.insert(session.id, session.clone());
-        self.last_session
-            .insert(session.project.clone(), session.id);
-
-        Ok(())
+        self.commit(session)
+            .map(|_| ())
+            .map_err(|error| error.to_string())
     }
 
     /// Get a session by ID.
@@ -356,10 +342,8 @@ impl SessionStore {
 
     /// Load a session by ID (returns owned value).
     pub fn load(&self, id: Uuid) -> Result<SessionManifest, String> {
-        self.cache
-            .get(&id)
-            .cloned()
-            .ok_or_else(|| format!("Session {id} not found"))
+        super::manifest_commit::read_manifest(&self.sessions_dir.join(format!("{id}.json")))
+            .map_err(|error| format!("Failed to load session {id}: {error}"))
     }
 
     /// Get the last active session for a project.
@@ -391,34 +375,17 @@ impl SessionStore {
 
     /// Delete a session.
     pub fn delete(&mut self, id: Uuid) -> Result<(), String> {
-        let session = self.cache.remove(&id);
-        if let Some(session) = session {
-            if self.last_session.get(&session.project) == Some(&id) {
-                self.last_session.remove(&session.project);
-            }
-        }
-
-        // Always attempt the file delete — idempotent if absent.
-        let filename = format!("{id}.json");
-        let path = self.sessions_dir.join(&filename);
-        if path.exists() {
-            fs::remove_file(&path).map_err(|e| format!("Failed to delete session file: {e}"))?;
-        }
-        Ok(())
+        self.delete_owned(id).map_err(|error| error.to_string())
     }
 
     /// Rename a session.
     pub fn rename(&mut self, id: Uuid, new_name: &str) -> Result<(), String> {
-        let session = self
-            .cache
-            .get_mut(&id)
-            .ok_or_else(|| format!("Session {id} not found"))?;
-        session.name = new_name.to_string();
-        session.updated_at = Utc::now();
-
-        let session_clone = session.clone();
-        self.save(&session_clone)?;
-        Ok(())
+        self.update(id, |session| {
+            session.name = new_name.to_string();
+            Ok(())
+        })
+        .map(|_| ())
+        .map_err(|error| error.to_string())
     }
 
     /// Fork a session at a specific message index.
@@ -477,7 +444,9 @@ impl SessionStore {
             }
         }
 
-        self.save(&new_session)?;
+        let new_session = self
+            .commit(&new_session)
+            .map_err(|error| error.to_string())?;
         self.cache.insert(new_session.id, new_session.clone());
 
         Ok(new_session)
@@ -498,11 +467,11 @@ impl SessionStore {
 // and SESSION_STORE.
 
 lazy_static::lazy_static! {
-    static ref MESSAGE_STORE: Mutex<Option<MessageStore>> = Mutex::new(None);
-    static ref SESSION_STORE: Mutex<Option<SessionStore>> = Mutex::new(None);
+    pub(super) static ref MESSAGE_STORE: Mutex<Option<MessageStore>> = Mutex::new(None);
+    pub(super) static ref SESSION_STORE: Mutex<Option<SessionStore>> = Mutex::new(None);
 }
 
-fn init_message_store() -> Result<(), String> {
+pub(super) fn init_message_store() -> Result<(), String> {
     let mut store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     if store.is_none() {
         *store = Some(MessageStore::new()?);
@@ -510,7 +479,8 @@ fn init_message_store() -> Result<(), String> {
     Ok(())
 }
 
-fn init_session_store() -> Result<(), String> {
+pub(super) fn init_session_store() -> Result<(), String> {
+    super::manifest_updates::ensure_session_access()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     if store.is_none() {
         *store = Some(SessionStore::new()?);
@@ -785,60 +755,11 @@ pub fn switch_session(id: Uuid) -> Result<SessionManifest, String> {
 ///    codelet-rpc-server) that swap the data dir mid-process get
 ///    consistent behaviour even if a stale `SessionStore` singleton is
 ///    still cached against an older directory.
-/// 2. If the global `SESSION_STORE` cache happens to be initialised,
-///    also evicts the entry + last-session bookkeeping so the in-memory
-///    state matches the on-disk state.
+/// 2. Under writer ownership, evicts the entry + last-session bookkeeping
+///    from an initialised global `SESSION_STORE` cache after disk deletion
+///    succeeds so the in-memory state matches the on-disk state.
 pub fn delete_session(id: Uuid) -> Result<(), String> {
-    // (1) Always remove the on-disk file using the current data dir.
-    let sessions_dir = codelet_common::get_data_dir()?.join("sessions");
-    let path = sessions_dir.join(format!("{id}.json"));
-    if path.exists() {
-        tracing::info!(
-            session_id = %id,
-            manifest_path = %path.display(),
-            "delete_session: removing session manifest from disk"
-        );
-        fs::remove_file(&path)
-            .map_err(|e| format!("Failed to delete session file {}: {e}", path.display()))?;
-        tracing::info!(
-            session_id = %id,
-            "delete_session: session manifest removed from disk"
-        );
-    } else {
-        tracing::debug!(
-            session_id = %id,
-            manifest_path = %path.display(),
-            "delete_session: manifest file does not exist, nothing to delete"
-        );
-    }
-
-    // (2) Best-effort in-memory cache eviction if the singleton happens
-    // to already exist. We do NOT initialise the store just to delete
-    // from it — that would force a full scan of `sessions/` on a path
-    // that has nothing useful for us.
-    if let Ok(mut store) = SESSION_STORE.lock() {
-        if let Some(store) = store.as_mut() {
-            let removed = store.cache.remove(&id);
-            if let Some(session) = removed {
-                tracing::info!(
-                    session_id = %id,
-                    session_name = %session.name,
-                    project = %session.project.display(),
-                    "delete_session: evicted session from in-memory cache"
-                );
-                if store.last_session.get(&session.project) == Some(&id) {
-                    store.last_session.remove(&session.project);
-                }
-            } else {
-                tracing::debug!(
-                    session_id = %id,
-                    "delete_session: session not found in in-memory cache"
-                );
-            }
-        }
-    }
-
-    Ok(())
+    super::manifest_delete::delete_current_session(id)
 }
 
 /// Rename a session.
@@ -857,25 +778,7 @@ pub fn append_message(
     role: &str,
     content: &str,
 ) -> Result<Uuid, String> {
-    init_message_store()?;
-    init_session_store()?;
-
-    let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    let msg_id = msg_store
-        .as_mut()
-        .ok_or("Message store not initialized")?
-        .store(role, content)?;
-
-    session.add_message(msg_id, MessageSource::Native);
-
-    drop(msg_store);
-    let mut sess_store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    sess_store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(msg_id)
+    super::manifest_updates::append(session, role, content, HashMap::new())
 }
 
 /// Append a message with metadata to a session.
@@ -885,25 +788,7 @@ pub fn append_message_with_metadata(
     content: &str,
     metadata: HashMap<String, serde_json::Value>,
 ) -> Result<Uuid, String> {
-    init_message_store()?;
-    init_session_store()?;
-
-    let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    let msg_id = msg_store
-        .as_mut()
-        .ok_or("Message store not initialized")?
-        .store_with_metadata(role, content, metadata)?;
-
-    session.add_message(msg_id, MessageSource::Native);
-
-    drop(msg_store);
-    let mut sess_store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    sess_store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(msg_id)
+    super::manifest_updates::append(session, role, content, metadata)
 }
 
 /// Update metadata on a previously stored message.
@@ -919,30 +804,9 @@ pub fn update_message_metadata(
         .update_metadata(id, entries)
 }
 
-/// Cleanup orphaned messages (not referenced by any session).
-pub fn cleanup_orphaned_messages() -> Result<usize, String> {
-    init_message_store()?;
-    init_session_store()?;
-
-    let sess_store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    let sessions: Vec<SessionManifest> = sess_store
-        .as_ref()
-        .ok_or("Session store not initialized")?
-        .list_all()
-        .into_iter()
-        .cloned()
-        .collect();
-    drop(sess_store);
-
-    let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    let msg_store_ref = msg_store.as_mut().ok_or("Message store not initialized")?;
-    let referenced: HashSet<Uuid> = sessions
-        .iter()
-        .flat_map(|s| s.messages.iter().map(|m| m.message_id))
-        .collect();
-
-    msg_store_ref.cleanup_orphans(&referenced)
-}
+#[path = "message_cleanup.rs"]
+mod message_cleanup;
+pub use message_cleanup::cleanup_orphaned_messages;
 
 /// Get a stored message by ID.
 pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
@@ -994,15 +858,15 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
             .iter()
             .skip(compaction.compacted_before_index)
         {
-            if let Some(msg) = store_ref.get(msg_ref.message_id) {
-                messages.push(msg);
-            }
+            messages.push(store_ref.get(msg_ref.message_id).ok_or_else(|| {
+                format!("missing committed message reference {}", msg_ref.message_id)
+            })?);
         }
     } else {
         for msg_ref in &session.messages {
-            if let Some(msg) = store_ref.get(msg_ref.message_id) {
-                messages.push(msg);
-            }
+            messages.push(store_ref.get(msg_ref.message_id).ok_or_else(|| {
+                format!("missing committed message reference {}", msg_ref.message_id)
+            })?);
         }
     }
 
@@ -1031,78 +895,7 @@ pub fn get_session_messages_full(session: &SessionManifest) -> Result<Vec<Stored
 /// minus the napi::Error wrapping — used by `SessionManagerHandle::resume_session`
 /// to feed `restore_session_messages`.
 pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, String> {
-    let session = load_session(session_id)?;
-    let messages = get_session_messages(&session)?;
-
-    let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
-    for stored_msg in messages {
-        // Handle synthetic compaction summary messages — MessageEnvelope
-        // uses #[serde(rename_all = "camelCase")] + #[serde(rename = "type")].
-        // Required fields: uuid, timestamp, type, provider, message.
-        if stored_msg.id == Uuid::nil() {
-            let synthetic = serde_json::json!({
-                "uuid": "00000000-0000-0000-0000-000000000000",
-                "parentUuid": null,
-                "timestamp": stored_msg.created_at.to_rfc3339(),
-                "type": "user",
-                "provider": "compaction",
-                "message": {
-                    "role": "user",
-                    "content": [{"type": "text", "text": stored_msg.content}]
-                },
-                "requestId": null,
-                "_synthetic": true,
-                "_compactionSummary": true
-            });
-            envelopes.push(
-                serde_json::to_string(&synthetic)
-                    .map_err(|e| format!("Failed to serialize synthetic envelope: {e}"))?,
-            );
-            continue;
-        }
-
-        // RPC-422: Construct a proper MessageEnvelope from StoredMessage fields.
-        // When messages are stored via persist_assistant_message_internal, the
-        // metadata contains the original structured message content (with
-        // thinking/text/tool_use blocks). Use that when available so the
-        // restore path preserves the original block structure.
-        // When metadata is empty (simple append_message), fall back to
-        // constructing from StoredMessage's own fields.
-        let message_content = stored_msg
-            .metadata
-            .get("message")
-            .and_then(|m| m.get("content"))
-            .cloned();
-
-        let content_value = match message_content {
-            Some(c) => c,
-            None => {
-                // No structured metadata — fall back to single text block.
-                serde_json::json!([{"type": "text", "text": stored_msg.content}])
-            }
-        };
-
-        let envelope_json = serde_json::json!({
-            "uuid": stored_msg.id.to_string(),
-            "parentUuid": null,
-            "timestamp": stored_msg.created_at.to_rfc3339(),
-            "type": stored_msg.role,
-            "provider": stored_msg.metadata.get("provider")
-                .and_then(|v| v.as_str())
-                .unwrap_or("unknown"),
-            "message": {
-                "role": stored_msg.role,
-                "content": content_value
-            },
-            "requestId": null
-        });
-        let envelope_str = serde_json::to_string(&envelope_json)
-            .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
-        let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&envelope_str)?;
-        envelopes.push(rehydrated);
-    }
-
-    Ok(envelopes)
+    super::session_replay::get_session_message_envelopes(session_id)
 }
 
 /// Update session token usage (ADDS to existing).
@@ -1118,17 +911,14 @@ pub fn update_session_tokens(
     cache_create: u64,
     reasoning_tokens: u64,
 ) -> Result<(), String> {
-    session.update_token_usage(input, output, cache_read, cache_create);
-    session.token_usage.reasoning_tokens = reasoning_tokens;
-
-    init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(())
+    super::manifest_updates::update_tokens(
+        session,
+        input,
+        output,
+        cache_read,
+        cache_create,
+        reasoning_tokens,
+    )
 }
 
 /// Set session token usage (REPLACES existing — restore scenario).
@@ -1137,23 +927,7 @@ pub fn update_session_tokens(
 /// every field (including the session-cumulative reasoning value for the
 /// SessionHeader 🧠 counter) in one call.
 pub fn set_session_tokens(session: &mut SessionManifest, usage: &TokenUsage) -> Result<(), String> {
-    session.token_usage.current_context_tokens = usage.current_context_tokens;
-    session.token_usage.cumulative_billed_input = usage.cumulative_billed_input;
-    session.token_usage.cumulative_billed_output = usage.cumulative_billed_output;
-    session.token_usage.cache_read_tokens = usage.cache_read_tokens;
-    session.token_usage.cache_creation_tokens = usage.cache_creation_tokens;
-    // TOKEN-003: restore the session-cumulative reasoning value so the
-    // SessionHeader re-displays the 🧠 counter after /resume.
-    session.token_usage.reasoning_tokens = usage.reasoning_tokens;
-
-    init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(())
+    super::manifest_updates::set_tokens(session, usage)
 }
 
 /// Set compaction state for a session.
@@ -1162,34 +936,12 @@ pub fn set_compaction_state(
     summary: String,
     compacted_before_index: usize,
 ) -> Result<(), String> {
-    session.compaction = Some(CompactionState {
-        summary,
-        compacted_before_index,
-        compacted_at: Utc::now(),
-    });
-
-    init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(())
+    super::manifest_updates::set_compaction(session, summary, compacted_before_index)
 }
 
 /// Clear compaction state for a session.
 pub fn clear_compaction_state(session: &mut SessionManifest) -> Result<(), String> {
-    session.compaction = None;
-
-    init_session_store()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("Session store not initialized")?
-        .save(session)?;
-
-    Ok(())
+    super::manifest_updates::clear_compaction(session)
 }
 
 /// Get session lineage information.

@@ -3,12 +3,8 @@
 //! Feature: spec/features/provider-settings-oauth-disconnect.feature
 //! Feature: spec/features/provider-settings-oauth-login.feature
 //!
-//! Split out of `dispatch_provider_settings.rs` to keep that file under the
-//! 300-LoC ceiling. PROV-112 owns the disconnect/logout clear; PROV-113 adds
-//! the browser / headless / device LOGIN flows. Every async call is spawned as
-//! a tokio task (mirroring the PROV-109 profile write loop); the task sends a
-//! follow-up `Action` carrying the originating `generation` so a result whose
-//! generation no longer matches the view's (the user pressed Esc) is dropped.
+//! Login tasks are owned by the settings view for cancellation on Esc/drop.
+//! Generation fences also reject already-queued results after cancellation.
 
 use tokio::task::JoinHandle;
 
@@ -89,23 +85,7 @@ impl App {
 
     /// PROV-112: clear a provider's OAuth tokens then refresh the nav.
     pub(crate) fn handle_oauth_disconnect(&mut self, provider_id: String) {
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        self.navigator
-            .provider_settings
-            .set_navigate_target(provider_id.clone());
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            if let Err(e) = backend.oauth_clear_tokens(provider_id.clone()).await {
-                tracing::warn!(error = %e, provider = %provider_id, "oauth_clear_tokens failed");
-            }
-            if let Ok(list) = backend.list_provider_credentials().await {
-                let _ = action_tx.send(Action::ProviderCredentialsLoaded(list));
-            }
-        });
-        self.pending_tasks.push(handle);
+        disconnect::start(self, provider_id);
     }
 
     /// PROV-113: start a login. Browser runs fire-and-forget; headless routes
@@ -156,6 +136,7 @@ impl App {
                 }
             }
         });
+        self.navigator.provider_settings.track_oauth_task(&handle);
         self.pending_tasks.push(handle);
     }
 
@@ -213,6 +194,7 @@ impl App {
                 .await;
             let _ = action_tx.send(login_terminal_action(provider_id, gen, result));
         });
+        self.navigator.provider_settings.track_oauth_task(&handle);
         self.pending_tasks.push(handle);
     }
 
@@ -235,6 +217,7 @@ impl App {
                 .await;
             let _ = action_tx.send(login_terminal_action(provider_id, gen, result));
         });
+        self.navigator.provider_settings.track_oauth_task(&handle);
         self.pending_tasks.push(handle);
     }
 
@@ -297,3 +280,6 @@ fn fail_action(provider_id: String, generation: u64, error: &anyhow::Error) -> A
         generation,
     }
 }
+
+#[path = "oauth_disconnect.rs"]
+mod disconnect;

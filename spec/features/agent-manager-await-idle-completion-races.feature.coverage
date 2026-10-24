@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "Completion during initial status inspection is not missed",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "14-32",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [5, 9, 10, 13]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lagged completion resolves from authoritative idle status",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "34-46",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [18, 30, 32, 33]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lag while still running does not finish the wait",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "48-69",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [18, 23, 27, 35]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A destroyed subordinate resolves after stream lag",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "71-83",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [18, 30, 32, 34]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An already idle subordinate needs no stream event",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "85-89",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [5, 9, 10, 11]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A closed stream resolves as destroyed",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/await_idle_completion_races.rs",
+          "lines": "91-99",
+          "implMappings": [
+            {"file": "rust/agent-loop/src/agent_manager_wait.rs", "lines": [18, 23, 29]}
+          ]
+        }
+      ]
+    }
+  ]
+}

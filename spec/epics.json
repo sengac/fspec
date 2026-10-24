@@ -654,7 +654,8 @@
         "PROV-144",
         "PROV-145",
         "BUG-185",
-        "BUG-208"
+        "BUG-208",
+        "PROV-159"
       ]
     },
     "local-change-protocols": {
@@ -1515,6 +1516,66 @@
         "BUG-202",
         "BUG-203",
         "BUG-205"
+      ]
+    },
+    "codex-streaming-parity": {
+      "id": "codex-streaming-parity",
+      "title": "Codex-only streaming and harness compatibility",
+      "createdAt": "2026-10-15T11:48:56.860Z",
+      "description": "Bring the Codex provider toward upstream harness parity, audited against fspec 38a95522 and upstream bb64b89. All new behavior must be selected only by the Codex provider, never by model-name heuristics or globally changing shared OpenAI/rig behavior. Correctness precedes optional transports and native tool capabilities. Each backlog card has an implementation brief; use ACDD before production changes.",
+      "workUnits": [
+        "PROV-147",
+        "PROV-148",
+        "PROV-149",
+        "PROV-150",
+        "PROV-151",
+        "PROV-152",
+        "PROV-153",
+        "PROV-154",
+        "PROV-155",
+        "PROV-156",
+        "PROV-157",
+        "PROV-158"
+      ]
+    },
+    "compaction-reliability-no-fallback": {
+      "id": "compaction-reliability-no-fallback",
+      "title": "Repair DAG compaction reliability and remove all fallback behavior",
+      "createdAt": "2026-10-17T04:04:35.345Z",
+      "description": "Source-confirmed CB-01–28 repair program from CMPCT-051. Retain the research-backed hierarchical DAG; versioned durable inference-boundary commit or typed blocked failure only. Includes four explicit no-fallback removal slices and cold-resume end-to-end acceptance. Cards distinguish static defects, conditional risks and capability/policy gaps. No production changes implemented by this planning task.",
+      "workUnits": [
+        "CMPCT-052",
+        "CMPCT-053",
+        "CMPCT-054",
+        "CMPCT-055",
+        "CMPCT-056",
+        "CMPCT-057",
+        "CMPCT-058",
+        "CMPCT-059",
+        "CMPCT-060",
+        "CMPCT-061",
+        "CMPCT-062",
+        "CMPCT-063",
+        "CMPCT-064",
+        "CMPCT-065",
+        "CMPCT-066",
+        "CMPCT-067",
+        "CMPCT-068",
+        "CMPCT-069",
+        "CMPCT-070",
+        "CMPCT-071",
+        "CMPCT-072",
+        "CMPCT-073",
+        "CMPCT-074",
+        "CMPCT-075",
+        "CMPCT-076",
+        "CMPCT-077",
+        "CMPCT-078",
+        "CMPCT-079",
+        "CMPCT-080",
+        "CMPCT-081",
+        "CMPCT-082",
+        "CMPCT-083"
       ]
     }
   }

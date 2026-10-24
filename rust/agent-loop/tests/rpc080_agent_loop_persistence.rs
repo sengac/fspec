@@ -375,16 +375,16 @@ fn background_output_tool_result_arm_persists_assistant_first() {
         .find("self.persist_assistant_message()")
         .expect("ToolResult arm must call self.persist_assistant_message()");
 
-    // @step And the same arm subsequently calls persist_tool_result_internal(...)
+    // @step And the same arm subsequently calls persist_tool_result_with_call_id_internal(...)
     let tool_result_pos = arm
-        .find("persist_tool_result_internal(")
-        .expect("ToolResult arm must call persist_tool_result_internal(...)");
+        .find("persist_tool_result_with_call_id_internal(")
+        .expect("ToolResult arm must call persist_tool_result_with_call_id_internal(...)");
 
     // @step And the assistant-flush call precedes the tool-result persist call
     // textually within that arm
     assert!(
         assistant_flush_pos < tool_result_pos,
-        "self.persist_assistant_message() must precede persist_tool_result_internal(...) in the ToolResult arm"
+        "self.persist_assistant_message() must precede persist_tool_result_with_call_id_internal(...) in the ToolResult arm"
     );
 }
 

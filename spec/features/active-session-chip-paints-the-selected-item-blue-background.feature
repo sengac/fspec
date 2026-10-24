@@ -4,7 +4,6 @@
 @ui-enhancement
 @MENU-006
 Feature: Active session chip paints the selected-item blue background
-
   """
   The highlight is a per-chip `active` flag carried on `MenuChip` (components/menu_bar/chips.rs). MENU-010 moved the decision into the SURFACE's snapshot builder: the agent view builder marks the store's current session's chip (views/agent/menu_render.rs), the mux builder marks only when an Agent pane is focused (views/multiplex/menu_snapshot.rs via MultiplexLayout::focused_session_id), and the board builder marks no chip (views/board/menu_snapshot.rs `chip_inputs` always `active=false` + `mark_active_chip` helper). The shared painter (components/menu_bar/paint.rs `focused_cell`) ORs the per-chip flag with the ring focus and, when true, paints the whole cell inverse-video (bg Cyan, fg Black, bold) — the same `inverse_style()` used for selected Zone A items. All three surfaces flow through this one painter so no per-surface paint code is needed.
   """
@@ -27,7 +26,6 @@ Feature: Active session chip paints the selected-item blue background
   #   4. Mux mode, [Board | Agent] with s-1 and s-2 open and the Agent pane focused showing s-1: the Board view label keeps its normal styling, chip #1 paints inverse-video, chip #2 stays dark (the menu-bar-click-away feature's MENU-010 scenarios pin the full mux rule).
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to see the currently-active session's chip highlighted with the selected-menu-item blue background on the Agent surface
@@ -40,13 +38,11 @@ Feature: Active session chip paints the selected-item blue background
     Then chip #2's cells in the agent bar are styled bg Cyan fg Black
     And chip #1's and chip #3's cells keep the #333333 background
 
-
   Scenario: The board view does not carry the current session's chip highlight (superseded by MENU-010)
     Given the board has 3 open sessions and session s-2 is the focused session
     When the bar renders with the ring focus cleared
     Then no chip's cells are styled bg Cyan fg Black (the board never carries the current-session highlight — MENU-010)
     And chips #1 and #3's cells keep the #333333 background
-
 
   @menu-focus
   Scenario: A ring-focused active chip with a work-unit id paints the whole cell inverse
@@ -54,11 +50,9 @@ Feature: Active session chip paints the selected-item blue background
     When the bar is rendered into a 120-column row
     Then chip #2's whole cell (prefix, work-unit id and glyph) is styled bg Cyan fg Black
 
-
   @menu-focus
   Scenario: In mux mode the focused Agent pane's session chip paints the blue background while view labels keep their styling
     Given a MenuSnapshot in mux mode with panes Board and Agent, 2 open sessions, and the Agent pane is focused showing session s-1
     When the bar is rendered into a 120-column row
     Then chip #1's cells are styled bg Cyan fg Black
     And chip #2's cells keep the #333333 background
-

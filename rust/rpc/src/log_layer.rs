@@ -24,13 +24,13 @@
 //! co-listen on the same source of truth.
 
 use crate::SharedFspecService;
+use codelet_common::logging::privacy::{event_fields, DiagnosticFields, PrivacyFields};
 use codelet_rpc_types::LogRecord;
-use std::fmt::Write;
 use std::sync::{Arc, Mutex, OnceLock};
 use tokio::sync::broadcast;
-use tracing::field::{Field, Visit};
 use tracing::{Event, Subscriber};
 use tracing_subscriber::layer::{Context, SubscriberExt};
+use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::Layer;
 
@@ -40,6 +40,28 @@ use tracing_subscriber::Layer;
 fn senders() -> &'static Mutex<Vec<broadcast::Sender<LogRecord>>> {
     static SENDERS: OnceLock<Mutex<Vec<broadcast::Sender<LogRecord>>>> = OnceLock::new();
     SENDERS.get_or_init(|| Mutex::new(Vec::new()))
+}
+
+fn store_span<S>(attrs: &tracing::span::Attributes<'_>, id: &tracing::Id, ctx: Context<'_, S>)
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+{
+    if let Some(span) = ctx.span(id) {
+        let mut fields = DiagnosticFields::default();
+        fields.update(attrs);
+        span.extensions_mut().insert(fields);
+    }
+}
+
+fn update_span<S>(id: &tracing::Id, values: &tracing::span::Record<'_>, ctx: Context<'_, S>)
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+{
+    if let Some(span) = ctx.span(id) {
+        if let Some(fields) = span.extensions_mut().get_mut::<DiagnosticFields>() {
+            fields.update(values);
+        }
+    }
 }
 
 /// `tracing::Layer` that publishes [`LogRecord`] values onto every
@@ -66,34 +88,23 @@ pub struct SingleBroadcastLogLayer {
     sender: broadcast::Sender<LogRecord>,
 }
 
-#[derive(Default)]
-struct MessageVisitor {
-    message: String,
-}
-
-impl Visit for MessageVisitor {
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-        if field.name() == "message" {
-            let _ = write!(self.message, "{value:?}");
-            // tracing's Display impl wraps strings in quotes when using the
-            // Debug visitor; strip a single pair of leading/trailing quotes
-            // so the captured message matches the user-supplied literal.
-            if self.message.starts_with('"') && self.message.ends_with('"') {
-                self.message = self.message[1..self.message.len() - 1].to_string();
+fn build_record<S>(event: &Event<'_>, ctx: Context<'_, S>) -> LogRecord
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+{
+    let mut message = String::new();
+    if let Some(scope) = ctx.event_scope(event) {
+        for span in scope.from_root() {
+            if let Some(fields) = span.extensions().get::<DiagnosticFields>() {
+                let rendered = fields.render();
+                if !rendered.is_empty() {
+                    message.push_str(&rendered);
+                    message.push(' ');
+                }
             }
         }
     }
-
-    fn record_str(&mut self, field: &Field, value: &str) {
-        if field.name() == "message" {
-            self.message = value.to_string();
-        }
-    }
-}
-
-fn build_record(event: &Event<'_>) -> LogRecord {
-    let mut visitor = MessageVisitor::default();
-    event.record(&mut visitor);
+    message.push_str(&event_fields(event, PrivacyFields::default()).render());
     let metadata = event.metadata();
     let timestamp_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -102,7 +113,7 @@ fn build_record(event: &Event<'_>) -> LogRecord {
     LogRecord {
         level: metadata.level().as_str().to_string(),
         target: metadata.target().to_string(),
-        message: visitor.message,
+        message,
         timestamp_ms,
     }
 }
@@ -132,16 +143,29 @@ fn should_skip(event: &Event<'_>) -> bool {
 
 impl<S> Layer<S> for BroadcastLogLayer
 where
-    S: Subscriber,
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
 {
-    fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
+    fn on_new_span(
+        &self,
+        attrs: &tracing::span::Attributes<'_>,
+        id: &tracing::Id,
+        ctx: Context<'_, S>,
+    ) {
+        store_span(attrs, id, ctx);
+    }
+
+    fn on_record(&self, id: &tracing::Id, values: &tracing::span::Record<'_>, ctx: Context<'_, S>) {
+        update_span(id, values, ctx);
+    }
+
+    fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
         // LOG-004: skip events whose target is the TUI bootstrap
         // subscriber that re-emits broadcast records — broadcasting
         // them would cycle back through the same subscriber.
         if should_skip(event) {
             return;
         }
-        let record = build_record(event);
+        let record = build_record(event, ctx);
         if let Ok(guard) = senders().lock() {
             for sender in guard.iter() {
                 let _ = sender.send(record.clone());
@@ -152,14 +176,27 @@ where
 
 impl<S> Layer<S> for SingleBroadcastLogLayer
 where
-    S: Subscriber,
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
 {
-    fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
+    fn on_new_span(
+        &self,
+        attrs: &tracing::span::Attributes<'_>,
+        id: &tracing::Id,
+        ctx: Context<'_, S>,
+    ) {
+        store_span(attrs, id, ctx);
+    }
+
+    fn on_record(&self, id: &tracing::Id, values: &tracing::span::Record<'_>, ctx: Context<'_, S>) {
+        update_span(id, values, ctx);
+    }
+
+    fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
         // LOG-004: same skip predicate as the global BroadcastLogLayer.
         if should_skip(event) {
             return;
         }
-        let record = build_record(event);
+        let record = build_record(event, ctx);
         let _ = self.sender.send(record);
     }
 }

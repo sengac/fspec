@@ -25,6 +25,7 @@ dirs.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 url.workspace = true
+rmcp = { workspace = true, features = ["server", "transport-io", "elicitation"] }
 # PROV-097: load <cwd>/.env into the process environment at startup
 # (mirrors rust/cli/Cargo.toml) so Provider Settings detects env-only
 # providers. dotenvy is already a workspace dependency (rust/Cargo.toml).
@@ -70,6 +71,9 @@ codelet-providers = { workspace = true, optional = true }
 nix = { version = "0.29", features = ["signal"] }
 
 [dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+codelet-cli.workspace = true
+rig-core.workspace = true
 tempfile.workspace = true
 # RPC-407: blocklist_init_tests.rs mutates the process-global
 # BLOCKLIST_PROJECT_ROOT via build_service — serialize those tests the

@@ -1,0 +1,53 @@
+{
+  "scenarios": [
+    {
+      "name": "A1 Local logout clears every OAuth source and preserves the API key",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov159_oauth_logout.rs",
+          "lines": "19-56",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_storage.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            },
+            {
+              "file": "rust/rpc/src/oauth_disconnect.rs",
+              "lines": [
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/prov159_oauth_logout.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_storage.rs",
+      "rust/rpc/src/oauth_disconnect.rs"
+    ],
+    "totalLinesCovered": 53
+  }
+}

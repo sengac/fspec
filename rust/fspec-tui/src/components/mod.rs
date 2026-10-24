@@ -123,6 +123,7 @@ impl EventResult {
 #[derive(Debug, Clone)]
 pub enum Action {
     Quit,
+    Transcript(crate::app::transcript_sync::TranscriptAction),
     /// Render request — typically emitted after a state change.
     Redraw,
     /// Future-proofing for tests + later cards: a string-tagged action
@@ -139,6 +140,11 @@ pub enum Action {
     /// RPC-009: bootstrap's `create_session(None)` returned a session id;
     /// the AgentReplView records it as its active session.
     SessionCreated(codelet_rpc_types::SessionId),
+    ContinueStateLoaded(
+        codelet_rpc_types::SessionId,
+        u64,
+        Result<Option<(bool, u32)>, String>,
+    ),
     /// RPC-434: a session was destroyed on the daemon (from this client
     /// or from ANY other connected machine). Folded onto the action bus
     /// by the bootstrap's session-removed subscriber (both transports —
@@ -302,6 +308,11 @@ pub enum Action {
     /// `Action::SessionCreated`). App::dispatch writes the payload
     /// into `AgentViewStore.model_info_by_session[session]`.
     ModelInfoLoaded(codelet_rpc_types::SessionId, codelet_rpc_types::ModelInfo),
+    ModelSelectionLoaded(
+        codelet_rpc_types::SessionId,
+        u64,
+        Result<(Option<String>, codelet_rpc_types::ModelInfo), String>,
+    ),
     /// RPC-018: per-session ThinkingLevel arrived. Sibling of
     /// `ModelInfoLoaded` — fired by the same `Action::SessionCreated`
     /// dispatch arm.
@@ -514,13 +525,6 @@ pub enum Action {
     /// pushing the text via `SessionContext::push_line`. Silently
     /// drops when the session has been closed in the meantime.
     EmitSessionNotice(codelet_rpc_types::SessionId, String),
-    /// RPC-049: emitted by `handle_attach_to_session`'s spawned
-    /// `backend.resume_session(id)` task on the Ok branch. App::dispatch
-    /// routes this into `handle_session_resume_complete`, which spawns
-    /// a second task to call `backend.get_buffered_output(id, 1000)`
-    /// and replays each returned chunk as `Action::ChunkReceived(id,
-    /// chunk)` — so the resumed session's scrollback is seeded from
-    /// the backend's replay buffer.
     SessionResumeComplete(codelet_rpc_types::SessionId),
     /// RPC-430: emitted by the debug-hydration task spawned during
     /// session attach (`handle_attach_to_session`) or by the debug
@@ -542,6 +546,12 @@ pub enum Action {
     /// `WorkUnitContext` into `AgentViewStore.work_unit_context_by_session`
     /// so the SessionHeader chip and downstream per-session readers see
     /// the binding on the next frame.
+    WorkUnitFocusChanged(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::WorkUnitFocus,
+    ),
+    SessionObserved(codelet_rpc_types::SessionInfo),
+    WorkUnitSessionCreated(codelet_rpc_types::SessionId, String),
     WorkUnitAttached(
         codelet_rpc_types::SessionId,
         codelet_rpc_types::WorkUnitContext,
@@ -735,14 +745,15 @@ pub enum Action {
     // HITL > exec-stdin > pause > composer); it has NO response channel
     // and does NOT flip the session status.
     // ========================================================================
-    /// TOOL-022 P2: emitted when a probe of the focused agent session's
-    /// `get_exec_stdin_request` returns `Some`. App::dispatch stores the
-    /// request in the AgentViewStore exec-stdin slot — the AgentView
-    /// paints the inline prompt from that slot when the session is
-    /// focused.
+    /// Authoritative exec-stdin request update for the session's overlay.
     ExecStdinPromptFetched {
         agent_session: codelet_rpc_types::SessionId,
         request: codelet_rpc_types::ExecStdinRequest,
+    },
+    ExecStdinProbeFetched {
+        agent_session: codelet_rpc_types::SessionId,
+        generation: u64,
+        request: Option<codelet_rpc_types::ExecStdinRequest>,
     },
     /// TOOL-022 P2: Enter on the exec-stdin prompt. The key handler
     /// already read + cleared the SHARED composer input; this carries
@@ -829,6 +840,11 @@ pub enum Action {
     /// resolved. App::dispatch folds the result into the open
     /// ProviderSettingsView.
     ProviderCredentialsLoaded(Vec<codelet_rpc_types::ProviderCredentialInfo>),
+    ProviderSettingsConfigsLoaded(Vec<codelet_rpc_types::ProviderSettingsConfig>),
+    SaveProviderSettings {
+        provider_id: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    },
     /// RPC-054: emitted by the view on Enter inside the edit-API-key
     /// form. App::dispatch spawns `backend.set_provider_credentials`
     /// followed by a fresh `list_provider_credentials` refresh.

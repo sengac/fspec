@@ -61,34 +61,12 @@ fn build_right_line_paints_cwd_dim_and_branch_cyan() {
 }
 
 #[test]
-fn compaction_bar_renders_five_filled_for_5_of_10() {
-    let bar = compaction_bar(5, 10, 10);
-    assert_eq!(
-        bar,
-        "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
-    );
-}
-
-#[test]
-fn compaction_bar_renders_all_empty_when_total_is_zero() {
-    assert_eq!(compaction_bar(0, 0, 10), "\u{25B1}".repeat(10));
-}
-
-#[test]
-fn compaction_bar_saturates_when_current_exceeds_total() {
-    assert_eq!(compaction_bar(99, 10, 10), "\u{25B0}".repeat(10));
-}
-
-#[test]
-fn build_left_compaction_line_contains_chip_and_bar() {
+fn build_left_compaction_line_contains_only_activity() {
     let progress = CompactionProgress {
         phase: "summarising messages".to_string(),
         current: 5,
         total: 10,
     };
     let text = line_text(&build_left_compaction_line(&progress));
-    assert!(text.contains("[compacting: summarising messages 5/10]"));
-    assert!(text.contains(
-        "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
-    ));
+    assert_eq!(text, "[compacting: summarising messages]");
 }

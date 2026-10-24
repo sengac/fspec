@@ -158,20 +158,21 @@ impl App {
         });
         self.subscriber_tasks.push(work_units_task);
 
-        // (b) chunks_rx → Action::ChunkReceived (RPC-045: no active-session
-        //     filter — every (SessionId, StreamChunk) is forwarded so
-        //     background sessions accumulate scrollback + per-session
-        //     state regardless of focus).
         let tx = self.action_tx.clone();
         let mut rx = self.backend.chunks_rx();
         let chunks_task = tokio::spawn(async move {
             loop {
                 match rx.recv().await {
                     Ok((id, chunk)) => {
-                        let _ = tx.send(Action::ChunkReceived(id, chunk));
+                        let _ = tx.send(super::dispatch_transcript_live::transcript_push_action(
+                            id, chunk,
+                        ));
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
-                        debug!("chunks subscriber lagged by {n}; continuing");
+                        debug!("chunks subscriber lagged by {n}; resynchronizing transcripts");
+                        let _ = tx.send(Action::Transcript(
+                            super::transcript_sync::TranscriptAction::Poll,
+                        ));
                     }
                     Err(broadcast::error::RecvError::Closed) => break,
                 }
@@ -235,9 +236,7 @@ impl App {
             loop {
                 match rx.recv().await {
                     Ok(info) => {
-                        let _ = tx.send(Action::SessionCreated(codelet_rpc_types::SessionId::new(
-                            info.id,
-                        )));
+                        let _ = tx.send(Action::SessionObserved(info));
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
                         debug!("session_created subscriber lagged by {n}; continuing");
@@ -292,5 +291,6 @@ impl App {
         // NAPI/Telegram entry point; the session stays LIVE). Body in
         // app/bootstrap_session_cleared.rs (300-LoC ceiling).
         self.spawn_session_cleared_subscriber();
+        self.spawn_work_unit_focus_subscriber();
     }
 }

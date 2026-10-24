@@ -66,9 +66,8 @@ fn plain_info(id: &str) -> ProviderDisplayInfo {
     }
 }
 
-/// Anthropic shaped to inject exactly 3 child rows on expansion:
-/// oauth-status (1) + oauth-login×1 (1) + api-key (1) = 3.
-fn anthropic_with_3_children() -> ProviderDisplayInfo {
+/// Anthropic shaped to inject five child rows, including settings and profile creation.
+fn anthropic_with_5_children() -> ProviderDisplayInfo {
     ProviderDisplayInfo {
         id: "anthropic".to_string(),
         name: "Anthropic".to_string(),
@@ -88,13 +87,13 @@ fn anthropic_with_3_children() -> ProviderDisplayInfo {
 }
 
 /// 17 canonical providers — all plain (no children when collapsed),
-/// except `anthropic` which has 3 child rows when expanded.
+/// except `anthropic` which has five child rows when expanded.
 fn seventeen_provider_infos() -> Vec<ProviderDisplayInfo> {
     CANONICAL_PROVIDER_IDS
         .iter()
         .map(|id| {
             if *id == "anthropic" {
-                anthropic_with_3_children()
+                anthropic_with_5_children()
             } else {
                 plain_info(id)
             }
@@ -161,11 +160,11 @@ fn title_count_grows_when_provider_expanded() {
     // @step And no filter is applied
     assert!(view.filter.is_empty());
 
-    // @step When I toggle expansion of "anthropic" which has 3 children
+    // @step When I toggle expansion of "anthropic" which has 5 children
     view.toggle_expansion("anthropic");
 
-    // @step Then the title text equals "Provider Settings (20 items)"
-    assert_eq!(view.title_text(), "Provider Settings (20 items)");
+    // @step Then the title text equals "Provider Settings (22 items)"
+    assert_eq!(view.title_text(), "Provider Settings (22 items)");
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -194,15 +193,15 @@ fn title_count_reflects_filter_and_expansion_together() {
     // @step Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     let mut view = view_with_nav_items(seventeen_provider_infos());
 
-    // @step And "anthropic" is expanded with 3 children
+    // @step And "anthropic" is expanded with 5 children
     view.toggle_expansion("anthropic");
-    assert_eq!(view.title_text(), "Provider Settings (20 items)");
+    assert_eq!(view.title_text(), "Provider Settings (22 items)");
 
     // @step When the user types the filter character sequence "anth"
     type_filter(&mut view, "anth");
 
-    // @step Then the title text equals "Provider Settings (4 items)"
-    assert_eq!(view.title_text(), "Provider Settings (4 items)");
+    // @step Then the title text equals "Provider Settings (6 items)"
+    assert_eq!(view.title_text(), "Provider Settings (6 items)");
 }
 
 // ────────────────────────────────────────────────────────────────────────

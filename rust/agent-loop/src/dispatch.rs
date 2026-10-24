@@ -35,8 +35,18 @@ use codelet_sessions::background_session::BridgeImageData;
 /// BRIDGE-007: Updated to use run_agent_stream_with_images for multimodal support.
 #[macro_export]
 macro_rules! run_with_provider {
+    (provider $inner:expr, $getter:ident, $session:expr) => {{
+        $inner.provider_manager_mut().$getter().map(|provider| {
+            codelet_providers::ProviderAdapter::with_session(provider, &$inner.provider_session)
+        })
+    }};
+    (provider $inner:expr, $getter:ident) => {{
+        $inner.provider_manager_mut().$getter().map(|provider| {
+            codelet_providers::ProviderAdapter::with_session(provider, &$inner.provider_session)
+        })
+    }};
     ($inner:expr, $getter:ident, $input:expr, $images:expr, $session:expr, $output:expr, $thinking:expr) => {
-        match $inner.provider_manager_mut().$getter() {
+        match $crate::run_with_provider!(provider $inner, $getter, $session) {
             Ok(provider) => {
                 // PROV-009-DEBUG: Log provider creation
                 tracing::debug!(
@@ -86,8 +96,9 @@ macro_rules! run_with_provider {
                 // PROV-143: hand the session's preserve-thinking flag to the
                 // agent so the outgoing history clone strips thinking blocks
                 // when the profile disabled the toggle.
-                let agent = codelet_core::RigAgent::with_default_depth(agent)
-                    .with_preserve_thinking($inner.preserve_thinking_enabled);
+                let agent = ($inner).configure_agent(
+                    codelet_core::RigAgent::with_default_depth(agent),
+                );
                 // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
                 codelet_cli::interactive::run_agent_stream_with_images(
                     agent,

@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "name": "Anthropic preserves explicit API key tool policies",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_serializers_options.rs",
+          "lines": "54-84",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
+              "lines": [56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic rejects unrepresentable API key tool policies",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_serializers_options.rs",
+          "lines": "86-106",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
+              "lines": [56,57,58,59,60]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs",
+              "lines": [798,799,800,801,802,803,804,805,806,807,808,809,810,811]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic retains mandatory textual documents",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_serializers_options.rs",
+          "lines": "108-139",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs",
+              "lines": [541,542,543,544,545,546,547,548]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses rejects malformed optional parameters without panicking",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_serializers_options.rs",
+          "lines": "141-163",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+              "lines": [690,691]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": ["rust/providers/tests/cmpct071_builtin_serializers_options.rs"],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/anthropic/request_body.rs",
+      "rust/patches/rig-core/src/providers/anthropic/completion.rs",
+      "rust/patches/rig-core/src/providers/openai/responses_api/mod.rs"
+    ],
+    "totalLinesCovered": 157
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "scenarios": [
+    {
+      "name": "Expired OAuth credentials wait cancellably for an offline issuer on either transport",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_recovery_boundaries.rs",
+          "lines": "57-98",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/recovery_auth.rs",
+              "lines": [12, 23, 24, 25]
+            },
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [177, 180, 181, 187, 190, 191, 192, 195, 211]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected or malformed refreshed credentials never enter offline waiting",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_recovery_boundaries.rs",
+          "lines": "100-143",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/recovery_auth.rs",
+              "lines": [26, 27, 28, 29, 32, 33]
+            },
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [187, 188]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupting restored completed dialect calls does not require a registry",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/codex_restored_interruption.rs",
+          "lines": "31-115",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [25, 29, 30, 55, 58, 59, 60, 65, 66, 67, 68, 69, 70, 71, 72]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Committed tools finish transport recovery before local execution",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/codex_recovery_boundaries.rs",
+          "lines": "145-201",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [114, 116, 117, 118, 119, 120, 135, 136, 137, 138, 139, 140]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [216, 217, 218]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/codex_recovery_boundaries.rs",
+      "rust/cli/tests/codex_restored_interruption.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/recovery_auth.rs",
+      "rust/providers/src/codex/reconnect.rs",
+      "rust/cli/src/interactive/interruption.rs",
+      "rust/providers/src/codex/streaming.rs"
+    ],
+    "totalLinesCovered": 51
+  }
+}

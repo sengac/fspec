@@ -218,7 +218,7 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let client = build_expired_oauth_client("valid_refresh_tok", &mock_server.uri());
 
     // @step And a valid refresh token
@@ -357,7 +357,7 @@ async fn test_streaming_request_with_expired_token_refreshes_before_streaming() 
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let client = build_expired_oauth_client("valid_refresh_for_stream", &mock_server.uri());
 
     // @step And a valid refresh token
@@ -691,7 +691,7 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
     // @step Given OAuth tokens exist in claude_auth.json from a previous session
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step When ClaudeProvider passes Some(0) for expires_in_secs to RefreshingClaudeClient
     let client = build_expired_oauth_client("valid_refresh_disk", &mock_server.uri());
@@ -765,7 +765,7 @@ async fn test_token_persistence_is_best_effort_and_does_not_fail_requests() {
     // @step And token persistence to claude_auth.json will fail due to filesystem error
     // Point FSPEC_HOME to a non-existent/read-only path to cause persistence failure.
     // We use setup_fspec_home() to get a valid guard, then override with a bad path.
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     std::env::set_var("FSPEC_HOME", "/dev/null/nonexistent/path");
 
     let client = build_expired_oauth_client("valid_refresh_tok", &mock_server.uri());
@@ -821,7 +821,7 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let client = build_expired_oauth_client("valid_refresh_persist", &mock_server.uri());
 

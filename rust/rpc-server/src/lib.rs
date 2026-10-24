@@ -22,8 +22,10 @@
 //! (RPC-005 architecture rule 4). After RPC-006 the shared service
 //! reads from a real `WorkUnitsWatcher` instead of a hard-coded fixture.
 
+mod bounded_reads;
 mod client;
 mod envelope;
+mod focus_fanout;
 mod pump;
 mod server;
 mod transport;

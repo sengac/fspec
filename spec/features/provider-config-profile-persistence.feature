@@ -6,9 +6,10 @@
 @PROV-108
 Feature: Backend profile write path — save/delete profile in fspec-config.json
   """
-  New module rust/sessions/src/profile_persistence.rs holds save_profile/delete_profile (env-resolved) + save_profile_at/delete_profile_at (path-injectable cores). Reuses fspec_user_dir/read_config_value/write_config_value from profile_sections (made pub(crate)) to avoid duplication and NOT bloat profile_sections.rs (485 prod LoC).
+  Module rust/sessions/src/profile_persistence.rs holds save_profile/delete_profile (env-resolved) + save_profile_at/delete_profile_at (path-injectable cores). Reuses fspec_user_dir/read_config_value/write_config_value from profile_sections to avoid duplication.
   Wire type codelet_rpc_types::ProfileDefinition (base_url, api_key, optional context_window/max_output_tokens + flat compaction_threshold_type/value) mirrors CustomModelDefinition convention. conversions::profile_def_from_wire folds flat compaction fields into profile_sections::CompactionThreshold.
-  Wired through 5 crates mirroring RPC-347: SessionManagerHandle::save_profile/delete_profile (core default no-op), sessions handle_impl override (openai-guard Err on save, delegates to profile_persistence), rpc FspecService add/delete, napi bindings. Tests offline via FSPEC_USER_DIR temp dir + path-injectable cores.
+  Wired through SessionManagerHandle, sessions handle_impl, RPC service and NAPI bindings. Tests use FSPEC_USER_DIR temp directories and path-injectable cores.
+  PROV-161 supersedes the historical OpenAI-only persistence restriction. Named profiles are provider-scoped for all providers; omitted connection fields inherit provider authentication. Existing OpenAI connection behavior and unrelated configuration preservation remain required.
   """
 
   # ========================================
@@ -16,7 +17,7 @@ Feature: Backend profile write path — save/delete profile in fspec-config.json
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Profiles are only supported for the openai provider; saving a profile for any other provider returns an error and leaves config untouched
+  #   1. Profiles are provider-scoped for all providers; saving one provider leaves other providers unchanged (PROV-161 supersedes the former OpenAI-only restriction)
   #   2. Saving a profile is a read-modify-write that preserves the profile's existing customModels and all unrelated keys (sibling profiles, top-level config keys)
   #   3. Saving sets baseUrl and apiKey; optional fields (contextWindow, maxOutputTokens, compactionThreshold) are written when present and removed when absent
   #   4. Saving to a missing config file creates the file with the providers.openai.profiles.<name> structure
@@ -67,11 +68,11 @@ Feature: Backend profile write path — save/delete profile in fspec-config.json
     And the profile "work-vllm" has maxOutputTokens 4096
     And the profile "work-vllm" has compactionThreshold type "percentage" and value 80
 
-  Scenario: Saving a profile for a non-openai provider is rejected
+  Scenario: Saving a profile for a non-openai provider preserves other providers
     Given a config with an openai profile "work-vllm"
     When I save a profile for provider "anthropic"
-    Then the call returns Err mentioning OpenAI
-    And the configuration is left byte-identical
+    Then the call returns Ok
+    And the anthropic profile is saved and the existing openai profile is unchanged
 
   Scenario: Deleting a profile removes only the named profile
     Given a config with openai profiles "work-vllm" and "home"

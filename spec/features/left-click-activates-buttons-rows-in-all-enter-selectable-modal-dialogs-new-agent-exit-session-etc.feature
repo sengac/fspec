@@ -8,7 +8,6 @@
 @tui-component
 @tui-112
 Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs (New Agent, Exit Session, etc.)
-
   """
   Every modal dialog in the Rust TUI that commits a choice with Enter must
   also commit it with a single mouse left-click (user decision 2026-10-07):
@@ -16,13 +15,13 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   for that choice — no separate select-then-activate step.
 
   Scope (R1-R3):
-    * Three-button dialogs (R1): Start New Agent? (CreateSessionDialog),
-      Exit Session? (ExitConfirmationDialog), Exit fspec?
-      (BoardExitConfirmationDialog) — left-click a button commits it.
-    * Shared-button-row dialogs (R2): ConfirmDialog, MergeConfirmDialog,
-      SessionWorktreesDialog — left-click a button returns that outcome.
-    * Row-list dialogs (R3): Thinking Level, Attachment Picker, Mux Layout,
-      Role (draft row), Work Unit Search — left-click a row commits it.
+  * Three-button dialogs (R1): Start New Agent? (CreateSessionDialog),
+  Exit Session? (ExitConfirmationDialog), Exit fspec?
+  (BoardExitConfirmationDialog) — left-click a button commits it.
+  * Shared-button-row dialogs (R2): ConfirmDialog, MergeConfirmDialog,
+  SessionWorktreesDialog — left-click a button returns that outcome.
+  * Row-list dialogs (R3): Thinking Level, Attachment Picker, Mux Layout,
+  Role (draft row), Work Unit Search — left-click a row commits it.
 
   Hit-testing (R4) uses each dialog's last-rendered rect (the
   `Option<Rect>` + `mouse::hit_test::rect_contains` pattern already used by
@@ -61,7 +60,6 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   #   10. Work unit search dialog (board view): user types a query, then left-clicks the 'MENU-009' result row once; that work unit is selected/acted on exactly as pressing Enter would — no double-click needed.
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to activate any Enter-selectable dialog choice (button or row) with a mouse left-click
@@ -70,7 +68,6 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   # ========================================================
   # R1 — three-button dialogs: click commits that button
   # ========================================================
-
   Scenario: Start New Agent — clicking Yes - Isolated commits it
     Given the "Start New Agent?" dialog is open with "Yes" highlighted
     When the user left-clicks the "Yes - Isolated" button
@@ -118,7 +115,6 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   # ========================================================
   # R2 — shared-button-row dialogs: click returns that outcome
   # ========================================================
-
   Scenario: Merge confirm — clicking Discard returns Discard
     Given the merge-confirm dialog is open with "Merge" focused
     When the user left-clicks the "Discard" button
@@ -148,7 +144,6 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   # ========================================================
   # R3 — row-list dialogs: click commits that row (one-click)
   # ========================================================
-
   Scenario: Thinking Level — clicking High commits High
     Given the Thinking Level dialog is open with "Off" highlighted
     When the user left-clicks the "High" row
@@ -188,7 +183,6 @@ Feature: Left-click activates buttons/rows in all Enter-selectable modal dialogs
   # ========================================================
   # R4/R5 — hit-testing & non-activatable cells
   # ========================================================
-
   Scenario: A click outside the dialog rect is ignored
     Given the "Start New Agent?" dialog is open
     When the user left-clicks a cell outside the dialog's rendered rect

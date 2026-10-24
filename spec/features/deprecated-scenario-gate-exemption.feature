@@ -4,7 +4,6 @@
 @validation
 @coverage
 Feature: @deprecated tag exempts scenarios from the coverage gates
-
   """
   The @deprecated tag (scenario-level or feature-level) marks a requirement that
   is no longer required (e.g. obsolete after a migration). Such scenarios must

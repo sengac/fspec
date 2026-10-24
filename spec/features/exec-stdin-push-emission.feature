@@ -3,7 +3,6 @@
 @session
 @tool-execution
 Feature: Exec-stdin slot transitions push StreamChunks without a status flip
-
   """
   BUG-171 (sessions layer): BackgroundSession::set_exec_stdin_request emits a push StreamChunk on every slot transition — ExecStdinRequest when a request is stored, ExecStdinRequestCleared when the slot goes to None (child-exit alive-check, successful write_exec_stdin, explicit clear). Mirrors the set_status → session_state_change flow; NO agent session status flip (the session stays Running).
   """
@@ -19,7 +18,6 @@ Feature: Exec-stdin slot transitions push StreamChunks without a status flip
   #   5. A non-exit detector clear (command produced output again) resets the per-exec-session re-fire cooldown, so a fresh quiet period after the command resumed can fire again without waiting out the previous fire's 30s window. The P2 30s cooldown still applies within one continuous quiet period (e.g. right after a user submit that leaves the command silent).
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust TUI agent
     I want to have the exec-stdin composer overlay appear automatically when a running command goes quiet waiting for input

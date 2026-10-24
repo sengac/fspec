@@ -204,6 +204,16 @@ where
     }
 
     #[allow(unused_variables)]
+    fn on_tool_result_message(
+        &self,
+        assistant: &Message,
+        call: &crate::message::ToolCall,
+        result: &crate::message::ToolResult,
+    ) -> impl Future<Output = ()> + WasmCompatSend {
+        async {}
+    }
+
+    #[allow(unused_variables)]
     /// Called after the prompt is sent to the model and a response is received.
     fn on_completion_response(
         &self,
@@ -420,10 +430,11 @@ where
                 .iter()
                 .partition(|choice| matches!(choice, AssistantContent::ToolCall(_)));
 
-            chat_history.push(Message::Assistant {
+            let assistant = Message::Assistant {
                 id: None,
                 content: resp.choice.clone(),
-            });
+            };
+            chat_history.push(assistant.clone());
 
             if tool_calls.is_empty() {
                 let merged_texts = texts
@@ -455,6 +466,7 @@ where
             let tool_calls: Vec<AssistantContent> = tool_calls.into_iter().cloned().collect();
             let tool_content = stream::iter(tool_calls)
                 .map(|choice| {
+                    let assistant = assistant.clone();
                     let hook1 = hook.clone();
                     let hook2 = hook.clone();
 
@@ -512,6 +524,16 @@ where
                                     }
                                 };
                             if let Some(hook) = hook2 {
+                                hook.on_tool_result_message(
+                                    &assistant,
+                                    &tool_call,
+                                    &crate::message::ToolResult {
+                                        id: tool_call.id.clone(),
+                                        call_id: tool_call.call_id.clone(),
+                                        content: OneOrMany::one(output.clone().into()),
+                                    },
+                                )
+                                .await;
                                 hook.on_tool_result(
                                     tool_name,
                                     tool_call.call_id.clone(),
@@ -526,9 +548,7 @@ where
                                 }
                             }
                             tool_span.record("gen_ai.tool.call.result", &output);
-                            tracing::info!(
-                                "executed tool {tool_name} with args {args}. result: {output}"
-                            );
+                            tracing::info!(%tool_name, args = %args, result = %output, "executed tool");
                             if let Some(call_id) = tool_call.call_id.clone() {
                                 Ok(UserContent::tool_result_with_call_id(
                                     tool_call.id.clone(),

@@ -45,6 +45,7 @@ fn disk_session(id: &str) -> codelet_rpc_types::SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: Some(1_000),
+        work_unit_focus: Default::default(),
     }
 }
 
@@ -211,8 +212,8 @@ async fn reconnect_replays_output_streamed_while_the_connection_was_down() {
     drain_pending(&mut app).await;
     wait_until_drained(
         &mut app,
-        || mock.get_buffered_output_calls() >= 1,
-        "backend.get_buffered_output for the in-memory catch-up replay",
+        || !mock.transcript_requests().is_empty(),
+        "backend transcript pages for catch-up",
     )
     .await;
     drain_pending(&mut app).await;
@@ -236,6 +237,12 @@ async fn reconnect_replays_output_streamed_while_the_connection_was_down() {
     // @step And live streaming chunks continue after the replay
     // (manual poll loop: the live-chunk check reads app state that
     // `wait_until_drained` borrows exclusively)
+    mock.set_buffered_output(vec![
+        StreamChunk::text("chunk-1".to_string()),
+        StreamChunk::text("chunk-2".to_string()),
+        StreamChunk::text("chunk-3".to_string()),
+        StreamChunk::text("live-after-replay".to_string()),
+    ]);
     mock.push_chunk(
         sid("S-focus"),
         StreamChunk::text("live-after-replay".to_string()),

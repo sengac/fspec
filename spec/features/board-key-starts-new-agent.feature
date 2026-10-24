@@ -44,7 +44,6 @@ Feature: Board '.' key starts new agent
   # gesture now ALWAYS mounts the CreateSessionDialog (the R8/RPC-097
   # OpenAgentView emission is gone — session resume is the Shift+Right CYCLE
   # gesture's unchanged job). See the BUG-203 feature.
-
   Scenario: Pressing '.' with a selected work unit mounts the CreateSessionDialog
     Given a BoardStore containing AUTH-001 in backlog with the focused column "backlog" and selected index 0
     When the user presses the key '.'
@@ -60,5 +59,3 @@ Feature: Board '.' key starts new agent
     When the App renders BoardView against a 120x24 TestBackend
     Then the header row 3 shows the 2-zone menu bar Zone A items (Actions Help)
     And the rendered buffer does not contain the substring "/ New Agent"
-    # MENU-002 R1 supersedes: the header chord (and the later u Actions hint)
-    # became the live 2-zone menu bar; New Agent lives in the Actions dropdown.

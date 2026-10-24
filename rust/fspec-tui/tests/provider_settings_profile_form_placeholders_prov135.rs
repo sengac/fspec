@@ -114,16 +114,16 @@ fn empty_context_window_field_shows_dim_placeholder() {
     // @step When the profile form is rendered
     let buf = render_to_buffer(&mut view);
 
-    // @step Then the Context Window row shows the placeholder "128000"
+    // @step Then the Context Window row shows the placeholder "Automatic (model-specific)"
     let ry = find_row(&buf, "Context Window").expect("Context Window row should render");
     let row = row_string(&buf, ry);
     assert!(
-        row.contains("128000"),
-        "Context Window row should show placeholder '128000', got {row:?}"
+        row.contains("Automatic (model-specific)"),
+        "Context Window row should show the automatic placeholder, got {row:?}"
     );
 
     // @step Then the placeholder is rendered with the dim modifier
-    assert_dim(&buf, ry, "128000");
+    assert_dim(&buf, ry, "Automatic (model-specific)");
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -137,16 +137,16 @@ fn empty_max_output_tokens_field_shows_dim_placeholder() {
     // @step When the profile form is rendered
     let buf = render_to_buffer(&mut view);
 
-    // @step Then the Max Output Tokens row shows the placeholder "16384"
+    // @step Then the Max Output Tokens row shows the placeholder "Automatic (model-specific)"
     let ry = find_row(&buf, "Max Output Tokens").expect("Max Output Tokens row should render");
     let row = row_string(&buf, ry);
     assert!(
-        row.contains("16384"),
-        "Max Output Tokens row should show placeholder '16384', got {row:?}"
+        row.contains("Automatic (model-specific)"),
+        "Max Output Tokens row should show the automatic placeholder, got {row:?}"
     );
 
     // @step Then the placeholder is rendered with the dim modifier
-    assert_dim(&buf, ry, "16384");
+    assert_dim(&buf, ry, "Automatic (model-specific)");
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -196,10 +196,10 @@ fn typed_value_shows_value_not_placeholder() {
         "Max Output Tokens row should show typed value '8192', got {row:?}"
     );
 
-    // @step Then the Max Output Tokens row does not show the placeholder "16384"
+    // @step Then the Max Output Tokens row does not show the placeholder "Automatic (model-specific)"
     assert!(
-        !row.contains("16384"),
-        "typed row must not show the placeholder '16384', got {row:?}"
+        !row.contains("Automatic (model-specific)"),
+        "typed row must not show the automatic placeholder, got {row:?}"
     );
 }
 

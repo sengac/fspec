@@ -8,14 +8,14 @@
 //! accumulator.
 //!
 //! These tests exercise the extracted helper
-//! `flush_partial_state_before_compaction` (representative of the four call
+//! `flush_partial_state_before_compaction` (representative of delta-based call
 //! sites) to verify that:
 //!
 //! 1. Successive flushes accumulate `cumulative_billed_output` correctly.
 //! 2. A backwards tick in the cumulative display never underflows and never
 //!    decreases the cumulative billing accumulator.
 //! 3. `TokenTracker::compute_output_delta` is the single production-code
-//!    source of the `saturating_sub(.., output_tokens)` pattern, and all four
+//!    source of the `saturating_sub(.., output_tokens)` pattern, and all delta-based
 //!    call sites delegate to it.
 
 use codelet_cli::interactive::flush_partial_state_before_compaction;
@@ -23,8 +23,15 @@ use codelet_cli::session::Session;
 use codelet_core::compaction::TokenTracker;
 use codelet_core::StreamingTokenDisplay;
 
+#[path = "support/gemini_continuation_source.rs"]
+mod gemini_source;
+
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    ))
 }
 
 /// Build a `StreamingTokenDisplay` whose `current().output_tokens` equals
@@ -122,7 +129,7 @@ fn delta_computation_is_centralized_in_single_helper() {
     // this test fails if any future refactor re-introduces a duplicate
     // `saturating_sub(.. , output_tokens)` outside the helper.
     let stream_loop = include_str!("../src/interactive/stream_loop.rs");
-    let gemini_continuation = include_str!("../src/interactive/gemini_continuation.rs");
+    let gemini_continuation = gemini_source::gemini_continuation_source();
     let recovery_compaction = include_str!("../src/interactive/recovery_compaction.rs");
     // The helper itself lives in codelet-core. It is the single production-code
     // site allowed to perform the saturating subtraction on an output_tokens
@@ -182,7 +189,7 @@ fn delta_computation_is_centralized_in_single_helper() {
     assert_eq!(
         interactive_count, 0,
         "no interactive-module file may call saturating_sub on an output_tokens \
-         field directly — all four call sites must delegate to \
+         field directly — all delta-based call sites must delegate to \
          TokenTracker::compute_output_delta"
     );
     assert_eq!(
@@ -191,20 +198,19 @@ fn delta_computation_is_centralized_in_single_helper() {
          is allowed, and it must live inside TokenTracker::compute_output_delta"
     );
 
-    // @step And all four update_from_usage call sites delegate to that helper
-    // Each of the four call sites must mention `compute_output_delta` exactly
-    // where it previously hardcoded a literal `0` in the `ApiTokenUsage::new`
-    // call. We count occurrences across the three interactive files; the
-    // update_token_tracker helper + the normal-completion branch in
-    // gemini_continuation.rs account for two of the four.
+    // @step And all delta-based usage call sites delegate to that helper
     let delta_call_count = stream_loop.matches("compute_output_delta(").count()
         + gemini_continuation.matches("compute_output_delta(").count()
         + recovery_compaction.matches("compute_output_delta(").count();
     assert_eq!(
-        delta_call_count, 4,
-        "each of the four update_from_usage call sites must call \
+        delta_call_count, 2,
+        "each delta-based usage call site must call \
          TokenTracker::compute_output_delta exactly once"
     );
+    let normalized: String = gemini_continuation.split_whitespace().collect();
+    assert!(!normalized.contains(".token_tracker.update_from_usage("));
+    assert!(gemini_continuation.contains(".update_display_only("));
+    assert!(gemini_continuation.contains("persistence::load_session(session_id)"));
 
     // Behavioral sanity check: the helper produces the arithmetically-correct
     // delta and saturates at zero on a backward tick.

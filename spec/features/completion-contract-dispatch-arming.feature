@@ -4,13 +4,13 @@
 @completion
 @session
 @CONT-009
-Feature: Completion contract dispatch-site arming across agent-loop twins
+@BUG-228
+Feature: Completion contract arming through the shared agent loop
   """
-  AS-BUILT (CONT-009): the dispatch-site arming block lives in a single shared
+  AS-BUILT (CONT-009, BUG-228): the dispatch-site arming block lives in a single shared
   helper, BackgroundSession::sync_completion_contract_for_user_turn
   (rust/sessions/src/background_session.rs), owned by codelet-sessions so it
-  needs zero new dependency edges and cannot violate the no-codelet-agent-loop
-  constraint in napi/Cargo.toml. Before each dispatched real user message the
+  both frontend entry points delegate to codelet-agent-loop. Before each dispatched real user message the
   helper: (1) syncs the /continue chrome state into the inner Session and resets
   the per-turn zero-progress nudge counter (reset_for_new_user_turn); (2) syncs
   the /goal chrome state into the inner Session, applying only on change so an
@@ -19,14 +19,13 @@ Feature: Completion contract dispatch-site arming across agent-loop twins
   additionally generation-gated as the goal-resurrection guard; (3) arms the
   per-session done() registry (codelet_tools::set_continue_armed) iff the
   continue toggle is on OR a goal is set, and syncs the goal spec into the
-  registry (codelet_tools::set_session_goal). BOTH agent-loop twins call the
-  helper at their dispatch sites, between inner-lock re-acquisition and
-  BackgroundOutput creation: rust/agent-loop/src/agent_loop.rs (standalone
-  fspec binary) and rust/napi/src/agent_loop.rs (production NAPI/TUI
-  surface). Twin parity is pinned by a comment-stripped source-shape test
-  (rpc082/083 precedent) in
-  rust/sessions/tests/cont009_completion_contract_sync.rs, so the twin
-  divergence that caused this bug cannot silently recur.
+  registry (codelet_tools::set_session_goal). The shared engine calls the
+  helper between inner-lock re-acquisition and BackgroundOutput creation.
+  NAPI re-exports that engine rather than maintaining a second dispatch loop.
+  Architecture-aware wiring tests require delegation, shared dispatch ordering,
+  and absence of duplicated arming logic. Mutation controls prove that removing
+  delegation or the shared helper call is rejected; behavioral tests retain
+  continue, goal, reset and disarming coverage with real sessions.
   Historical note: this card originated because the NAPI twin carried no arming
   block at all (auto-continue and /goal were inert on the production surface);
   the original port-plan research is preserved in
@@ -77,8 +76,9 @@ Feature: Completion contract dispatch-site arming across agent-loop twins
     Then the inner session still has 2 done() rejections
     And the inner session goal is unchanged
 
-  Scenario: Both agent-loop twins call the shared sync helper at the dispatch site
-    Given the production NAPI agent loop source and the standalone agent-loop twin source
-    When the dispatch sites between lock re-acquisition and BackgroundOutput creation are inspected
-    Then both twins call the shared BackgroundSession sync helper before creating the rig agent
-    And neither twin carries a diverged inline copy of the arming block
+  Scenario: Frontends delegate to one armed dispatch implementation
+    Given the NAPI compatibility exports and shared agent loop source
+    When the shared dispatch site and frontend delegation are inspected
+    Then NAPI delegates to the shared engine that syncs completion before creating output
+    And neither frontend duplicates the arming block
+    And removing delegation or the shared sync call is detected

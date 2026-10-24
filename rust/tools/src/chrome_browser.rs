@@ -58,7 +58,7 @@ pub struct ChromeConfig {
     /// Set via CODELET_CHROME_HEADLESS environment variable
     pub headless: bool,
 
-    /// Page load timeout in seconds (default: 30)
+    /// Browser idle transport timeout (default: 300 seconds)
     /// Set via CODELET_CHROME_TIMEOUT environment variable
     pub timeout: Duration,
 

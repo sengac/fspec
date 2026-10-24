@@ -5,7 +5,6 @@
 @foundation-management
 @DISC-003
 Feature: foundation discovery extended: draft-aware show-foundation, full finalize report, event-storm context guard, validate --draft
-
   """
   DISC-003 (part 2/5): show-foundation draft auto-preference + --final; discover-foundation --finalize lists EVERY remaining field; show-foundation-event-storm unknown-context error; validate-foundation-schema --draft.
   """
@@ -15,7 +14,7 @@ Feature: foundation discovery extended: draft-aware show-foundation, full finali
     I want to discover and fill the project foundation with clear per-step guidance and progress
     So that I always know what fields remain, what to do next, and what content is appropriate, without guessing or re-reading raw JSON
 
-    Scenario: show-foundation with a draft present shows the draft by default
+  Scenario: show-foundation with a draft present shows the draft by default
     Given a project root with both spec/foundation.json and spec/foundation.json.draft where the draft project.name='draft-name' and the final project.name='final-name'
     When I dispatch show-foundation with no section
     Then the dispatcher returns success=true

@@ -1,0 +1,45 @@
+{
+  "scenarios": [
+    {
+      "name": "Nonstreaming OpenAI Chat preserves physical HTTP rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs",
+          "lines": "141-176",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/http_client/mod.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/http_client/mod.rs"
+    ],
+    "totalLinesCovered": 49
+  }
+}

@@ -1,32 +1,4 @@
-//! RPC-069: `rig::completion::CompletionModel` adapter for the
-//! deterministic stub provider.
-//!
-//! [`StubModel`] is the keystone type that lets the agent-loop dispatch
-//! macro treat the test-only stub provider exactly like any other
-//! built-in provider — same `rig::agent::Agent<M>` shape, same
-//! `RigAgent::with_default_depth` wrap, same
-//! `run_agent_stream_with_images` driver. Without this adapter, the
-//! `Arc<dyn LlmProvider>` returned by
-//! [`crate::stub_provider::get_stub_provider`] cannot reach the
-//! streaming agent driver because `create_rig_agent` is an inherent
-//! method (not a trait method) on every other provider type.
-//!
-//! ## Wiring
-//!
-//! - `completion()` returns a deterministic
-//!   `OneOrMany::one(AssistantContent::text("hi back"))` choice with a
-//!   default token usage. Used by rig's non-streaming code path.
-//! - `stream()` yields a `RawStreamingChoice::Message("hi back")` chunk
-//!   followed by `RawStreamingChoice::FinalResponse(StubCompletion)` so
-//!   the stream terminates with a clean `StopReason::EndTurn`. Used by
-//!   the standard `run_agent_stream_with_images` driver.
-//!
-//! Gated entirely behind the `test-support` Cargo feature so production
-//! builds never compile this module into release artifacts.
-//!
-//! Modelled after [`crate::custom::rig_model::RhaiCustomProviderModel`]
-//! but with no HTTP, no Rhai engine, no tool flow — just a canned
-//! `[Text("hi back"), FinalResponse]` stream.
+//! Deterministic test-support completion adapter.
 
 use async_stream::stream;
 use rig::completion::{
@@ -39,6 +11,10 @@ use rig::OneOrMany;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
+
+#[path = "stub_request.rs"]
+mod request;
+pub use request::last_request_bytes;
 
 /// Raw-response payload exposed to rig consumers.
 ///
@@ -98,26 +74,16 @@ impl CompletionModel for StubModel {
     type Client = ();
 
     fn make(_client: &Self::Client, _model: impl Into<String>) -> Self {
-        // rig's [`CompletionModel::make`] factory signature
-        // (`-> Self`) forces an infallible constructor. The stub model
-        // is constructed exclusively via
-        // [`crate::stub_provider::StubProvider::create_rig_agent`], so
-        // this factory is unreachable via the public API. Mirrors the
-        // same pattern as
-        // [`crate::custom::rig_model::RhaiCustomProviderModel::make`].
-        #[allow(clippy::panic)]
-        {
-            panic!(
-                "StubModel must be constructed via StubProvider::create_rig_agent — \
-                 rig's `make` factory is not supported because the stub model is \
-                 not parameterised by a client."
-            );
-        }
+        Self::new()
+    }
+
+    fn prepare_request(&self, request: CompletionRequest) -> Result<Vec<u8>, CompletionError> {
+        request::serialize(&request)
     }
 
     async fn completion(
         &self,
-        _request: CompletionRequest,
+        request: CompletionRequest,
     ) -> Result<RigCompletionResponse<StubCompletion>, CompletionError> {
         // Non-streaming path: return a single text choice. Used when
         // a caller invokes `agent.prompt(...)` instead of
@@ -125,6 +91,7 @@ impl CompletionModel for StubModel {
         // always go through the streaming path, but we keep
         // non-streaming faithful so future callers (e.g. PROV-103
         // token-usage smoke tests) work uniformly.
+        request::record(&request)?;
         Ok(RigCompletionResponse {
             choice: OneOrMany::one(AssistantContent::text("hi back")),
             usage: Usage::new(),
@@ -140,7 +107,16 @@ impl CompletionModel for StubModel {
         // behavioral test can assert the NEXT turn's context actually
         // carries the loop-abort corrective note. Best-effort: a poisoned
         // lock is a no-op.
-        record_request_history(&request);
+        request::record(&request)?;
+        if let Some(call) = request::tool_call(&request)? {
+            let rig_stream: StreamingResult<StubCompletion> = Box::pin(stream! {
+                yield Ok(RawStreamingChoice::ToolCall(call));
+                yield Ok(RawStreamingChoice::FinalResponse(StubCompletion {
+                    stop_reason: "tool_use".into(),
+                }));
+            });
+            return Ok(StreamingCompletionResponse::stream(rig_stream));
+        }
 
         // RIG-015: if the test-only looping stream hook is active, yield
         // each configured word as a separate text delta (incrementing the

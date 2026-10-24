@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "A11 Esc permits immediate browser retry without a stale callback commit",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov159_rpc_lifecycle.rs",
+          "lines": "23-100",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                105,
+                106,
+                107,
+                108
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/oauth_callback.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A12 Interactive OAuth outlives the default RPC deadline",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov159_rpc_lifecycle.rs",
+          "lines": "155-217",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/oauth_context.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A13 OAuth deadlines and client disconnects clean up backend work",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov159_rpc_lifecycle.rs",
+          "lines": "221-278",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/codex_oauth_server.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/prov159_rpc_lifecycle.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/provider_settings/oauth_login.rs",
+      "rust/providers/src/codex/auth_lifecycle.rs",
+      "rust/providers/src/codex/oauth_callback.rs",
+      "rust/fspec-tui/src/transport/oauth_context.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/providers/src/codex/codex_oauth_server.rs"
+    ],
+    "totalLinesCovered": 297
+  }
+}

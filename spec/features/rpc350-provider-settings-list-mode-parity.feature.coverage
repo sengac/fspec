@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "129-181",
+          "lines": "130-180",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
@@ -47,7 +47,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "182-239",
+          "lines": "187-243",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -108,7 +108,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "240-274",
+          "lines": "249-282",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -128,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "275-335",
+          "lines": "289-347",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_segments.rs",
@@ -258,7 +258,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "336-392",
+          "lines": "354-404",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
@@ -345,7 +345,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "393-450",
+          "lines": "411-447",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/row_segments.rs",
@@ -462,7 +462,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_list_mode_parity_rpc350.rs",
-          "lines": "451-494",
+          "lines": "470-503",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/mode_view_render.rs",
@@ -499,6 +499,6 @@
       "rust/fspec-tui/src/views/provider_settings/list_nav_render.rs",
       "rust/fspec-tui/src/views/provider_settings/row_segments.rs"
     ],
-    "totalLinesCovered": 740
+    "totalLinesCovered": 697
   }
 }

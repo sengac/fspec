@@ -36,6 +36,13 @@ fn key(code: KeyCode) -> KeyEvent {
     }
 }
 
+fn openai_row_index(view: &ProviderSettingsView, kind: NavItemKind) -> usize {
+    view.nav_items
+        .iter()
+        .position(|item| item.provider_id == "openai" && item.kind == kind)
+        .expect("requested OpenAI navigation row must be present")
+}
+
 fn pinfo(id: &str, ctype: &str, configured: bool, models: u32) -> ProviderCredentialInfo {
     ProviderCredentialInfo {
         provider_id: id.to_string(),
@@ -67,7 +74,7 @@ fn multi_provider_view() -> ProviderSettingsView {
     // can open the EditProfile form prefilled from the stored config.
     let mut configs = HashMap::new();
     configs.insert(
-        "fast".to_string(),
+        ("openai".to_string(), "fast".to_string()),
         ProfileDefinition {
             base_url: "http://localhost:9001".to_string(),
             api_key: "sk-fast".to_string(),
@@ -113,7 +120,12 @@ fn enter_on_openai_profile_opens_openai_edit_form_not_anthropic() {
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the openai "fast" profile row
-    view.handle_key(key(KeyCode::Down));
+    view.selected_index = openai_row_index(
+        &view,
+        NavItemKind::Profile {
+            profile_name: "fast".to_string(),
+        },
+    );
     match focused_kind(&view) {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "fast"),
         other => panic!("expected openai 'fast' profile row, got {other:?}"),
@@ -248,8 +260,7 @@ fn enter_on_add_profile_opens_create_form() {
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the openai AddProfile row
-    view.handle_key(key(KeyCode::Down)); // Profile fast
-    view.handle_key(key(KeyCode::Down)); // AddProfile
+    view.selected_index = openai_row_index(&view, NavItemKind::AddProfile);
     assert!(matches!(focused_kind(&view), NavItemKind::AddProfile));
 
     // @step When I press Enter
@@ -325,7 +336,12 @@ fn d_on_profile_row_opens_per_profile_delete_confirm() {
     view.handle_key(key(KeyCode::Enter));
 
     // @step And the cursor is on the openai "fast" profile row
-    view.handle_key(key(KeyCode::Down));
+    view.selected_index = openai_row_index(
+        &view,
+        NavItemKind::Profile {
+            profile_name: "fast".to_string(),
+        },
+    );
     match focused_kind(&view) {
         NavItemKind::Profile { profile_name } => assert_eq!(profile_name, "fast"),
         other => panic!("expected openai 'fast' profile row, got {other:?}"),

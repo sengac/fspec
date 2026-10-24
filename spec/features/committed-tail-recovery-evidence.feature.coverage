@@ -1,0 +1,99 @@
+{
+  "scenarios": [
+    {
+      "name": "Missing committed reference evidence refuses tail removal",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug248_reference_evidence.rs",
+          "lines": "10-36",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/framing/references.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Referenced metadata versions refuse destructive recovery",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug248_reference_evidence.rs",
+          "lines": "38-73",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/messages/framing/identity.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/bug248_reference_evidence.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/messages/framing/references.rs",
+      "rust/core/src/persistence/messages/framing/identity.rs"
+    ],
+    "totalLinesCovered": 113
+  }
+}

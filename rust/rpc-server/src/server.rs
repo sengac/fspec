@@ -132,10 +132,34 @@ async fn handle_connection(
     // span-context and event-payload tracing captures.
     tracing::info!(client_id = %peer, "ws connection accepted");
 
-    let ws = tokio_tungstenite::accept_async(stream).await?;
+    let mut bounded_reads = false;
+    let ws = tokio_tungstenite::accept_hdr_async(
+        stream,
+        |request: &tokio_tungstenite::tungstenite::handshake::server::Request,
+         mut response: tokio_tungstenite::tungstenite::handshake::server::Response| {
+            bounded_reads = request.uri().path() == "/fspec-read-v2";
+            if bounded_reads {
+                response.headers_mut().insert(
+                    "x-fspec-rpc-schema",
+                    tokio_tungstenite::tungstenite::http::HeaderValue::from_static(
+                        codelet_rpc::mcp_dispatch::INTERFACE,
+                    ),
+                );
+                response.headers_mut().insert(
+                    "x-fspec-read-version",
+                    tokio_tungstenite::tungstenite::http::HeaderValue::from_static("2"),
+                );
+            }
+            Ok(response)
+        },
+    )
+    .await?;
     // RPC-011: RAII counter pairing — decrements via Drop on ANY exit
     // path (clean close, error, abort).
     let _client_guard = ConnectedClientGuard::new(&stats);
+    if bounded_reads {
+        return crate::bounded_reads::run(ws, service, stats).await;
+    }
 
     let (rpc_bytes_tx, rpc_bytes_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
     let (server_out_tx, server_out_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
@@ -144,6 +168,7 @@ async fn handle_connection(
     // RPC-006: send the initial WorkUnitsUpdate snapshot before any RPC
     // traffic so a fresh client always observes at least the current
     // workspace state without needing to issue an explicit subscribe RPC.
+    let focus_rx = service.work_unit_focus_rx();
     let initial_snapshot = service.watcher_snapshot();
     if let Ok(mut guard) = stats.last_watcher_event_at.lock() {
         *guard = Some(Instant::now());
@@ -235,6 +260,13 @@ async fn handle_connection(
         Arc::clone(&stats.lag_session_events),
     ));
 
+    let focus_fanout = tokio::spawn(crate::focus_fanout::run(
+        focus_rx,
+        envelope_out_tx.clone(),
+        Arc::clone(&service),
+        Arc::clone(&stats.lag_session_events),
+    ));
+
     // RPC-436: per-connection fanout for the session-cleared lifecycle
     // event (rule R2 of session-events-cleared-fan-out.feature). Mirrors
     // `session_created_fanout` / `session_removed_fanout`: drains
@@ -285,6 +317,7 @@ async fn handle_connection(
     session_created_fanout.abort();
     session_removed_fanout.abort();
     session_cleared_fanout.abort();
+    focus_fanout.abort();
     let _ = watcher_fanout.await;
     let _ = chunks_fanout.await;
     let _ = logs_fanout.await;
@@ -292,6 +325,7 @@ async fn handle_connection(
     let _ = session_created_fanout.await;
     let _ = session_removed_fanout.await;
     let _ = session_cleared_fanout.await;
+    let _ = focus_fanout.await;
     result
 }
 

@@ -213,7 +213,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
-          "lines": "287-317",
+          "lines": "380-409",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -285,29 +285,47 @@
     },
     {
       "name": "Enter on an OpenAI profile row opens the OpenAI edit form, not Anthropic",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "lines": "113-154",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Enter on the AddProfile row opens the create form",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "lines": "255-279",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "d on a profile row opens the per-profile delete confirm",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs",
+          "lines": "331-372",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 7,
-    "coveredScenarios": 4,
-    "coveragePercent": 57,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
     "testFiles": [
       "rust/fspec-tui/tests/prov102_nav_item_action_dispatch.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
-      "rust/fspec-tui/src/views/provider_settings/list.rs",
-      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
+      "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
+      "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 571
+    "totalLinesCovered": 453
   }
 }

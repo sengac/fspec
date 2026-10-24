@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
-          "lines": "22-64",
+          "lines": "24-69",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -138,7 +138,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
-          "lines": "66-117",
+          "lines": "72-127",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -196,7 +196,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/compaction_cancel_preservation_test.rs",
-          "lines": "119-144",
+          "lines": "130-155",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/recovery_compaction.rs",
@@ -261,6 +261,6 @@
       "rust/cli/src/interactive/recovery_compaction.rs",
       "rust/cli/src/interactive/stream_loop.rs"
     ],
-    "totalLinesCovered": 317
+    "totalLinesCovered": 324
   }
 }

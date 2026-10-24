@@ -12,16 +12,13 @@
 // ================================================================
 
 use async_stream::stream;
-use serde_json::json;
 
 use crate::completion::{CompletionError, CompletionRequest as CoreCompletionRequest};
 use crate::http_client::{self, HttpClientExt};
-use crate::json_utils::merge;
 use crate::providers::openai::client::ApiResponse;
 use crate::providers::openai::completion::streaming::StreamingCompletionResponse;
 use crate::providers::openai::completion::{
-    AssistantContent, CompletionModel, CompletionRequest, CompletionResponse, Message,
-    OpenAIRequestParams, Usage,
+    AssistantContent, CompletionModel, CompletionResponse, Message,
 };
 use crate::streaming::{self, RawStreamingChoice, RawStreamingToolCall};
 
@@ -34,19 +31,7 @@ pub(crate) async fn stream_nonstreaming<T>(
 where
     T: HttpClientExt + Clone + 'static,
 {
-    let request = CompletionRequest::try_from(OpenAIRequestParams {
-        model: model.model.clone(),
-        request: completion_request,
-        strict_tools: model.strict_tools,
-        tool_result_array_content: model.tool_result_array_content,
-    })?;
-
-    let mut request_as_json = serde_json::to_value(request)?;
-    // PROV-140: explicit `stream: false`, and NO `stream_options` key — the
-    // non-streaming endpoint rejects (or ignores) streaming-only options.
-    request_as_json = merge(request_as_json, json!({ "stream": false }));
-
-    let body = serde_json::to_vec(&request_as_json)?;
+    let body = model.selected_request_bytes(&model.selected_request_json(completion_request)?)?;
     let req = model
         .client
         .post("/chat/completions")?
@@ -66,7 +51,7 @@ where
         ApiResponse::Err(err) => return Err(CompletionError::ProviderError(err.message)),
     };
 
-    let items = adapt_response(parsed);
+    let items = adapt_response(parsed)?;
     let stream = stream! {
         for item in items {
             yield Ok(item);
@@ -84,7 +69,7 @@ where
 /// `FinalResponse` carrying usage + normalized stop_reason.
 fn adapt_response(
     response: CompletionResponse,
-) -> Vec<RawStreamingChoice<StreamingCompletionResponse>> {
+) -> Result<Vec<RawStreamingChoice<StreamingCompletionResponse>>, CompletionError> {
     let mut items: Vec<RawStreamingChoice<StreamingCompletionResponse>> = Vec::new();
 
     let stop_reason = response
@@ -127,14 +112,20 @@ fn adapt_response(
         }
     }
 
-    let openai_usage = response.usage.unwrap_or_default();
-    items.push(RawStreamingChoice::Usage(core_usage(&openai_usage)));
-    items.push(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-        usage: openai_usage,
-        stop_reason,
-    }));
+    let openai_usage = response
+        .usage
+        .ok_or_else(|| CompletionError::ResponseError("missing OpenAI usage".into()))?;
+    let usage = super::GetTokenUsage::token_usage(&openai_usage)
+        .ok_or_else(|| CompletionError::ResponseError("inconsistent OpenAI usage".into()))?;
+    items.push(RawStreamingChoice::Usage(usage));
+    items.push(RawStreamingChoice::FinalResponse(
+        StreamingCompletionResponse {
+            usage: openai_usage,
+            stop_reason,
+        },
+    ));
 
-    items
+    Ok(items)
 }
 
 /// Map OpenAI's non-streaming `finish_reason` string to the normalized
@@ -146,28 +137,5 @@ fn map_finish_reason(finish_reason: &str) -> String {
         "tool_calls" => "tool_use".to_string(),
         "content_filter" => "content_filter".to_string(),
         other => other.to_string(),
-    }
-}
-
-/// Build the crate-level `Usage` event from the OpenAI usage block, mirroring
-/// the streaming decoder's token accounting.
-fn core_usage(usage: &Usage) -> crate::completion::Usage {
-    let cached_tokens = usage
-        .prompt_tokens_details
-        .as_ref()
-        .map(|d| d.cached_tokens as u64)
-        .filter(|c| *c > 0);
-    let reasoning_tokens = usage
-        .completion_tokens_details
-        .as_ref()
-        .map(|d| d.reasoning_tokens as u64);
-
-    crate::completion::Usage {
-        input_tokens: usage.prompt_tokens as u64,
-        output_tokens: usage.output_tokens(),
-        total_tokens: usage.total_tokens as u64,
-        cache_read_input_tokens: cached_tokens,
-        reasoning_tokens,
-        ..Default::default()
     }
 }

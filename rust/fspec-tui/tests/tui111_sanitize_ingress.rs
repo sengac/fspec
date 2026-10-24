@@ -515,6 +515,7 @@ fn resume_session_rows_are_stored_clean() {
         worktree_path: Some(HOSTILE.to_string()),
         role: Some(HOSTILE.to_string()),
         updated_at_ms: None,
+        work_unit_focus: Default::default(),
     }]);
     let s = view.selected().expect("session");
     assert_clean(&s.name);

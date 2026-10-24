@@ -7,51 +7,50 @@
 @startup
 @TUI-113
 Feature: Session auto-restore only restores sessions live in the daemon
-
   """
   Architecture:
   - MEMORY-ONLY restore (supersedes the TUI-113 disk-aware fallbacks):
-    rust/fspec-tui/src/app/session_restore.rs `resolve_restore_target`
-    builds the candidate list — (a) on the reconnect path, the client's
-    focused session (tabs survive transient WS drops); (b) the daemon's
-    in-memory active-session pointer (get_active_session) — and verifies
-    each candidate via `list_live_sessions()`, a NEW RPC that returns
-    ONLY the daemon's in-memory session map (SessionManager →
-    SessionManagerHandle → FspecService → FspecBackend; embedded +
-    websocket + MockBackend transports). Persisted manifests (disk)
-    are NEVER candidates: no `list_sessions` disk scan, no
-    `resume_session` (RPC-049 durable restore), no `create_session`
-    fallback. The RPC-012 lazy create-on-enter-work-unit path is the
-    only session-creation path on startup/reconnect.
+  rust/fspec-tui/src/app/session_restore.rs `resolve_restore_target`
+  builds the candidate list — (a) on the reconnect path, the client's
+  focused session (tabs survive transient WS drops); (b) the daemon's
+  in-memory active-session pointer (get_active_session) — and verifies
+  each candidate via `list_live_sessions()`, a NEW RPC that returns
+  ONLY the daemon's in-memory session map (SessionManager →
+  SessionManagerHandle → FspecService → FspecBackend; embedded +
+  websocket + MockBackend transports). Persisted manifests (disk)
+  are NEVER candidates: no `list_sessions` disk scan, no
+  `resume_session` (RPC-049 durable restore), no `create_session`
+  fallback. The RPC-012 lazy create-on-enter-work-unit path is the
+  only session-creation path on startup/reconnect.
   - Nothing live → NOTHING happens: the client lands on the board
-    (user decision 2026-10-11: "Land on the board"). No fallback of
-    any kind — the auto-restore path must not resurrect sessions the
-    user closed, nor create sessions on a genuinely empty daemon.
+  (user decision 2026-10-11: "Land on the board"). No fallback of
+  any kind — the auto-restore path must not resurrect sessions the
+  user closed, nor create sessions on a genuinely empty daemon.
   - The daemon's active-session pointer is invalidated when the
-    session it references is destroyed: `SessionManager::destroy_session`
-    clears the pointer when it pointed at the destroyed session
-    (single source of truth — no extra client-side clear call). The
-    pointer remains STICKY for board-exit (BackToBoard does not
-    clear it) — but a closed session is never live, so the gate
-    protects even a stale pointer.
+  session it references is destroyed: `SessionManager::destroy_session`
+  clears the pointer when it pointed at the destroyed session
+  (single source of truth — no extra client-side clear call). The
+  pointer remains STICKY for board-exit (BackToBoard does not
+  clear it) — but a closed session is never live, so the gate
+  protects even a stale pointer.
   - Re-attach is LIVE and MEMORY-ONLY (Action::ReattachSession →
-    `App::handle_reattach_session` in dispatch_attach.rs): an
-    already-open tab (transient WS drop) is focused in place; a
-    closed/absent tab (fresh client start) is re-opened. NO disk
-    `resume_session` round-trip (it would double-inject a live
-    session's persisted conversation into the LLM context and
-    re-broadcast every chunk). Catch-up: the daemon's in-memory
-    `get_buffered_output` (RPC-037) chunks are replayed through the
-    chunk pipeline so the view catches up to whatever the daemon has
-    — a fresh tab lands on the live conversation, a tab that
-    survived a WS drop picks up the chunks streamed while the
-    connection was down.
+  `App::handle_reattach_session` in dispatch_attach.rs): an
+  already-open tab (transient WS drop) is focused in place; a
+  closed/absent tab (fresh client start) is re-opened. NO disk
+  `resume_session` round-trip (it would double-inject a live
+  session's persisted conversation into the LLM context and
+  re-broadcast every chunk). Catch-up: the daemon's in-memory
+  `get_buffered_output` (RPC-037) chunks are replayed through the
+  chunk pipeline so the view catches up to whatever the daemon has
+  — a fresh tab lands on the live conversation, a tab that
+  survived a WS drop picks up the chunks streamed while the
+  connection was down.
   - bootstrap.rs calls `spawn_session_restore(None)`; dispatch_reconnect.rs
-    calls it with the focused-session override after the RPC-011/0415
-    re-bootstrap (work-unit refetch + subscriber respawn unchanged).
+  calls it with the focused-session override after the RPC-011/0415
+  re-bootstrap (work-unit refetch + subscriber respawn unchanged).
   - All backend calls go through the existing FspecBackend trait so
-    both embedded + websocket transports work unchanged (RPC-037
-    cross-transport parity).
+  both embedded + websocket transports work unchanged (RPC-037
+  cross-transport parity).
   """
 
   # ========================================
@@ -107,7 +106,6 @@ Feature: Session auto-restore only restores sessions live in the daemon
   #     closed and the TUI does not resurrect it from disk
   #
   # ========================================
-
   Background: User Story
     As a developer running fspec in daemon/client mode
     I want to start or reconnect a client and have it re-attach a session that is actually running in the daemon

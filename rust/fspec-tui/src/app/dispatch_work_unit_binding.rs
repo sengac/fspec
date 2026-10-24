@@ -52,13 +52,21 @@ impl App {
         let session_for_task = session_id;
         let handle = tokio::spawn(async move {
             match backend
-                .set_work_unit_context(session_for_task.clone(), Some(ctx_for_task.clone()))
+                .set_work_unit_context(session_for_task.clone(), Some(ctx_for_task))
                 .await
             {
-                Ok(()) => {
-                    let _ =
-                        action_tx.send(Action::WorkUnitAttached(session_for_task, ctx_for_task));
-                }
+                Ok(()) => match backend.get_work_unit_focus(session_for_task.clone()).await {
+                    Ok(focus) => {
+                        let _ =
+                            action_tx.send(Action::WorkUnitFocusChanged(session_for_task, focus));
+                    }
+                    Err(error) => {
+                        let _ = action_tx.send(Action::EmitSessionNotice(
+                            session_for_task,
+                            format!("[error] /attach failed: {error}"),
+                        ));
+                    }
+                },
                 Err(e) => {
                     let _ = action_tx.send(Action::EmitSessionNotice(
                         session_for_task,
@@ -77,7 +85,14 @@ impl App {
         session_id: SessionId,
         ctx: WorkUnitContext,
     ) {
-        self.agent_view_store.set_work_unit_context(session_id, ctx);
+        if self
+            .agent_view_store
+            .work_unit_focus_revision_for(&session_id)
+            .is_none()
+        {
+            self.agent_view_store.set_work_unit_context(session_id, ctx);
+            self.rebuild_focus_occupancy();
+        }
     }
 
     /// Best-effort lookup of a work unit by id across the BoardStore's

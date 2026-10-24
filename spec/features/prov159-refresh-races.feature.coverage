@@ -1,0 +1,231 @@
+{
+  "scenarios": [
+    {
+      "name": "A5 Independent clients coordinate refresh of rotating tokens",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_races.rs",
+          "lines": "17-61",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A6 Shared-home clients reload external rotations without crossing accounts",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_races.rs",
+          "lines": "65-115",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A7 Late refresh cannot resurrect logout",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_races.rs",
+          "lines": "119-160",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A8 Late refresh cannot overwrite a different-account login",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_races.rs",
+          "lines": "164-204",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A9 Same-account login supersedes older refresh generations",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_refresh_races.rs",
+          "lines": "208-257",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_refresh.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/credential_refresh.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov159_refresh_races.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_refresh.rs",
+      "rust/providers/src/codex/credential_refresh.rs"
+    ],
+    "totalLinesCovered": 358
+  }
+}

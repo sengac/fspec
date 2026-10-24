@@ -9,6 +9,7 @@
 //! {data_dir}/cache/models.json
 
 mod cache;
+mod lookup;
 mod registry;
 mod types;
 

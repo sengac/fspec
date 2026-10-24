@@ -150,6 +150,7 @@ fn test_compaction_token_tracker_total_tokens_includes_reasoning() {
         input_tokens: 10_000,
         output_tokens: 2_000,
         reasoning_tokens: 5_000,
+        input_accounting: Default::default(),
         cumulative_billed_input: 0,
         cumulative_billed_output: 0,
         cache_read_input_tokens: None,
@@ -196,6 +197,7 @@ fn test_compaction_token_tracker_reset_after_compaction_preserves_reasoning() {
         cumulative_billed_output: 50_000,
         cache_read_input_tokens: Some(50_000),
         cache_creation_input_tokens: Some(5_000),
+        input_accounting: Default::default(),
     };
 
     tracker.reset_after_compaction();

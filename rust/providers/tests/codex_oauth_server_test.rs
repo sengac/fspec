@@ -49,7 +49,7 @@ async fn ephemeral_listener() -> (TokioTcpListener, u16) {
 #[serial]
 async fn test_successful_browser_oauth_login_with_pkce() {
     // @step Given no existing Codex credentials are available
-    let (temp_dir, _guard) = setup_codex_home();
+    let (temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("auth.json");
     assert!(!auth_path.exists(), "auth.json should not exist initially");
 
@@ -154,7 +154,7 @@ async fn test_successful_browser_oauth_login_with_pkce() {
 #[serial]
 async fn test_authorization_code_exchanged_for_tokens_at_token_endpoint() {
     // @step Given a valid authorization code and PKCE verifier
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let pkce = generate_pkce();
     let auth_code = "test_authorization_code_xyz";
     let redirect_uri = format!("http://localhost:{OAUTH_PORT}/auth/callback");
@@ -205,7 +205,7 @@ async fn test_authorization_code_exchanged_for_tokens_at_token_endpoint() {
 #[serial]
 async fn test_oauth_callback_rejects_mismatched_state_parameter() {
     // @step Given the OAuth server is running and waiting for callback
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = _temp_dir.path().join("auth.json");
 
     let mock_server = MockServer::start().await;
@@ -260,26 +260,18 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
         "Error page should indicate authorization failure: {body}"
     );
 
-    let result: anyhow::Result<codelet_providers::codex::codex_auth::CodexTokens> =
-        login_handle.await.expect("Task should not panic");
-    assert!(result.is_err());
-    let err_msg = result.unwrap_err().to_string();
     assert!(
-        err_msg.contains("CSRF") || err_msg.contains("state"),
-        "Error should mention CSRF or state: {err_msg}"
+        !login_handle.is_finished(),
+        "stale state must not terminate the current login"
     );
+    login_handle.abort();
+    let _ = login_handle.await;
 
     // @step And no tokens should be persisted
     assert!(
         !auth_path.exists(),
         "No auth.json should exist after CSRF rejection"
     );
-
-    // @step And the OAuth server should shut down
-    // (handle completed)
-
-    // @step And the login function should return a CSRF error
-    // (verified above)
 }
 
 // =========================================================================
@@ -290,7 +282,7 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
 #[serial]
 async fn test_oauth_login_times_out() {
     // @step Given the OAuth server is running and waiting for callback
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
 
     let (listener, _port) = ephemeral_listener().await;
 
@@ -393,7 +385,7 @@ async fn test_port_1455_already_in_use() {
 #[serial]
 async fn test_token_exchange_fails_due_to_network_error() {
     // @step Given the OAuth server is running and waiting for callback
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = _temp_dir.path().join("auth.json");
 
     let mock_server = MockServer::start().await;
@@ -473,7 +465,7 @@ async fn test_token_exchange_fails_due_to_network_error() {
 #[serial]
 async fn test_user_cancels_oauth_flow_via_cancel_route() {
     // @step Given the OAuth server is running and waiting for callback
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -528,7 +520,7 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
 #[tokio::test]
 #[serial]
 async fn test_server_handles_404_then_processes_cancel() {
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -678,7 +670,7 @@ fn test_oauth_authorize_url_contains_all_required_parameters() {
 #[serial]
 async fn test_oauth_callback_receives_authorization_error() {
     // @step Given the OAuth server is running and waiting for callback
-    let (_temp_dir, _guard) = setup_codex_home();
+    let (_temp_dir, _guard) = setup_codex_home().expect("isolated OAuth home directory");
     let auth_path = _temp_dir.path().join("auth.json");
 
     let (listener, port) = ephemeral_listener().await;

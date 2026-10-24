@@ -1,0 +1,166 @@
+{
+  "scenarios": [
+    {
+      "name": "Contentless terminal candidates preserve finish reasons and measured usage",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/bug224_gemini_contentless_terminal.rs",
+          "lines": "102-145",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                153,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contentless terminal candidates accept explicitly measured zero",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/bug224_gemini_contentless_terminal.rs",
+          "lines": "147-175",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                153,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contentless terminal candidates reject missing or inconsistent usage",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/bug224_gemini_contentless_terminal.rs",
+          "lines": "177-218",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                153,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/patches/rig-core/tests/bug224_gemini_contentless_terminal.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/gemini/streaming.rs"
+    ],
+    "totalLinesCovered": 217
+  }
+}

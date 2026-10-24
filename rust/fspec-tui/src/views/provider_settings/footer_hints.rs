@@ -30,9 +30,9 @@ pub const FOOTER_COMMON: &str = "/ filter · Tab: Switch to models · Esc: close
 pub(super) fn compute_footer_hint(view: &ProviderSettingsView) -> String {
     match &view.mode {
         ProviderSettingsMode::List => footer_hint_for(focused_row_kind(view)),
-        ProviderSettingsMode::CreateProfile { .. } | ProviderSettingsMode::EditProfile { .. } => {
-            FORM_FOOTER.to_string()
-        }
+        ProviderSettingsMode::CreateProfile { .. }
+        | ProviderSettingsMode::EditProfile { .. }
+        | ProviderSettingsMode::EditSettings { .. } => FORM_FOOTER.to_string(),
         ProviderSettingsMode::DisconnectOAuth { .. } => "y: confirm · n/Esc: cancel".to_string(),
         ProviderSettingsMode::OAuthBrowserWaiting { .. }
         | ProviderSettingsMode::OAuthDeviceWaiting { .. } => "Esc: cancel".to_string(),
@@ -93,6 +93,7 @@ pub fn footer_hint_for(kind: Option<RowKind>) -> String {
         Some(RowKind::AddProfile) => {
             format!("Enter: create · {FOOTER_COMMON}")
         }
+        Some(RowKind::Settings) => format!("Enter: edit · {FOOTER_COMMON}"),
     }
 }
 
@@ -106,6 +107,7 @@ pub(super) fn focused_row_kind(view: &ProviderSettingsView) -> Option<RowKind> {
             expanded: *expanded,
         },
         NavItemKind::Profile { .. } => RowKind::Profile,
+        NavItemKind::Settings => RowKind::Settings,
         NavItemKind::AddProfile => RowKind::AddProfile,
         NavItemKind::ApiKey => RowKind::ApiKey,
         NavItemKind::OAuthLogin { .. } => RowKind::OauthLogin,

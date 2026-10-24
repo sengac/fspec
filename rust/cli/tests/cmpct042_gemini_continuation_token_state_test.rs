@@ -15,8 +15,10 @@
 //! cache fields (the 'Don't double count' invariant from
 //! stream_loop.rs:398-401).
 
-use std::fs;
-use std::path::PathBuf;
+#[path = "support/gemini_continuation_source.rs"]
+mod gemini_source;
+
+use gemini_source::gemini_continuation_source;
 use std::sync::{Arc, Mutex};
 
 use codelet_core::compaction::TokenTracker;
@@ -60,13 +62,6 @@ fn simulate_hook_check(
         state.lock().unwrap().compaction_needed = true;
         cancel_sig.cancel();
     }
-}
-
-fn gemini_continuation_source() -> String {
-    // CARGO_MANIFEST_DIR = rust/cli
-    let path =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/gemini_continuation.rs");
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 // ===========================================================================
@@ -229,10 +224,10 @@ fn nested_continuation_display_basis_seed_is_unchanged() {
         .join("");
     assert!(
         normalized.contains(
-            "input_tokens:cont_final.input_tokens,\
-             cache_read_input_tokens:cont_final.cache_read_tokens"
+            "input_tokens:current.input_tokens,\
+             cache_read_input_tokens:current.cache_read_tokens"
         ),
         "the nested continuation TokenState must remain display-basis \
-         (cont_final raw input + separate cache fields)"
+         (current raw input + separate cache fields)"
     );
 }

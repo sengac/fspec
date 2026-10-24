@@ -1,0 +1,122 @@
+{
+  "scenarios": [
+    {
+      "name": "Historical hydration preserves current provider waiting state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug244_replay_state.rs",
+          "lines": "16-57",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/transcript_record.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idle transcript polling retains bounded task state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug244_replay_state.rs",
+          "lines": "127-157",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Live content notifications dismiss provider waiting without rendering twice",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug244_replay_state.rs",
+          "lines": "61-123",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_transcript_live.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug244_replay_state.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/transcript_record.rs",
+      "rust/fspec-tui/src/app/dispatch_transcript.rs",
+      "rust/fspec-tui/src/app/dispatch_transcript_live.rs"
+    ],
+    "totalLinesCovered": 192
+  }
+}

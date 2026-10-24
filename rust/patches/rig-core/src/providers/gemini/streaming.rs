@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
+use super::completion::CompletionModel;
 use super::completion::gemini_api_types::{ContentCandidate, FinishReason, Part, PartKind};
-use super::completion::{CompletionModel, create_request_body};
 use crate::completion::{CompletionError, CompletionRequest, GetTokenUsage};
 use crate::http_client::HttpClientExt;
 use crate::http_client::sse::{Event, GenericEventSource};
@@ -27,15 +27,13 @@ pub struct PartialUsage {
 
 impl GetTokenUsage for PartialUsage {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-
-        usage.input_tokens = self.prompt_token_count as u64;
-        usage.output_tokens = (self.cached_content_token_count.unwrap_or_default()
-            + self.candidates_token_count.unwrap_or_default()
-            + self.thoughts_token_count.unwrap_or_default()) as u64;
-        usage.total_tokens = usage.input_tokens + usage.output_tokens;
-
-        Some(usage)
+        super::usage::normalize(
+            self.prompt_token_count,
+            self.candidates_token_count,
+            self.thoughts_token_count,
+            self.cached_content_token_count,
+            self.total_token_count,
+        )
     }
 }
 
@@ -58,17 +56,8 @@ pub struct StreamingCompletionResponse {
 
 impl GetTokenUsage for StreamingCompletionResponse {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-        usage.total_tokens = self.usage_metadata.total_token_count as u64;
-        usage.output_tokens = self
-            .usage_metadata
-            .candidates_token_count
-            .map(|x| x as u64)
-            .unwrap_or(0);
-        usage.input_tokens = self.usage_metadata.prompt_token_count as u64;
-        Some(usage)
+        self.usage_metadata.token_usage()
     }
-
     /// PROV-039: Return the captured stop_reason (mapped from Gemini finish_reason)
     fn stop_reason(&self) -> Option<&str> {
         self.stop_reason.as_deref()
@@ -100,17 +89,15 @@ where
         } else {
             tracing::Span::current()
         };
-        let request = create_request_body(completion_request)?;
+        let body = self.selected_request_bytes(completion_request)?;
 
         if enabled!(Level::TRACE) {
             tracing::trace!(
                 target: "rig::streaming",
                 "Gemini streaming completion request: {}",
-                serde_json::to_string_pretty(&request)?
+                String::from_utf8_lossy(&body)
             );
         }
-
-        let body = serde_json::to_vec(&request)?;
 
         let req = self
             .client
@@ -143,7 +130,7 @@ where
                         let data = match serde_json::from_str::<StreamGenerateContentResponse>(&message.data) {
                             Ok(d) => d,
                             Err(error) => {
-                                tracing::error!(?error, message = message.data, "Failed to parse SSE message");
+                                tracing::error!(?error, body_bytes = message.data.len(), body = %message.data, "Failed to parse SSE message");
                                 continue;
                             }
                         };
@@ -163,16 +150,7 @@ where
                             continue;
                         };
 
-                        let Some(content) = choice.content else {
-                            tracing::debug!(finish_reason = ?choice.finish_reason, "Streaming candidate missing content");
-                            continue;
-                        };
-
-                        if content.parts.is_empty() {
-                            tracing::trace!(reason = ?choice.finish_reason, "There is no part in the streaming content");
-                        }
-
-                        for part in content.parts {
+                        for part in choice.content.into_iter().flat_map(|content| content.parts) {
                             match part {
                                 Part {
                                     part: PartKind::Text(text),
@@ -234,8 +212,9 @@ where
                     }
                     Err(error) => {
                         tracing::error!(?error, "SSE error");
-                        yield Err(CompletionError::ProviderError(error.to_string()));
-                        break;
+                        event_source.close();
+                        yield Err(CompletionError::HttpError(error));
+                        return;
                     }
                 }
             }
@@ -243,8 +222,16 @@ where
             // Ensure event source is closed when stream ends
             event_source.close();
 
+            let Some(final_usage) = final_usage else {
+                yield Err(CompletionError::ResponseError("missing Gemini usage".into()));
+                return;
+            };
+            if final_usage.token_usage().is_none() {
+                yield Err(CompletionError::ResponseError("inconsistent Gemini usage".into()));
+                return;
+            }
             yield Ok(streaming::RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-                usage_metadata: final_usage.unwrap_or_default(),
+                usage_metadata: final_usage,
                 // PROV-039: Propagate captured stop_reason through FinalResponse
                 stop_reason: captured_stop_reason,
             }));
@@ -526,17 +513,18 @@ mod tests {
     #[test]
     fn test_partial_usage_token_calculation() {
         let usage = PartialUsage {
-            total_token_count: 100,
+            total_token_count: 80,
             cached_content_token_count: Some(20),
             candidates_token_count: Some(30),
             thoughts_token_count: Some(10),
             prompt_token_count: 40,
         };
-
-        let token_usage = usage.token_usage().unwrap();
-        assert_eq!(token_usage.input_tokens, 40);
-        assert_eq!(token_usage.output_tokens, 60); // 20 + 30 + 10
-        assert_eq!(token_usage.total_tokens, 100);
+        let token_usage = usage.token_usage().expect("consistent Gemini measurements");
+        assert_eq!(token_usage.input_tokens, 20);
+        assert_eq!(token_usage.output_tokens, 30);
+        assert_eq!(token_usage.total_tokens, 80);
+        assert_eq!(token_usage.cache_read_input_tokens, Some(20));
+        assert_eq!(token_usage.reasoning_tokens, Some(10));
     }
 
     #[test]

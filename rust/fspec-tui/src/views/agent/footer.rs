@@ -1,6 +1,6 @@
 //! SessionFooter — 1-row strip painting `<cwd> [⎇ <branch>]` on the
-//! right side, and (RPC-047) an optional `[compacting: <phase> <c>/<t>]
-//! ▰▰▰▰▰▱▱▱▱▱` chip on the left when a compaction is in flight for the
+//! right side, and an optional `[compacting: <phase>]` activity chip
+//! on the left when a compaction is in flight for the
 //! focused session.
 //!
 //! Features: rpc018-agent-chrome, rpc029-agent-structure-alignment,
@@ -28,15 +28,12 @@ use super::paint_row_bg;
 /// RPC-029: dark-grey (`#333333`) row background on every footer cell.
 pub(crate) const FOOTER_BG: Color = Color::Rgb(0x33, 0x33, 0x33);
 
-/// RPC-047: fixed bar width (in cells). Mirrors the 10-cell TS bar.
-const COMPACTION_BAR_WIDTH: u16 = 10;
-
 /// SessionFooter widget. Caller owns the `WorkspaceInfo` snapshot AND
 /// (RPC-047) the optional `CompactionProgress` for the focused session.
 pub struct SessionFooter<'a> {
     pub workspace: Option<&'a WorkspaceInfo>,
-    /// When `Some`, the left side paints `[compacting: <phase> <c>/<t>]` +
-    /// a 10-cell bar; `None` paints only the right-aligned `cwd [⎇ branch]`.
+    /// When `Some`, the left side paints phase-only compaction activity;
+    /// `None` paints only the right-aligned `cwd [⎇ branch]`.
     pub compaction_progress: Option<&'a CompactionProgress>,
     /// RPC-061: per-session pending-supervisor count. When > 0, paints
     /// `[N pending from supervisor]` (yellow) in the left-aligned slot,
@@ -108,45 +105,12 @@ fn build_right_line(workspace: &WorkspaceInfo) -> Line<'static> {
     Line::from(spans)
 }
 
-/// RPC-047: build the left-aligned compaction chip + bar.
+/// Build the left-aligned activity chip without interpreting legacy counts.
 fn build_left_compaction_line(progress: &CompactionProgress) -> Line<'static> {
-    let chip = format!(
-        "[compacting: {phase} {current}/{total}]",
-        phase = progress.phase,
-        current = progress.current,
-        total = progress.total,
-    );
-    let bar = compaction_bar(
-        progress.current,
-        progress.total,
-        COMPACTION_BAR_WIDTH as u32,
-    );
-    Line::from(vec![
-        Span::styled(chip, Style::default().fg(Color::DarkGray)),
-        Span::raw(" "),
-        Span::styled(bar, Style::default().fg(Color::Cyan)),
-    ])
-}
-
-/// RPC-047: fixed-width `▰▰▰▱▱▱` bar with `width` cells. `filled =
-/// round(current / total * width)`, saturating to `0..=width`.
-/// `total == 0` yields an all-empty bar.
-pub(crate) fn compaction_bar(current: u32, total: u32, width: u32) -> String {
-    let filled = if total == 0 {
-        0
-    } else {
-        let ratio = (current as f64) / (total as f64);
-        (ratio * width as f64).round().clamp(0.0, width as f64) as u32
-    };
-    let mut out = String::with_capacity(width as usize * 3);
-    for i in 0..width {
-        if i < filled {
-            out.push('\u{25B0}');
-        } else {
-            out.push('\u{25B1}');
-        }
-    }
-    out
+    Line::from(Span::styled(
+        format!("[compacting: {}]", progress.phase),
+        Style::default().fg(Color::DarkGray),
+    ))
 }
 
 fn paint_right_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {

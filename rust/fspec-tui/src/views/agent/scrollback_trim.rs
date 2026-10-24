@@ -212,7 +212,7 @@ impl ScrollbackList {
 /// Opaque (`source: None`) so resize never re-wraps it — stable geometry.
 fn marker_line(trimmed_total: usize) -> Line<'static> {
     let dim = Style::default().add_modifier(Modifier::DIM);
-    let text = format!("\u{2026} {trimmed_total} older lines trimmed \u{2026}");
+    let text = format!("\u{2026} {trimmed_total} older lines trimmed — /archive <event-sequence> to inspect originals \u{2026}");
     Line::from(Span::styled(text, dim))
 }
 

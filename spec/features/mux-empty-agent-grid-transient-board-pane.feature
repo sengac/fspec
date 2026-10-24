@@ -25,11 +25,11 @@ Feature: Mux empty agent grid — transient board pane instead of a blank 0-pane
   moment a session fills an agent slot). The transient pane owns the
   full body area (no dividers) and hosts the live BoardView, so:
   - Esc opens the BoardExitConfirmationDialog (BUG-165 stage-4 guard
-    now sees a Board pane at the focus index);
+  now sees a Board pane at the focus index);
   - Shift+Right opens the new-agent CreateSessionDialog (MUX-002);
   - Enter on a selected work unit starts a session (R8 path);
   - a new session restores the configured layout (the transient pane
-    vanishes; agent slots fill from the window).
+  vanishes; agent slots fill from the window).
   """
 
   # ========================================

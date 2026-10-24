@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Unknown durable coverage survives the committed snapshot wire roundtrip",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/cmpct068_committed_snapshot.rs",
+          "lines": "3-38",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/committed_compaction.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reduction uses context occupancy independently of displayed spend",
+      "testMappings": [
+        {
+          "file": "rust/rpc-types/tests/cmpct068_committed_snapshot.rs",
+          "lines": "40-72",
+          "implMappings": [
+            {
+              "file": "rust/rpc-types/src/committed_compaction.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/rpc-types/tests/cmpct068_committed_snapshot.rs"
+    ],
+    "implFiles": [
+      "rust/rpc-types/src/committed_compaction.rs"
+    ],
+    "totalLinesCovered": 85
+  }
+}

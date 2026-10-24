@@ -17,6 +17,8 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
     use serde_json::json;
 
     match chunk {
+        StreamChunk::ResponseAttemptStarted => json!({"type": "responseAttemptStarted"}),
+        StreamChunk::ResponseAttemptAborted => json!({"type": "responseAttemptAborted"}),
         StreamChunk::Text {
             text,
             correlation_id,
@@ -84,10 +86,24 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
             "type": "sessionStateChange",
             "state": format!("{:?}", state),
         }),
+        StreamChunk::CompactionProgressUpdate { progress } => json!({
+            "type": "compactionProgressUpdate",
+            "progress": progress,
+        }),
+        StreamChunk::ProviderWaiting { message } => json!({
+            "type": "providerWaiting",
+            "message": message,
+        }),
         StreamChunk::UserNotification { message, severity } => json!({
             "type": "userNotification",
             "message": message,
             "severity": format!("{:?}", severity),
+        }),
+        StreamChunk::InterruptedWithReason {
+            queued_inputs,
+            reason,
+        } => json!({
+            "type": "interrupted", "queuedInputs": queued_inputs, "reason": reason,
         }),
         StreamChunk::Interrupted { queued_inputs } => json!({
             "type": "interrupted",
@@ -100,6 +116,9 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
                 "outputTokens": tokens.output_tokens,
                 "cacheCreationInputTokens": tokens.cache_creation_input_tokens,
                 "cacheReadInputTokens": tokens.cache_read_input_tokens,
+                "reasoningTokens": tokens.reasoning_tokens,
+                "cumulativeBilledInput": tokens.cumulative_billed_input,
+                "cumulativeBilledOutput": tokens.cumulative_billed_output,
                 "tokensPerSecond": tokens.tokens_per_second,
             },
         }),
@@ -111,6 +130,10 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
                 "threshold": context_fill.threshold,
                 "contextWindow": context_fill.context_window,
             },
+        }),
+        StreamChunk::ContextSnapshot { snapshot } => json!({
+            "type": "contextSnapshot",
+            "snapshot": snapshot,
         }),
         StreamChunk::Done => json!({
             "type": "done",
@@ -147,6 +170,10 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
                 "urgent": supervisor_pending_injection.urgent,
                 "content": supervisor_pending_injection.content,
             },
+        }),
+        StreamChunk::CommittedCompaction { snapshot } => json!({
+            "type": "committedCompaction",
+            "snapshot": snapshot,
         }),
         StreamChunk::CompactionComplete { compaction_result } => json!({
             "type": "compactionComplete",

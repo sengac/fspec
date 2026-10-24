@@ -1,11 +1,12 @@
 //! Logging module - Rust port of rust's Winston logging system
 //!
 //! Uses tracing + tracing-subscriber + tracing-appender for structured logging
-//! with daily file rotation to {data_dir}/logs/
+//! with private daily file rotation to {data_dir}/logs/private/.
 
 use anyhow::Result;
+pub mod privacy;
+pub mod private_files;
 use tracing::Subscriber;
-use tracing_appender::rolling;
 use tracing_subscriber::{
     fmt, layer::SubscriberExt, registry::LookupSpan, util::SubscriberInitExt, EnvFilter, Layer,
 };
@@ -32,11 +33,8 @@ where
                     let level = event.metadata().level().as_str();
 
                     // Extract message from fields
-                    let mut message = String::new();
-                    let mut visitor = MessageVisitor {
-                        message: &mut message,
-                    };
-                    event.record(&mut visitor);
+                    let message =
+                        privacy::event_fields(event, privacy::PrivacyFields::default()).render();
 
                     // Capture to debug stream
                     manager.capture(
@@ -54,31 +52,12 @@ where
     }
 }
 
-/// Visitor to extract message from tracing event fields
-struct MessageVisitor<'a> {
-    message: &'a mut String,
-}
-
-impl<'a> tracing::field::Visit for MessageVisitor<'a> {
-    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
-        if field.name() == "message" {
-            *self.message = format!("{value:?}");
-        }
-    }
-
-    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
-        if field.name() == "message" {
-            *self.message = value.to_string();
-        }
-    }
-}
-
-/// Initialize the logging system with file-based JSON output and daily rotation
+/// Initialize privacy-aware file diagnostics with daily rotation
 ///
 /// This mirrors rust's Winston logging implementation:
-/// - Logs to {data_dir}/logs/codelet-YYYY-MM-DD
+/// - Logs to {data_dir}/logs/private/rust.YYYY-MM-DD
 /// - Daily rotation with retention of last 5 files
-/// - JSON format for machine parsing
+/// - Privacy-aware text format shared with the fspec binary
 /// - File-only (no stdout) to avoid CLI interference
 /// - Supports RUST_LOG env var or verbose flag for debug mode
 ///
@@ -99,13 +78,11 @@ pub fn init_logging(verbose: bool) -> Result<()> {
     // Derive log directory from global data directory
     let log_dir = crate::get_data_dir()
         .map_err(|e| anyhow::anyhow!("{e}"))?
-        .join("logs");
-
-    std::fs::create_dir_all(&log_dir)?;
+        .join("logs/private");
 
     // Set up daily file rotation (like Winston's DailyRotateFile)
     // Files named: codelet-2024-12-02, codelet-2024-12-03, etc.
-    let file_appender = rolling::daily(log_dir, "rust");
+    let file_appender = private_files::appender(&log_dir, "rust")?;
 
     // Configure log level based on verbose flag or RUST_LOG env var
     let env_filter = if verbose {
@@ -117,7 +94,13 @@ pub fn init_logging(verbose: bool) -> Result<()> {
     // Initialize tracing subscriber with JSON formatting (file-only, no stdout)
     // CLI-022: Add DebugCaptureLayer for log.entry capture
     tracing_subscriber::registry()
-        .with(fmt::layer().json().with_writer(file_appender))
+        .with(privacy::PrivacySpanLayer(privacy::PrivacyFields::default()))
+        .with(
+            fmt::layer()
+                .fmt_fields(privacy::PrivacyFields::default())
+                .event_format(privacy::PrivacyFields::default())
+                .with_writer(file_appender),
+        )
         .with(DebugCaptureLayer)
         .with(env_filter)
         .init();

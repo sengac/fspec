@@ -146,7 +146,7 @@ async fn a_remote_session_creation_adds_a_tab_live_no_poll() {
     mock.push_session_created(remote.clone());
     let action = wait_for_action(
         &mut app,
-        |a| matches!(a, Action::SessionCreated(s) if s.value == "S-remote-1"),
+        |a| matches!(a, Action::SessionObserved(info) if info.id == "S-remote-1"),
     )
     .await
     .expect("the session-created event must reach the action bus");
@@ -308,7 +308,7 @@ async fn bootstrap_spawns_the_session_removed_subscriber_with_degenerate_default
     // session_removed; RPC-437 adds the 9th: session_cleared).
     assert_eq!(
         app.subscriber_task_count(),
-        9,
+        10,
         "bootstrap must spawn the new session-removed subscriber task (7 pre-RPC-434)"
     );
 

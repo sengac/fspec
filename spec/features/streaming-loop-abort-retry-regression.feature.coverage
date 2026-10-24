@@ -1,0 +1,115 @@
+{
+  "scenarios": [
+    {
+      "name": "Genuine sustained loops still cancel persist recover and stop retrying",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_loop_abort_retry.rs",
+          "lines": "23-126",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug216_loop_abort_retry.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/background_output.rs",
+      "rust/agent-loop/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 181
+  }
+}

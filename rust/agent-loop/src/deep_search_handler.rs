@@ -131,7 +131,12 @@ pub async fn execute_deep_search(
 ) -> Result<String, String> {
     // 1. Create ephemeral session_id — NOT shared with parent
     let ephemeral_session_id = Uuid::new_v4();
-    tracing::warn!(
+    let _admission = codelet_tools::tool_admission::register_auxiliary(
+        ephemeral_session_id,
+        project_path.to_path_buf(),
+    )
+    .map_err(|error| error.to_string())?;
+    tracing::debug!(
         "[deep-search] execute_deep_search ENTER provider='{}' model={:?} depth={}/{} project={} ephemeral={}",
         provider_name,
         model_id,
@@ -270,10 +275,18 @@ pub async fn execute_deep_search(
 /// return them from a match arm. This macro avoids duplicating the tool
 /// chain + RigAgent wrapping for each provider.
 macro_rules! run_agent {
-    ($agent:expr, $max_depth:expr, $query:expr, $provider_name:expr) => {{
-        let rig_agent = RigAgent::new($agent, $max_depth);
+    ($agent:expr, $session_id:expr, $max_depth:expr, $query:expr, $provider_name:expr) => {{
+        let agent = $agent;
+        codelet_tools::tool_attribution::configure_agent_tools(&agent, $session_id.to_string())
+            .await
+            .map_err(|error| format!("DeepSearch attribution configuration failed: {error}"))?;
+        let rig_agent = RigAgent::new(agent, $max_depth);
         if provider_uses_streaming_execution($provider_name) {
-            collect_final_response_from_stream(rig_agent.prompt_streaming($query).await).await
+            collect_final_response_from_stream(
+                rig_agent.prompt_streaming($query).await,
+                $provider_name,
+            )
+            .await
         } else {
             rig_agent
                 .prompt($query)
@@ -284,12 +297,12 @@ macro_rules! run_agent {
 }
 
 macro_rules! build_and_run {
-    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr, $can_recurse:expr, $graph_available:expr) => {{
+    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr, $can_recurse:expr, $graph_available:expr $(, $builder_kind:ident)?) => {{
         let request_config = $request_config;
-        let mut agent_builder = $provider
-            .client()
-            .agent($provider.model())
-            .preamble(&request_config.preamble);
+        let mut agent_builder = crate::auxiliary_agent_builder::auxiliary_agent_builder!(
+            $provider $(, $builder_kind)?
+        )
+        .preamble(&request_config.preamble);
 
         if let Some(max_tokens) = request_config.max_tokens {
             agent_builder = agent_builder.max_tokens(max_tokens);
@@ -325,7 +338,7 @@ macro_rules! build_and_run {
                 }
             }
 
-            run_agent!(agent, $max_depth, $query, $provider_name)
+            run_agent!(agent, $session_id, $max_depth, $query, $provider_name)
         } else {
             let agent = agent_builder
                 .tool(ReadTool::new($session_id))
@@ -347,7 +360,7 @@ macro_rules! build_and_run {
                 }
             }
 
-            run_agent!(agent, $max_depth, $query, $provider_name)
+            run_agent!(agent, $session_id, $max_depth, $query, $provider_name)
         }
     }};
 }
@@ -366,13 +379,16 @@ pub(crate) fn provider_uses_streaming_execution(provider_name: &str) -> bool {
 /// Public within the crate so the compactor sub-agent spawner
 /// (`generate_compaction_handler`) shares the exact same streaming
 /// collection contract (DeepSearch clone — no duplicated retry logic).
-pub(crate) async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
+pub(crate) async fn collect_final_response_from_stream<S, R>(
+    stream: S,
+    provider_name: &str,
+) -> Result<String, String>
 where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
     R: Clone + Unpin + rig::completion::GetTokenUsage,
 {
     use codelet_cli::interactive::{
-        is_transient_network_error, network_retry_delay, MAX_NETWORK_RETRIES,
+        network_retry_delay, provider_recovery::should_retry_network_error, MAX_NETWORK_RETRIES,
     };
 
     let mut last_final_response: Option<String> = None;
@@ -394,13 +410,16 @@ where
             Err(error) => {
                 let error_str = error.to_string();
                 // NET-001: Retry transient network errors in DeepSearch streams
-                if is_transient_network_error(&error_str) {
+                if should_retry_network_error(provider_name, error.as_ref()) {
                     network_retry_count += 1;
                     if network_retry_count <= MAX_NETWORK_RETRIES {
                         let delay = network_retry_delay(network_retry_count);
                         tracing::info!(
                             "NET-001: DeepSearch network error (attempt {}/{}), retrying in {:.1}s: {}",
-                            network_retry_count, MAX_NETWORK_RETRIES, delay.as_secs_f64(), error_str
+                            network_retry_count,
+                            MAX_NETWORK_RETRIES,
+                            delay.as_secs_f64(),
+                            error_str
                         );
                         tokio::time::sleep(delay).await;
                         // Continue polling the stream — it may recover or yield None
@@ -463,7 +482,7 @@ async fn build_and_run_agent(
         "base tool count changed — update build_and_run_agent tool list"
     );
 
-    tracing::warn!(
+    tracing::debug!(
         "[deep-search-dispatch] ENTER provider={} model={:?} ephemeral_session={} project_path={} can_recurse={} graph_available={}",
         provider_name,
         model_id,
@@ -494,7 +513,7 @@ async fn build_and_run_agent(
     // registration above, and write-type tools on the sub-agent pose
     // no greater risk than they do on the parent agent.
     if custom_provider_registered(provider_name) {
-        tracing::warn!(
+        tracing::debug!(
             "[deep-search-dispatch] routing provider='{}' through CustomProvider::create_rig_agent (PROV-104)",
             provider_name,
         );
@@ -516,7 +535,7 @@ async fn build_and_run_agent(
             );
             format!("Failed to build custom-provider sub-agent for '{provider_name}': {e}")
         })?;
-        tracing::warn!(
+        tracing::debug!(
             "[deep-search-dispatch] CustomProvider::create_rig_agent built agent for '{}' (tool_adapter_count={})",
             provider_name,
             handle.tool_adapter_count(),
@@ -524,6 +543,9 @@ async fn build_and_run_agent(
         let _ = context_window;
         let _ = max_output_tokens;
         let agent = handle.into_inner();
+        codelet_tools::tool_attribution::configure_agent_tools(&agent, session_id.to_string())
+            .await
+            .map_err(|error| format!("DeepSearch attribution configuration failed: {error}"))?;
         let rig_agent = RigAgent::new(agent, max_depth);
         let result = rig_agent.prompt(query).await.map_err(|e| {
             tracing::warn!(
@@ -532,7 +554,7 @@ async fn build_and_run_agent(
             );
             format!("DeepSearch sub-agent failed: {e}")
         });
-        tracing::warn!(
+        tracing::debug!(
             "[deep-search-dispatch] EXIT provider='{}' result_is_ok={}",
             provider_name,
             result.is_ok(),
@@ -628,7 +650,8 @@ async fn build_and_run_agent(
                 max_depth,
                 provider_name,
                 can_recurse,
-                graph_available
+                graph_available,
+                codex
             )
         }
         "zai" => {
@@ -687,4 +710,5 @@ async fn build_and_run_agent(
 }
 
 #[cfg(test)]
+#[path = "deep_search_handler/tests.rs"]
 mod tests;

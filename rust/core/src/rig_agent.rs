@@ -10,6 +10,9 @@ use rig::streaming::StreamingPrompt;
 use rig::wasm_compat::WasmCompatSend;
 use tracing::debug;
 
+#[path = "selected_request.rs"]
+mod selected_request;
+
 /// Default maximum depth for multi-turn tool execution
 /// Set to usize::MAX - 1 to effectively disable the limit
 /// (rig checks: current_max_depth > self.max_depth + 1, so this prevents overflow)
@@ -34,6 +37,7 @@ where
     /// `preserveThinking` is absent/false, so old thinking never confuses the
     /// model; the persisted session history keeps the blocks regardless.
     preserve_thinking: bool,
+    settlement_session: Option<uuid::Uuid>,
 }
 
 impl<M> RigAgent<M>
@@ -51,6 +55,7 @@ where
             agent,
             max_depth,
             preserve_thinking: true,
+            settlement_session: None,
         }
     }
 
@@ -62,6 +67,15 @@ where
     /// Get the maximum depth setting
     pub fn max_depth(&self) -> usize {
         self.max_depth
+    }
+
+    pub fn tool_server_handle(&self) -> &rig::tool::server::ToolServerHandle {
+        &self.agent.tool_server_handle
+    }
+
+    pub fn with_settlement_session(mut self, session_id: uuid::Uuid) -> Self {
+        self.settlement_session = Some(session_id);
+        self
     }
 
     /// PROV-143: whether thinking/reasoning blocks are preserved in the
@@ -206,13 +220,33 @@ where
         // strip thinking blocks when the flag is disabled.
         let history_for_rig = self.outgoing_history(history);
 
-        self.agent
+        let hook = crate::request_settlement_hook::RequestSettlementHook::optional(
+            hook,
+            self.settlement_session,
+        );
+        let observer = hook.request_usage_observer();
+        let settlement = hook.clone();
+        let stream = self
+            .agent
             .stream_prompt(prompt)
             .with_history(history_for_rig)
             .with_hook(hook)
             .multi_turn(self.max_depth)
-            .await
-            .map(|result| result.map_err(anyhow::Error::from))
+            .await;
+        Box::pin(async_stream::stream! {
+            let observed = rig::completion::observe_request_usage(stream, observer);
+            futures::pin_mut!(observed);
+            while let Some(event) = observed.next().await {
+                if let Err(error) = settlement.check() {
+                    yield Err(anyhow::Error::from(error));
+                    return;
+                }
+                yield event.map_err(anyhow::Error::from);
+            }
+            if let Err(error) = settlement.check() {
+                yield Err(anyhow::Error::from(error));
+            }
+        })
     }
 }
 

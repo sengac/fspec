@@ -24,6 +24,10 @@ pub enum ProviderSettingsMode {
         provider_id: String,
         form: profile_form::ProfileForm,
     },
+    EditSettings {
+        provider_id: String,
+        form: profile_form::ProfileForm,
+    },
     /// PROV-110: edit-profile form (connection fields prefilled). PROV-136:
     /// `profile_name` is the ORIGINAL name and the form name IS editable, so a
     /// submit with a changed name renames the profile (emitting the original as

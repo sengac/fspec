@@ -16,22 +16,22 @@ Feature: Mux dividers — one per inter-pane gap, drag release persists, percent
 
   Percentage-scale model (replaces "missing entries mean equal share"):
   - splits stores ONE percentage per inter-pane gap: n panes → n-1 entries,
-    splits[i] = pane i's share of the axis (after divider subtraction) in
-    percent; the LAST pane always absorbs the integer remainder so the scale
-    always sums to 100.
+  splits[i] = pane i's share of the axis (after divider subtraction) in
+  percent; the LAST pane always absorbs the integer remainder so the scale
+  always sums to 100.
   - Default (fresh entry, /mux n) is equal portions: every entry ≈ 100/n
-    (e.g. 50/50 for 2, 33/33/34 for 3, 25/25/25/25 for 4).
+  (e.g. 50/50 for 2, 33/33/34 for 3, 25/25/25/25 for 4).
   - Changing the pane count RESCALES the existing scale proportionally
-    (largest-remainder rounding): adding a pane gives it an equal share
-    100/new_n and shrinks the others; removing one re-allocates its share to
-    the survivors. Nothing is reset to a bare equal split and no user
-    position is thrown away.
+  (largest-remainder rounding): adding a pane gives it an equal share
+  100/new_n and shrinks the others; removing one re-allocates its share to
+  the survivors. Nothing is reset to a bare equal split and no user
+  position is thrown away.
   - Every inter-pane gap has its own 1-col/row divider, independently
-    draggable. Releasing a divider stores the released percent — the grid
-    must NOT snap back to an equal split (the old set_split_from_position
-    early-return on an empty splits vec caused the snap-back).
+  draggable. Releasing a divider stores the released percent — the grid
+  must NOT snap back to an equal split (the old set_split_from_position
+  early-return on an empty splits vec caused the snap-back).
   - Persisted tui.mux splits keep the same shape (Vec<u16>, n-1 entries);
-    old empty-vec configs normalize to the equal scale on load.
+  old empty-vec configs normalize to the equal scale on load.
   """
 
   Background: User Story

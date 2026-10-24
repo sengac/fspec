@@ -1,0 +1,105 @@
+{
+  "scenarios": [
+    {
+      "name": "Cold session display includes one original safe failure after its prefix",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/bug250_cold_terminal_display.rs",
+          "lines": "14-90",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/replay_content.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            },
+            {
+              "file": "rust/sessions/src/replay_transcript.rs",
+              "lines": [
+                16,
+                39,
+                40
+              ]
+            },
+            {
+              "file": "rust/sessions/src/transcript_archive.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive.rs",
+              "lines": [
+                25,
+                34,
+                35,
+                79,
+                85,
+                87,
+                88,
+                89,
+                90,
+                108
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive/types.rs",
+              "lines": [
+                12,
+                13,
+                25
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                29,
+                33,
+                45,
+                50,
+                64,
+                69,
+                77,
+                82,
+                88,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/bug250_cold_terminal_display.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/replay_content.rs",
+      "rust/sessions/src/replay_transcript.rs",
+      "rust/sessions/src/transcript_archive.rs",
+      "rust/core/src/persistence/archive.rs",
+      "rust/core/src/persistence/archive/types.rs",
+      "rust/core/src/persistence/archive/journal.rs"
+    ],
+    "totalLinesCovered": 120
+  }
+}

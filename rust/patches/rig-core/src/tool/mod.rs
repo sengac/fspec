@@ -9,7 +9,9 @@
 //! The [ToolSet] struct is a collection of tools that can be used by an [Agent](crate::agent::Agent)
 //! and optionally RAGged.
 
+mod middleware;
 pub mod server;
+pub use middleware::ToolMiddleware;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -403,13 +405,6 @@ impl ToolType {
             ToolType::Embedding(tool) => tool.definition(prompt).await,
         }
     }
-
-    pub async fn call(&self, args: String) -> Result<String, ToolError> {
-        match self {
-            ToolType::Simple(tool) => tool.call(args).await,
-            ToolType::Embedding(tool) => tool.call(args).await,
-        }
-    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -435,6 +430,7 @@ pub enum ToolSetError {
 #[derive(Default)]
 pub struct ToolSet {
     pub(crate) tools: HashMap<String, ToolType>,
+    pub(crate) middleware: Option<std::sync::Arc<dyn ToolMiddleware>>,
 }
 
 impl ToolSet {
@@ -465,7 +461,8 @@ impl ToolSet {
 
     /// Adds a boxed tool to the toolset. Useful for situations when dynamic dispatch is required.
     pub fn add_tool_boxed(&mut self, tool: Box<dyn ToolDyn>) {
-        self.tools.insert(tool.name().to_lowercase(), ToolType::Simple(tool));
+        self.tools
+            .insert(tool.name().to_lowercase(), ToolType::Simple(tool));
     }
 
     pub fn delete_tool(&mut self, tool_name: &str) {
@@ -484,7 +481,7 @@ impl ToolSet {
     pub async fn get_tool_definitions(&self) -> Result<Vec<ToolDefinition>, ToolSetError> {
         let mut defs = Vec::new();
         for tool in self.tools.values() {
-            let def = tool.definition(String::new()).await;
+            let def = self.decorate_definition(tool.definition(String::new()).await)?;
             defs.push(def);
         }
         Ok(defs)
@@ -497,7 +494,7 @@ impl ToolSet {
                 "Calling tool {toolname} with args:\n{}",
                 serde_json::to_string_pretty(&args).unwrap_or_else(|_| args.clone())
             );
-            Ok(tool.call(args).await?)
+            Ok(self.call_with_middleware(tool, args).await?)
         } else {
             Err(ToolSetError::ToolNotFoundError(toolname.to_string()))
         }
@@ -578,6 +575,7 @@ impl ToolSetBuilder {
 
     pub fn build(self) -> ToolSet {
         ToolSet {
+            middleware: None,
             tools: self
                 .tools
                 .into_iter()
@@ -744,7 +742,9 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "5");
 
-        let result = toolset.call("ADD", r#"{"x": 10, "y": 20}"#.to_string()).await;
+        let result = toolset
+            .call("ADD", r#"{"x": 10, "y": 20}"#.to_string())
+            .await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "30");
     }

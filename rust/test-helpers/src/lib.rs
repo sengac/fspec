@@ -17,3 +17,7 @@
 //!   `tests/no_napi_dependency.rs` regression test in the workspace.
 
 pub mod dependency_rules;
+
+pub fn setup_temp_directory() -> std::io::Result<tempfile::TempDir> {
+    tempfile::tempdir()
+}

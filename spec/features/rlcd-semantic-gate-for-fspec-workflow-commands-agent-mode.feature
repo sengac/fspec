@@ -4,7 +4,6 @@
 @rlcd
 @tools
 Feature: RLCD semantic gate for fspec workflow commands (agent-mode)
-
   """
   The RLCD engine (current backend: laya-rs) semantically reviews gated
   fspec workflow commands issued by the agent (agent-mode tool path only,

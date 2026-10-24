@@ -58,16 +58,13 @@ impl ProviderSettingsView {
         }
     }
 
-    /// PROV-111: store the full per-profile ProfileConfig map (keyed by
-    /// profile name) used to prefill the EditProfile form.
-    pub fn set_profile_configs(&mut self, configs: HashMap<String, ProfileDefinition>) {
+    pub fn set_profile_configs(&mut self, configs: HashMap<(String, String), ProfileDefinition>) {
         self.profile_configs = configs;
     }
 
-    /// PROV-111: look up the stored full ProfileConfig for a bare profile
-    /// name (the EditProfile prefill source).
-    pub fn profile_config_for(&self, name: &str) -> Option<&ProfileDefinition> {
-        self.profile_configs.get(name)
+    pub fn profile_config_for(&self, provider_id: &str, name: &str) -> Option<&ProfileDefinition> {
+        self.profile_configs
+            .get(&(provider_id.to_string(), name.to_string()))
     }
 
     /// RPC-103: the filtered provider ids (parent-anchored substring filter).
@@ -206,6 +203,7 @@ impl ProviderSettingsView {
             ProviderSettingsMode::Detail { provider_id, .. }
             | ProviderSettingsMode::CreateProfile { provider_id, .. }
             | ProviderSettingsMode::EditProfile { provider_id, .. }
+            | ProviderSettingsMode::EditSettings { provider_id, .. }
             | ProviderSettingsMode::DisconnectOAuth { provider_id } => Some(provider_id.clone()),
             // PROV-113: the OAuth login modes never open the delete-confirm, so
             // they resolve to no delete target.

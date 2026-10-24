@@ -45,6 +45,14 @@ impl AgentViewStore {
     /// (set on `Action::ModelSelected`). Seeds the ModelSelector's green
     /// `(current)` marker on reopen.
     pub fn set_selected_model_id(&mut self, session_id: SessionId, model_id: String) {
+        if self
+            .selected_model_id_for(&session_id)
+            .is_some_and(|previous| previous != model_id.as_str())
+        {
+            if let Some(context) = self.session_context_mut_for(&session_id) {
+                context.provider_waiting = None;
+            }
+        }
         self.selected_model_id_by_session
             .insert(session_id, model_id);
     }
@@ -78,8 +86,33 @@ impl AgentViewStore {
     /// Cache the `(enabled, budget)` auto-continue state after a
     /// `/continue` apply or a backend load.
     pub fn set_continue_state(&mut self, session_id: SessionId, enabled: bool, budget: u32) {
+        let revision = self
+            .continue_revision_by_session
+            .entry(session_id.clone())
+            .or_default();
+        *revision = revision.wrapping_add(1);
         self.continue_state_by_session
             .insert(session_id, (enabled, budget));
+    }
+
+    pub fn continue_state_loaded_for(&self, session_id: &SessionId) -> Option<(bool, u32)> {
+        self.continue_state_by_session.get(session_id).copied()
+    }
+
+    pub fn clear_continue_state(&mut self, session_id: &SessionId) {
+        self.continue_state_by_session.remove(session_id);
+        let revision = self
+            .continue_revision_by_session
+            .entry(session_id.clone())
+            .or_default();
+        *revision = revision.wrapping_add(1);
+    }
+
+    pub fn continue_revision_for(&self, session_id: &SessionId) -> u64 {
+        self.continue_revision_by_session
+            .get(session_id)
+            .copied()
+            .unwrap_or(0)
     }
 
     // ── CONT-007 per-session live counter accessors ─────────────────────

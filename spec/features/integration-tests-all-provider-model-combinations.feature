@@ -6,7 +6,7 @@
 @LIMITS-007
 Feature: Integration Tests — All Provider/Model Combinations
   """
-  Tests use Rust resolve_model_limits and resolve_context_window / resolve_max_output_tokens functions against real provider structs. ProviderManager.context_window() and max_output_tokens() resolve through ModelLimitsResolver. Claude clamps to 200k/8192, others trust registry.
+  Tests use Rust resolve_model_limits and resolve_context_window / resolve_max_output_tokens functions against real provider structs. ProviderManager.context_window() and max_output_tokens() resolve through ModelLimitsResolver. PROV-161 removes blanket Claude ceilings while preserving backend fallbacks and genuine protocol restrictions.
   """
 
   # ========================================
@@ -28,13 +28,13 @@ Feature: Integration Tests — All Provider/Model Combinations
   #
   # EXAMPLES:
   #   1. Claude claude-sonnet-4: context=200k, max_output=8192, threshold=191808
-  #   2. Claude claude-opus-4-6: context=200k (clamped from 1M), max_output=8192 (clamped from 128k), threshold=191808
+  #   2. Claude claude-opus-4-6: context=1M, max_output=128k from matching catalog metadata.
   #   3. OpenAI gpt-4o: context=128k, max_output=16384, threshold=102400 (80%)
   #   4. Gemini gemini-2.5-pro: context=1M, max_output=8192, threshold=800k (80%)
   #   5. Codex default: context=272k, max_output=4096, threshold=217600 (80%)
   #   6. Z.AI glm-4-plus: context=128k, max_output=8192, threshold=102400 (80%)
   #   7. Copilot fallback: context=200k, max_output=4096, threshold=160000 (80%)
-  #   8. User override 500k on Claude → clamped to 200k
+  #   8. User override 500k on Claude → retained as 500k.
   #
   # ========================================
   Background: User Story
@@ -43,14 +43,14 @@ Feature: Integration Tests — All Provider/Model Combinations
     So that verify the full model limits resolution chain produces correct context_window, max_output_tokens, and compaction_threshold values for all providers
 
   Scenario: Claude Sonnet 4 resolves context window to 200k and max output to 8192
-    Given the Claude provider resolver with max_context_window 200000 and max_output_tokens_limit 8192
+    Given the Claude provider resolver without blanket context or output ceilings
     When resolve_context_window is called with registry value 200000 and no user override
     Then context_window should be 200000 and max_output_tokens should be 8192
 
-  Scenario: Claude Opus 4.6 clamps 1M registry to 200k and 128k output to 8192
+  Scenario: Claude Opus 4.6 retains 1M context and 128k output
     Given the Claude provider resolver with max_context_window 200000 and max_output_tokens_limit 8192
     When resolve_context_window is called with registry value 1000000 and no user override
-    Then context_window should be 200000 and max_output_tokens should be 8192
+    Then context_window should be 1000000 and max_output_tokens should be 128000
 
   Scenario: OpenAI gpt-4o trusts registry values without clamping
     Given the OpenAI provider resolver with no max_context_window and default 128000
@@ -77,17 +77,17 @@ Feature: Integration Tests — All Provider/Model Combinations
     When resolve_context_window is called with no registry value
     Then context_window should be 200000 and max_output_tokens should be 4096
 
-  Scenario: User override exceeding provider max is clamped
-    Given the Claude provider resolver with max_context_window 200000
+  Scenario: Claude user override above historical defaults is retained
+    Given the Claude provider resolver without a blanket context ceiling
     When a user override of 500000 is applied
-    Then context_window should be clamped to 200000
+    Then context_window should be 500000
 
   Scenario: ProviderManager full chain resolves clamped values for all providers
     Given a ProviderManager configured for each provider type
     When context_window() and max_output_tokens() are called with registry values
     Then each provider returns correctly clamped or pass-through values
 
-  Scenario: Sub-agent propagation returns clamped values for Claude
+  Scenario: Sub-agent propagation returns catalog context for Claude
     Given a ProviderManager with Claude and registry context_window of 1000000
     When raw_model_context_window() is called for sub-agent propagation
-    Then the returned value should be 200000 not 1000000
+    Then the returned value should be 1000000

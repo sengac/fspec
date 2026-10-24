@@ -28,6 +28,9 @@ use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use tokio::sync::Mutex;
 
+#[path = "support/legacy_compaction_fixture.rs"]
+mod fixture;
+
 /// Serializes the tests that swap the process-global data directory
 /// (`codelet_common::set_data_directory`), mirroring the DATA_DIR_GUARD
 /// pattern from rust/sessions/tests/rpc418_compact_session.rs.
@@ -145,16 +148,19 @@ fn test_helper_returns_zero_when_compacted_equals_original() {
 // REQUIRED: compact_session bridges sync->async via block_in_place.
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+#[serial_test::serial]
 async fn test_compact_session_growth_case_ships_zero_not_negative_ratio() {
     let _guard = DATA_DIR_GUARD.lock().await;
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    let fixture = fixture::Fixture::new().expect("isolated offline fixture");
     let manager = Arc::new(SessionManager::new());
 
     // @step Given a tiny session whose injected compaction instruction exceeds its original token count
-    manager.set_default_model("anthropic/claude-opus-4-5");
     let handle: &dyn SessionManagerHandle = &*manager;
-    let sid: SessionId = handle.create_session(None);
+    let sid: SessionId = fixture
+        .create_session(&manager)
+        .await
+        .expect("offline session");
     {
         let session = manager.get_session(&sid.value).expect("session must exist");
         seed_tiny_session(&session).await;
@@ -199,14 +205,14 @@ async fn test_compact_session_growth_case_ships_zero_not_negative_ratio() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_napi_session_compact_growth_case_ships_zero_not_negative_ratio() {
     let _guard = DATA_DIR_GUARD.lock().await;
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    let fixture = fixture::Fixture::new().expect("isolated offline fixture");
     let manager = codelet_napi::session_bindings::SessionManager::instance();
 
     // @step Given a tiny NAPI session whose injected compaction instruction exceeds its original token count
-    manager.set_default_model("anthropic/claude-opus-4-5");
-    let handle: &dyn SessionManagerHandle = manager;
-    let sid = handle.create_session(None);
+    let sid = fixture
+        .create_session(manager)
+        .await
+        .expect("offline session");
     {
         let session = manager.get_session(&sid.value).expect("session must exist");
         seed_tiny_session(&session).await;

@@ -57,6 +57,7 @@ impl App {
         let backend: Arc<dyn FspecBackend> = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let id = session_id;
+        let generation = self.agent_view_store.advance_exec_stdin_generation(&id);
         let handle = tokio::spawn(async move {
             // Issue the reads in parallel so the dispatcher sees the
             // first Some result without paying serial latency.
@@ -114,14 +115,12 @@ impl App {
             // dropped (logged), the overlay just doesn't appear this
             // tick.
             match exec_res {
-                Ok(Some(request)) => {
-                    let _ = action_tx.send(Action::ExecStdinPromptFetched {
+                Ok(request) => {
+                    let _ = action_tx.send(Action::ExecStdinProbeFetched {
                         agent_session: id,
+                        generation,
                         request,
                     });
-                }
-                Ok(None) => {
-                    let _ = action_tx.send(Action::ExecStdinDismissed { agent_session: id });
                 }
                 Err(err) => {
                     tracing::debug!(

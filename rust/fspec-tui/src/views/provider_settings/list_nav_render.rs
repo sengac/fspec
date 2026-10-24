@@ -168,7 +168,7 @@ fn provider_row_segments(
     }
 
     // RPC-350 R2: openai header rows show a dim pluralized profile badge.
-    if !is_api_key && provider_id == "openai" {
+    if !is_api_key {
         if let Some(n) = display.map(|p| p.profiles.len()) {
             if n > 0 {
                 let badge = if n == 1 {
@@ -238,6 +238,7 @@ fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, 
             )
         }
         NavItemKind::Profile { profile_name } => (RowKind::Profile, profile_name.clone()),
+        NavItemKind::Settings => (RowKind::Settings, "Settings".to_string()),
         // RPC-350 R3: parity label "Create new profile" (TS
         // ProviderSettingsPanel.tsx:766). The "+ " glyph is supplied by the
         // row prefix (icons::PLUS), so only the label string changes here.

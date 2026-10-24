@@ -11,11 +11,14 @@ use super::copilot::{CopilotDeploymentType, CopilotProvider};
 use super::credentials::ProviderCredentials;
 use super::models::{ModelCache, ModelInfo, ModelRegistry};
 use super::{
-    claude, codex, copilot, gemini, openai, zai, ClaudeProvider, CodexProvider, GeminiProvider,
+    claude, copilot, gemini, openai, zai, ClaudeProvider, CodexProvider, GeminiProvider,
     OpenAIProvider, ProviderError, ZAIProvider,
 };
 use crate::model_limits::{resolve_context_window, resolve_max_output_tokens, ModelLimitsResolver};
 use std::str::FromStr;
+
+#[path = "manager_runtime.rs"]
+mod runtime;
 
 /// Provider type enum
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,11 +57,11 @@ impl FromStr for ProviderType {
         }
 
         match lowered.as_str() {
-            "claude" => Ok(ProviderType::Claude),
+            "claude" | "anthropic" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
             "codex" => Ok(ProviderType::Codex),
-            "gemini" => Ok(ProviderType::Gemini),
-            "zai" => Ok(ProviderType::ZAI),
+            "gemini" | "google" => Ok(ProviderType::Gemini),
+            "zai" | "z-ai" => Ok(ProviderType::ZAI),
             "github-copilot" | "copilot" => Ok(ProviderType::GitHubCopilot),
             other => {
                 // PROV-067: Before failing with "Unknown provider", consult
@@ -194,6 +197,7 @@ impl ModelLimitsResolver for ConstantResolver {
 }
 
 pub struct ProviderManager {
+    runtime_options: crate::ProviderRuntimeOptions,
     credentials: ProviderCredentials,
     current_provider: ProviderType,
     /// Optional model registry for dynamic model selection
@@ -291,9 +295,15 @@ impl ProviderManager {
             crate::provider_resolution::resolve_unambiguous_provider(&credentials)?;
 
         Ok(Self {
+            runtime_options: crate::runtime_options::load_runtime_options(
+                current_provider.as_str(),
+                None,
+                None,
+                None,
+            )?,
             credentials,
             current_provider,
-            model_registry: None,
+            model_registry: crate::selection_metadata::cached_registry(),
             selected_model: None,
             selected_registry_provider_id: None,
             selected_profile_name: None,
@@ -325,9 +335,15 @@ impl ProviderManager {
         }
 
         Ok(Self {
+            runtime_options: crate::runtime_options::load_runtime_options(
+                requested_provider.as_str(),
+                None,
+                None,
+                None,
+            )?,
             credentials,
             current_provider: requested_provider,
-            model_registry: None,
+            model_registry: crate::selection_metadata::cached_registry(),
             selected_model: None,
             selected_registry_provider_id: None,
             selected_profile_name: None,
@@ -355,40 +371,19 @@ impl ProviderManager {
         context_window: Option<usize>,
         max_output_tokens: Option<usize>,
     ) -> Result<Self, ProviderError> {
-        let credentials = ProviderCredentials::detect();
-        let requested_provider = ProviderType::from_str(provider_name)?;
-
-        // Validate requested provider has credentials
-        if !requested_provider.has_credentials(&credentials) {
-            let available = credentials.available_providers();
-            return Err(ProviderError::auth(
+        let mut manager = Self::with_provider(provider_name)?;
+        if let Some(model) = model_id {
+            manager.set_model_direct(
                 provider_name,
-                format!(
-                    "Provider {} not available. Available providers: {}",
-                    provider_name,
-                    available.join(", ")
-                ),
-            ));
+                model,
+                context_window,
+                max_output_tokens,
+                None,
+            )?;
+        } else {
+            manager.override_model_limits(context_window, max_output_tokens);
         }
-
-        // BUG-136: Store the bare model id plus the registry provider slug.
-        // `selected_model_string()` rebuilds the composite on demand so
-        // model ids containing slashes (Fireworks AI, OpenRouter) can't be
-        // mis-parsed by downstream consumers.
-        Ok(Self {
-            credentials,
-            current_provider: requested_provider,
-            model_registry: None,
-            selected_model: model_id.map(String::from),
-            selected_registry_provider_id: model_id.map(|_| provider_name.to_string()),
-            selected_profile_name: None,
-            registry_context_window: context_window,
-            registry_max_output_tokens: max_output_tokens,
-            user_context_window: None,
-            user_max_output_tokens: None,
-            facade_override: None,
-            compaction_threshold_override: None,
-        })
+        Ok(manager)
     }
 
     /// MODEL-001: Create ProviderManager with model registry support
@@ -433,6 +428,7 @@ impl ProviderManager {
             credentials,
             current_provider,
             model_registry: Some(registry),
+            runtime_options: crate::ProviderRuntimeOptions::default(),
             selected_model: None,
             selected_registry_provider_id: None,
             selected_profile_name: None,
@@ -474,7 +470,14 @@ impl ProviderManager {
         })?;
 
         // Parse the model string into provider/model
-        let (provider_id, model_id) = registry.parse_model_string(model_string)?;
+        let (provider_id, model_id) =
+            registry.parse_model_string(model_string).or_else(|error| {
+                let (provider, model) = model_string.split_once('/').ok_or(error)?;
+                let catalog = crate::selection_metadata::catalog_provider_id(provider);
+                registry
+                    .parse_model_string(&format!("{catalog}/{model}"))
+                    .map(|_| (provider.to_string(), model.to_string()))
+            })?;
 
         // Map models.dev provider ID to our ProviderType
         let provider_type = Self::map_provider_id_to_type(&provider_id)?;
@@ -492,12 +495,33 @@ impl ProviderManager {
         }
 
         // Validate model exists and has tool_call capability
-        let model_info = registry.validate_model_for_use(&provider_id, &model_id)?;
+        let model_info = registry
+            .validate_model_for_use(
+                crate::selection_metadata::catalog_provider_id(&provider_id),
+                &model_id,
+            )
+            .or_else(|_| registry.validate_model_for_use(&provider_id, &model_id))?;
+        let metadata = crate::selection_metadata::selection_metadata(
+            &provider_type,
+            &provider_id,
+            &model_info.id,
+            None,
+        );
+        let mut runtime_options = crate::runtime_options::load_runtime_options(
+            provider_type.as_str(),
+            None,
+            Some(&metadata.api_model),
+            metadata.model_options.as_ref(),
+        )?;
+        let script_compaction =
+            runtime::apply_script_limits(&provider_type, &metadata, &mut runtime_options);
 
         // LIMITS-004: Store raw registry values. Clamping happens at resolution time
         // via the provider's ModelLimitsResolver in context_window() / max_output_tokens().
-        self.registry_context_window = Some(model_info.limit.context as usize);
-        self.registry_max_output_tokens = Some(model_info.limit.output as usize);
+        self.registry_context_window =
+            Some(model_info.limit.context as usize).filter(|value| *value > 0);
+        self.registry_max_output_tokens =
+            Some(model_info.limit.output as usize).filter(|value| *value > 0);
         // Clear any previous user overrides — new model selection resets them.
         self.user_context_window = None;
         self.user_max_output_tokens = None;
@@ -517,6 +541,9 @@ impl ProviderManager {
         // call so `selected_model_string()` emits the plain
         // `"provider/model"` composite.
         self.selected_profile_name = None;
+        self.runtime_options = runtime_options;
+        self.facade_override = metadata.facade;
+        self.compaction_threshold_override = script_compaction;
 
         Ok(model_info)
     }
@@ -618,12 +645,9 @@ impl ProviderManager {
         // They have no registry data. The resolver clamps them at resolution time.
         self.user_context_window = context_window;
         self.user_max_output_tokens = max_output_tokens;
-        self.registry_context_window = None;
-        self.registry_max_output_tokens = None;
         // MODEL-004: Store facade override for agent loop dispatch
         self.facade_override = facade_override;
-
-        Ok(())
+        self.refresh_runtime_options()
     }
 
     /// Get the selected model id (the actual API model id).
@@ -642,28 +666,28 @@ impl ProviderManager {
     /// unchanged.
     pub fn selected_model_id(&self) -> Option<String> {
         let model_id = self.selected_model.as_ref()?;
-
-        // If we have both a registry and a known provider slug, resolve the
-        // slug to the canonical API id (e.g. slug → versioned id).
-        if let (Some(registry), Some(provider_id)) = (
-            self.model_registry.as_ref(),
-            self.selected_registry_provider_id.as_deref(),
-        ) {
-            if let Ok(model_info) = registry.get_model(provider_id, model_id) {
-                return Some(model_info.id.clone());
+        if !matches!(&self.current_provider, ProviderType::Custom(_)) {
+            if let Some(model) = self.selection_model_info() {
+                return Some(model.id.clone());
             }
         }
-
-        Some(model_id.clone())
+        Some(
+            crate::selection_metadata::selection_metadata(
+                &self.current_provider,
+                self.selected_registry_provider_id
+                    .as_deref()
+                    .unwrap_or_else(|| self.current_provider.as_str()),
+                model_id,
+                self.facade_override.as_deref(),
+            )
+            .api_model,
+        )
     }
 
     /// MODEL-001: Get model info for the selected model, if known to the
     /// registry.
     pub fn selected_model_info(&self) -> Option<&ModelInfo> {
-        let registry = self.model_registry.as_ref()?;
-        let provider_id = self.selected_registry_provider_id.as_deref()?;
-        let model_id = self.selected_model.as_deref()?;
-        registry.get_model(provider_id, model_id).ok()
+        self.selection_model_info()
     }
 
     /// MODEL-001: Get the registry-format model string ("provider/model").
@@ -711,9 +735,9 @@ impl ProviderManager {
         }
 
         match provider_id {
-            "anthropic" => Ok(ProviderType::Claude),
+            "anthropic" | "claude" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
-            "google" => Ok(ProviderType::Gemini),
+            "google" | "gemini" => Ok(ProviderType::Gemini),
             "zai" | "z-ai" => Ok(ProviderType::ZAI),
             "codex" => Ok(ProviderType::Codex),
             "github-copilot" | "copilot" => Ok(ProviderType::GitHubCopilot),
@@ -861,7 +885,16 @@ impl ProviderManager {
             std::env::set_var("CODEX_MODEL", &model_id);
         }
 
-        CodexProvider::new()
+        Ok(CodexProvider::new()?.with_request_admission(
+            crate::request_admission::AdmissionLimits {
+                context_capacity: self
+                    .raw_model_context_window()
+                    .and_then(|capacity| u64::try_from(capacity).ok()),
+                output_reservation: self
+                    .raw_model_max_output_tokens()
+                    .and_then(|reservation| u64::try_from(reservation).ok()),
+            },
+        ))
     }
 
     /// Get Gemini provider (if selected)
@@ -1009,7 +1042,13 @@ impl ProviderManager {
         }
 
         self.current_provider = requested_provider;
-        Ok(())
+        self.selected_model = None;
+        self.selected_registry_provider_id = None;
+        self.selected_profile_name = None;
+        self.user_context_window = None;
+        self.user_max_output_tokens = None;
+        self.facade_override = None;
+        self.refresh_runtime_options()
     }
 
     /// Get prompt prefix for REPL (e.g., "[claude] > ")
@@ -1027,9 +1066,9 @@ impl ProviderManager {
     fn provider_limits_resolver(&self) -> Box<dyn ModelLimitsResolver> {
         match &self.current_provider {
             ProviderType::Claude => Box::new(ConstantResolver {
-                max_ctx: Some(claude::CONTEXT_WINDOW),
+                max_ctx: None,
                 default_ctx: claude::CONTEXT_WINDOW,
-                max_out: Some(claude::MAX_OUTPUT_TOKENS),
+                max_out: None,
                 default_out: claude::MAX_OUTPUT_TOKENS,
             }),
             ProviderType::OpenAI => {
@@ -1057,9 +1096,9 @@ impl ProviderManager {
             }),
             ProviderType::Codex => Box::new(ConstantResolver {
                 max_ctx: None,
-                default_ctx: codex::CONTEXT_WINDOW,
+                default_ctx: 0,
                 max_out: None,
-                default_out: codex::MAX_OUTPUT_TOKENS,
+                default_out: 0,
             }),
             ProviderType::ZAI => Box::new(ConstantResolver {
                 max_ctx: None,
@@ -1098,7 +1137,8 @@ impl ProviderManager {
         let resolver = self.provider_limits_resolver();
         resolve_context_window(
             self.registry_context_window,
-            self.user_context_window,
+            self.user_context_window
+                .or(self.runtime_options.context_window),
             resolver.as_ref(),
         )
     }
@@ -1111,7 +1151,8 @@ impl ProviderManager {
         let resolver = self.provider_limits_resolver();
         resolve_max_output_tokens(
             self.registry_max_output_tokens,
-            self.user_max_output_tokens,
+            self.user_max_output_tokens
+                .or(self.runtime_options.max_output_tokens),
             resolver.as_ref(),
         )
     }
@@ -1142,7 +1183,10 @@ impl ProviderManager {
     ///
     /// The returned value is always clamped by the provider's hard maximum.
     pub fn raw_model_context_window(&self) -> Option<usize> {
-        if self.registry_context_window.is_some() || self.user_context_window.is_some() {
+        if self.registry_context_window.is_some()
+            || self.user_context_window.is_some()
+            || self.runtime_options.context_window.is_some()
+        {
             Some(self.context_window())
         } else {
             None
@@ -1154,7 +1198,10 @@ impl ProviderManager {
     /// Same semantics as `raw_model_context_window()` — returns clamped value
     /// or `None` when no model-specific data exists.
     pub fn raw_model_max_output_tokens(&self) -> Option<usize> {
-        if self.registry_max_output_tokens.is_some() || self.user_max_output_tokens.is_some() {
+        if self.registry_max_output_tokens.is_some()
+            || self.user_max_output_tokens.is_some()
+            || self.runtime_options.max_output_tokens.is_some()
+        {
             Some(self.max_output_tokens())
         } else {
             None
@@ -1181,6 +1228,12 @@ impl ProviderManager {
         self.compaction_threshold_override
             .as_ref()
             .map(|(t, v)| (t.as_str(), *v))
+            .or_else(|| {
+                self.runtime_options
+                    .compaction_threshold
+                    .as_ref()
+                    .map(|threshold| (threshold.kind.as_str(), threshold.value))
+            })
     }
 
     /// CTX-007: Set the compaction threshold override.
@@ -1202,6 +1255,7 @@ impl ProviderManager {
         max_output_tokens: Option<usize>,
     ) -> Self {
         Self {
+            runtime_options: crate::ProviderRuntimeOptions::default(),
             credentials: ProviderCredentials {
                 claude_available: false,
                 openai_available: false,
@@ -1272,6 +1326,7 @@ impl ProviderManager {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
+    use crate::codex;
     use crate::copilot::auth::{write_copilot_auth, CopilotAuthJson};
     use crate::models::{LimitInfo, ModelInfo, ModelRegistry, ModelsDevResponse, ProviderInfo};
     use std::collections::HashMap;
@@ -1284,6 +1339,7 @@ mod tests {
     /// Helper to create a ProviderManager for testing without real credentials
     fn test_manager(provider: ProviderType) -> ProviderManager {
         ProviderManager {
+            runtime_options: crate::ProviderRuntimeOptions::default(),
             credentials: ProviderCredentials {
                 claude_available: false,
                 openai_available: false,
@@ -1387,6 +1443,7 @@ mod tests {
     /// state where the user hasn't logged in yet.
     fn test_manager_with_copilot_registry() -> ProviderManager {
         ProviderManager {
+            runtime_options: crate::ProviderRuntimeOptions::default(),
             credentials: ProviderCredentials {
                 claude_available: false,
                 openai_available: false,
@@ -1684,6 +1741,7 @@ mod tests {
     /// credentials enabled for testing.
     fn test_manager_with_registry_and_credentials() -> ProviderManager {
         ProviderManager {
+            runtime_options: crate::ProviderRuntimeOptions::default(),
             credentials: ProviderCredentials {
                 claude_available: true,
                 openai_available: true,
@@ -2280,42 +2338,48 @@ mod tests {
     // Feature: spec/features/fix-providermanager-resolution-chain-use-modellimitsresolver.feature
     // =========================================================================
 
-    /// Scenario: Claude context window is clamped from 1M registry to 200k
+    /// Scenario: Claude context window retains 1M registry value
     #[test]
-    fn test_claude_context_window_clamped_from_1m_to_200k() {
+    fn test_claude_context_window_retains_1m_registry_value() {
         // @step Given a ProviderManager configured for the Claude provider
         let mut manager = test_manager(ProviderType::Claude);
 
         // @step And select_model stores a registry context window of 1000000
         manager.registry_context_window = Some(1_000_000);
 
-        // @step And the Claude resolver declares max_context_window as 200000
-        // (built into the resolver — ClaudeProvider::max_context_window() returns Some(200_000))
+        // @step And the Claude resolver declares max_context_window as None
+        assert_eq!(
+            manager.provider_limits_resolver().max_context_window(),
+            None
+        );
 
         // @step When context_window() is called
         let result = manager.context_window();
 
-        // @step Then the result should be 200000
-        assert_eq!(result, 200_000);
+        // @step Then the result should be 1000000
+        assert_eq!(result, 1_000_000);
     }
 
-    /// Scenario: Claude max output tokens clamped from 128k registry to 8192
+    /// Scenario: Claude maximum output retains 128k registry value
     #[test]
-    fn test_claude_max_output_clamped_from_128k_to_8192() {
+    fn test_claude_maximum_output_retains_128k_registry_value() {
         // @step Given a ProviderManager configured for the Claude provider
         let mut manager = test_manager(ProviderType::Claude);
 
         // @step And select_model stores a registry max output of 128000
         manager.registry_max_output_tokens = Some(128_000);
 
-        // @step And the Claude resolver declares max_output_tokens_limit as 8192
-        // (built into the resolver)
+        // @step And the Claude resolver declares max_output_tokens_limit as None
+        assert_eq!(
+            manager.provider_limits_resolver().max_output_tokens_limit(),
+            None
+        );
 
         // @step When max_output_tokens() is called
         let result = manager.max_output_tokens();
 
-        // @step Then the result should be 8192
-        assert_eq!(result, 8_192);
+        // @step Then the result should be 128000
+        assert_eq!(result, 128_000);
     }
 
     /// Scenario: OpenAI context window passes through unclamped
@@ -2356,23 +2420,26 @@ mod tests {
         assert_eq!(result, 272_000);
     }
 
-    /// Scenario: User override is clamped by provider max
+    /// Scenario: Claude user override is retained without a blanket ceiling
     #[test]
-    fn test_user_override_clamped_by_provider_max() {
+    fn test_claude_user_override_retained_without_blanket_ceiling() {
         // @step Given a ProviderManager configured for the Claude provider
         let mut manager = test_manager(ProviderType::Claude);
 
         // @step And the user overrides context window to 500000 via NAPI
         manager.override_model_limits(Some(500_000), None);
 
-        // @step And the Claude resolver declares max_context_window as 200000
-        // (built into the resolver)
+        // @step And the Claude resolver declares max_context_window as None
+        assert_eq!(
+            manager.provider_limits_resolver().max_context_window(),
+            None
+        );
 
         // @step When context_window() is called
         let result = manager.context_window();
 
-        // @step Then the result should be 200000
-        assert_eq!(result, 200_000);
+        // @step Then the result should be 500000
+        assert_eq!(result, 500_000);
     }
 
     /// Scenario: User override takes priority over registry value
@@ -2396,9 +2463,9 @@ mod tests {
         assert_eq!(result, 64_000);
     }
 
-    /// Scenario: Sub-agent propagation returns clamped values
+    /// Scenario: Sub-agent propagation returns effective model limits
     #[test]
-    fn test_sub_agent_propagation_returns_clamped_values() {
+    fn test_sub_agent_propagation_returns_effective_model_limits() {
         // @step Given a ProviderManager configured for the Claude provider
         let mut manager = test_manager(ProviderType::Claude);
 
@@ -2408,8 +2475,8 @@ mod tests {
         // @step When raw_model_context_window() is called for sub-agent propagation
         let raw = manager.raw_model_context_window();
 
-        // @step Then the result should be 200000
-        assert_eq!(raw, Some(200_000));
+        // @step Then the result should be 1000000
+        assert_eq!(raw, Some(1_000_000));
 
         // @step And it should equal the value from context_window()
         assert_eq!(raw, Some(manager.context_window()));

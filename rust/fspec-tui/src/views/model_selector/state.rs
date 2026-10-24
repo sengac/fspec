@@ -39,6 +39,12 @@ impl ModelSelectorView {
         self.current_model_id = model_id;
     }
 
+    pub(crate) fn reconcile_current_model(&mut self, session: &SessionId, model: String) {
+        if self.session_id.as_ref() == Some(session) {
+            self.current_model_id = Some(model);
+        }
+    }
+
     /// Fold a backend `list_providers()` result into the view. Marks the
     /// view loaded, clears `is_refreshing`, and rebuilds the row
     /// projection. Following TS parity (`useModelSelectorState.ts:148-150`,

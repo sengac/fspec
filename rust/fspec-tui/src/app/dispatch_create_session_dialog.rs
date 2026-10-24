@@ -75,13 +75,22 @@ impl App {
             return;
         }
         let originating_session = self.agent_view_store.current_session().cloned();
+        let card = self
+            .agent_view_store
+            .current_work_unit_id()
+            .map(str::to_owned);
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> = tokio::spawn(async move {
             if isolated {
                 match backend.create_isolated_session(None).await {
                     Ok(info) => {
-                        let _ = action_tx.send(Action::SessionCreated(info.session_id));
+                        let _ = action_tx.send(
+                            crate::app::session_creation::post_create_session_with_work_unit(
+                                info.session_id,
+                                card,
+                            ),
+                        );
                     }
                     Err(e) => {
                         if let Some(sid) = originating_session {
@@ -99,7 +108,9 @@ impl App {
                         // model). Map it to the explicit decline action — never
                         // append an empty-id session.
                         let _ = action_tx.send(
-                            crate::app::session_creation::post_create_session_action(session_id),
+                            crate::app::session_creation::post_create_session_with_work_unit(
+                                session_id, card,
+                            ),
                         );
                     }
                     Err(e) => {
@@ -120,6 +131,14 @@ impl App {
     /// wire its chrome/attachments. Extracted from `App::dispatch` so the
     /// orchestrator file stays under the 300-LoC ceiling (PROV-101 FIX 3).
     pub(crate) fn handle_session_created(&mut self, session: codelet_rpc_types::SessionId) {
+        self.initialize_session(session, true);
+    }
+
+    pub(crate) fn initialize_session(
+        &mut self,
+        session: codelet_rpc_types::SessionId,
+        bind_board_selection: bool,
+    ) {
         // RPC-385: idempotent guard. The session-created broadcast folds into
         // Action::SessionCreated for EVERY creation path, so a tab the TUI
         // already opened (create-session dialog, isolated dialog, enter-work-
@@ -142,6 +161,7 @@ impl App {
         }
         self.agent_view_store
             .append_session(crate::store::SessionContext::new(session.clone()));
+        self.rebuild_focus_occupancy();
         // MUX-002: re-sync the agent window to the grown session list;
         // if a mux Shift+Right new-agent prompt just confirmed, advance
         // the window so the new (last) session lands in the last agent
@@ -162,6 +182,7 @@ impl App {
         if let Some(id) = self
             .agent_view_store
             .current_work_unit_id()
+            .filter(|_| bind_board_selection)
             .map(std::string::ToString::to_string)
         {
             let _ = self

@@ -44,15 +44,16 @@ impl App {
         if self.agent_view_store.current_session().is_none() {
             let backend = self.backend.clone();
             let action_tx = self.action_tx.clone();
-            let active_session_tx = self.active_session_tx.clone();
+            let work_unit_id = id.clone();
             let handle = tokio::spawn(async move {
                 if let Ok(session) = backend.create_session(None).await {
                     // PROV-101 FIX 1: empty id == decline; surface it
                     // explicitly, never seed an empty active session.
-                    crate::app::session_creation::route_bootstrap_create_session(
-                        session,
-                        &active_session_tx,
-                        &action_tx,
+                    let _ = action_tx.send(
+                        crate::app::session_creation::post_create_session_with_work_unit(
+                            session,
+                            Some(work_unit_id),
+                        ),
                     );
                 }
             });

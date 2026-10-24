@@ -19,6 +19,9 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use tracing::warn;
 
+#[path = "openai_discovery.rs"]
+mod discovery;
+
 /// Default context window size (fallback when not configured)
 /// For local servers, use OPENAI_CONTEXT_WINDOW to match your model's actual limit
 const DEFAULT_CONTEXT_WINDOW: usize = 128_000;
@@ -315,79 +318,7 @@ impl OpenAIProvider {
         base_url: &str,
         api_key: Option<&str>,
     ) -> Result<Vec<String>, ProviderError> {
-        use reqwest::Client;
-        use std::time::Duration;
-
-        // Create HTTP client with 5-second timeout
-        let client = Client::builder()
-            .timeout(Duration::from_secs(5))
-            .build()
-            .map_err(|e| {
-                ProviderError::api("openai", format!("Failed to create HTTP client: {e}"))
-            })?;
-
-        // Normalize base URL: strip trailing slash and /v1 suffix if present
-        // This handles both "https://api.fireworks.ai/inference" and
-        // "https://api.fireworks.ai/inference/v1" formats
-        let trimmed = base_url.trim_end_matches('/');
-        let normalized = if let Some(stripped) = trimmed.strip_suffix("/v1") {
-            stripped
-        } else {
-            trimmed
-        };
-
-        // Build URL for /v1/models endpoint
-        let url = format!("{normalized}/v1/models");
-
-        // Build GET request, optionally with Authorization header (PROV-040)
-        let mut request = client.get(&url);
-        if let Some(key) = api_key {
-            request = request.header("Authorization", format!("Bearer {key}"));
-        }
-
-        // Make GET request
-        let response = request.send().await.map_err(|e| {
-            ProviderError::api(
-                "openai",
-                format!("Failed to connect to local server at {base_url}: {e}"),
-            )
-        })?;
-
-        // Check for successful response
-        if !response.status().is_success() {
-            return Err(ProviderError::api(
-                "openai",
-                format!(
-                    "Local server at {} returned error status: {}",
-                    base_url,
-                    response.status()
-                ),
-            ));
-        }
-
-        // Parse JSON response
-        let body: serde_json::Value = response.json().await.map_err(|e| {
-            ProviderError::api(
-                "openai",
-                format!("Failed to parse models response from {base_url}: {e}"),
-            )
-        })?;
-
-        // Extract model IDs from data array
-        let models = body
-            .get("data")
-            .and_then(|d| d.as_array())
-            .ok_or_else(|| {
-                ProviderError::api(
-                    "openai",
-                    format!("Invalid models response from {base_url}: missing 'data' array"),
-                )
-            })?
-            .iter()
-            .filter_map(|m| m.get("id").and_then(|id| id.as_str()).map(String::from))
-            .collect();
-
-        Ok(models)
+        discovery::list_models(base_url, api_key).await
     }
 
     /// Get the configured rig openai::CompletionsClient
@@ -431,8 +362,8 @@ impl OpenAIProvider {
         use codelet_tools::{
             AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
             DecisionTool, DeepSearchTool, EditTool, GenerateCompactionTool, GlobTool,
-            GraphSearchTool, GrepTool, InjectSummaryTool, LsTool, ReadTool,
-            RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool, WriteTool,
+            GraphSearchTool, GrepTool, InjectSummaryTool, LsTool, ReadTool, RequestUserInputTool,
+            ScheduleTool, SessionSearchTool, WebSearchTool, WriteTool,
         };
 
         // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
@@ -562,7 +493,7 @@ impl LlmProvider for OpenAIProvider {
         let (preamble, prompt) = extract_prompt_data(messages);
 
         // Convert tools to rig format using shared helper (REFAC-013)
-        let rig_tools = convert_tools_to_rig(tools);
+        let rig_tools = convert_tools_to_rig(tools)?;
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)

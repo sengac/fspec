@@ -54,6 +54,12 @@ pub(super) fn handle_form_key(
                 // `profile_name` is None → `old_profile_name` is None.
                 let new_name = form.name.trim().to_string();
                 view.mode = ProviderSettingsMode::List;
+                if form.context.settings {
+                    return ProviderSettingsEvent::Emit(Box::new(Action::SaveProviderSettings {
+                        provider_id,
+                        definition,
+                    }));
+                }
                 ProviderSettingsEvent::Emit(Box::new(Action::SaveProfile {
                     provider_id,
                     profile_name: new_name,
@@ -89,6 +95,10 @@ pub(super) fn restore_mode(
     form: ProfileForm,
     profile_name: Option<String>,
 ) {
+    if form.context.settings {
+        view.mode = ProviderSettingsMode::EditSettings { provider_id, form };
+        return;
+    }
     view.mode = match profile_name {
         Some(profile_name) => ProviderSettingsMode::EditProfile {
             provider_id,

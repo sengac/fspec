@@ -4,7 +4,6 @@
 @compaction
 @CMPCT-044
 Feature: Clean compaction sub-agent triggered on API context-overflow errors
-
   """
   Frontend topology (verified 2026-09-16): the legacy REPL was deleted (commit d2ff9b16) — codelet-cli (rust/cli) is a lib-only shared streaming engine, NOT a binary. The live agent-session frontend is the Rust TUI inside the fspec binary (rust/fspec, combined/daemon/client modes) via codelet-rpc, driven by codelet-agent-loop (FspecAgentHooks, fspec/src/common.rs:128). codelet-napi (rust/napi) is a DORMANT legacy twin with a frozen copy of the agent loop — nothing in the live dependency graph references it. CMPCT-044 wiring: classifier + pin primitive + stream-loop trigger + the CompactorSubAgentHandler type and per-session handler registry in codelet-cli; compactor sub-agent spawner + per-session handler registration in codelet-agent-loop (mirroring register_deep_search_handler in bridges.rs). No codelet-napi changes. The codelet-cli handler-registry pattern keeps codelet-cli decoupled from the spawner and avoids changing run_agent_stream_with_images' canonical 9-arg signature (pinned by rpc084_streaming tests).
   """
@@ -32,7 +31,6 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
   #   5. A background (TUI/subordinate) session's turn dies with an unmatched overflow error. The agent-loop terminal-error arm routes it to the same compactor entry point: it reads the parent's persisted turns, compacts, and the session returns to Idle with reminders + DAG. The next user message starts a fresh stream on the reduced context — the oversized payload is never replayed.
   #
   # ========================================
-
   Background: User Story
     As a long-running agent session
     I want to survive provider context-overflow API errors via a clean compaction sub-agent
@@ -48,11 +46,9 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
   # spec/features/context-overflow-error-classifier.feature
   # (test file: rust/cli/tests/cmpct044_overflow_classifier_test.rs).
   # ============================================================================
-
   # ============================================================================
   # Trigger: error cascade ordering in the stream loop
   # ============================================================================
-
   @compaction
   @context-management
   @session
@@ -75,15 +71,14 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     And the persisted session manifest history is NOT truncated
     And the DAG content is wrapped in the compaction-dag system-reminder wrapper
 
-  # ============================================================================
-  # Fallback: convergence guarantee when the sub-agent fails
-  # ============================================================================
-
   @compaction
   @context-management
   @session
   @regression
   Scenario: Sub-agent timeout pins a free fallback DAG
+  # ============================================================================
+  # Fallback: convergence guarantee when the sub-agent fails
+  # ============================================================================
     Given a parent session that is over its context limit
     And the compactor sub-agent exceeds its wall-clock timeout without returning a DAG
     When the trigger site completes compaction
@@ -112,14 +107,13 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     And the parent's in-memory context is reduced to reminders plus the recovered DAG
     And the failure is surfaced with exactly one structured CompactionFailed lifecycle event carrying the partial-recovery reason, emitted before the CompactionComplete
 
-  # ============================================================================
-  # Integration: flag discipline, lifecycle, and the background session path
-  # ============================================================================
-
   @compaction
   @context-management
   @integration
   Scenario: compaction_in_progress gates sub-agent reads and is cleared after the pin
+  # ============================================================================
+  # Integration: flag discipline, lifecycle, and the background session path
+  # ============================================================================
     Given the compactor sub-agent run begins for an over-limit parent session
     When the sub-agent runs and reads the parent via SessionSearch
     Then the compaction_in_progress flag is true during the sub-agent run so Layer-0 trimming applies to its reads
@@ -147,4 +141,3 @@ Feature: Clean compaction sub-agent triggered on API context-overflow errors
     And the session's in-memory context is reduced to reminders plus the fallback DAG
     And the failure is surfaced with a structured compaction-failed lifecycle event
     And the CompactionComplete event is still emitted exactly once after the pin with the recalculated post-pin token basis
-

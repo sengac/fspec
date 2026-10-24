@@ -1,0 +1,31 @@
+{
+  "scenarios": [
+    {
+      "name": "Failed bridge clear reports the durable reset failure",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct054_bridge_clear_failure.rs",
+          "lines": "11-100",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/bridge_control.rs",
+              "lines": [4, 5, 6, 7, 8, 9, 10, 11]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [938]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": ["rust/agent-loop/tests/cmpct054_bridge_clear_failure.rs"],
+    "implFiles": ["rust/agent-loop/src/bridge_control.rs", "rust/agent-loop/src/agent_loop.rs"],
+    "totalLinesCovered": 99
+  }
+}

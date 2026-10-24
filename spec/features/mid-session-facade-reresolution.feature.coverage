@@ -5,58 +5,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
-          "lines": "104-119",
+          "lines": "30-48",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
+                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
+                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
+                212, 213, 214, 215, 216
               ]
             }
           ]
@@ -68,58 +25,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
-          "lines": "126-147",
+          "lines": "53-78",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
+                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
+                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
+                212, 213, 214, 215, 216
               ]
             }
           ]
@@ -131,58 +45,15 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
-          "lines": "151-172",
+          "lines": "83-108",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
               "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
+                182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+                192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
+                202, 203, 204, 205, 206, 207, 208, 209, 210, 211,
+                212, 213, 214, 215, 216
               ]
             }
           ]
@@ -194,21 +65,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
-          "lines": "180-203",
+          "lines": "113-140",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
-              "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
+              "lines": [217, 218, 219, 220, 221, 222, 223, 224, 225, 226]
             }
           ]
         }
@@ -219,21 +80,11 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
-          "lines": "210-228",
+          "lines": "145-171",
           "implMappings": [
             {
               "file": "rust/sessions/src/model_resolution.rs",
-              "lines": [
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111
-              ]
+              "lines": [217, 218, 219, 220, 221, 222, 223, 224, 225, 226]
             }
           ]
         }
@@ -244,12 +95,8 @@
     "totalScenarios": 5,
     "coveredScenarios": 5,
     "coveragePercent": 100,
-    "testFiles": [
-      "rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs"
-    ],
-    "implFiles": [
-      "rust/sessions/src/model_resolution.rs"
-    ],
-    "totalLinesCovered": 262
+    "testFiles": ["rust/sessions/tests/rpc348_mid_session_facade_reresolution.rs"],
+    "implFiles": ["rust/sessions/src/model_resolution.rs"],
+    "totalLinesCovered": 251
   }
 }

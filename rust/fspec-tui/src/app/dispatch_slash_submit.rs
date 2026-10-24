@@ -31,6 +31,10 @@ impl App {
             return;
         };
 
+        if self.handle_archive_command(&session, &text) {
+            return;
+        }
+
         // RPC-022 slash-command interception.
         match parse_slash_command(&text) {
             SlashCommandParse::OpenModelDialog => {

@@ -1,152 +1,48 @@
 {
   "scenarios": [
     {
-      "name": "Streaming with usage in response.completed emits Usage event",
+      "name": "Streaming with inclusive usage emits normalized Usage before FinalResponse",
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "56-81",
+          "lines": "24-49",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373
-              ]
+              "lines": [85, 86, 87, 88]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
+              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
             }
           ]
         },
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "126-152",
+          "lines": "171-249",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
+              "lines": [419, 420, 421, 422, 423, 424, 425, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
+              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
             }
           ]
         }
       ]
     },
     {
-      "name": "Streaming without usage in response.completed skips Usage event",
+      "name": "Streaming without terminal usage reports an error without terminal success",
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "87-116",
+          "lines": "55-136",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "158-228",
-          "implMappings": [
-            {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
+              "lines": [419, 420, 421, 422, 423, 424, 425, 458, 459, 460, 461]
             }
           ]
         }
@@ -157,72 +53,15 @@
       "testMappings": [
         {
           "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "122-141",
+          "lines": "142-165",
           "implMappings": [
             {
               "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372,
-                373
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
-          "lines": "234-253",
-          "implMappings": [
+              "lines": [85, 86, 87, 88]
+            },
             {
-              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
-              "lines": [
-                349,
-                350,
-                351,
-                352,
-                353,
-                354,
-                355,
-                356,
-                357,
-                358,
-                359,
-                360,
-                361,
-                362,
-                363,
-                364,
-                365,
-                366,
-                367,
-                368,
-                369,
-                370,
-                371,
-                372
-              ]
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs",
+              "lines": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
             }
           ]
         }
@@ -237,8 +76,9 @@
       "rust/patches/rig-core/tests/prov_038_responses_api_usage_events.rs"
     ],
     "implFiles": [
-      "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs"
+      "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/responses_api/usage.rs"
     ],
-    "totalLinesCovered": 341
+    "totalLinesCovered": 299
   }
 }

@@ -71,7 +71,7 @@ pub fn truncate_output_str(output: &str) -> String {
     if output.len() <= MAX_OUTPUT_CHARS {
         output.to_string()
     } else {
-        let truncated = &output[..MAX_OUTPUT_CHARS];
+        let truncated = &output[..output.floor_char_boundary(MAX_OUTPUT_CHARS)];
         format!("{truncated}\n\n... [output truncated at {MAX_OUTPUT_CHARS} characters]")
     }
 }

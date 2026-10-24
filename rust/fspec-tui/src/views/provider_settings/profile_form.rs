@@ -2,19 +2,9 @@
 //!
 //! Feature: spec/features/provider-settings-profile-form.feature
 //!
-//! Rust port of the TS profile form (`src/tui/inputHandlers/
-//! profileFormModeHandler.ts`, `src/tui/utils/providerSettingsHelpers.ts`,
-//! `src/tui/constants/providerSettings.ts`). Pure state + parse-on-build,
-//! mirroring the model_selector `CustomModelForm` shape. PROV-136 DIVERGES
-//! from the TS name-lock: in edit mode the name IS editable (Up from the first
-//! connection field re-enters it), so an existing profile can be renamed. The
-//! `is_editing_name` flag still gates whether keystrokes edit the name;
-//! `is_new` now only distinguishes the create-mode defaults. `customModels` is
-//! deliberately NOT a form field — that array is owned by the model-selector
-//! CRUD and preserved by the backend read-modify-write.
-
 use codelet_rpc_types::ProfileDefinition;
 
+pub use super::profile_form_context::ProfileFormContext;
 use super::profile_form_parse::{opt_num, render_threshold};
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
@@ -53,6 +43,7 @@ pub const PROFILE_FORM_FIELDS: [&str; 13] = [
 /// typed string and are parsed on build.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ProfileForm {
+    pub context: ProfileFormContext,
     pub name: String,
     pub base_url: String,
     pub api_key: String,
@@ -103,6 +94,7 @@ impl ProfileForm {
     /// TS `initializeNewProfile`: empty name (being edited), default base URL.
     pub fn new_create() -> Self {
         Self {
+            context: ProfileFormContext::default(),
             name: String::new(),
             base_url: DEFAULT_PROFILE_BASE_URL.to_string(),
             api_key: String::new(),
@@ -138,6 +130,12 @@ impl ProfileForm {
     /// the profile can be renamed.
     pub fn from_definition(name: &str, def: &ProfileDefinition) -> Self {
         Self {
+            context: ProfileFormContext {
+                streaming: def.streaming,
+                preserve_thinking: def.preserve_thinking,
+                loop_detection: def.loop_detection_enabled,
+                ..ProfileFormContext::default()
+            },
             name: name.to_string(),
             base_url: def.base_url.clone(),
             api_key: def.api_key.clone(),
@@ -199,7 +197,7 @@ impl ProfileForm {
     pub(super) fn move_down(&mut self) {
         if self.is_editing_name {
             self.is_editing_name = false;
-            self.field_index = 0;
+            self.field_index = self.first_field();
         } else if self.field_index < PROFILE_FORM_FIELDS.len() - 1 {
             self.field_index += 1;
         }
@@ -208,9 +206,9 @@ impl ProfileForm {
     pub(super) fn move_up(&mut self) {
         if self.is_editing_name {
             // Already at the top — Up is a no-op while editing the name.
-        } else if self.field_index > 0 {
+        } else if self.field_index > self.first_field() {
             self.field_index -= 1;
-        } else {
+        } else if !self.context.settings {
             // PROV-136: Up from the first connection field re-enters the name
             // field in BOTH create and edit mode (the edit-mode rename path
             // diverges from the TS reference, which locks the name).

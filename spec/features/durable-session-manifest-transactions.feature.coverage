@@ -1,0 +1,347 @@
+{
+  "scenarios": [
+    {
+      "name": "Concurrent field writers retain all committed updates",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "71-117",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_commit.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stale whole snapshots cannot overwrite a newer commit",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "119-142",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_commit.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider session creation publishes the committed revision",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "49-69",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest.rs",
+              "lines": [
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed promotion cannot publish a changed cache",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "144-186",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_commit.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupted staging preserves the committed revision",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "188-208",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest.rs",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Competing processes cannot mutate an owned session",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "210-244",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_commit.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unreadable committed manifests are not absent sessions",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "246-268",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing committed message references block replay",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_manifest_transactions.rs",
+          "lines": "17-47",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/session_replay.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct064_manifest_transactions.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/manifest_commit.rs",
+      "rust/core/src/persistence/manifest.rs",
+      "rust/core/src/persistence/session_replay.rs",
+      "rust/core/src/persistence/compaction_boundary.rs"
+    ],
+    "totalLinesCovered": 440
+  }
+}

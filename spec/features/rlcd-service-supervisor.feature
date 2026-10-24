@@ -4,7 +4,6 @@
 @tools
 @rlcd
 Feature: RLCD service supervisor: config, health polling, local auto-spawn with port scanning
-
   """
   New module rust/tools/src/rlcd/ (config.rs, service.rs, error.rs; client.rs arrives in RLCD-002). Status: RLCD_STATUS: RwLock<RlcdStatus{reachable, base_url, model, last_check, spawn_note}>. Polling task: spawn-once guard, tokio::time::interval(10s), Handle::current() only. Config: load_rlcd_config()/load_rlcd_config_from(path) + key-preserving writer mirroring save_persisted_model_string_to. Files stay <300 lines.
   """
@@ -17,7 +16,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # ========================================
   # CONFIG (rules 1, 2, example 1, 9)
   # ========================================
-
   Scenario: Fresh machine with no config file resolves the full defaults
     Given a user config directory with no fspec-config.json file
     When the RLCD config is loaded
@@ -51,7 +49,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # ========================================
   # HEALTH POLLING + STATUS (rules 3, 4; examples 2, 3, 10)
   # ========================================
-
   Scenario: A healthy local server is detected and its reported model name is used
     Given a mock RLCD server on 127.0.0.1 whose /health returns {"status":"ready","model":"typed-decisions"}
     When the supervisor polls /health
@@ -81,7 +78,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # ========================================
   # AUTO-SPAWN: PORT SCAN (rule 6, 7; examples 4, 5, 8)
   # ========================================
-
   Scenario: When the configured port is free it is used for the spawn
     Given the configured spawn port 8000 is free
     When the supervisor selects a port for spawning
@@ -109,7 +105,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # ========================================
   # AUTO-SPAWN: PIDFILE + DETACH (rule 6, 7; examples 6, 7)
   # ========================================
-
   Scenario: A stale pidfile is removed before spawning
     Given a pidfile ~/.fspec/rlcd/rlcd.pid whose pid no longer exists
     When the supervisor prepares to spawn a local server
@@ -136,7 +131,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # spawn/reuse on a different port left every consumer probing the
   # configured url)
   # ========================================
-
   Scenario: Reusing an existing healthy server on a different port re-anchors and persists the url
     Given a configured url that is down
     And a healthy RLCD server occupying a different port in the scan window
@@ -163,7 +157,6 @@ Feature: RLCD service supervisor: config, health polling, local auto-spawn with 
   # ========================================
   # INTEGRATION (example 10)
   # ========================================
-
   Scenario: All consumers read the shared status and fail open together
     Given the RLCD status reports unreachable
     When the Decision tool, the workflow gate, and the security layer each act

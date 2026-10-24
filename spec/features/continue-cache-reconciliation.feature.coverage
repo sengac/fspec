@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "name": "Create and attach hydrate backend continue settings",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "80-99",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An early relative command waits for backend state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "101-120",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed getter refuses guessed relative changes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "122-148",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed setter reconciles or rolls back its matching cache",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "150-178",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Late hydration cannot overwrite commands or live updates",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "180-204",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Responses remain bound to their originating session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "206-228",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Late setter failure cannot roll back newer state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "230-258",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rapid continue commands preserve submission order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "260-283",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chrome refresh waits for an already submitted continue write",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225_continue_cache.rs",
+          "lines": "21-44",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unconfirmed absolute command remains unknown after failed reconciliation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug225/absolute_failure.rs",
+          "lines": "5-29",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_continue_sync.rs",
+              "lines": [
+                25,
+                53,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug225_continue_cache.rs",
+      "rust/fspec-tui/tests/bug225/absolute_failure.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_continue_sync.rs"
+    ],
+    "totalLinesCovered": 276
+  }
+}

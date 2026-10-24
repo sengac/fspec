@@ -74,7 +74,7 @@ impl App {
     /// intuition) unless the restore re-asserts the daemon pointer.
     pub(crate) async fn replay_session_snapshot(&mut self) {
         for info in fetch_session_snapshot(&self.backend).await {
-            self.handle_session_created(SessionId::new(info.id));
+            self.handle_session_observed(info);
         }
     }
 
@@ -94,7 +94,7 @@ impl App {
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
             for info in fetch_session_snapshot(&backend).await {
-                let _ = action_tx.send(Action::SessionCreated(SessionId::new(info.id)));
+                let _ = action_tx.send(Action::SessionObserved(info));
             }
         });
         self.pending_tasks.push(handle);
@@ -105,6 +105,7 @@ impl App {
     /// close path removes the tab synchronously BEFORE the daemon fires
     /// the event, so the double-fire never double-cleans).
     pub(crate) fn handle_session_removed(&mut self, session: SessionId) {
+        self.transcript_sync.remove(&session);
         // Step 1: the gate. `false` = tab already gone → no-op.
         if !self.agent_view_store.remove_session_if_open(&session) {
             return;
@@ -124,6 +125,7 @@ impl App {
         // Step 3: drop the per-session work-unit binding so the
         // SessionHeader chip stops painting the doomed session's WU.
         self.agent_view_store.clear_work_unit_context(&session);
+        self.rebuild_focus_occupancy();
         // Step 4: current-work-unit pointer clear (TS parity step 3)
         // only when it pointed at a WU we just detached — never steal
         // a surviving session's live binding.
@@ -162,8 +164,13 @@ impl App {
     ///    cleared, so the SessionHeader badge returns to [0%] even
     ///    when the chunk stream lags the lifecycle event.
     pub(crate) fn handle_session_cleared(&mut self, session: SessionId) {
+        self.transcript_sync.remove(&session);
         // Step 1: the gate — no open tab is a complete no-op.
-        if self.agent_view_store.session_context_for(&session).is_none() {
+        if self
+            .agent_view_store
+            .session_context_for(&session)
+            .is_none()
+        {
             return;
         }
         // Step 2: per-session reset (store-side, focus-independent).
@@ -175,7 +182,9 @@ impl App {
         // path with the local /clear (DRY). A background-session
         // clear never touches the focused input buffer.
         if self.agent_view_store.current_session() == Some(&session) {
-            self.navigator.agent.reset_local_scrollback(&mut self.agent_view_store);
+            self.navigator
+                .agent
+                .reset_local_scrollback(&mut self.agent_view_store);
         }
         // Step 4: RPC-100 chrome mirror — the SessionHeader badge
         // returns to the cleared state even when the chunk stream

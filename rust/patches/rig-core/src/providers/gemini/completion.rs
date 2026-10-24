@@ -19,7 +19,6 @@ pub const GEMINI_2_0_FLASH_LITE: &str = "gemini-2.0-flash-lite";
 /// `gemini-2.0-flash` completion model
 pub const GEMINI_2_0_FLASH: &str = "gemini-2.0-flash";
 
-use self::gemini_api_types::Schema;
 use crate::http_client::HttpClientExt;
 use crate::message::{self, MimeType, Reasoning};
 
@@ -53,6 +52,27 @@ pub struct CompletionModel<T = reqwest::Client> {
     pub model: String,
 }
 
+impl TryFrom<completion::ToolDefinition> for FunctionDeclaration {
+    type Error = CompletionError;
+
+    fn try_from(tool: completion::ToolDefinition) -> Result<Self, Self::Error> {
+        if !tool.parameters.is_object() {
+            return Err(CompletionError::RequestError(
+                format!("Tool '{}' requires an object JSON Schema", tool.name).into(),
+            ));
+        }
+        let parameters_json_schema = (tool.parameters
+            != serde_json::json!({"type":"object","properties":{}}))
+        .then_some(tool.parameters);
+        Ok(Self {
+            name: tool.name,
+            description: tool.description,
+            parameters: None,
+            parameters_json_schema,
+        })
+    }
+}
+
 impl<T> CompletionModel<T> {
     pub fn new(client: Client<T>, model: impl Into<String>) -> Self {
         Self {
@@ -76,6 +96,10 @@ where
     type Response = GenerateContentResponse;
     type StreamingResponse = StreamingCompletionResponse;
     type Client = super::Client<T>;
+
+    fn prepare_request(&self, request: CompletionRequest) -> Result<Vec<u8>, CompletionError> {
+        self.selected_request_bytes(request)
+    }
 
     fn make(client: &Self::Client, model: impl Into<String>) -> Self {
         Self::new(client.clone(), model)
@@ -186,7 +210,14 @@ where
 pub(crate) fn create_request_body(
     completion_request: CompletionRequest,
 ) -> Result<GenerateContentRequest, CompletionError> {
+    completion_request.validate_tool_catalog_overrides()?;
     let mut full_history = Vec::new();
+    full_history.extend(
+        completion_request
+            .documents
+            .iter()
+            .map(|document| message::Message::user(document.to_string())),
+    );
     full_history.extend(completion_request.chat_history);
 
     let additional_params = completion_request
@@ -197,6 +228,12 @@ pub(crate) fn create_request_body(
         mut generation_config,
         additional_params,
     } = serde_json::from_value::<AdditionalParameters>(additional_params)?;
+
+    if generation_config.is_none()
+        && (completion_request.temperature.is_some() || completion_request.max_tokens.is_some())
+    {
+        generation_config = Some(serde_json::from_value(Value::Object(Map::new()))?);
+    }
 
     generation_config = generation_config.map(|mut cfg| {
         if let Some(temp) = completion_request.temperature {
@@ -230,13 +267,7 @@ pub(crate) fn create_request_body(
     };
 
     let request = GenerateContentRequest {
-        contents: full_history
-            .into_iter()
-            .map(|msg| {
-                msg.try_into()
-                    .map_err(|e| CompletionError::RequestError(Box::new(e)))
-            })
-            .collect::<Result<Vec<_>, _>>()?,
+        contents: super::request_body::history_contents(full_history)?,
         generation_config,
         safety_settings: None,
         tools,
@@ -252,19 +283,8 @@ impl TryFrom<completion::ToolDefinition> for Tool {
     type Error = CompletionError;
 
     fn try_from(tool: completion::ToolDefinition) -> Result<Self, Self::Error> {
-        let parameters: Option<Schema> =
-            if tool.parameters == serde_json::json!({"type": "object", "properties": {}}) {
-                None
-            } else {
-                Some(tool.parameters.try_into()?)
-            };
-
         Ok(Self {
-            function_declarations: vec![FunctionDeclaration {
-                name: tool.name,
-                description: tool.description,
-                parameters,
-            }],
+            function_declarations: vec![FunctionDeclaration::try_from(tool)?],
             code_execution: None,
         })
     }
@@ -274,31 +294,10 @@ impl TryFrom<Vec<completion::ToolDefinition>> for Tool {
     type Error = CompletionError;
 
     fn try_from(tools: Vec<completion::ToolDefinition>) -> Result<Self, Self::Error> {
-        let mut function_declarations = Vec::new();
-
-        for tool in tools {
-            let parameters =
-                if tool.parameters == serde_json::json!({"type": "object", "properties": {}}) {
-                    None
-                } else {
-                    match tool.parameters.try_into() {
-                        Ok(schema) => Some(schema),
-                        Err(e) => {
-                            let emsg = format!(
-                                "Tool '{}' could not be converted to a schema: {:?}",
-                                tool.name, e,
-                            );
-                            return Err(CompletionError::ProviderError(emsg));
-                        }
-                    }
-                };
-
-            function_declarations.push(FunctionDeclaration {
-                name: tool.name,
-                description: tool.description,
-                parameters,
-            });
-        }
+        let function_declarations = tools
+            .into_iter()
+            .map(FunctionDeclaration::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(Self {
             function_declarations,
@@ -401,13 +400,10 @@ impl TryFrom<GenerateContentResponse> for completion::CompletionResponse<Generat
         let usage = response
             .usage_metadata
             .as_ref()
-            .map(|usage| completion::Usage {
-                input_tokens: usage.prompt_token_count as u64,
-                output_tokens: usage.candidates_token_count.unwrap_or(0) as u64,
-                total_tokens: usage.total_token_count as u64,
-                ..Default::default()
-            })
-            .unwrap_or_default();
+            .and_then(crate::completion::GetTokenUsage::token_usage)
+            .ok_or_else(|| {
+                CompletionError::ResponseError("missing or inconsistent Gemini usage".into())
+            })?;
 
         Ok(completion::CompletionResponse {
             choice,
@@ -1089,16 +1085,13 @@ pub mod gemini_api_types {
 
     impl GetTokenUsage for UsageMetadata {
         fn token_usage(&self) -> Option<crate::completion::Usage> {
-            let mut usage = crate::completion::Usage::new();
-
-            usage.input_tokens = self.prompt_token_count as u64;
-            usage.output_tokens = (self.cached_content_token_count.unwrap_or_default()
-                + self.candidates_token_count.unwrap_or_default()
-                + self.thoughts_token_count.unwrap_or_default())
-                as u64;
-            usage.total_tokens = usage.input_tokens + usage.output_tokens;
-
-            Some(usage)
+            super::super::usage::normalize(
+                self.prompt_token_count,
+                self.candidates_token_count,
+                self.thoughts_token_count,
+                self.cached_content_token_count,
+                self.total_token_count,
+            )
         }
     }
 
@@ -1685,6 +1678,8 @@ pub mod gemini_api_types {
         pub description: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         pub parameters: Option<Schema>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub parameters_json_schema: Option<Value>,
     }
 
     #[derive(Debug, Serialize, Deserialize)]

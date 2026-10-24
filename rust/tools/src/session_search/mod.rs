@@ -14,6 +14,7 @@
 //! the actual data access is registered via `set_session_search_handler()`.
 
 pub mod handler;
+pub mod originals;
 pub mod reassembly;
 pub mod types;
 
@@ -75,10 +76,12 @@ impl Tool for SessionSearchTool {
             name: "SessionSearch".to_string(),
             description: concat!(
                 "Search and view session conversation history. ",
-                "Three actions: 'recent' (list recent sessions), ",
+                "Four actions: 'recent' (list recent sessions), ",
                 "'search' (keyword search with regex across all content — user inputs, ",
                 "assistant responses, tool calls), ",
                 "'show' (load specific session or current session). ",
+                "'originals' (bounded lossless structured envelopes for an explicit session UUID). ",
+                "Search/show are previews, not exact evidence; use originals for exact content. ",
                 "Use recent → search → show to iteratively find relevant context. ",
                 "Results include session names, work unit IDs, timestamps, and content previews."
             )
@@ -89,7 +92,7 @@ impl Tool for SessionSearchTool {
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["recent", "search", "show"],
+                        "enum": ["recent", "search", "show", "originals"],
                         "description": "The action to perform"
                     },
                     "count": {
@@ -106,7 +109,7 @@ impl Tool for SessionSearchTool {
                     },
                     "limit": {
                         "type": ["integer", "null"],
-                        "description": "Maximum matches to return (search action, default: 20)"
+                        "description": "Maximum matches (search) or complete original records (originals: 1..100, default: 20)"
                     },
                     "all_projects": {
                         "type": ["boolean", "null"],
@@ -130,7 +133,7 @@ impl Tool for SessionSearchTool {
                     },
                     "session_id": {
                         "type": ["string", "null"],
-                        "description": "Session ID to show — UUID or 'current' (show action, default: current)"
+                        "description": "Session UUID (required for originals); show also accepts 'current' or omission"
                     },
                     "user_only": {
                         "type": ["boolean", "null"],
@@ -142,11 +145,19 @@ impl Tool for SessionSearchTool {
                     },
                     "start_turn": {
                         "type": ["integer", "null"],
-                        "description": "Start of turn range (inclusive, 0-based) to restrict results (optional for 'show' and 'search' actions)"
+                        "description": "Inclusive 0-based start (show/search/originals); originals uses persisted manifest positions, default: 0"
                     },
                     "end_turn": {
                         "type": ["integer", "null"],
-                        "description": "End of turn range (inclusive, 0-based) to restrict results (optional for 'show' and 'search' actions)"
+                        "description": "Inclusive 0-based end (show/search/originals); originals defaults to session end"
+                    },
+                    "next_turn": {
+                        "type": ["integer", "null"],
+                        "description": "Originals continuation: next unread persisted position from the prior page; keep the same session/range"
+                    },
+                    "max_bytes": {
+                        "type": ["integer", "null"],
+                        "description": "Originals compact serialized response byte budget (1..61440, default: 61440). Complete envelopes only; oversized evidence returns a typed error"
                     }
                 },
                 "required": ["action_type"]
@@ -169,7 +180,15 @@ impl Tool for SessionSearchTool {
 
         let result = execute_session_search(self.session_id, args.action);
 
-        serde_json::to_string_pretty(&result).map_err(|e| ToolError::Execution {
+        let serialized = if matches!(
+            result,
+            SearchResult::Originals { .. } | SearchResult::OriginalsError { .. }
+        ) {
+            serde_json::to_string(&result)
+        } else {
+            serde_json::to_string_pretty(&result)
+        };
+        serialized.map_err(|e| ToolError::Execution {
             tool: "session_search",
             message: format!("Failed to serialize result: {e}"),
         })

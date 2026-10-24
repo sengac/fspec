@@ -8,22 +8,18 @@
 //!
 //! Feature: spec/features/inject-summary-handler.feature
 //!
-//! The handler does NOT lock session.inner. The agent_loop holds that
-//! lock during streaming, so locking it here would deadlock. Instead,
-//! the handler stores the DAG content in `pending_dag_content` (an
-//! `Arc<std::sync::Mutex<Option<String>>>` on BackgroundSession) and
-//! returns immediately. After the stream completes, the agent_loop
-//! checks for pending DAG content and applies the session state
-//! changes via [`apply_pending_dag`].
+//! Uncaptured legacy submissions fail closed. The production registration in
+//! `generate_compaction_handler` queues candidates through `TurnCompaction`,
+//! whose application commits and publishes the captured durable generation.
+//! Legacy pending-DAG application cannot replace context or announce completion.
 
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-use codelet_common::token_estimator::count_tokens;
-use codelet_core::compaction::{wrap_dag_content, FileOp, StructuralAnnotation};
+use codelet_core::compaction::{FileOp, StructuralAnnotation};
 use codelet_rpc_types::{CompactionResult, SessionState, StreamChunk};
-use codelet_tools::inject_summary::{InjectSummaryHandler, InjectSummaryResult};
+use codelet_tools::inject_summary::InjectSummaryHandler;
 use uuid::Uuid;
 
 /// Callback invoked after inject_summary stores the DAG and clears the
@@ -42,48 +38,17 @@ use uuid::Uuid;
 /// DAG summary alone, useful for logging only.
 pub type OnInjectedCallback = Arc<dyn Fn(u32) + Send + Sync>;
 
-/// Create an inject_summary handler for a specific session.
+/// Create a legacy handler that rejects submissions without durable capture.
 ///
-/// Lifted verbatim from `rust/napi/src/inject_summary_handler.rs:46-86`.
+/// Production callers register an operation-owned `TurnCompaction` instead.
 pub fn create_handler(
-    pending_dag: Arc<std::sync::Mutex<Option<String>>>,
-    context_window: u64,
-    compaction_in_progress: Arc<AtomicBool>,
-    on_injected: Option<OnInjectedCallback>,
+    _pending_dag: Arc<std::sync::Mutex<Option<String>>>,
+    _context_window: u64,
+    _compaction_in_progress: Arc<AtomicBool>,
+    _on_injected: Option<OnInjectedCallback>,
 ) -> InjectSummaryHandler {
-    Arc::new(move |_session_id: Uuid, content: String| {
-        let compaction_flag = compaction_in_progress.clone();
-
-        // Step 1: Wrap DAG content
-        let wrapped = wrap_dag_content(&content);
-
-        // Step 2: Estimate token counts (no session lock needed)
-        let injected_tokens = count_tokens(&wrapped) as u64;
-        // Rough estimate — actual budget recalculated when agent_loop applies the DAG
-        let remaining_budget = context_window.saturating_sub(injected_tokens);
-
-        // Step 3: Store DAG content for deferred application by agent_loop
-        if let Ok(mut guard) = pending_dag.lock() {
-            *guard = Some(wrapped);
-        } else {
-            return Err("Failed to acquire pending_dag lock".to_string());
-        }
-
-        // Step 4: Clear compaction_in_progress flag
-        compaction_flag.store(false, Ordering::SeqCst);
-
-        // Step 5: Fire on_injected callback for non-emitting side effects
-        // (clears the compaction progress spinner). CMPCT-038: the
-        // CompactionComplete chunk is emitted later by
-        // apply_pending_dag_and_emit with the recalculated basis.
-        if let Some(ref cb) = on_injected {
-            cb(injected_tokens as u32);
-        }
-
-        Ok(InjectSummaryResult {
-            injected_tokens,
-            remaining_budget,
-        })
+    Arc::new(move |_session_id: Uuid, _content: String| {
+        Err("durable operation capture required; raw pending DAG submission is unavailable".into())
     })
 }
 
@@ -235,91 +200,31 @@ pub fn build_dag_files_block(
     Some(block)
 }
 
-/// Apply pending DAG content to a session.
+/// Reject and consume uncaptured legacy pending DAG content.
 ///
-/// Called by the agent_loop AFTER the stream completes, while it still holds
-/// the session lock. This is where the actual "clear → restore → inject" happens.
-///
-/// Returns the parsed `Vec<DagNodeMeta>` if a DAG was applied, or `None` if
-/// nothing was pending.
+/// A pending candidate or poisoned lock blocks inference without replacing
+/// messages or counters. This compatibility entrypoint always returns `None`.
 pub fn apply_pending_dag(
     session: &mut codelet_cli::session::Session,
     pending_dag: &Arc<std::sync::Mutex<Option<String>>>,
 ) -> Option<Vec<codelet_core::compaction::DagNodeMeta>> {
-    use codelet_cli::interactive_helpers::{recalculate_token_tracker, reset_session_to_reminders};
-    use codelet_core::compaction::parse_dag_nodes;
-    use rig::message::{Message, UserContent};
-    use rig::OneOrMany;
-
-    // Take the pending DAG content (if any)
-    let dag_content = match pending_dag.lock() {
-        Ok(mut guard) => guard.take(),
-        Err(_) => None,
-    };
-
-    let mut wrapped = dag_content?;
-
-    // CMPCT-021: Auto-append <dag-files> block if agent omitted it.
-    if !wrapped.contains("<dag-files>") {
-        let all_annotations: Vec<StructuralAnnotation> = session
-            .annotations
-            .values()
-            .flat_map(|v| v.iter().cloned())
-            .collect();
-
-        let existing_dag_files_str = codelet_cli::compaction_dag::detect_existing_dag(
-            &session.messages,
-        )
-        .and_then(|(content, _)| {
-            if content.contains("<dag-files>") {
-                Some(content)
-            } else {
-                None
-            }
-        });
-
-        if let Some(files_block) =
-            build_dag_files_block(&all_annotations, existing_dag_files_str.as_deref())
-        {
-            if let Some(close_pos) = wrapped.rfind("</system-reminder>") {
-                wrapped.insert_str(close_pos, &format!("\n\n{}\n", files_block));
-            } else {
-                wrapped.push_str(&format!("\n\n{}", files_block));
+    match pending_dag.lock() {
+        Ok(mut pending) => {
+            if pending.take().is_some() {
+                session.block_compaction_inference("uncaptured pending DAG rejected".into());
             }
         }
+        Err(error) => {
+            session.block_compaction_inference(format!("pending DAG lock unavailable: {error}"))
+        }
     }
-
-    let message_count = session.messages.len();
-    let dag_nodes = parse_dag_nodes(&wrapped, Some(message_count));
-
-    let _counts = reset_session_to_reminders(session);
-
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&wrapped)),
-    });
-
-    recalculate_token_tracker(session);
-
-    Some(dag_nodes)
+    None
 }
 
-/// Apply pending DAG content and emit the post-injection events with the
-/// HONEST measurement basis (CMPCT-038).
+/// Preserve the legacy application signature without publishing raw candidates.
 ///
-/// This is the production emit site for `CompactionComplete`: it calls
-/// [`apply_pending_dag`] (which rebuilds the message list to reminders +
-/// summary and runs `recalculate_token_tracker`), then reads the
-/// recalculated `session.token_tracker.input_tokens` as `compacted_tokens`
-/// and emits `SessionStateChange(Running)` followed by `CompactionComplete`
-/// via [`emit_post_injection_events`].
-///
-/// Race-free by construction: the tracker is recalculated BEFORE the chunk
-/// is emitted, so `compacted_tokens` reflects the real post-injection
-/// context (a true ~60% reduction reports ~60, not the ~99% the
-/// summary-only basis produced).
-///
-/// Returns the parsed DAG nodes if a DAG was applied, or `None` (emitting
-/// nothing) if nothing was pending.
+/// [`apply_pending_dag`] always returns `None`, so no event is emitted here.
+/// Production completion follows durable commit through `TurnCompaction::apply`.
 pub fn apply_pending_dag_and_emit(
     session: &mut codelet_cli::session::Session,
     pending_dag: &Arc<std::sync::Mutex<Option<String>>>,

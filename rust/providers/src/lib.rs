@@ -2,6 +2,9 @@
 //!
 //! Multi-provider LLM abstraction.
 
+#[cfg(test)]
+extern crate self as codelet_providers;
+
 pub mod adapter;
 pub mod cache_optimization;
 pub mod cache_token_extractor;
@@ -28,6 +31,12 @@ pub mod oauth_crypto;
 pub mod oauth_http_utils;
 pub mod openai;
 pub mod provider_resolution;
+pub mod request_admission;
+pub mod runtime_options;
+pub mod selected_request;
+mod selection_metadata;
+pub mod session;
+mod tool_contract;
 pub mod zai;
 
 /// RPC-007: Test-only deterministic stub provider for cross-transport
@@ -76,6 +85,9 @@ pub use model_limits::{
     resolve_context_window, resolve_max_output_tokens, resolve_model_limits, ModelLimitsResolver,
 };
 pub use openai::OpenAIProvider;
+pub use runtime_options::{
+    resolve_runtime_options, ProviderRuntimeOptions, RuntimeCompactionThreshold,
+};
 pub use zai::ZAIProvider;
 
 use codelet_common::MessageContent;

@@ -1,0 +1,68 @@
+{
+  "scenarios": [
+    {
+      "name": "Scrollback distinguishes user and detector interruption with legacy fallback",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug220_interruption_rendering.rs",
+          "lines": "8-36",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/record_chunk.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug220_interruption_rendering.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/store/agent_view/record_chunk.rs"
+    ],
+    "totalLinesCovered": 65
+  }
+}

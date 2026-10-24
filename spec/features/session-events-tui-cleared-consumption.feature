@@ -8,7 +8,6 @@
 @websocket
 @RPC-437
 Feature: TUI consumes the SessionEvent::Cleared lifecycle event (both transports)
-
   """
   TUI-side half of the RPC-433/RPC-436 session lifecycle event stream:
   completes the RPC-434 created/removed consumption with the third
@@ -64,7 +63,6 @@ Feature: TUI consumes the SessionEvent::Cleared lifecycle event (both transports
   #   the MockBackend (the App's bus is transport-agnostic).
   #
   # ========================================
-
   Background: User Story
     As a operator connected to the fspec daemon
     I want to have the TUI reset a session's local UI when that session is cleared on ANY machine

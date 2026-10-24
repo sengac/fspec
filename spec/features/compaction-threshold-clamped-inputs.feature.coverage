@@ -1,11 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "Claude Opus 4.6 compaction threshold uses clamped context window",
+      "name": "Claude Opus 4.6 compaction threshold uses effective catalog limits",
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "560-590",
+          "lines": "566-589",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_threshold.rs",
@@ -45,7 +45,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "592-617",
+          "lines": "594-620",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -82,7 +82,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "617-645",
+          "lines": "625-648",
           "implMappings": [
             {
               "file": "rust/core/src/compaction_hook.rs",
@@ -175,7 +175,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "645-666",
+          "lines": "653-665",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_threshold.rs",
@@ -218,7 +218,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "666-687",
+          "lines": "670-682",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_threshold.rs",
@@ -257,11 +257,11 @@
       ]
     },
     {
-      "name": "Sub-agent propagation uses clamped context window",
+      "name": "Sub-agent propagation uses effective context window",
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "766-795",
+          "lines": "746-767",
           "implMappings": [
             {
               "file": "rust/providers/src/manager.rs",
@@ -303,7 +303,7 @@
       "testMappings": [
         {
           "file": "rust/cli/src/compaction_threshold.rs",
-          "lines": "687-707",
+          "lines": "687-697",
           "implMappings": [
             {
               "file": "rust/cli/src/compaction_threshold.rs",
@@ -335,6 +335,6 @@
       "rust/core/src/compaction_hook.rs",
       "rust/providers/src/manager.rs"
     ],
-    "totalLinesCovered": 390
+    "totalLinesCovered": 343
   }
 }

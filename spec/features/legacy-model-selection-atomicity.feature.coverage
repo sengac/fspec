@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "name": "Rejected ordinary selection preserves model state",
+      "testMappings": [
+        {
+          "file": "rust/napi/tests/bug226_legacy_model_atomicity.rs",
+          "lines": "163-173",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/session_bindings.rs",
+              "lines": [
+                1996,
+                1997,
+                1998,
+                1999,
+                2000,
+                2001,
+                2002,
+                2003,
+                2004,
+                2027,
+                2028,
+                2029,
+                2030,
+                2031,
+                2032,
+                2047,
+                2048
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected profile selection preserves model state",
+      "testMappings": [
+        {
+          "file": "rust/napi/tests/bug226_legacy_model_atomicity.rs",
+          "lines": "177-192",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/session_bindings.rs",
+              "lines": [
+                2154,
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160,
+                2161,
+                2162,
+                2163,
+                2164,
+                2165,
+                2166,
+                2167,
+                2168,
+                2169,
+                2170,
+                2171,
+                2172,
+                2173,
+                2174,
+                2231,
+                2232,
+                2233,
+                2234,
+                2235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful legacy setters publish identity limits and override together",
+      "testMappings": [
+        {
+          "file": "rust/napi/tests/bug226_legacy_model_atomicity.rs",
+          "lines": "196-217",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/session_bindings.rs",
+              "lines": [
+                2027,
+                2028,
+                2029,
+                2030,
+                2031,
+                2032,
+                2047,
+                2048,
+                2171,
+                2172,
+                2173,
+                2174,
+                2231,
+                2232,
+                2233,
+                2234,
+                2235
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/napi/tests/bug226_legacy_model_atomicity.rs"
+    ],
+    "implFiles": [
+      "rust/napi/src/session_bindings.rs"
+    ],
+    "totalLinesCovered": 109
+  }
+}

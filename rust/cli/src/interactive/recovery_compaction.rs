@@ -35,7 +35,7 @@
 //! ## Emission discipline
 //!
 //! `begin_compaction_recovery` emits `compaction_started` +
-//! `compaction_progress("Context limit reached", 0, total_turns.max(1))`
+//! `compaction_progress("Context limit reached", 0, 0)`
 //! exactly once per entry. `execute_compaction_and_capture_events` emits
 //! `compaction_continuing` exactly once on success. Downstream callers must
 //! NOT re-emit either of these lifecycle events.
@@ -202,7 +202,7 @@ pub fn flush_partial_state_before_compaction(
     .with_reasoning_tokens(current.reasoning_tokens);
     session
         .token_tracker
-        .update_from_usage(&usage, current.output_tokens);
+        .update_from_display(&usage, current.output_tokens);
 
     Ok(appended)
 }
@@ -220,10 +220,9 @@ pub fn flush_partial_state_before_compaction(
 ///    For Paths B and C the user prompt is at the tail of
 ///    `session.messages` but has not been consumed by the API; for Path D
 ///    the user message is mid-flight and must remain.
-/// 4. `token_state.compaction_needed` is set to `true`. If it was already
-///    `true` on entry (disagreement between the cancel path and the flag
-///    bookkeeping), a structured `warn!` is emitted. The flag remains `true`
-///    afterwards regardless.
+/// 4. `token_state.compaction_needed` is set to `true`. Already-set intent is
+///    expected after hook cancellation or defensive classification and is
+///    recorded at debug level. The flag remains `true` afterwards regardless.
 /// 5. The global tool progress callback is cleared via
 ///    `set_tool_progress_callback(Uuid::nil(), None)` so a stale per-turn
 ///    callback cannot survive into the in-loop compaction restart (CMPCT-027).
@@ -234,9 +233,7 @@ pub fn flush_partial_state_before_compaction(
 ///    `execute_compaction`'s defensive orphan guard on every entry path.
 /// 7. `output.emit_compaction_started()` and
 ///    `output.emit_compaction_progress("Context limit reached", 0,
-///    total_turns.max(1))` are emitted exactly once, where `total_turns` is
-///    `session.messages.len() / 2` (computed AFTER any pop so the discarded
-///    prompt is not counted).
+///    0)` are emitted exactly once; zero work counts mean unknown work units.
 ///
 /// # Returns
 ///
@@ -265,8 +262,7 @@ pub fn flush_partial_state_before_compaction(
 ///   the tail and the User (now second-to-last) would never be popped.
 /// - The CMPCT-050 orphan safety net runs AFTER the pop + flush so the
 ///   post-mutation state is the one guaranteed tool-pair-clean.
-/// - Lifecycle events are emitted LAST so `total_turns` reflects the
-///   post-pop + post-append length.
+/// - Lifecycle events are emitted LAST after recovery preparation is complete.
 ///
 /// 1. Conditional user-pop (must run before flush; restricted to unconsumed
 ///    text prompts — never a `User(ToolResult)`, per CMPCT-050)
@@ -333,7 +329,7 @@ pub fn begin_compaction_recovery<O: StreamOutput>(
     match token_state.lock() {
         Ok(mut state) => {
             if state.compaction_needed {
-                warn!(
+                debug!(
                     "[begin_compaction_recovery] compaction_needed was already true on entry — \
                      signals that a previous path or the hook has already flagged this turn. \
                      The helper leaves the flag set and proceeds."
@@ -378,11 +374,7 @@ pub fn begin_compaction_recovery<O: StreamOutput>(
 
     // Step 6: emit lifecycle events exactly once.
     output.emit_compaction_started();
-    // `total_turns` is computed AFTER any pop so the discarded prompt is
-    // not counted. saturating division by 2 gives the approximate
-    // user/assistant pair count.
-    let total_turns = (session.messages.len() as u32) / 2;
-    output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
+    output.emit_compaction_progress("Context limit reached", 0, 0);
 
     // Step 7: CMPCT-028 — select the retry-prompt policy based on whether
     // partial assistant text was preserved. `EmbedInInstruction` is the
@@ -520,7 +512,6 @@ pub async fn execute_compaction_and_capture_events<O: StreamOutput>(
             }
 
             output.emit_compaction_continuing();
-            session.token_tracker.reset_after_compaction();
             Ok(())
         }
         Err(e) => {

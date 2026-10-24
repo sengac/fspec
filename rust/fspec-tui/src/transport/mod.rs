@@ -32,6 +32,8 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 
 pub mod embedded;
+mod focus_events;
+mod oauth_context;
 pub mod websocket;
 
 pub use embedded::EmbeddedFspecBackend;
@@ -47,11 +49,19 @@ pub use websocket::WebSocketFspecBackend;
 /// always "a dialog, never a panic or hang".
 #[derive(Debug, Error)]
 pub enum BackendError {
+    #[error(transparent)]
+    Transcript(#[from] codelet_rpc_types::TranscriptError),
+    #[error("transcript transport failed: {0}")]
+    TranscriptTransport(String),
     /// The underlying transport has lost its connection. RPC methods
     /// return this variant rather than panicking or hanging until the
     /// supervisor task reconnects.
     #[error("backend disconnected")]
     Disconnected,
+    #[error("provider settings request failed: {0}")]
+    ProviderSettings(String),
+    #[error("work-unit focus request failed: {0}")]
+    WorkUnitFocus(String),
 }
 
 /// Transport-agnostic surface holding both the embedded and WebSocket
@@ -63,6 +73,25 @@ pub enum BackendError {
 /// RPC-010 (binary entry points).
 #[async_trait]
 pub trait FspecBackend: Send + Sync {
+    async fn list_provider_settings(
+        &self,
+    ) -> std::result::Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, BackendError> {
+        Err(BackendError::ProviderSettings(
+            "unsupported backend".to_string(),
+        ))
+    }
+
+    async fn save_provider_settings(
+        &self,
+        provider_id: String,
+        definition: ProfileDefinition,
+    ) -> std::result::Result<(), BackendError> {
+        let _ = (provider_id, definition);
+        Err(BackendError::ProviderSettings(
+            "unsupported backend".to_string(),
+        ))
+    }
+
     /// List all known work units. Mirrors `FspecService::list_work_units`.
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>>;
 
@@ -509,6 +538,17 @@ pub trait FspecBackend: Send + Sync {
         Ok(None)
     }
 
+    async fn get_transcript_page(
+        &self,
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> std::result::Result<codelet_rpc_types::TranscriptPage, BackendError> {
+        let _ = (cursor, snapshot_end, max_bytes);
+        Err(codelet_rpc_types::TranscriptError::SessionUnavailable(session_id.value).into())
+    }
+
     /// RPC-037: replay-buffer of recent stream chunks for a session.
     async fn get_buffered_output(
         &self,
@@ -560,6 +600,30 @@ pub trait FspecBackend: Send + Sync {
     /// without a real session manager attached don't need to override.
     async fn resume_session(&self, _session_id: SessionId) -> Result<()> {
         Ok(())
+    }
+
+    async fn get_work_unit_focus(
+        &self,
+        _session_id: SessionId,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, BackendError> {
+        Err(BackendError::WorkUnitFocus("not supported".into()))
+    }
+
+    async fn set_work_unit_focus(
+        &self,
+        _session_id: SessionId,
+        _work_unit_id: Option<String>,
+        _source: String,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, BackendError> {
+        Err(BackendError::WorkUnitFocus("not supported".into()))
+    }
+
+    fn work_unit_focus_rx(
+        &self,
+    ) -> broadcast::Receiver<(SessionId, codelet_rpc_types::WorkUnitFocus)> {
+        let (sender, receiver) = broadcast::channel(1);
+        drop(sender);
+        receiver
     }
 
     /// RPC-037: read the work-unit context bound to a session.

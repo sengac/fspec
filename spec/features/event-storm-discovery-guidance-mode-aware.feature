@@ -4,7 +4,6 @@
 @astgrep
 @CLI-015
 Feature: Event-storm discovery guidance is mode-aware
-
   """
   The discover-event-storm guidance's Research-First Workflow block is
   rendered per mode (CLI-015): harness mode (FSPEC_CAPTURE_MODE=1) names the

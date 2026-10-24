@@ -42,6 +42,12 @@ pub mod oauth_polling;
 pub mod oauth_types;
 pub mod prompt_cache;
 pub mod provider;
+
+impl crate::ProviderAdapter for provider::CopilotProvider {
+    fn provider_name(&self) -> &'static str {
+        "github-copilot"
+    }
+}
 pub mod provider_options;
 pub mod refreshing_client;
 pub mod response;

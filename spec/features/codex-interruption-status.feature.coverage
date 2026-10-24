@@ -1,0 +1,97 @@
+{
+  "scenarios": [
+    {
+      "name": "Ordinary setup and body cancellation remain silent",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
+          "lines": "34-73",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Active recovery cancellation is reported exactly once",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
+          "lines": "75-158",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terminal completion never becomes cancellation",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug219_codex_interruption_status.rs",
+          "lines": "160-227",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug219_codex_interruption_status.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/reconnect.rs"
+    ],
+    "totalLinesCovered": 225
+  }
+}

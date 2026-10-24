@@ -73,6 +73,7 @@ impl From<codelet_core::TokenDisplayUpdate> for TokenInfo {
 #[derive(Debug, Clone)]
 pub struct ToolCallEvent {
     pub id: String,
+    pub call_id: Option<String>,
     pub name: String,
     pub args: serde_json::Value,
 }
@@ -81,6 +82,7 @@ pub struct ToolCallEvent {
 #[derive(Debug, Clone)]
 pub struct ToolResultEvent {
     pub id: String,
+    pub call_id: Option<String>,
     pub content: String,
     pub is_error: bool,
 }
@@ -116,9 +118,9 @@ pub struct ToolProgressEvent {
 pub struct CompactionProgressInfo {
     /// Current phase (e.g., "Preparing compaction", "Analyzing context")
     pub phase: String,
-    /// Current progress count
+    /// Legacy count field; zero with total zero means unknown work.
     pub current: u32,
-    /// Total items to process
+    /// Legacy count field; not a turn count or percentage basis.
     pub total: u32,
 }
 
@@ -188,6 +190,8 @@ pub struct CompactionCompleteInfo {
 /// - Simplifies the StreamOutput trait to a single method
 #[derive(Debug, Clone)]
 pub enum StreamEvent {
+    ResponseAttemptStarted,
+    ResponseAttemptAborted,
     /// Streaming text chunk
     Text(String),
     /// Tool call notification
@@ -207,6 +211,7 @@ pub enum StreamEvent {
     Tokens(TokenInfo),
     /// Context window fill percentage (TUI-033)
     ContextFill(ContextFillInfo),
+    ContextSnapshot(codelet_rpc_types::RequestContextSnapshot),
     /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
     ToolProgress(ToolProgressEvent),
     /// Thinking/reasoning content from extended thinking (TOOL-010)
@@ -218,7 +223,9 @@ pub enum StreamEvent {
     /// UX-002: Compaction completed successfully
     CompactionComplete(CompactionCompleteInfo),
     /// UX-002: Compaction failed
-    CompactionFailed { reason: String },
+    CompactionFailed {
+        reason: String,
+    },
     /// UX-002: Continuing after compaction (informational for CLI)
     CompactionContinuing,
     /// CONT-007: live continue/goal counter snapshot (state-only for the
@@ -234,6 +241,36 @@ pub enum StreamEvent {
 ///
 /// Default methods provide a convenient API that wraps events in StreamEvent.
 pub trait StreamOutput: Send + Sync {
+    fn prepare_tool_dispatch(&self, _id: &str) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn emit_tool_cancellation(&self, result: ToolResultEvent) {
+        self.emit(StreamEvent::ToolResult(result));
+    }
+
+    fn interruption_reason(&self) -> Option<codelet_rpc_types::InterruptionReason> {
+        None
+    }
+
+    fn publish_committed_context(
+        &self,
+        _identity: &codelet_core::persistence::compaction_boundary::CompactionIdentity,
+        _snapshot: codelet_rpc_types::CommittedContextSnapshot,
+        context: codelet_rpc_types::RequestContextSnapshot,
+    ) -> Result<(), String> {
+        if let Some(fill) = context.context_fill() {
+            self.emit_context_fill(&ContextFillInfo {
+                fill_percentage: fill.fill_percentage,
+                effective_tokens: fill.effective_tokens as u64,
+                threshold: fill.threshold as u64,
+                context_window: fill.context_window as u64,
+            });
+        }
+        self.emit(StreamEvent::ContextSnapshot(context));
+        Ok(())
+    }
+
     /// Emit a stream event (core method that implementations must provide)
     fn emit(&self, event: StreamEvent);
 
@@ -266,6 +303,7 @@ pub trait StreamOutput: Send + Sync {
     fn emit_tool_call(&self, id: &str, name: &str, args: &serde_json::Value) {
         self.emit(StreamEvent::ToolCall(ToolCallEvent {
             id: id.to_string(),
+            call_id: None,
             name: name.to_string(),
             args: args.clone(),
         }));
@@ -276,6 +314,7 @@ pub trait StreamOutput: Send + Sync {
     fn emit_tool_result(&self, id: &str, content: &str, is_error: bool) {
         self.emit(StreamEvent::ToolResult(ToolResultEvent {
             id: id.to_string(),
+            call_id: None,
             content: content.to_string(),
             is_error,
         }));
@@ -378,6 +417,14 @@ pub trait StreamOutput: Send + Sync {
         }));
     }
 
+    fn emit_committed_compaction_complete(&self, result: codelet_rpc_types::CompactionResult) {
+        self.emit_compaction_complete(
+            result.original_tokens,
+            result.compacted_tokens,
+            result.compression_ratio / 100.0,
+        );
+    }
+
     /// UX-002: Emit compaction failed event
     #[inline]
     fn emit_compaction_failed(&self, reason: &str) {
@@ -402,6 +449,10 @@ pub struct CliOutput;
 impl StreamOutput for CliOutput {
     fn emit(&self, event: StreamEvent) {
         match event {
+            StreamEvent::ResponseAttemptStarted => {}
+            StreamEvent::ResponseAttemptAborted => {
+                tracing::info!("Discarding partial response from interrupted network attempt");
+            }
             StreamEvent::Text(text) => {
                 // Replace \n with \r\n for proper terminal display in raw mode
                 let display_text = text.replace('\n', "\r\n");
@@ -493,7 +544,7 @@ impl StreamOutput for CliOutput {
             StreamEvent::Tokens(_) => {
                 // CLI doesn't display real-time token updates (shown in status line instead)
             }
-            StreamEvent::ContextFill(_) => {
+            StreamEvent::ContextFill(_) | StreamEvent::ContextSnapshot(_) => {
                 // CLI doesn't display context fill percentage (TUI-only feature)
             }
             StreamEvent::ToolProgress(progress) => {
@@ -581,6 +632,14 @@ impl StreamOutput for CliOutput {
 // This allows the tool progress callback to emit directly via StreamOutput
 // without going through a channel that would block during tool execution.
 impl<O: StreamOutput> StreamOutput for std::sync::Arc<O> {
+    fn emit_tool_cancellation(&self, result: ToolResultEvent) {
+        (**self).emit_tool_cancellation(result);
+    }
+
+    fn prepare_tool_dispatch(&self, id: &str) -> Result<(), String> {
+        (**self).prepare_tool_dispatch(id)
+    }
+
     fn emit(&self, event: StreamEvent) {
         (**self).emit(event);
     }

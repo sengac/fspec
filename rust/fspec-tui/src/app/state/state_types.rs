@@ -47,6 +47,12 @@ pub struct App {
     /// (e.g. lazy `create_session` on first `EnterWorkUnit`); tests use
     /// [`App::next_pending_task`] to await deterministically.
     pub(crate) pending_tasks: Vec<JoinHandle<()>>,
+    pub(crate) model_sync:
+        std::collections::HashMap<SessionId, crate::app::dispatch_model_sync::ModelSync>,
+    pub(crate) continue_sync:
+        std::collections::HashMap<SessionId, crate::app::dispatch_continue_sync::ContinueSync>,
+    pub(crate) transcript_sync:
+        std::collections::HashMap<SessionId, crate::app::transcript_sync::TranscriptSync>,
     /// Chunks-subscriber session filter (RPC-009 rule [8]). The subscriber
     /// task reads this before forwarding `Action::ChunkReceived`; `dispatch`
     /// republishes on `Action::SessionCreated`.
@@ -120,6 +126,9 @@ impl App {
             should_render: true,
             subscriber_tasks: Vec::new(),
             pending_tasks: Vec::new(),
+            model_sync: std::collections::HashMap::new(),
+            continue_sync: std::collections::HashMap::new(),
+            transcript_sync: std::collections::HashMap::new(),
             active_session_tx,
             active_session_rx,
             pending_input_save_handle: None,

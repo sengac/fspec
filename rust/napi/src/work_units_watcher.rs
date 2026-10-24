@@ -31,6 +31,8 @@ struct ShimState {
     watcher: Option<WorkUnitsWatcher>,
     snapshot: Vec<WorkUnitInfo>,
     is_watching: bool,
+    focus_subscription: Option<codelet_core::work_unit_subscription::WorkUnitSubscription>,
+    generation: u64,
 }
 
 impl ShimState {
@@ -39,6 +41,8 @@ impl ShimState {
             watcher: None,
             snapshot: Vec::new(),
             is_watching: false,
+            focus_subscription: None,
+            generation: 0,
         }
     }
 }
@@ -63,14 +67,26 @@ pub fn start_work_units_watcher(
     let mut rx = watcher.subscribe();
     let initial = watcher.snapshot();
 
-    {
+    let generation = {
         let mut guard = SHIM_STATE
             .write()
             .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
+        guard.focus_subscription = None;
+        guard.generation = guard.generation.wrapping_add(1);
+        guard.focus_subscription = Some(
+            codelet_core::work_unit_subscription::WorkUnitSubscription::new(&watcher, |project| {
+                if let Err(error) =
+                    codelet_sessions::SessionManager::instance().reconcile_work_units(project)
+                {
+                    warn!(%error, "NAPI work-unit focus observation failed");
+                }
+            }),
+        );
         guard.watcher = Some(watcher);
         guard.snapshot = initial.clone();
         guard.is_watching = true;
-    }
+        guard.generation
+    };
 
     // Fire the initial chunk synchronously so the TS side observes it
     // before any potential subsequent file mutation (matches legacy
@@ -93,18 +109,24 @@ pub fn start_work_units_watcher(
             use tokio::sync::broadcast::error::RecvError;
             loop {
                 match rx.blocking_recv() {
-                    Ok(snapshot) => {
+                    Ok(_) | Err(RecvError::Lagged(_)) => {
+                        let snapshot = match codelet_core::work_units::read_snapshot(&workspace) {
+                            Ok(snapshot) => snapshot,
+                            Err(error) => {
+                                warn!(%error, "NAPI work-unit refresh failed");
+                                continue;
+                            }
+                        };
                         if let Ok(mut guard) = SHIM_STATE.write() {
+                            if !guard.is_watching || guard.generation != generation {
+                                break;
+                            }
                             guard.snapshot = snapshot.clone();
+                            callback.call(
+                                Ok(StreamChunk::work_units_update(snapshot)),
+                                ThreadsafeFunctionCallMode::NonBlocking,
+                            );
                         }
-                        callback.call(
-                            Ok(StreamChunk::work_units_update(snapshot)),
-                            ThreadsafeFunctionCallMode::NonBlocking,
-                        );
-                    }
-                    Err(RecvError::Lagged(skipped)) => {
-                        debug!("napi shim watcher lagged; skipped={skipped}");
-                        continue;
                     }
                     Err(RecvError::Closed) => {
                         debug!("napi shim watcher channel closed");
@@ -126,6 +148,7 @@ pub fn stop_work_units_watcher() -> Result<()> {
         .write()
         .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     guard.watcher = None;
+    guard.focus_subscription = None;
     guard.is_watching = false;
     guard.snapshot.clear();
     Ok(())

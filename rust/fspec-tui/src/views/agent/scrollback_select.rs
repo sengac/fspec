@@ -75,6 +75,10 @@ impl ScrollbackList {
     /// turn visible by re-anchoring the scroll offset.
     pub fn navigate_turn(&mut self, dir: TurnDir) {
         let Some(current) = self.selected else {
+            if self.selection_mode == SelectionMode::Item {
+                self.select_last_turn();
+                self.scroll_selected_into_view();
+            }
             return;
         };
         let last = match self.chunks.len().checked_sub(1) {

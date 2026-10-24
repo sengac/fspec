@@ -22,18 +22,12 @@ impl App {
     /// RoleBanner paints from the first frame when the session
     /// already has a role overlay set.
     pub(crate) fn refresh_session_chrome(&mut self, session: SessionId) {
+        self.spawn_hydrate_work_unit_focus(session.clone());
+        self.spawn_hydrate_continue_state(session.clone());
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let s1 = session.clone();
-        let h1 = tokio::spawn(async move {
-            if let Ok(info) = backend.get_model_info(s1.clone()).await {
-                let _ = action_tx.send(Action::ModelInfoLoaded(s1, info));
-            }
-        });
-        self.pending_tasks.push(h1);
+        self.spawn_model_sync(session.clone(), None);
         // TUI-093: apply the persisted default thinking level to the now-active
         // session (once per session id). When it applies it ALSO re-fetches +
         // emits ThinkingLevelLoaded, so we skip the plain get below to avoid a

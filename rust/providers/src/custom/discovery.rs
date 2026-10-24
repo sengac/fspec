@@ -40,7 +40,7 @@ pub fn discover_provider_configs() -> Result<Vec<ProviderConfig>, CustomProvider
 /// Honours `FSPEC_HOME` (which points at the credentials directory — the
 /// providers directory is its sibling). Falls back to
 /// `$HOME/.fspec/providers`.
-fn get_global_providers_dir() -> PathBuf {
+pub(crate) fn get_global_providers_dir() -> PathBuf {
     if let Ok(fspec_home) = std::env::var("FSPEC_HOME") {
         let credentials_dir = PathBuf::from(&fspec_home);
         // `FSPEC_HOME` traditionally points at <base>/credentials. The

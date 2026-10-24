@@ -9,7 +9,6 @@
 @source-shape
 @WT-012
 Feature: create_isolated_session_with_id duplicates the pre-RPC-425 session-creation code path instead of using the shared helper
-
   """
   Design: add resolve_provider_manager(model: &str) -> Result<ProviderManager, String> in rust/sessions/src/model_resolution.rs funneling the three construction branches (registry: with_model_support + select_model; profile: with_provider_and_model + apply_profile_env_vars; codex/custom: with_provider_and_model). All three creation methods call it after credential resolution. create_isolated_session_with_id then builds SessionCreationParams (worktree_path, base_commit, Some(IsolationContext)) and delegates to create_background_session_inner; it keeps worktree creation, git-session manifest write, best-effort persistence manifest, IsolationStateChange emission (WT-001 3-arg), worktree-cwd footer poller, and the IsolatedSessionInfo return. Non-isolated callers gain the shared funnel (selection branch moves into the helper, PM construction stays at the call site).
   """
@@ -33,7 +32,6 @@ Feature: create_isolated_session_with_id duplicates the pre-RPC-425 session-crea
   #   6. Parity regression: a non-isolated profile-model session created via create_session_with_id against a profile with autoContinue 300 / preserveThinking true still seeds auto-continue ON budget 300 and preserve_thinking_enabled=true, and a registry-model session via create_session_with_id still succeeds with the with_model_support + select_model funnel (registry validation, credentials re-detection) — the shared provider-manager helper is behavior-preserving for the two migrated callers
   #
   # ========================================
-
   Background: User Story
     As a Rust developer
     I want to route create_isolated_session_with_id through the shared session-creation helper

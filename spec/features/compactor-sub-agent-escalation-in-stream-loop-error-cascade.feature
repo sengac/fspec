@@ -4,7 +4,6 @@
 @compaction
 @CMPCT-044
 Feature: Compactor sub-agent escalation in the stream-loop error cascade
-
   """
   CMPCT-044 (cascade slice): when the API rejects a request with a
   context-overflow error the in-loop in-view compaction could not

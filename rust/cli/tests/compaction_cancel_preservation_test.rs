@@ -13,8 +13,11 @@ use codelet_cli::session::Session;
 use codelet_core::StreamingTokenDisplay;
 
 fn fresh_session() -> Session {
-    // Some test environments may not have providers configured — skip if so.
-    Session::new(None).expect("failed to create test session")
+    Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    ))
 }
 
 /// Scenario: Partial assistant text is saved into the conversation before compaction

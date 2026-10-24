@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "89-115",
+          "lines": "96-122",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -75,7 +75,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "31-66",
+          "lines": "36-73",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -113,7 +113,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "69-86",
+          "lines": "76-93",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -150,7 +150,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct044_cascade_ordering_test.rs",
-          "lines": "140-174",
+          "lines": "147-188",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -208,6 +208,6 @@
     "implFiles": [
       "rust/cli/src/interactive/stream_loop.rs"
     ],
-    "totalLinesCovered": 0
+    "totalLinesCovered": 258
   }
 }

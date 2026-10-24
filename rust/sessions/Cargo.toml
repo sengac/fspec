@@ -10,6 +10,8 @@ description = "NAPI-free session manager and background session for the codelet 
 workspace = true
 
 [dependencies]
+base64 = "0.22"
+url = { workspace = true }
 # RPC-030 Phase 4 architecture: codelet-sessions hosts the agent loop that
 # both the Rust `fspec` binary and the `codelet-napi` adapter consume via
 # `codelet_core::SessionManagerHandle`. The dep arrows below mirror the
@@ -56,8 +58,19 @@ dirs = { workspace = true }
 
 # === Logging ===
 tracing = { workspace = true }
+tempfile = { workspace = true }
 
 [dev-dependencies]
+codelet-rpc-embedded.workspace = true
+codelet-rpc-server.workspace = true
+tarpc.workspace = true
+tokio-tungstenite.workspace = true
+proptest.workspace = true
+codelet-fspec-core.workspace = true
+codelet-rpc.workspace = true
+codelet-agent-loop = { workspace = true, features = ["test-support"] }
+codelet-providers = { workspace = true, features = ["test-support"] }
+futures.workspace = true
 # Used by rust/sessions/tests/skeleton_invariants.rs to parse the JSON
 # output of `cargo metadata` while asserting the forbidden-arrow invariant.
 serde_json = { workspace = true }
@@ -65,7 +78,6 @@ serde_json = { workspace = true }
 # tests/no_napi_dependency.rs.
 codelet-test-helpers = { workspace = true }
 # RPC-081: restoration tests need a hermetic data dir.
-tempfile = { workspace = true }
 tokio = { workspace = true, features = ["test-util"] }
 # RPC-347: custom-model RPC surface tests mutate the process-global
 # FSPEC_USER_DIR env var, so they must run serially.
@@ -73,3 +85,4 @@ serial_test.workspace = true
 # WT-005: terminate-failure test captures a WARN-level log line from
 # `destroy_session` via a custom tracing fmt layer.
 tracing-subscriber = { workspace = true }
+wiremock = "0.6.5"

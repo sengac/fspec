@@ -33,9 +33,12 @@ use super::icons;
 /// other than provider-row expansion state which drives the ▼/▶ glyph.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RowKind {
+    Settings,
     /// Provider header row. `expanded` flips the marker glyph between
     /// `▼` and `▶`.
-    Provider { expanded: bool },
+    Provider {
+        expanded: bool,
+    },
     /// Profile row (openai only). Rendered with the 📁 icon.
     Profile,
     /// OAuth-login action row. Rendered with the 🔑 icon.
@@ -59,7 +62,7 @@ pub enum RowKind {
 fn row_style(kind: RowKind, selected: bool) -> Style {
     let tint = match kind {
         RowKind::Provider { .. } | RowKind::ApiKey => Color::Yellow,
-        RowKind::Profile => Color::Cyan,
+        RowKind::Profile | RowKind::Settings => Color::Cyan,
         RowKind::OauthLogin => Color::Magenta,
         RowKind::OauthStatus | RowKind::AddProfile => Color::Green,
     };
@@ -98,7 +101,7 @@ pub(super) fn row_prefix(kind: RowKind, selected: bool) -> String {
         RowKind::AddProfile => format!("{marker}{}{}", icons::INDENT, icons::PLUS),
         // OAuth-status carries its own glyph inside the label — no
         // icon prefix beyond the inner indent.
-        RowKind::OauthStatus => format!("{marker}{}", icons::INDENT),
+        RowKind::OauthStatus | RowKind::Settings => format!("{marker}{}", icons::INDENT),
     }
 }
 
@@ -160,7 +163,7 @@ pub fn row_band_bg(kind: RowKind, selected: bool) -> Color {
     }
     match kind {
         RowKind::Provider { .. } | RowKind::ApiKey => Color::Yellow,
-        RowKind::Profile => Color::Cyan,
+        RowKind::Profile | RowKind::Settings => Color::Cyan,
         RowKind::OauthLogin => Color::Magenta,
         RowKind::OauthStatus | RowKind::AddProfile => Color::Green,
     }

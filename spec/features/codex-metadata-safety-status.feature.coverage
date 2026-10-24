@@ -1,0 +1,339 @@
+{
+  "scenarios": [
+    {
+      "name": "HTTP metadata reaches session diagnostics before text",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "52-102",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Event headers override top-level metadata without duplicating output",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "104-137",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing unknown and malformed optional metadata remain compatible",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "220-239",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ending or cancelling a stream clears transient buffering",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "241-272",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arbitrary optional payloads cannot leak through status rendering",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "275-286",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Safety buffering updates without delaying text",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "139-192",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verification and moderation expose only sanitized diagnostics",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov153_codex_metadata.rs",
+          "lines": "194-218",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov153_codex_metadata.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/metadata.rs",
+      "rust/providers/src/codex/metadata_protocol.rs"
+    ],
+    "totalLinesCovered": 403
+  }
+}

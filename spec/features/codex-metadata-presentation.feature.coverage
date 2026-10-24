@@ -1,0 +1,398 @@
+{
+  "scenarios": [
+    {
+      "name": "Routine metadata remains diagnostic only",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
+          "lines": "13-48",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/sessions/src/provider_status.rs",
+              "lines": [
+                16,
+                19,
+                24,
+                30,
+                42,
+                51
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                166,
+                171,
+                184,
+                196,
+                199
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                91,
+                92,
+                100,
+                107
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                982,
+                1027,
+                1755
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffering is temporary waiting state",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
+          "lines": "50-112",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/sessions/src/provider_status.rs",
+              "lines": [
+                16,
+                19,
+                24,
+                30,
+                42,
+                51
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                166,
+                171,
+                184,
+                196,
+                199
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                91,
+                92,
+                100,
+                107
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                982,
+                1027,
+                1755
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Old streams cannot revive waiting state",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
+          "lines": "114-195",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/sessions/src/provider_status.rs",
+              "lines": [
+                16,
+                19,
+                24,
+                30,
+                42,
+                51
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                166,
+                171,
+                184,
+                196,
+                199
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                91,
+                92,
+                100,
+                107
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                982,
+                1027,
+                1755
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verification remains actionable and turn scoped",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug241_metadata_presentation.rs",
+          "lines": "197-248",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/sessions/src/provider_status.rs",
+              "lines": [
+                16,
+                19,
+                24,
+                30,
+                42,
+                51
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                166,
+                171,
+                184,
+                196,
+                199
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                91,
+                92,
+                100,
+                107
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                982,
+                1027,
+                1755
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug241_metadata_presentation.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/metadata.rs",
+      "rust/providers/src/codex/metadata_protocol.rs",
+      "rust/sessions/src/provider_status.rs",
+      "rust/providers/src/codex/metadata_delivery.rs",
+      "rust/providers/src/codex/session.rs",
+      "rust/providers/src/codex/streaming.rs",
+      "rust/sessions/src/background_session.rs"
+    ],
+    "totalLinesCovered": 425
+  }
+}

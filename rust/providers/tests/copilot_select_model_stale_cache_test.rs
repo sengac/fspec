@@ -30,7 +30,7 @@ use serial_test::serial;
 #[serial]
 async fn select_model_re_detects_copilot_credentials_in_running_session() {
     // @step Given ProviderManager was constructed before copilot_auth.json existed
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = get_copilot_auth_path();
     assert!(
         !auth_path.exists(),
@@ -90,7 +90,7 @@ async fn end_to_end_select_model_after_login_succeeds() {
     // device-flow polling loop would have produced. The actual client_id +
     // device-code flow live in copilot_oauth_device_flow_test.rs and are
     // owned by Agent A.)
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And copilot_auth.json contains a valid github_oauth_token
     let auth =

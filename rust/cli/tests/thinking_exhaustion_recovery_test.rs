@@ -16,7 +16,7 @@ use codelet_cli::interactive::{
 use codelet_tools::facade::ThinkingLevel;
 
 // =============================================================================
-// Scenario: Anthropic thinking exhaustion detected and recovered with reduced budget
+// Scenario: Anthropic thinking exhaustion detected and recovered with a prompt-only retry
 // =============================================================================
 
 #[test]
@@ -43,17 +43,12 @@ fn test_anthropic_thinking_exhaustion_detected_and_recovered() {
         "Should detect thinking exhaustion: reasoning_tokens={reasoning_tokens}, output_tokens={output_tokens}, threshold={THINKING_EXHAUSTION_OUTPUT_THRESHOLD}"
     );
 
-    // @step And the system retries with a reduced thinking_budget of 4096
-    // Verify the downgrade path: High -> Medium (halving the budget)
-    let downgraded = downgrade_thinking_level(ThinkingLevel::High);
-    assert_eq!(
-        downgraded,
-        ThinkingLevel::Medium,
-        "High should downgrade to Medium"
-    );
+    // @step And the system requests concise reasoning with unchanged thinking_budget and output limits
+    let recovery =
+        build_thinking_exhaustion_recovery_message(reasoning_tokens, output_tokens, None);
+    assert!(recovery.contains("prompt-only") && recovery.contains("unchanged"));
 
     // @step And the retry produces a complete response with both reasoning and output content
-    // Simulated: after retry with reduced budget, normal completion
     let retry_detected = is_thinking_exhaustion(
         Some("end_turn"),
         4000,
@@ -67,7 +62,7 @@ fn test_anthropic_thinking_exhaustion_detected_and_recovered() {
 }
 
 // =============================================================================
-// Scenario: OpenAI thinking exhaustion detected and recovered with lower reasoning effort
+// Scenario: OpenAI thinking exhaustion detected and recovered with a prompt-only retry
 // =============================================================================
 
 #[test]
@@ -93,9 +88,10 @@ fn test_openai_thinking_exhaustion_detected_and_recovered() {
         "Should detect OpenAI thinking exhaustion: reasoning={reasoning_tokens}, output={output_tokens}, stop=length"
     );
 
-    // @step And the system retries with reasoning_effort downgraded to Medium
-    let downgraded = downgrade_thinking_level(ThinkingLevel::High);
-    assert_eq!(downgraded, ThinkingLevel::Medium);
+    // @step And the system requests concise reasoning with unchanged reasoning_effort and output limits
+    let recovery =
+        build_thinking_exhaustion_recovery_message(reasoning_tokens, output_tokens, None);
+    assert!(recovery.contains("prompt-only") && recovery.contains("unchanged"));
 
     // @step And the retry produces a complete response
     let retry_detected = is_thinking_exhaustion(
@@ -111,7 +107,7 @@ fn test_openai_thinking_exhaustion_detected_and_recovered() {
 }
 
 // =============================================================================
-// Scenario: Gemini thinking exhaustion detected and recovered with lower thinking level
+// Scenario: Gemini thinking exhaustion detected and recovered with a prompt-only retry
 // =============================================================================
 
 #[test]
@@ -138,9 +134,10 @@ fn test_gemini_thinking_exhaustion_detected_and_recovered() {
         "Should detect Gemini thinking exhaustion: reasoning={reasoning_tokens}, output={output_tokens}, stop=MAX_TOKENS"
     );
 
-    // @step And the system retries with thinking_level downgraded from high to medium
-    let downgraded = downgrade_thinking_level(ThinkingLevel::High);
-    assert_eq!(downgraded, ThinkingLevel::Medium);
+    // @step And the system requests concise reasoning with unchanged thinking_level and output limits
+    let recovery =
+        build_thinking_exhaustion_recovery_message(reasoning_tokens, output_tokens, None);
+    assert!(recovery.contains("prompt-only") && recovery.contains("unchanged"));
 
     // @step And the retry produces a useful response with complete output
     let retry_detected = is_thinking_exhaustion(
@@ -210,7 +207,6 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
 
     // @step When the model hits thinking exhaustion on the first attempt
     let mut retry_count: u32 = 0;
-    let mut current_level = ThinkingLevel::High;
 
     // First attempt: hits exhaustion
     assert!(is_thinking_exhaustion(
@@ -221,10 +217,8 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
     ));
     retry_count += 1;
     assert!(retry_count <= MAX_THINKING_EXHAUSTION_RETRIES);
-    current_level = downgrade_thinking_level(current_level);
-    assert_eq!(current_level, ThinkingLevel::Medium);
 
-    // @step And the first retry with reduced budget also hits thinking exhaustion
+    // @step And the first prompt-only retry also hits thinking exhaustion
     assert!(is_thinking_exhaustion(
         Some("max_tokens"),
         4000,
@@ -233,10 +227,8 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
     ));
     retry_count += 1;
     assert!(retry_count <= MAX_THINKING_EXHAUSTION_RETRIES);
-    current_level = downgrade_thinking_level(current_level);
-    assert_eq!(current_level, ThinkingLevel::Low);
 
-    // @step And the second retry with further reduced budget also hits thinking exhaustion
+    // @step And the second prompt-only retry also hits thinking exhaustion
     assert!(is_thinking_exhaustion(
         Some("max_tokens"),
         2000,
@@ -247,24 +239,15 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
     assert!(retry_count > MAX_THINKING_EXHAUSTION_RETRIES);
 
     // @step Then the retry budget is exhausted
-    // @step And the system disables thinking entirely for this turn
-    current_level = ThinkingLevel::Off;
-
-    // @step And the model produces a response without reasoning
-    let final_detected = is_thinking_exhaustion(
-        Some("end_turn"),
-        0,
-        3000,
-        THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
-    );
-    assert!(
-        !final_detected,
-        "With thinking off, no exhaustion should occur"
-    );
-    assert_eq!(current_level, ThinkingLevel::Off);
-
-    // @step And a warning is shown to the user indicating thinking was disabled
+    assert_eq!(retry_count, MAX_THINKING_EXHAUSTION_RETRIES + 1);
+    // @step And the system stops recovery without another request
     let budget_msg = build_thinking_budget_exhausted_msg(MAX_THINKING_EXHAUSTION_RETRIES);
+    assert!(budget_msg.contains("No further recovery requests"));
+    // @step And the available partial response is retained
+    let recovery = build_thinking_exhaustion_recovery_message(2000, 8, Some("partial reasoning"));
+    assert!(recovery.contains("partial reasoning"));
+    // @step And a warning is shown without claiming thinking was disabled
+    assert!(!budget_msg.contains("disabled"));
     assert!(
         budget_msg.to_lowercase().contains("thinking"),
         "Budget exhaustion message should mention thinking. Got: {budget_msg}"
@@ -365,7 +348,7 @@ fn test_context_preserved_before_retry_near_limits() {
         "Should flag context preservation needed when exhaustion detected at {utilization:.1}% utilization"
     );
 
-    // @step And the thinking-reduced retry proceeds after archival
+    // @step And the prompt-only retry proceeds after archival
     // (Verified by: retry would proceed after preservation, tested in integration)
 
     // @step And the pre-compaction state is recoverable via SessionSearch even if the retry fails
@@ -403,7 +386,7 @@ fn test_session_level_reasoning_auto_downgrades_across_turns() {
         "Session-level should downgrade from High to Medium after {cross_turn_exhaustion_count} exhaustions"
     );
 
-    // @step And the user is notified that reasoning effort was automatically reduced
+    // @step And the user is notified that only the preference for subsequent turns was reduced
     // The recovery message for progressive degradation
     let recovery_msg = build_thinking_exhaustion_recovery_message(0, 0, None);
     // The recovery message exists and is not empty (exact format tested separately)
@@ -537,8 +520,8 @@ fn test_budget_exhausted_message_content() {
         "Should mention thinking/reasoning. Got: {msg}"
     );
     assert!(
-        msg.to_lowercase().contains("disabled") || msg.to_lowercase().contains("exhausted"),
-        "Should indicate thinking is disabled/exhausted. Got: {msg}"
+        msg.to_lowercase().contains("exhausted") && !msg.to_lowercase().contains("disabled"),
+        "Should indicate exhausted retries without claiming thinking was disabled. Got: {msg}"
     );
 }
 

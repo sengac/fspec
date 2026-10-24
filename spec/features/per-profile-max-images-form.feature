@@ -25,7 +25,6 @@ Feature: Per-profile Max Images form field
   # ========================================
   # TUI form: the new Max Images field
   # ========================================
-
   Scenario: Max Images field prefills to the default 4 when absent
     Given an OpenAI profile "work-vllm" exists with no maxImages key stored
     When I open the profile edit form in the /provider view

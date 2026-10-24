@@ -7,44 +7,7 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "133-154",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
           ]
         }
       ]
@@ -56,44 +19,7 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "213-234",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
           ]
         }
       ]
@@ -105,44 +31,7 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "240-267",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
           ]
         }
       ]
@@ -154,44 +43,7 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "274-331",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
           ]
         }
       ]
@@ -201,128 +53,9 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "346-382",
+          "lines": "346-381",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/footer.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153
-              ]
-            }
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 109, 110, 111, 112, 113, 114]}
           ]
         }
       ]
@@ -332,67 +65,9 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
-          "lines": "388-417",
+          "lines": "387-417",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/views/agent/footer.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92
-              ]
-            }
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82]}
           ]
         }
       ]
@@ -404,57 +79,8 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "424-474",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
-              "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "lines": [144, 145, 146, 147, 148, 149, 150, 151, 152]},
+            {"file": "rust/fspec-tui/src/app/dispatch_compaction_complete.rs", "lines": [51, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94]}
           ]
         }
       ]
@@ -466,61 +92,16 @@
           "file": "rust/fspec-tui/tests/slash_compact_rpc047.rs",
           "lines": "162-206",
           "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-              "lines": [
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97
-              ]
-            }
+            {"file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs", "lines": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]}
           ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 8,
-    "coveredScenarios": 8,
-    "coveragePercent": 100,
-    "testFiles": [
-      "rust/fspec-tui/tests/slash_compact_rpc047.rs"
-    ],
-    "implFiles": [
-      "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
-      "rust/fspec-tui/src/views/agent/footer.rs",
-      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
-    ],
-    "totalLinesCovered": 673
+    "totalScenarios": 8, "coveredScenarios": 8, "coveragePercent": 100,
+    "testFiles": ["rust/fspec-tui/tests/slash_compact_rpc047.rs"],
+    "implFiles": ["rust/fspec-tui/src/app/dispatch_slash_commands.rs", "rust/fspec-tui/src/views/agent/footer.rs", "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "rust/fspec-tui/src/app/dispatch_compaction_complete.rs"],
+    "totalLinesCovered": 488
   }
 }

@@ -26,7 +26,6 @@ Feature: Per-profile Max Images wire schema
   # ========================================
   # WIRE SCHEMA
   # ========================================
-
   Scenario: The maxImages value round-trips through wire and disk
     Given a profile definition with maxImages 7
     When the profile is saved to fspec-config.json

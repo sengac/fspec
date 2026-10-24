@@ -53,6 +53,7 @@ fn assistant_envelope_round_trip_from_core_with_request_id() {
                 },
                 AssistantContent::ToolUse {
                     id: "toolu_disambiguator".to_string(),
+                    call_id: None,
                     name: "read_file".to_string(),
                     input: serde_json::json!({"path": "/foo.ts"}),
                 },
@@ -176,6 +177,7 @@ fn token_usage_per_message_round_trips_from_core() {
 fn user_content_tool_result_round_trips_from_core() {
     let content = UserContent::ToolResult {
         tool_use_id: "toolu_01AyTnm7YLfybhnhEhwwZvAY".to_string(),
+        call_id: None,
         content: r#"{"port": 8080}"#.to_string(),
         is_error: false,
         tool_use_result: Some(ToolUseResultMetadata::with_output("raw", "")),
@@ -262,6 +264,7 @@ fn message_payload_user_vs_assistant_disambiguates_via_role() {
             // ToolResult exists only on UserContent — discriminates from AssistantContent.
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_user_disc".to_string(),
+                call_id: None,
                 content: "ok".to_string(),
                 is_error: false,
                 tool_use_result: None,
@@ -282,6 +285,7 @@ fn message_payload_user_vs_assistant_disambiguates_via_role() {
             // ToolUse exists only on AssistantContent — discriminates from UserContent.
             content: vec![AssistantContent::ToolUse {
                 id: "toolu_asst_disc".to_string(),
+                call_id: None,
                 name: "read_file".to_string(),
                 input: serde_json::json!({"path": "/foo.ts"}),
             }],

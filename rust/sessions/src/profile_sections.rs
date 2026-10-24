@@ -5,9 +5,9 @@
 //!
 //! Ports the decision logic of the TS `profileSectionBuilder.ts`
 //! (`loadProfileSections`) into the Rust server: build a wire
-//! `ProviderInfo` for each local-server profile, applying the MODEL-004
-//! reachability override (a profile with custom models is never marked
-//! unreachable even when its `/v1/models` probe fails), and tag cloud /
+//! `ProviderInfo` for each local-server profile, applying the BUG-218 narrowed
+//! MODEL-004 override (unsupported discovery never proves inference unreachable;
+//! configured models remain usable; other probe failures block selection), and tag cloud /
 //! custom providers with `profile_name = None`, `is_unreachable = false`.
 //!
 //! The pure mapping helpers below are unit-tested without network I/O;
@@ -16,9 +16,14 @@
 
 use std::path::{Path, PathBuf};
 
+pub use crate::inherited_profile_sections::build_inherited_profile_sections;
 use codelet_rpc_types::{ModelEntry, ProviderInfo};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
+
+#[path = "profile_discovery.rs"]
+mod discovery;
+use discovery::probe_profile_models;
 
 /// Build the wire `ProviderInfo` for a cloud / custom provider. Such
 /// providers are never profile sections and are always treated as
@@ -56,23 +61,20 @@ pub fn retain_populated_cloud_sections(sections: Vec<ProviderInfo>) -> Vec<Provi
 /// * `key` is the profile-qualified `"{provider}:{profile}"` slug.
 /// * `display_name` is the profile-qualified label `"{provider}: {profile}"`.
 /// * `profile_name` is always `Some(profile)`.
-/// * MODEL-004 override: the section is `is_unreachable` only when the
-///   `/v1/models` probe failed AND the (already-merged) model list contains
-///   no custom models. A profile with custom models is never unreachable.
+/// * The section is `is_unreachable` when the probe reports failure after
+///   applying the BUG-218 optional-discovery exception for custom models.
 pub fn build_profile_provider_info(
     provider_id: &str,
     profile_name: &str,
     models: Vec<ModelEntry>,
     probe_failed: bool,
 ) -> ProviderInfo {
-    let has_custom_models = models.iter().any(|m| m.is_custom);
-    let is_unreachable = probe_failed && !has_custom_models;
     ProviderInfo {
         key: format!("{provider_id}:{profile_name}"),
         display_name: format!("{provider_id}: {profile_name}"),
         models,
         profile_name: Some(profile_name.to_string()),
-        is_unreachable,
+        is_unreachable: probe_failed,
     }
 }
 
@@ -536,7 +538,7 @@ pub fn merge_profile_models(
             is_custom: false,
         });
     }
-    for c in custom {
+    for c in custom.iter().filter(|model| !model.id.trim().is_empty()) {
         entries.push(ModelEntry {
             id: c.id.clone(),
             // Parity with TS `custom.displayName || custom.id`: fall back to
@@ -570,67 +572,11 @@ pub fn build_local_profile_sections() -> Vec<ProviderInfo> {
         .into_iter()
         .map(|profile| {
             let context_window = profile.context_window.unwrap_or(128_000);
-            // Probe the local server; an Err means the endpoint is
-            // unreachable (the MODEL-004 override is applied in
-            // `build_profile_provider_info`).
             let (discovered, probe_failed) = probe_profile_models(&profile);
             let models = merge_profile_models(discovered, &profile.custom_models, context_window);
             build_profile_provider_info("openai", &profile.name, models, probe_failed)
         })
         .collect()
-}
-
-/// Probe a profile's `/v1/models` endpoint. Returns `(model_ids,
-/// probe_failed)`; on any error `(vec![], true)`.
-///
-/// PROV-131: the probe bridges an async call into this synchronous function via
-/// `tokio::task::block_in_place(|| Handle::current().block_on(..))`, which
-/// requires a live MULTI-THREAD tokio runtime. When `list_providers` is invoked
-/// from a plain (non-tokio) or current-thread context there is no such runtime,
-/// so `block_in_place` / `Handle::current()` would PANIC ("there is no reactor
-/// running" / "can call blocking only when running on the multi-threaded
-/// runtime"). Guard the bridge with `Handle::try_current()` +
-/// `runtime_flavor() == MultiThread`; when absent, log via `tracing::warn` and
-/// degrade gracefully — skip the probe and report it as failed so the profile
-/// renders unreachable (empty models). Mirrors the TS `loadProfileSections`
-/// try/catch that sets `isUnreachable = true` on any probe failure.
-fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {
-    let on_multi_thread_runtime = matches!(
-        tokio::runtime::Handle::try_current().map(|h| h.runtime_flavor()),
-        Ok(tokio::runtime::RuntimeFlavor::MultiThread)
-    );
-    if !on_multi_thread_runtime {
-        tracing::warn!(
-            target: "profile_sections",
-            base_url = %profile.base_url,
-            "probe_profile_models: no multi-thread tokio runtime available; \
-             skipping /v1/models probe and marking profile unreachable",
-        );
-        return (Vec::new(), true);
-    }
-    let base_url = profile.base_url.clone();
-    let api_key = profile.api_key.clone();
-    let result = tokio::task::block_in_place(|| {
-        tokio::runtime::Handle::current().block_on(async {
-            codelet_providers::OpenAIProvider::list_local_models_with_auth(
-                &base_url,
-                api_key.as_deref(),
-            )
-            .await
-        })
-    });
-    match result {
-        Ok(ids) => (ids, false),
-        Err(e) => {
-            tracing::warn!(
-                target: "profile_sections",
-                base_url = %profile.base_url,
-                error = %e,
-                "probe_profile_models: /v1/models probe failed; marking profile unreachable",
-            );
-            (Vec::new(), true)
-        }
-    }
 }
 
 #[cfg(test)]
@@ -723,12 +669,12 @@ mod tests {
     #[test]
     fn failed_probe_with_custom_models_is_not_unreachable() {
         // @step Given the server builds the provider list
-        // @step And a local-server "openai" profile named "custom-profile" whose /v1/models probe fails
+        // @step And a local-server "openai" profile named "custom-profile" whose /v1/models probe returns unsupported discovery
         // @step And that profile has at least one custom model
         let models = vec![model("my-custom-model", true)];
 
         // @step When list_providers() returns the provider list
-        let info = build_profile_provider_info("openai", "custom-profile", models, true);
+        let info = build_profile_provider_info("openai", "custom-profile", models, false);
 
         // @step Then the "custom-profile" entry has is_unreachable false
         assert!(!info.is_unreachable);

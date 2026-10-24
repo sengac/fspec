@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "Canonical archival export preserves causal journal identities",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug250_archival_journal.rs",
+          "lines": "58-160",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                29,
+                33,
+                45,
+                50,
+                64,
+                69,
+                77,
+                82,
+                88,
+                94
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive.rs",
+              "lines": [
+                25,
+                34,
+                35,
+                79,
+                85,
+                87,
+                88,
+                89,
+                90,
+                108
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive/types.rs",
+              "lines": [
+                12,
+                13,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Canonical archival snapshots pin the journal prefix",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug250_archival_journal.rs",
+          "lines": "164-242",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                29,
+                33,
+                45,
+                50,
+                64,
+                69,
+                77,
+                82,
+                88,
+                94
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive.rs",
+              "lines": [
+                25,
+                34,
+                35,
+                79,
+                85,
+                87,
+                88,
+                89,
+                90,
+                108
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/archive/types.rs",
+              "lines": [
+                12,
+                13,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/bug250_archival_journal.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/archive/journal.rs",
+      "rust/core/src/persistence/archive.rs",
+      "rust/core/src/persistence/archive/types.rs"
+    ],
+    "totalLinesCovered": 228
+  }
+}

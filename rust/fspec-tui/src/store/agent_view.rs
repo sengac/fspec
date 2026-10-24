@@ -7,10 +7,9 @@
 //! rpc024-multi-session-store, rpc025-source-shape.
 use codelet_rpc_types::{
     CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel, WorkUnitContext,
-    WorkspaceInfo,
+    WorkUnitFocus, WorkspaceInfo,
 };
 use std::collections::HashMap;
-
 pub mod blocklist_state;
 pub mod chrome_state;
 pub mod chunk_processor;
@@ -21,6 +20,7 @@ pub mod diff_context;
 pub mod diff_decode;
 pub mod diff_format;
 pub mod exec_stdin_state; // TOOL-022 P2
+mod focus_state;
 pub mod history_accessors;
 pub mod history_state;
 pub mod hitl_state; // RPC-411
@@ -28,10 +28,12 @@ pub mod isolation_state;
 pub mod markdown_table_render;
 pub mod markdown_tables;
 pub mod navigation;
+pub mod patch_diff;
 pub mod pause_state;
 pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod record_chunk;
+pub mod response_attempt;
 pub mod role_state;
 pub mod scrollback_mutate;
 pub mod session_context;
@@ -40,6 +42,7 @@ pub mod stderr;
 pub mod supervisor_state;
 pub mod token_state;
 pub mod tool_args;
+mod transcript_record;
 pub mod work_unit_state;
 pub use history_state::HistoryNavState;
 pub use isolation_state::IsolationState;
@@ -96,7 +99,7 @@ pub struct AgentViewStore {
 
     // ── RPC-050 per-session work-unit binding — work_unit_state.rs ──────
     pub(crate) work_unit_context_by_session: HashMap<SessionId, WorkUnitContext>,
-
+    work_unit_focus_by_session: HashMap<SessionId, WorkUnitFocus>,
     // ── RPC-056 per-session blocklist-disabled set — blocklist_state.rs ─
     pub(crate) blocklist_disabled_by_session: HashMap<SessionId, std::collections::HashSet<String>>,
 
@@ -108,6 +111,7 @@ pub struct AgentViewStore {
     pub(crate) compaction_reduction_seq_by_session: HashMap<SessionId, u64>,
     // CONT-002/003/007 status-bar state — accessors in `chrome_state.rs`.
     pub(crate) continue_state_by_session: HashMap<SessionId, (bool, u32)>,
+    pub(crate) continue_revision_by_session: HashMap<SessionId, u64>,
     pub(crate) goal_state_by_session: HashMap<SessionId, (String, Option<String>)>,
     pub(crate) continue_live_by_session: HashMap<SessionId, chrome_state::ContinueLiveState>,
     // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
@@ -166,6 +170,7 @@ impl AgentViewStore {
         if self.open_sessions.iter().any(|c| c.id == ctx.id) {
             return;
         }
+        self.restore_work_unit_focus_projection(&ctx.id);
         self.open_sessions.push(ctx);
         self.current_session_index = self.open_sessions.len().saturating_sub(1);
     }
@@ -190,6 +195,7 @@ impl AgentViewStore {
             return false;
         };
         self.open_sessions.remove(idx);
+        self.clear_work_unit_context(id);
         let len = self.open_sessions.len();
         if len == 0 {
             self.current_session_index = 0;

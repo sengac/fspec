@@ -5,7 +5,6 @@
 @session
 @git
 Feature: Closing an isolated session terminates its git-session manifest so its worktree becomes prunable
-
   """
   Closing an isolated session (the 'Close session' exit path,
   SessionManager::destroy_session) must mark the codelet-git session

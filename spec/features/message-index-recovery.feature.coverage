@@ -1,0 +1,60 @@
+{
+  "scenarios": [
+    {
+      "name": "Lookup recovers an original omitted from an apparently current index",
+      "testMappings": [{
+        "file": "rust/core/tests/message_index_recovery.rs",
+        "lines": "37-54",
+        "implMappings": [
+          {"file": "rust/core/src/persistence/messages.rs", "lines": [138, 139, 140, 141]},
+          {"file": "rust/core/src/persistence/messages/recovery.rs", "lines": [5, 6, 10, 11, 14, 15, 16, 17, 18, 19, 21]}
+        ]
+      }]
+    },
+    {
+      "name": "Lookup repairs an index entry pointing at a different original",
+      "testMappings": [{
+        "file": "rust/core/tests/message_index_recovery.rs",
+        "lines": "56-72",
+        "implMappings": [
+          {"file": "rust/core/src/persistence/messages/state.rs", "lines": [89, 90, 91, 92, 94, 95]},
+          {"file": "rust/core/src/persistence/messages/recovery.rs", "lines": [5, 6, 10, 11, 14, 15, 16, 17, 18, 19, 21]}
+        ]
+      }]
+    },
+    {
+      "name": "Cleanup preserves referenced originals omitted from the index",
+      "testMappings": [{
+        "file": "rust/core/tests/message_index_recovery.rs",
+        "lines": "74-93",
+        "implMappings": [
+          {"file": "rust/core/src/persistence/messages/maintenance.rs", "lines": [108, 109, 110, 111, 112, 113]},
+          {"file": "rust/core/src/persistence/messages/recovery.rs", "lines": [5, 10, 14, 15, 16, 17, 18, 19, 21]}
+        ]
+      }]
+    },
+    {
+      "name": "Cleanup refuses deletion when a required original is truly missing",
+      "testMappings": [{
+        "file": "rust/core/tests/message_index_recovery.rs",
+        "lines": "95-113",
+        "implMappings": [
+          {"file": "rust/core/src/persistence/messages/maintenance.rs", "lines": [108, 109, 110, 111, 112, 113]},
+          {"file": "rust/core/src/persistence/messages/recovery.rs", "lines": [5, 10, 11, 12, 14, 21]}
+        ]
+      }]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": ["rust/core/tests/message_index_recovery.rs"],
+    "implFiles": [
+      "rust/core/src/persistence/messages.rs",
+      "rust/core/src/persistence/messages/state.rs",
+      "rust/core/src/persistence/messages/recovery.rs",
+      "rust/core/src/persistence/messages/maintenance.rs"
+    ]
+  }
+}

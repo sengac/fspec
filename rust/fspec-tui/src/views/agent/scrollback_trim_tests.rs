@@ -151,7 +151,7 @@ fn trim_marker_text_matches_the_rule_format() {
     let marker_text = list.full_text_for_seq(list.chunks()[0].seq).unwrap();
     assert_eq!(
         marker_text.trim(),
-        "\u{2026} 4000 older lines trimmed \u{2026}"
+        "\u{2026} 4000 older lines trimmed — /archive <event-sequence> to inspect originals \u{2026}"
     );
 }
 

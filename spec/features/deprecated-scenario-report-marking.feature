@@ -4,7 +4,6 @@
 @validation
 @coverage
 Feature: show-coverage marks @deprecated scenarios in reports
-
   """
   show-coverage renders a visible DEPRECATED marker for scenarios that are
   deprecated via the @deprecated tag (scenario-level or feature-level) so

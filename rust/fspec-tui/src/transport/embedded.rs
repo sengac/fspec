@@ -69,6 +69,29 @@ impl EmbeddedFspecBackend {
 
 #[async_trait]
 impl FspecBackend for EmbeddedFspecBackend {
+    async fn list_provider_settings(
+        &self,
+    ) -> std::result::Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, super::BackendError>
+    {
+        self.client
+            .list_provider_settings(context::current())
+            .await
+            .map_err(|error| super::BackendError::ProviderSettings(error.to_string()))?
+            .map_err(super::BackendError::ProviderSettings)
+    }
+
+    async fn save_provider_settings(
+        &self,
+        provider_id: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> std::result::Result<(), super::BackendError> {
+        self.client
+            .save_provider_settings(context::current(), provider_id, definition)
+            .await
+            .map_err(|error| super::BackendError::ProviderSettings(error.to_string()))?
+            .map_err(super::BackendError::ProviderSettings)
+    }
+
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>> {
         Ok(self.client.list_work_units(context::current()).await?)
     }
@@ -500,6 +523,26 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?)
     }
 
+    async fn get_transcript_page(
+        &self,
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> std::result::Result<codelet_rpc_types::TranscriptPage, super::BackendError> {
+        self.client
+            .get_transcript_page(
+                context::current(),
+                session_id,
+                cursor,
+                snapshot_end,
+                max_bytes,
+            )
+            .await
+            .map_err(|error| super::BackendError::TranscriptTransport(error.to_string()))?
+            .map_err(super::BackendError::from)
+    }
+
     async fn get_buffered_output(
         &self,
         session_id: SessionId,
@@ -552,6 +595,36 @@ impl FspecBackend for EmbeddedFspecBackend {
             .resume_session(context::current(), session_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_work_unit_focus(
+        &self,
+        session_id: SessionId,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, super::BackendError> {
+        self.client
+            .get_work_unit_focus(context::current(), session_id)
+            .await
+            .map_err(|error| super::BackendError::WorkUnitFocus(error.to_string()))?
+            .map_err(super::BackendError::WorkUnitFocus)
+    }
+
+    async fn set_work_unit_focus(
+        &self,
+        session_id: SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> std::result::Result<codelet_rpc_types::WorkUnitFocus, super::BackendError> {
+        self.client
+            .set_work_unit_focus(context::current(), session_id, work_unit_id, source)
+            .await
+            .map_err(|error| super::BackendError::WorkUnitFocus(error.to_string()))?
+            .map_err(super::BackendError::WorkUnitFocus)
+    }
+
+    fn work_unit_focus_rx(
+        &self,
+    ) -> broadcast::Receiver<(SessionId, codelet_rpc_types::WorkUnitFocus)> {
+        self.transport.work_unit_focus_rx()
     }
 
     async fn get_work_unit_context(
@@ -859,7 +932,7 @@ impl FspecBackend for EmbeddedFspecBackend {
 
     async fn oauth_browser_login(&self, provider_id: String) -> Result<()> {
         self.client
-            .oauth_browser_login(context::current(), provider_id)
+            .oauth_browser_login(super::oauth_context::interactive(), provider_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
@@ -890,7 +963,7 @@ impl FspecBackend for EmbeddedFspecBackend {
 
     async fn oauth_device_start(&self, provider_id: String) -> Result<OAuthDeviceStart> {
         self.client
-            .oauth_device_start(context::current(), provider_id)
+            .oauth_device_start(super::oauth_context::interactive(), provider_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
@@ -902,7 +975,12 @@ impl FspecBackend for EmbeddedFspecBackend {
         interval: u64,
     ) -> Result<()> {
         self.client
-            .oauth_device_poll(context::current(), provider_id, device_auth_id, interval)
+            .oauth_device_poll(
+                super::oauth_context::interactive(),
+                provider_id,
+                device_auth_id,
+                interval,
+            )
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

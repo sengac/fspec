@@ -81,3 +81,9 @@ Feature: Codex tool-calling facade omits apply_patch and falls back to shell pat
     When create_rig_agent is called
     Then the agent has an "apply_patch" tool in its tool set
     And the agent does not have "Write" or "Edit" tools registered
+
+  Scenario: Update a file using bare hunk separators
+    Given an existing file with two separated changes
+    When apply_patch receives updates separated by bare "@@" headers
+    Then both changes are applied without treating the headers as file content
+    And unchanged lines remain intact

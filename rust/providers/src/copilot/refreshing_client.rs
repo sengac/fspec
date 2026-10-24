@@ -132,6 +132,11 @@ fn inject_copilot_headers(
 }
 
 impl rig::http_client::HttpClientExt for CopilotHttpClient {
+    fn prepare_request_body(&self, body: Vec<u8>) -> rig::http_client::Result<Vec<u8>> {
+        let (_, body) = classify_and_cache_body(body.into());
+        Ok(body.to_vec())
+    }
+
     fn send<T, U>(
         &self,
         req: Request<T>,

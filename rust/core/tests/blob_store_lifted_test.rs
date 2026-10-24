@@ -69,6 +69,7 @@ fn tool_result_round_trips_through_lifted_blob_storage_in_codelet_core() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_rpc034_round_trip".to_string(),
+                call_id: None,
                 content: large_content.clone(),
                 is_error: false,
                 tool_use_result: None,

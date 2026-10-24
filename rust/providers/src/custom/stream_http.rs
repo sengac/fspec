@@ -24,6 +24,8 @@ use crate::error::ProviderError;
 /// `eventsource-stream`, treats `data: [DONE]` as a terminator (without
 /// calling `parse_stream_chunk`), and forwards every other event's
 /// `data` field to `RhaiStreamProcessor::process_event`.
+/// SSE decoding and transport errors terminate without flushing pending
+/// tools. Ordinary EOF succeeds only after an explicit Rhai stop.
 pub fn open_stream<E, MapErr, MapErrFut, Body>(
     processor: RhaiStreamProcessor,
     status: u16,
@@ -63,13 +65,18 @@ where
         let mut events = Box::pin(body_stream.eventsource());
         let mut processor = processor;
         let mut sse_events = 0usize;
+        let mut saw_stop = false;
 
         while let Some(event_result) = events.next().await {
             let event = match event_result {
                 Ok(e) => e,
                 Err(e) => {
-                    tracing::warn!(error = %e, "[rhai-dispatch] open_stream: sse frame parse error");
-                    continue;
+                    tracing::warn!(error = %e, "[rhai-dispatch] open_stream: SSE stream failed");
+                    yield Err(ProviderError::api(
+                        processor.provider.clone(),
+                        format!("SSE stream failed: {e}"),
+                    ));
+                    return;
                 }
             };
             sse_events += 1;
@@ -92,6 +99,7 @@ where
             match processor.process_event(&event.data).await {
                 Ok(chunks) => {
                     for c in chunks {
+                        saw_stop |= matches!(&c, StreamChunk::StopReason(_));
                         yield Ok(c);
                     }
                 }
@@ -106,12 +114,11 @@ where
             }
         }
 
-        tracing::warn!(
-            "[rhai-dispatch] open_stream: byte stream ended total_events={} — calling processor.finish()",
-            sse_events
-        );
-        for chunk in processor.finish() {
-            yield Ok(chunk);
+        if !saw_stop {
+            yield Err(ProviderError::api(
+                processor.provider.clone(),
+                "SSE stream ended without terminal stop or [DONE]",
+            ));
         }
     })
 }

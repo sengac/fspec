@@ -127,7 +127,6 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
     Then the command should exit with code 0
     And the diagram should be formatted as:
       """
-      ### Flow
 
       ```mermaid
       graph TD
@@ -135,6 +134,13 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
       ```
       """
 
+      ### Flow
+      ### Flow
+      ### Flow
+      ### Flow
+      ### Flow
+      ### Flow
+      ### Flow
       ### Flow
       ### Flow
   Scenario: Handle multi-line diagram code

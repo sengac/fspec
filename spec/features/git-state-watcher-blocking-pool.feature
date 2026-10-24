@@ -6,7 +6,6 @@
 @rpc
 @BUG-187
 Feature: GitStateWatcher pins a tokio worker for the whole 60s capture window — full GitState snapshot runs synchronously on an async worker every 10s + on every debounced .git fs-event
-
   """
   Fix lives in rust/core/src/git_state.rs (GitStateWatcher::with_interval poll task + build_debouncer callback). R1: wrap re_snapshot_and_publish in tokio::task::spawn_blocking on BOTH paths. R2: std::sync::atomic::AtomicBool in-flight guard — tick (and fs-event) that find a capture in flight are dropped, not queued; guard is cleared when the blocking work completes. R3: the notify debouncer callback is sync-only, so it captures a tokio::runtime::Handle (when available) and spawns the blocking work from it; when no runtime handle is available it degrades to a no-op (poll-only), matching the existing no-runtime warning. capture_git_state + re_snapshot_and_publish bodies stay unchanged (dedup + broadcast stay in place).
   """
@@ -28,7 +27,6 @@ Feature: GitStateWatcher pins a tokio worker for the whole 60s capture window �
   #   4. A workspace whose cwd root sits behind a filesystem symlink (macOS temp dirs: `/var/folders/...` -> `/private/var/folders/...`) updates its git branch via the fs-event path just as fast as a non-symlinked workspace — the branch change lands in well under one poll interval instead of waiting for the 10-second tick.
   #
   # ========================================
-
   Background: User Story
     As a TUI user supervising agents
     I want to keep the TUI responsive
@@ -41,19 +39,16 @@ Feature: GitStateWatcher pins a tokio worker for the whole 60s capture window �
     Then the concurrent timer task fires on schedule throughout (its ticks are not delayed by the captures)
     And no tokio async worker is pinned by the capture work — the capture runs on the blocking pool (R1)
 
-
   Scenario: A tick that fires while a capture is in flight is dropped, not queued
     Given a GitStateWatcher whose capture takes longer than the poll interval
     When several poll ticks fire while the first capture is still running
     Then the in-flight guard skips those ticks — at most one capture ever runs at a time (R2)
     And after the in-flight capture completes, the next tick runs a fresh capture (the guard is cleared, not stuck)
 
-
   Scenario: Steady-state unchanged ticks still cost the user nothing observable
     Given a GitStateWatcher watching a temp git repo whose snapshot never changes
     When many poll ticks elapse
     Then exactly one frame (the initial one) was ever broadcast — the off-thread capture still dedups unchanged snapshots and publishes nothing further
-
 
   Scenario: A checkpoint written from another terminal still lands within the watch window
     Given a GitStateWatcher watching a temp git repo with no checkpoint refs

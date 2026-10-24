@@ -1,3 +1,8 @@
+@wip
+@providers
+@authentication
+@oauth
+@rust
 @PROV-015
 Feature: NAPI Bindings for Codex OAuth Flows
   """
@@ -5,6 +10,7 @@ Feature: NAPI Bindings for Codex OAuth Flows
   NapiCodexTokens #[napi(object)] struct maps 1:1 to CodexTokens. NapiDeviceAuthStartResult #[napi(object)] struct with user_code: String and verification_url: String — returned synchronously before polling begins. A separate async function handles the polling and returns NapiCodexTokens.
   lib.rs registration: add `mod codex_oauth;` under #[cfg(not(feature = "noop"))] and `pub use codex_oauth::*;` — same pattern as models, git, blocklist modules.
   Device auth two-phase approach: codex_oauth_device_login_start() returns NapiDeviceAuthStartResult (sync, so TUI can display user_code immediately), then codex_oauth_device_login_poll(device_auth_id, interval) is an async NAPI function that polls and returns NapiCodexTokens. This avoids the complexity of returning both a sync result and a promise from a single function.
+  PROV-159 centralizes credential lifecycle policy in codelet-providers; NAPI delegates to that authority. A9's primary scenario and coverage now live in prov159-refresh-races.feature. This feature retains PROV-015's historical scenarios and coverage. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its upstream companions.
   """
 
   # ========================================

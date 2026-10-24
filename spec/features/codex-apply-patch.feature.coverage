@@ -309,12 +309,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Update a file using bare hunk separators",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 7,
+    "totalScenarios": 8,
     "coveredScenarios": 7,
-    "coveragePercent": 100,
+    "coveragePercent": 88,
     "testFiles": [
       "rust/tools/tests/apply_patch_tool_test.rs"
     ],

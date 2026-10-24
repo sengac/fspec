@@ -1,0 +1,93 @@
+{
+  "scenarios": [
+    {
+      "name": "Final provider requests retain the attribution contract",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/tool025_provider_transports.rs",
+          "lines": "87-141",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/tool_contract.rs",
+              "lines": [
+                21,
+                46,
+                51,
+                56,
+                85
+              ]
+            },
+            {
+              "file": "rust/providers/src/adapter.rs",
+              "lines": [
+                174,
+                181
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/completion.rs",
+              "lines": [
+                55,
+                285,
+                296
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/completion/tool_catalog.rs",
+              "lines": [
+                4,
+                8,
+                11
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Raw and hosted native tools cannot bypass strict attribution",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/tool025_provider_transports.rs",
+          "lines": "143-217",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/wire_request.rs",
+              "lines": [
+                11,
+                16,
+                36,
+                54,
+                58,
+                66
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/custom_tools.rs",
+              "lines": [
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/tool025_provider_transports.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/tool_contract.rs",
+      "rust/providers/src/adapter.rs",
+      "rust/patches/rig-core/src/providers/gemini/completion.rs",
+      "rust/patches/rig-core/src/completion/tool_catalog.rs",
+      "rust/providers/src/codex/wire_request.rs",
+      "rust/providers/src/codex/custom_tools.rs"
+    ],
+    "totalLinesCovered": 150
+  }
+}

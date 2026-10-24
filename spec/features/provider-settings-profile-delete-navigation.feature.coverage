@@ -5,11 +5,25 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "202-238",
+          "lines": "182-215",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
                 140,
                 141,
                 142,
@@ -23,42 +37,6 @@
                 150,
                 151,
                 152
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "202-238",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
-              "lines": [
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "202-238",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43
               ]
             }
           ]
@@ -70,11 +48,15 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "244-298",
+          "lines": "222-275",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
               "lines": [
+                40,
+                41,
+                42,
+                43,
                 140,
                 141,
                 142,
@@ -91,21 +73,6 @@
               ]
             }
           ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "244-298",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
-              "lines": [
-                40,
-                41,
-                42,
-                43
-              ]
-            }
-          ]
         }
       ]
     },
@@ -114,7 +81,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "304-343",
+          "lines": "282-318",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
@@ -134,7 +101,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
-          "lines": "349-378",
+          "lines": "325-352",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
@@ -163,6 +130,6 @@
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
     ],
-    "totalLinesCovered": 508
+    "totalLinesCovered": 208
   }
 }

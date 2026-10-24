@@ -89,16 +89,12 @@ Feature: Reduce codelet-napi to thin adapter (session_bindings.rs); update Cargo
 
   @rule:agent_loop_owns_loop
   @agent_loop
-  Scenario: agent_loop.rs owns the agent loop and its StreamOutput sinks
+  Scenario: agent_loop.rs reexports the shared agent loop and its StreamOutput sinks
     Given the RPC-043 changes are applied to the codelet workspace
     When I open `rust/napi/src/agent_loop.rs`
-    Then the file declares `pub(crate) async fn agent_loop(session: Arc<BackgroundSession>, input_rx: mpsc::Receiver<PromptInput>, mcp_injection_rx: mpsc::Receiver<McpInjection>)`
-    And the file declares the `InputWithImages` helper struct
-    And the file declares the `BackgroundOutput` struct
-    And the file declares `impl codelet_cli::interactive::StreamOutput for BackgroundOutput`
-    And the file declares the `BackgroundProgressEmitter` struct
-    And the file declares `impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter`
-    And the file contains a `#[cfg(test)] mod agent_loop_dispatch_tests` section at the bottom
+    Then the file reexports the shared agent loop and provider dispatch predicate from codelet-agent-loop
+    And the file reexports the shared BackgroundOutput and BackgroundProgressEmitter sinks
+    And the file does not maintain a duplicate agent loop or StreamOutput implementation
     And no `#[napi]` or `#[napi(object)]` attribute appears anywhere in the file
 
   @rule:session_hooks_owns_hooks
@@ -109,7 +105,7 @@ Feature: Reduce codelet-napi to thin adapter (session_bindings.rs); update Cargo
     Then the file declares `pub struct NapiSessionManagerHooks`
     And the file contains `impl codelet_sessions::session_manager::SessionManagerHooks for NapiSessionManagerHooks`
     And the impl block contains six methods: spawn_agent_loop, spawn_scheduler, ensure_scheduler_running_for_loop, spawn_footer_poller, stop_footer_poller, cleanup_session_loops
-    And spawn_agent_loop invokes `crate::agent_loop::agent_loop(...)`
+    And spawn_agent_loop invokes `codelet_agent_loop::agent_loop(...)`
     And spawn_scheduler invokes `crate::scheduler::spawn_scheduler(...)`
     And spawn_footer_poller invokes `crate::footer_poller::spawn_footer_poller(...)`
     And stop_footer_poller invokes `crate::footer_poller::stop_footer_poller(...)`

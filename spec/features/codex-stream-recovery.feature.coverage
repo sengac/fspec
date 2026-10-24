@@ -1,0 +1,261 @@
+{
+  "scenarios": [
+    {
+      "name": "Cancellation aborts network waits and retry backoff",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov154_codex_recovery.rs",
+          "lines": "111-140",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unauthorized setup refreshes credentials once",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov154_codex_recovery.rs",
+          "lines": "26-67",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/recovery_auth.rs",
+              "lines": [
+                12,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Safe retries honor advice and stop within budget",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov154_codex_recovery.rs",
+          "lines": "69-109",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accepted streams never replay tool effects",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov154_codex_recovery.rs",
+          "lines": "142-205",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                96,
+                98,
+                103,
+                116,
+                121,
+                163,
+                166,
+                171,
+                172,
+                212,
+                213,
+                214,
+                215,
+                216
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history.rs",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov154_codex_recovery.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/recovery.rs",
+      "rust/providers/src/codex/recovery_auth.rs",
+      "rust/providers/src/codex/client_http.rs",
+      "rust/providers/src/codex/streaming.rs",
+      "rust/providers/src/codex/reconnect.rs",
+      "rust/providers/src/codex/history.rs"
+    ],
+    "totalLinesCovered": 333
+  }
+}

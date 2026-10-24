@@ -54,8 +54,7 @@ fn name_line(form: &ProfileForm) -> Line<'static> {
 fn placeholder_for(idx: usize) -> &'static str {
     match idx {
         0 => "http://localhost:8888",
-        2 => "128000",
-        3 => "16384",
+        2 | 3 => "Automatic (model-specific)",
         4 => "80% or 200000",
         // PROV-142: the Auto-Continue field (idx 6) — 0 = off, n = budget.
         6 => "0 (off) or n (budget)",
@@ -110,7 +109,13 @@ fn field_line(form: &ProfileForm, idx: usize, label: &str) -> Line<'static> {
 
 /// Paint the profile create/edit form: title, the name line, and the five
 /// connection fields with the active one highlighted.
-pub(super) fn render_form(area: Rect, buf: &mut Buffer, title: &str, form: &ProfileForm) {
+pub(super) fn render_form(
+    area: Rect,
+    buf: &mut Buffer,
+    title: &str,
+    form: &ProfileForm,
+    status: &str,
+) {
     if area.height == 0 {
         return;
     }
@@ -122,9 +127,24 @@ pub(super) fn render_form(area: Rect, buf: &mut Buffer, title: &str, form: &Prof
             .add_modifier(Modifier::BOLD),
     )));
     lines.push(Line::from(""));
-    lines.push(name_line(form));
-    for (idx, label) in PROFILE_FORM_FIELDS.iter().enumerate() {
+    if !form.context.settings {
+        lines.push(name_line(form));
+    }
+    if form.context.inherited_auth && !form.context.settings {
+        lines.push(Line::from("Authentication: inherited unless overridden"));
+    }
+    for (idx, label) in PROFILE_FORM_FIELDS
+        .iter()
+        .enumerate()
+        .skip(form.first_field())
+    {
         lines.push(field_line(form, idx, label));
+    }
+    if !status.is_empty() {
+        lines.push(Line::from(Span::styled(
+            status.to_string(),
+            Style::default().fg(Color::Red),
+        )));
     }
     Paragraph::new(lines).render(area, buf);
 }

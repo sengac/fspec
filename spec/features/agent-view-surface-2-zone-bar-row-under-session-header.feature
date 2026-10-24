@@ -112,7 +112,6 @@ Feature: Agent view surface — 2-zone bar row under SessionHeader (menu_row fla
   # board MENU-002, mux MENU-004) is unchanged and still covered by its
   # own feature files.
   # ─────────────────────────────────────────────────────────────────────
-
   Scenario: Enter on the 'Board View' item returns to the Board view
     Given the agent pane is focused on the 'Board View' menu item
     When I press Enter once

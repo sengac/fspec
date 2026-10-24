@@ -81,6 +81,11 @@ use codelet_tools::{clear_bash_abort, request_bash_abort};
 // Wire types lifted in RPC-036.
 use codelet_rpc_types::{FspecResult, SessionInfo, SessionState, SessionStatus, StreamChunk};
 
+mod agent_message;
+mod compaction_handoff;
+mod interruption;
+pub use agent_message::AgentMessageError;
+
 /// Capacity of the per-session supervisor broadcast channel (WATCH-003).
 ///
 /// Late subscribers start receiving from the current position; slow
@@ -101,6 +106,7 @@ pub struct PromptInput {
     pub input: String,
     /// Optional thinking config JSON (for extended thinking)
     pub thinking_config: Option<String>,
+    pub compaction_epoch: Option<u64>,
 }
 
 /// PERF-002: Compaction progress information.
@@ -268,6 +274,8 @@ impl From<GitError> for SessionError {
 /// in its persistence system (persistenceStoreMessageEnvelope), and on restart can
 /// use a future `restore_session(id)` function to recreate sessions with their original IDs.
 pub struct BackgroundSession {
+    pub(crate) provider_status:
+        std::sync::Mutex<Option<(String, codelet_providers::session::ProviderSession)>>,
     /// Session ID - also serves as the persistence identifier for session recovery
     pub id: Uuid,
     pub name: RwLock<String>,
@@ -282,6 +290,7 @@ pub struct BackgroundSession {
     pub cached_input_tokens: AtomicU32,
     pub cached_output_tokens: AtomicU32,
     pub cached_reasoning_tokens: AtomicU32,
+    pub(crate) committed_context: std::sync::Mutex<crate::committed_context::ContextProjection>,
 
     /// CTX-006: Cached model limits for quick sync access
     /// Updated when model is set via session_set_model/session_set_model_profile
@@ -301,10 +310,15 @@ pub struct BackgroundSession {
     input_tx: mpsc::Sender<PromptInput>,
 
     /// Buffered output chunks (unbounded - keeps all output for session lifetime)
-    output_buffer: RwLock<Vec<StreamChunk>>,
+    output_buffer: RwLock<crate::transcript_journal::TranscriptJournal>,
+    transcript_seed: std::sync::Mutex<()>,
+    manifest_restore: AtomicBool,
+    relay_output: crate::subordinate_output::RelayOutput,
 
     /// Interrupt flag for stopping agent execution
     pub is_interrupted: Arc<AtomicBool>,
+    interrupt_epoch: AtomicU64,
+    interruption_reason: std::sync::Mutex<Option<codelet_rpc_types::InterruptionReason>>,
 
     /// Notify for immediate interrupt wake-up
     pub interrupt_notify: Arc<Notify>,
@@ -379,7 +393,7 @@ pub struct BackgroundSession {
     pending_observed_correlation_ids: RwLock<Vec<String>>,
 
     /// PAUSE-001: Current pause state (None when not paused)
-    pause_state: RwLock<Option<PauseState>>,
+    pause_state: crate::interaction_slot::InteractionSlot<PauseState>,
 
     /// PAUSE-001: Channel to send pause response from TypeScript back to the blocking tool
     pause_response_tx: std::sync::mpsc::Sender<PauseResponse>,
@@ -397,7 +411,8 @@ pub struct BackgroundSession {
 
     /// BUG-117: HITL request state — stores questions while waiting for user response
     /// TypeScript polls this via session_get_hitl_request NAPI getter (like pause_state)
-    hitl_request: RwLock<Option<codelet_tools::request_user_input::HitlRequest>>,
+    hitl_request:
+        crate::interaction_slot::InteractionSlot<codelet_tools::request_user_input::HitlRequest>,
 
     /// TOOL-022 P2: exec-stdin prompt request (deterministic quiet
     /// detector, tools crate). Pure overlay — NO status flip, NO
@@ -416,6 +431,7 @@ pub struct BackgroundSession {
     /// CONT-002: Zero-progress nudge budget (default 10). Set via
     /// `/continue <n>`.
     continue_budget: AtomicU32,
+    continue_explicit: AtomicBool,
 
     /// CONT-003: Goal chrome state `(text, verify)` set via `/goal`. Synced
     /// into the inner session by the agent loop before each dispatched user
@@ -443,7 +459,11 @@ pub struct BackgroundSession {
 
     /// TUI-059: Work unit context for session
     /// Tracks which work unit this session is currently working on
-    work_unit_context: RwLock<Option<WorkUnitContext>>,
+    pub(crate) work_unit_context: RwLock<Option<WorkUnitContext>>,
+    pub(crate) work_unit_focus: Arc<std::sync::Mutex<codelet_rpc_types::WorkUnitFocus>>,
+    pub(crate) focus_reminder_revision: Arc<AtomicU64>,
+    pub(crate) focus_admission: std::sync::Mutex<u64>,
+    pub(crate) focus_runtime: tokio::runtime::Handle,
 
     /// TUI-059: Base environment content (without work unit)
     /// Stored so we can compose full environment info when work unit changes
@@ -535,11 +555,13 @@ impl BackgroundSession {
         Self {
             id,
             name: RwLock::new(name),
+            provider_status: std::sync::Mutex::new(None),
             project,
             provider_id: RwLock::new(provider_id),
             model_id: RwLock::new(model_id),
             cached_input_tokens: AtomicU32::new(0),
             cached_output_tokens: AtomicU32::new(0),
+            committed_context: std::sync::Mutex::new(Default::default()),
             cached_reasoning_tokens: AtomicU32::new(0),
             cached_context_window: AtomicU32::new(0),
             cached_max_output_tokens: AtomicU32::new(0),
@@ -547,8 +569,13 @@ impl BackgroundSession {
             inner: Arc::new(Mutex::new(inner)),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             input_tx,
-            output_buffer: RwLock::new(Vec::new()),
+            output_buffer: RwLock::new(crate::transcript_journal::TranscriptJournal::default()),
+            transcript_seed: std::sync::Mutex::new(()),
+            manifest_restore: AtomicBool::new(false),
+            relay_output: crate::subordinate_output::RelayOutput::default(),
             is_interrupted: Arc::new(AtomicBool::new(false)),
+            interrupt_epoch: AtomicU64::new(0),
+            interruption_reason: std::sync::Mutex::new(None),
             interrupt_notify: Arc::new(Notify::new()),
             is_debug_enabled: AtomicBool::new(false),
             pending_input: RwLock::new(None),
@@ -562,23 +589,28 @@ impl BackgroundSession {
             incoming_message_pending: Arc::new(AtomicUsize::new(0)),
             correlation_counter: AtomicU64::new(0),
             pending_observed_correlation_ids: RwLock::new(Vec::new()),
-            pause_state: RwLock::new(None),
+            pause_state: crate::interaction_slot::InteractionSlot::new(),
             pause_response_tx,
             pause_response_rx: std::sync::Mutex::new(pause_response_rx),
             fspec_response_tx,
             fspec_response_rx: std::sync::Mutex::new(fspec_response_rx),
             hitl_response_tx,
             hitl_response_rx: std::sync::Mutex::new(hitl_response_rx),
-            hitl_request: RwLock::new(None),
+            hitl_request: crate::interaction_slot::InteractionSlot::new(),
             exec_stdin_request: RwLock::new(None), // TOOL-022 P2
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
             continue_enabled: AtomicBool::new(false), // CONT-002: auto-continue off by default
             continue_budget: AtomicU32::new(10),   // CONT-002: DEFAULT_CONTINUE_BUDGET
+            continue_explicit: AtomicBool::new(false),
             goal_state: std::sync::Mutex::new(None), // CONT-003: no goal by default
-            goal_generation: AtomicU64::new(0),    // CONT-008: no chrome writes yet
+            goal_generation: AtomicU64::new(0),      // CONT-008: no chrome writes yet
             goal_synced_generation: AtomicU64::new(0), // CONT-008: in sync at creation
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
-            work_unit_context: RwLock::new(None),  // TUI-059: No work unit context initially
+            work_unit_context: RwLock::new(None),   // TUI-059: No work unit context initially
+            work_unit_focus: Arc::new(std::sync::Mutex::new(Default::default())),
+            focus_reminder_revision: Arc::new(AtomicU64::new(u64::MAX)),
+            focus_admission: std::sync::Mutex::new(0),
+            focus_runtime: tokio::runtime::Handle::current(),
             // TUI-059: Store base environment content for composing with work unit later
             base_environment_content: RwLock::new(gather_environment_info().to_reminder_content()),
             // GIT-019: Worktree path and base commit for isolated sessions
@@ -621,6 +653,7 @@ impl BackgroundSession {
         &self,
         manager: std::sync::Weak<crate::session_manager::SessionManager>,
     ) {
+        crate::tool_admission::register(self.id, &self.project, manager.clone());
         if let Ok(mut guard) = self.owning_manager.write() {
             *guard = manager;
         }
@@ -657,6 +690,13 @@ impl BackgroundSession {
         self.worktree_path
             .read()
             .expect("worktree_path lock poisoned")
+            .clone()
+    }
+
+    pub(crate) fn base_environment_for_focus(&self) -> String {
+        self.base_environment_content
+            .read()
+            .expect("base environment lock poisoned")
             .clone()
     }
 
@@ -807,55 +847,53 @@ impl BackgroundSession {
         title: Option<String>,
         status: Option<String>,
     ) {
-        use codelet_cli::session::SystemReminderType;
-
-        // Scope the locks so they're dropped before broadcast_metadata_update(),
-        // which calls back into get_work_unit_context() on all sessions.
-        // Without this scoping, the write lock on work_unit_context would deadlock
-        // when the broadcast tries to read-lock the same session's work_unit_context.
-        {
-            let mut ctx = self
+        let owning_manager = self.owning_manager();
+        let manager = owning_manager
+            .as_deref()
+            .unwrap_or_else(|| crate::SessionManager::instance());
+        if manager.get_session(&self.id.to_string()).is_ok() {
+            if let Err(error) = manager.set_session_focus(
+                &codelet_rpc_types::SessionId::from(self.id.to_string()),
+                id.as_deref(),
+                "board",
+            ) {
+                tracing::warn!(%error, "could not update session focus");
+                return;
+            }
+        }
+        if let (Some(id), Some(title), Some(status)) = (id, title, status) {
+            let authorization = codelet_rpc_types::WorkUnitContext {
+                id: id.clone(),
+                title: title.clone(),
+                status: status.clone(),
+            };
+            if let Err(error) =
+                codelet_core::persistence::update_session_manifest(self.id, |manifest| {
+                    manifest.work_unit_authorization = Some(authorization);
+                    Ok(())
+                })
+            {
+                tracing::warn!(%error, "could not persist authorization binding");
+                return;
+            }
+            *self
                 .work_unit_context
                 .write()
-                .expect("work_unit_context lock poisoned");
-            let base_env = self
-                .base_environment_content
-                .read()
-                .expect("base_environment_content lock poisoned");
-
-            if let (Some(id_val), Some(title_val), Some(status_val)) =
-                (id.clone(), title.clone(), status.clone())
-            {
-                *ctx = Some(WorkUnitContext::new(id_val, title_val, status_val));
-
-                // Compose full environment info with work unit
-                // TUI-059: Add "Current work unit: ID" to the environment info (alongside Platform, Shell, etc.)
-                let work_unit_line = ctx
-                    .as_ref()
-                    .and_then(|c| c.format_for_environment())
-                    .unwrap_or_default();
-
-                let full_env = if work_unit_line.is_empty() {
-                    base_env.clone()
-                } else {
-                    format!("{}\n{}", base_env, work_unit_line)
-                };
-
-                // Update the Environment reminder (supersedes the original)
-                if let Ok(mut inner) = self.inner.try_lock() {
-                    inner.add_system_reminder(SystemReminderType::Environment, &full_env);
-                }
-            } else {
-                *ctx = None;
-                // Restore base environment without work unit
-                if let Ok(mut inner) = self.inner.try_lock() {
-                    inner.add_system_reminder(SystemReminderType::Environment, &base_env);
-                }
-            }
-        } // locks dropped here
-
-        // Broadcast metadata update so relay clients see work unit changes
+                .expect("work_unit_context lock poisoned") =
+                Some(WorkUnitContext::new(id, title, status));
+        }
         codelet_tools::broadcast_metadata_update();
+    }
+
+    pub(crate) fn restore_work_unit_authorization(
+        &self,
+        context: Option<codelet_rpc_types::WorkUnitContext>,
+    ) {
+        *self
+            .work_unit_context
+            .write()
+            .expect("authorization lock poisoned") =
+            context.map(|context| WorkUnitContext::new(context.id, context.title, context.status));
     }
 
     /// Update cached token counts (called when TokenUpdate events are emitted)
@@ -942,8 +980,17 @@ impl BackgroundSession {
 
     /// Set status and notify attached callback
     pub fn set_status(&self, status: SessionStatus) {
+        if matches!(
+            status,
+            SessionStatus::Idle | SessionStatus::Interrupted | SessionStatus::Cleared
+        ) {
+            self.clear_provider_presentation();
+        }
         let old_status = self.status.swap(status as u8, Ordering::AcqRel);
+        self.notify_status_change(old_status, status);
+    }
 
+    fn notify_status_change(&self, old_status: u8, status: SessionStatus) {
         // NAPI-010: Notify TypeScript when status changes via SessionStateChange chunk
         // This is an internal state update - NOT added to conversation
         if old_status != status as u8 {
@@ -982,6 +1029,20 @@ impl BackgroundSession {
     /// WATCH-011: Assigns correlation_id for cross-pane selection highlighting
     /// WATCH-011: Applies pending_observed_correlation_ids for supervisor responses
     pub fn handle_output(&self, chunk: StreamChunk) {
+        if matches!(chunk, StreamChunk::ProviderWaiting { .. }) {
+            let _ = self.chunks_tx.send((
+                codelet_rpc_types::SessionId::from(self.id.to_string()),
+                chunk,
+            ));
+            return;
+        }
+        let mut projection = self
+            .committed_context
+            .lock()
+            .expect("committed context projection lock");
+        if !self.project_committed_context(&mut projection, &chunk) {
+            return;
+        }
         // WATCH-011: Assign correlation_id if not already set (for variants that support it)
         let id = self.correlation_counter.fetch_add(1, Ordering::SeqCst);
         let correlation_id = format!("{}-{}", self.id, id);
@@ -1012,6 +1073,7 @@ impl BackgroundSession {
 
         // Broadcast to supervisor sessions (WATCH-003)
         // Fire-and-forget: ignores SendError when no receivers are subscribed
+        self.relay_output.append(&chunk);
         let _ = self.supervisor_broadcast.send(chunk.clone());
 
         // RPC-041: Forward the chunk on the mandatory SessionManager-owned
@@ -1025,13 +1087,91 @@ impl BackgroundSession {
         ));
     }
 
+    pub fn requires_model_restore(&self) -> bool {
+        self.manifest_restore.load(Ordering::Acquire)
+    }
+
+    pub(crate) fn prepare_manifest_restore(&self) {
+        self.manifest_restore.store(true, Ordering::Release);
+    }
+
+    pub(crate) fn complete_manifest_restore(&self) {
+        self.manifest_restore.store(false, Ordering::Release);
+    }
+
+    pub fn resident_transcript_chunks(&self) -> usize {
+        self.output_buffer
+            .read()
+            .expect("output buffer lock poisoned")
+            .resident_chunks()
+    }
+
+    pub fn seed_archival_transcript<I>(
+        &self,
+        chunks: I,
+    ) -> Result<bool, codelet_rpc_types::TranscriptError>
+    where
+        I: IntoIterator<
+            Item = Result<
+                (StreamChunk, Option<codelet_rpc_types::TranscriptOriginal>),
+                codelet_rpc_types::TranscriptError,
+            >,
+        >,
+    {
+        use codelet_rpc_types::TranscriptError;
+        let _seed = self
+            .transcript_seed
+            .lock()
+            .map_err(|error| TranscriptError::JournalUnavailable(error.to_string()))?;
+        let generation = {
+            let journal = self
+                .output_buffer
+                .read()
+                .map_err(|error| TranscriptError::JournalUnavailable(error.to_string()))?;
+            if journal.is_seeded() {
+                return Ok(false);
+            }
+            journal.generation().to_owned()
+        };
+        let archive = match crate::transcript_archive::TranscriptArchive::build(chunks) {
+            Ok(archive) => archive,
+            Err(error) => {
+                self.output_buffer
+                    .write()
+                    .map_err(|error| TranscriptError::JournalUnavailable(error.to_string()))?
+                    .record_archive_failure(&generation, &error);
+                return Err(error);
+            }
+        };
+        self.output_buffer
+            .write()
+            .map_err(|error| TranscriptError::JournalUnavailable(error.to_string()))?
+            .install_archive(archive, &generation)
+    }
+
+    pub fn get_transcript_page(
+        &self,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> Result<codelet_rpc_types::TranscriptPage, codelet_rpc_types::TranscriptError> {
+        self.output_buffer
+            .read()
+            .map_err(|error| {
+                codelet_rpc_types::TranscriptError::JournalUnavailable(error.to_string())
+            })?
+            .page(cursor, snapshot_end, max_bytes)
+    }
+
     /// Get buffered output
     pub fn get_buffered_output(&self, limit: usize) -> Vec<StreamChunk> {
         let buffer = self
             .output_buffer
             .read()
             .expect("output buffer lock poisoned");
-        buffer.iter().take(limit).cloned().collect()
+        buffer
+            .buffered(limit)
+            .unwrap_or_else(|error| vec![StreamChunk::error(error.to_string())])
     }
 
     /// Subscribe to the output stream for supervisor sessions (WATCH-003)
@@ -1041,6 +1181,20 @@ impl BackgroundSession {
     /// Slow receivers may receive RecvError::Lagged if they fall more than 256 chunks behind.
     pub fn subscribe_to_stream(&self) -> broadcast::Receiver<StreamChunk> {
         self.supervisor_broadcast.subscribe()
+    }
+
+    pub fn subscribe_to_relay(
+        &self,
+    ) -> Result<
+        crate::subordinate_output::RelaySubscription,
+        crate::subordinate_output::RelayOutputError,
+    > {
+        let _projection = self
+            .committed_context
+            .lock()
+            .map_err(|_| crate::subordinate_output::RelayOutputError::Poisoned)?;
+        self.relay_output
+            .subscribe(self.supervisor_broadcast.subscribe())
     }
 
     /// Set the session role (WATCH-004)
@@ -1072,10 +1226,7 @@ impl BackgroundSession {
     ///
     /// Returns None if session is not paused, Some(PauseState) if paused.
     pub fn get_pause_state(&self) -> Option<PauseState> {
-        self.pause_state
-            .read()
-            .expect("pause_state lock poisoned")
-            .clone()
+        self.pause_state.current()
     }
 
     /// Set the pause state (PAUSE-001)
@@ -1084,7 +1235,10 @@ impl BackgroundSession {
     /// Also sets status to Paused.
     pub fn set_pause_state(&self, state: Option<PauseState>) {
         let is_paused = state.is_some();
-        *self.pause_state.write().expect("pause_state lock poisoned") = state;
+        if let Err(error) = self.pause_state.set(state) {
+            tracing::error!(%error, "Cannot update pause state");
+            return;
+        }
         if is_paused {
             self.set_status(SessionStatus::Paused);
         }
@@ -1094,7 +1248,10 @@ impl BackgroundSession {
     ///
     /// Called when resuming from pause. Sets status back to Running.
     pub fn clear_pause_state(&self) {
-        *self.pause_state.write().expect("pause_state lock poisoned") = None;
+        if let Err(error) = self.pause_state.set(None) {
+            tracing::error!(%error, "Cannot clear pause state");
+            return;
+        }
         self.set_status(SessionStatus::Running);
     }
 
@@ -1140,10 +1297,34 @@ impl BackgroundSession {
     /// THEN clear pause state. This prevents a race condition where TypeScript
     /// might poll status and see "running" before the tool has received its response.
     pub fn send_pause_response(&self, response: PauseResponse) {
-        // Send response first to unblock the waiting tool
-        let _ = self.pause_response_tx.send(response);
-        // Then clear pause state (tool is already unblocked and will continue)
-        self.clear_pause_state();
+        if let Err(error) = self.pause_state.respond(None, || {
+            self.pause_response_tx
+                .send(response)
+                .map_err(|_| "Pause response channel closed".into())
+        }) {
+            tracing::error!(%error, "Cannot answer pause");
+            return;
+        }
+        self.set_status(SessionStatus::Running);
+    }
+    pub fn send_pause_response_checked(
+        &self,
+        request_id: &str,
+        response: PauseResponse,
+    ) -> Result<(), String> {
+        self.pause_state.respond(Some(request_id), || {
+            self.pause_response_tx
+                .send(response)
+                .map_err(|_| "Pause response channel closed".into())
+        })?;
+        self.set_status(SessionStatus::Running);
+        Ok(())
+    }
+    pub fn interaction_snapshot(&self) -> Result<String, String> {
+        let (pause_id, pause) = self.pause_state.snapshot()?;
+        let (hitl_id, hitl) = self.hitl_request.snapshot()?;
+        let pause = pause.map(|p| serde_json::json!({"kind":format!("{:?}",p.kind),"tool_name":p.tool_name,"message":p.message,"details":p.details}));
+        serde_json::to_string(&serde_json::json!({"pause": {"request_id":pause_id,"state":pause}, "hitl": {"request_id":hitl_id,"state":hitl}})).map_err(|e| e.to_string())
     }
 
     /// Get pause response sender clone (PAUSE-001)
@@ -1184,7 +1365,7 @@ impl BackgroundSession {
     /// has finished executing the fspec command and wants to send the result back.
     pub fn send_fspec_result(&self, result: FspecResult) {
         if let Err(e) = self.fspec_response_tx.send(result) {
-            tracing::error!("[FSPEC_SESSION] Failed to send fspec result: {:?}", e);
+            tracing::error!(error = %e, "[FSPEC_SESSION] Failed to send fspec result");
         }
     }
 
@@ -1215,9 +1396,24 @@ impl BackgroundSession {
     /// Called by NAPI function (sessionSendHitlResponse) when TypeScript
     /// has collected the user's answers from the HITL input.
     pub fn send_hitl_response(&self, response: codelet_tools::request_user_input::HitlResponse) {
-        if let Err(e) = self.hitl_response_tx.send(response) {
-            tracing::error!("[HITL_SESSION] Failed to send HITL response: {:?}", e);
+        if let Err(error) = self.hitl_request.respond(None, || {
+            self.hitl_response_tx
+                .send(response)
+                .map_err(|_| "HITL response channel closed".into())
+        }) {
+            tracing::error!(%error, "Cannot answer HITL");
         }
+    }
+    pub fn send_hitl_response_checked(
+        &self,
+        request_id: &str,
+        response: codelet_tools::request_user_input::HitlResponse,
+    ) -> Result<(), String> {
+        self.hitl_request.respond(Some(request_id), || {
+            self.hitl_response_tx
+                .send(response)
+                .map_err(|_| "HITL response channel closed".into())
+        })
     }
 
     /// Set HITL request state (BUG-117)
@@ -1228,8 +1424,8 @@ impl BackgroundSession {
         &self,
         request: Option<codelet_tools::request_user_input::HitlRequest>,
     ) {
-        if let Ok(mut guard) = self.hitl_request.write() {
-            *guard = request;
+        if let Err(error) = self.hitl_request.set(request) {
+            tracing::error!(%error, "Cannot update HITL request");
         }
     }
 
@@ -1237,10 +1433,7 @@ impl BackgroundSession {
     ///
     /// Called by NAPI getter (session_get_hitl_request) for TypeScript to poll.
     pub fn get_hitl_request(&self) -> Option<codelet_tools::request_user_input::HitlRequest> {
-        self.hitl_request
-            .read()
-            .ok()
-            .and_then(|guard| guard.clone())
+        self.hitl_request.current()
     }
 
     /// Set exec-stdin request state (TOOL-022 P2)
@@ -1402,8 +1595,16 @@ impl BackgroundSession {
     /// Set the auto-continue state (CONT-002). Applied to the inner session
     /// by the agent loop before the next dispatched user message.
     pub fn set_continue_state(&self, enabled: bool, budget: u32) {
+        self.continue_explicit.store(true, Ordering::Release);
         self.continue_enabled.store(enabled, Ordering::Release);
         self.continue_budget.store(budget.max(1), Ordering::Release);
+    }
+
+    pub fn inherit_continue_state(&self, enabled: bool, budget: u32) {
+        if !self.continue_explicit.load(Ordering::Acquire) {
+            self.continue_enabled.store(enabled, Ordering::Release);
+            self.continue_budget.store(budget.max(1), Ordering::Release);
+        }
     }
 
     /// CONT-003: Get the goal chrome state as `(text, verify)`, if any.
@@ -1552,30 +1753,23 @@ impl BackgroundSession {
             progress = ?progress,
             "[compaction-status] set_compaction_progress"
         );
-        *self
+        let mut stored_progress = self
             .compaction_progress
             .write()
-            .unwrap_or_else(|poisoned| poisoned.into_inner()) = progress;
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        *stored_progress = progress.clone();
+        self.handle_output(StreamChunk::CompactionProgressUpdate {
+            progress: progress.map(Into::into),
+        });
     }
 
     /// PERF-002: Update compaction progress phase and counts
     pub fn update_compaction_progress(&self, phase: String, current: u32, total: u32) {
-        let progress = CompactionProgress {
+        self.set_compaction_progress(Some(CompactionProgress {
             phase,
             current,
             total,
-        };
-        tracing::debug!(
-            session_id = %self.id,
-            phase = %progress.phase,
-            current = progress.current,
-            total = progress.total,
-            "[compaction-status] update_compaction_progress"
-        );
-        *self
-            .compaction_progress
-            .write()
-            .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(progress);
+        }));
     }
 
     /// Set pending observed correlation IDs (WATCH-011)
@@ -1663,6 +1857,7 @@ impl BackgroundSession {
             .try_send(PromptInput {
                 input,
                 thinking_config,
+                compaction_epoch: None,
             })
             .map_err(|e| {
                 // If send fails, revert status to Idle since no processing will occur
@@ -1679,7 +1874,15 @@ impl BackgroundSession {
     /// Call this when the user presses Esc in the TUI.
     /// Also requests bash tool abortion for any running commands.
     pub fn interrupt(&self) {
+        self.clear_provider_presentation();
+        let mut reason = self
+            .interruption_reason
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        *reason = Some(codelet_rpc_types::InterruptionReason::User);
+        let _ = self.take_pending_loop_abort_note();
         self.is_interrupted.store(true, Ordering::Release);
+        self.interrupt_epoch.fetch_add(1, Ordering::AcqRel);
         // Also request bash tool abortion for any running commands
         request_bash_abort(self.id);
         self.interrupt_notify.notify_one();
@@ -1689,6 +1892,12 @@ impl BackgroundSession {
     ///
     /// Called automatically at the start of each prompt.
     pub fn reset_interrupt(&self) {
+        let mut reason = self
+            .interruption_reason
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        *reason = None;
+        let _ = self.take_pending_loop_abort_note();
         self.is_interrupted.store(false, Ordering::Release);
         // Also clear bash abort flag
         clear_bash_abort(self.id);
@@ -1743,17 +1952,20 @@ impl BackgroundSession {
     ///
     /// Note: Caller is responsible for wrapping in `tokio::task::block_in_place()`
     /// if calling from an async context (like the bridge control handler).
-    pub fn clear_history(&self) {
+    pub fn clear_history(&self) -> Result<(), codelet_providers::session::ExtensionError> {
+        let mut inner = self.inner.blocking_lock();
+        inner.reset_provider_state()?;
+        self.manifest_restore.store(false, Ordering::Release);
         // Clear the output buffer (conversation history display)
         if let Ok(mut buffer) = self.output_buffer.write() {
             buffer.clear();
         }
 
         // Clear actual session state (messages, turns, tokens)
-        let mut inner = self.inner.blocking_lock();
         inner.messages.clear();
         inner.turns.clear();
         inner.token_tracker = codelet_core::compaction::TokenTracker::default();
+        inner.token_tracker.invalidate_input();
 
         // CRITICAL: Reinject context reminders so AI retains project context
         // Without this, the AI loses AGENTS.md and environment info
@@ -1783,6 +1995,7 @@ impl BackgroundSession {
         let _ = self
             .session_cleared_tx
             .send(codelet_rpc_types::SessionId::from(self.id.to_string()));
+        Ok(())
     }
 
     /// CMPCT-046: lock-free count of COMPLETED turns (Done chunks in the
@@ -1797,12 +2010,7 @@ impl BackgroundSession {
     pub fn completed_turn_count(&self) -> u32 {
         self.output_buffer
             .read()
-            .map(|buffer| {
-                buffer
-                    .iter()
-                    .filter(|c| matches!(c, StreamChunk::Done))
-                    .count()
-            })
+            .map(|buffer| buffer.completed_turns())
             .unwrap_or(0) as u32
     }
 
@@ -1814,9 +2022,7 @@ impl BackgroundSession {
             .output_buffer
             .read()
             .expect("output buffer lock poisoned")
-            .iter()
-            .filter(|c| matches!(c, StreamChunk::Done))
-            .count() as u32;
+            .completed_turns() as u32;
 
         SessionInfo {
             id: self.id.to_string(),
@@ -1847,6 +2053,7 @@ impl BackgroundSession {
             role: None,
             // TUI-096: Populate updated_at_ms from current time
             updated_at_ms: Some(chrono::Utc::now().timestamp_millis()),
+            work_unit_focus: self.activity_focus(),
         }
     }
 }

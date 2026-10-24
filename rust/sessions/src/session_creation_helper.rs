@@ -190,31 +190,7 @@ pub async fn create_background_session_inner(
 
     let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
-    // PROV-143: seed the session's preserve-thinking flag from the profile's
-    // stored default. Profile (OpenAI local-server) sessions default to
-    // DISABLED — old thinking blocks are stripped from the outgoing chat
-    // history so the model is not confused by stale reasoning. Non-profile
-    // sessions keep the historical preserve behavior (required for
-    // Anthropic/Gemini signed thinking blocks).
-    if is_profile_model {
-        let (colon_idx, slash_idx) = match (model.find(':'), model.find('/')) {
-            (Some(colon), Some(slash)) if colon < slash => (colon, slash),
-            _ => (0, 0),
-        };
-        let profile_name = &model[colon_idx + 1..slash_idx];
-        let preserve = crate::profile_sections::load_local_server_profiles()
-            .into_iter()
-            .find(|p| p.name == profile_name)
-            .and_then(|p| p.preserve_thinking)
-            .unwrap_or(false);
-        inner.preserve_thinking_enabled = preserve;
-        tracing::info!(
-            session_id = %uuid,
-            profile = %profile_name,
-            preserve,
-            "PROV-143: seeded preserve-thinking flag from profile"
-        );
-    }
+    let initial_continue_state = (inner.continue_enabled, inner.continue_budget);
 
     // Inject context reminders (with isolation context for isolated sessions)
     if let Some(isolation_ctx) = &isolation {
@@ -261,53 +237,12 @@ pub async fn create_background_session_inner(
     );
     session.set_base_thinking_level(restored_thinking_level as u8);
 
-    // PROV-142: seed the session's auto-continue state from the profile's
-    // stored default (if the model is a profile model and the profile carries
-    // the field). The seed happens BEFORE the first user message is
-    // dispatched; runtime `/continue` still overrides it for the session's
-    // lifetime (the profile default is a seed, not a lock).
-    if is_profile_model {
-        let (colon_idx, slash_idx) = match (model.find(':'), model.find('/')) {
-            (Some(colon), Some(slash)) if colon < slash => (colon, slash),
-            _ => (0, 0),
-        };
-        let profile_name = &model[colon_idx + 1..slash_idx];
-        if let Some(profile) = crate::profile_sections::load_local_server_profiles()
-            .into_iter()
-            .find(|p| p.name == profile_name)
-        {
-            let budget = profile.auto_continue.unwrap_or(0);
-            let enabled = budget >= 1;
-            // CONT-002: DEFAULT_CONTINUE_BUDGET (10) when off — the same
-            // default BackgroundSession::new applies.
-            let seed_budget = if enabled { budget } else { 10 };
-            session.set_continue_state(enabled, seed_budget);
-            tracing::info!(
-                session_id = %uuid,
-                profile = %profile_name,
-                enabled,
-                budget = seed_budget,
-                "PROV-142: seeded auto-continue state from profile"
-            );
-        }
-    }
+    session.inherit_continue_state(initial_continue_state.0, initial_continue_state.1);
 
-    let initial_model_id = session
-        .model_id
-        .read()
-        .map_err(|e| format!("model_id lock poisoned: {e}"))?
-        .clone();
-    let initial_compaction_threshold =
-        codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            initial_context_window as u64,
-            initial_max_output_tokens as u64,
-            initial_model_id.as_deref(),
-            None,
-        ) as u32;
     session.set_model_limits(
         initial_context_window,
         initial_max_output_tokens,
-        initial_compaction_threshold,
+        resolved.compaction_threshold,
     );
 
     if let Some(ref hooks) = lifecycle_hooks {
@@ -428,8 +363,8 @@ mod tests {
 
         // @step And model limits (context window, max output tokens, compaction threshold) are set
         assert!(
-            helper_content.contains("resolve_compaction_threshold"),
-            "Helper must resolve compaction threshold"
+            helper_content.contains("resolved.compaction_threshold"),
+            "Helper must use the resolved compaction threshold"
         );
         assert!(
             helper_content.contains("set_model_limits"),

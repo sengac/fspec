@@ -1,0 +1,394 @@
+{
+  "scenarios": [
+    {
+      "name": "Slow exploration yields to synthesis on both compaction routes",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+          "lines": "21-55",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/compaction_execution.rs",
+              "lines": [
+                35,
+                83,
+                84,
+                85,
+                89,
+                95,
+                100,
+                102,
+                107
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/compaction_builder.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stalled synthesis fails closed on the shared deadline",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+          "lines": "57-109",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/compaction_execution.rs",
+              "lines": [
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Candidate correction inherits the remaining operation budget",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+          "lines": "111-154",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_timing.rs",
+              "lines": [
+                25,
+                29,
+                37,
+                42,
+                48,
+                63,
+                69,
+                70,
+                71,
+                76
+              ]
+            },
+            {
+              "file": "rust/cli/src/compaction_operation.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Completed evidence survives a timeout inside an unfinished tool batch",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+          "lines": "156-242",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/compaction_runway.rs",
+              "lines": [
+                45,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                90,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                174,
+                180,
+                194,
+                200
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/agent/prompt_request/mod.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                432,
+                433,
+                434,
+                435,
+                436,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "lines": [
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Synthesis can borrow unused time beyond a candidate estimate",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+          "lines": "244-292",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_timing.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                63,
+                69,
+                70,
+                71,
+                76
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/compaction_execution.rs",
+              "lines": [
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expiry before durable publication rejects an otherwise valid candidate",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug234_publication_deadline.rs",
+          "lines": "42-227",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/turn_compaction.rs",
+              "lines": [
+                65,
+                68,
+                71,
+                74,
+                93,
+                122,
+                125,
+                128,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                146,
+                147,
+                150,
+                151
+              ]
+            },
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                201,
+                214,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/generate_compaction_handler.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                70,
+                71,
+                149,
+                152,
+                168,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug234_elapsed_runway.rs",
+      "rust/agent-loop/tests/bug234_publication_deadline.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/compaction_execution.rs",
+      "rust/agent-loop/src/compaction_builder.rs",
+      "rust/cli/src/compaction_timing.rs",
+      "rust/cli/src/compaction_operation.rs",
+      "rust/agent-loop/src/compaction_runway.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/mod.rs",
+      "rust/patches/rig-core/src/agent/prompt_request/streaming.rs",
+      "rust/agent-loop/src/turn_compaction.rs",
+      "rust/cli/src/compactor_sub_agent.rs",
+      "rust/agent-loop/src/generate_compaction_handler.rs"
+    ],
+    "totalLinesCovered": 691
+  }
+}

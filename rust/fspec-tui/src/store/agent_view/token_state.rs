@@ -9,12 +9,16 @@
 //! tokens_per_second, and cache_read/cache_creation totals when the
 //! user cycles sessions with Shift+Left/Right.
 
-use codelet_rpc_types::{ContextFillInfo, StreamChunk, TokenTracker};
+use codelet_rpc_types::{ContextFillInfo, ContextProvenance, StreamChunk, TokenTracker};
 
 /// Per-session token state derived from `StreamChunk::TokenUpdate` +
 /// `StreamChunk::ContextFillUpdate` events.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct TokenState {
+    pub committed_generation: Option<i64>,
+    pub compaction_generation: Option<i64>,
+    pub context_request: Option<u64>,
+    pub estimated: bool,
     pub input_tokens: u64,
     pub output_tokens: u64,
     /// RPC-100 — widened to u16 so values >100% (the pre-compaction
@@ -49,8 +53,52 @@ impl TokenState {
     /// Fold an arriving chunk into this state.
     pub fn apply_chunk(&mut self, chunk: &StreamChunk) {
         match chunk {
+            StreamChunk::CommittedCompaction { snapshot } => {
+                if self
+                    .compaction_generation
+                    .is_some_and(|current| current >= snapshot.generation)
+                    || self
+                        .committed_generation
+                        .is_some_and(|current| current > snapshot.generation)
+                {
+                    return;
+                }
+                self.compaction_generation = Some(snapshot.generation);
+                if self.committed_generation == Some(snapshot.generation)
+                    && self.context_request.is_some()
+                {
+                    return;
+                }
+                self.apply_token_tracker(&snapshot.tokens);
+                self.apply_context_fill(&snapshot.context_fill);
+                self.committed_generation = Some(snapshot.generation);
+                self.context_request = None;
+                self.estimated = snapshot.estimated;
+            }
+            StreamChunk::ContextSnapshot { snapshot } => {
+                if self.committed_generation.is_some_and(|generation| {
+                    generation > snapshot.generation
+                        || (generation == snapshot.generation
+                            && self
+                                .context_request
+                                .is_some_and(|request| request >= snapshot.request))
+                }) {
+                    return;
+                }
+                self.committed_generation = Some(snapshot.generation);
+                self.context_request = Some(snapshot.request);
+                self.estimated = snapshot.provenance != ContextProvenance::Measured;
+                if let Some(fill) = snapshot.context_fill() {
+                    self.apply_context_fill(&fill);
+                } else {
+                    self.context_fill_pct = 0;
+                    self.context_threshold_tokens = 0;
+                }
+            }
             StreamChunk::TokenUpdate { tokens } => self.apply_token_tracker(tokens),
-            StreamChunk::ContextFillUpdate { context_fill } => {
+            StreamChunk::ContextFillUpdate { context_fill }
+                if self.committed_generation.is_none() =>
+            {
                 self.apply_context_fill(context_fill);
             }
             _ => {}
@@ -60,49 +108,10 @@ impl TokenState {
     fn apply_token_tracker(&mut self, t: &TokenTracker) {
         self.input_tokens = t.input_tokens as u64;
         self.output_tokens = t.output_tokens as u64;
-        // RPC-099 — copy the four previously-dropped fields. Optionals
-        // flatten to u64 (defaulting to 0) for counts so the render
-        // site can compare `> 0` cheaply; `tokens_per_second` stays
-        // Option because the loading-spinner segment uses None to
-        // suppress the `N.N tok/s` prefix entirely.
         self.cache_read_input_tokens = t.cache_read_input_tokens.unwrap_or(0) as u64;
         self.cache_creation_input_tokens = t.cache_creation_input_tokens.unwrap_or(0) as u64;
         self.reasoning_tokens = t.reasoning_tokens.unwrap_or(0) as u64;
         self.tokens_per_second = t.tokens_per_second;
-
-        // RPC-101 — recompute context_fill_pct in real-time off the
-        // incoming TokenTracker so the SessionHeader `[X%]` badge
-        // updates at the same cadence as the `tokens: X↓ Y↑` counters.
-        // Without this, the badge only refreshes on ContextFillUpdate
-        // chunks (which the backend may emit only at end-of-turn or
-        // skip entirely when the user presses Esc mid-stream),
-        // leaving a stale percentage visible for the rest of the turn.
-        //
-        // RPC-419 — the formula mirrors the backend's authoritative
-        // `emit_context_fill_from_usage` (rust/cli/src/interactive/
-        // stream_loop.rs:119-137) and `ApiTokenUsage::total_context`
-        // (rust/core/src/token_usage.rs:64-72): physical context
-        // occupancy = input + output + reasoning tokens. The wire
-        // `input_tokens` ALREADY includes cache read/creation tokens
-        // (PROV-001), so no cache term is added or subtracted here.
-        // The previous `input - 0.9*cache_read` recompute was the
-        // RPC-419 bug: that 90% cache discount belongs exclusively to
-        // compaction's cost model (`TokenTracker::effective_tokens`,
-        // rust/core/src/compaction/model.rs:90-96) and made the
-        // badge oscillate against the backend's ContextFillUpdate
-        // values. Truncation (not rounding) matches the backend's
-        // `as u32` cast. Threshold is captured from the last
-        // ContextFillUpdate; a real ContextFillUpdate will overwrite
-        // this value next (backend authoritative whenever it speaks).
-        if self.context_threshold_tokens > 0 {
-            let effective = self.input_tokens + self.output_tokens + self.reasoning_tokens;
-            let pct = (effective as f64 / self.context_threshold_tokens as f64) * 100.0;
-            self.context_fill_pct = if pct.is_finite() && pct >= 0.0 {
-                pct.min(u16::MAX as f64) as u16
-            } else {
-                0
-            };
-        }
     }
 
     fn apply_context_fill(&mut self, info: &ContextFillInfo) {
@@ -112,10 +121,6 @@ impl TokenState {
         // compaction threshold; clamping to 100 would hide the
         // pre-compaction overshoot the user relies on.
         self.context_fill_pct = info.fill_percentage.min(u16::MAX as u32) as u16;
-        // RPC-101 — cache the threshold (in tokens) so subsequent
-        // TokenUpdate chunks can recompute the percentage locally
-        // without waiting for the next ContextFillUpdate. Negative /
-        // non-finite values are treated as "unknown" (threshold = 0).
         self.context_threshold_tokens = if info.threshold.is_finite() && info.threshold > 0.0 {
             info.threshold as u64
         } else {

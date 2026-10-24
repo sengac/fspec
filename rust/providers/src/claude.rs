@@ -178,14 +178,14 @@ impl ProviderAdapter for ClaudeProvider {
 // ---------------------------------------------------------------------------
 
 impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {
-    /// Claude hard-caps context window to 200k (until CONFIG-007 opt-in for 1M).
+    /// Model metadata supplies context capacity; the fallback is not a ceiling.
     fn max_context_window(&self) -> Option<usize> {
-        Some(CONTEXT_WINDOW)
+        None
     }
 
-    /// Claude hard-caps max output tokens to 8192.
+    /// Model metadata supplies output capacity; the fallback is not a ceiling.
     fn max_output_tokens_limit(&self) -> Option<usize> {
-        Some(MAX_OUTPUT_TOKENS)
+        None
     }
 
     /// Default context window when no registry data is available.
@@ -730,7 +730,7 @@ impl LlmProvider for ClaudeProvider {
         let (preamble, prompt) = self.extract_prompt_data(messages);
 
         // Convert tools to rig format using shared helper (REFAC-013)
-        let rig_tools = convert_tools_to_rig(tools);
+        let rig_tools = convert_tools_to_rig(tools)?;
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)

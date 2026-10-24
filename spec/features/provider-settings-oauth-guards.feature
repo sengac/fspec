@@ -7,7 +7,7 @@
 Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keybind simplification, provider list cleanup
   """
   The Provider Settings TUI needs several fixes:
-  1. Profiles restricted to OpenAI API provider only (local models: vLLM, Ollama)
+  1. PROV-161 supersedes the OpenAI-only profile restriction: all providers expose settings and profiles while retaining their existing authentication rows.
   2. Dead code deletion (ProviderSettingsView.tsx, useProviderProfiles.ts)
   3. Keybind simplification: only Enter and 'd' — no 'e', 'n', 't'
   4. Uniform delete confirmations for API key, OAuth disconnect, profile delete
@@ -35,7 +35,7 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
     And "OpenAI" is displayed as "OpenAI API"
 
   # --- OAuth provider expansion ---
-  Scenario: Expanding an OAuth provider shows OAuth items and API key but no profiles
+  Scenario: Expanding an OAuth provider shows authentication settings and profile creation
     Given Anthropic is configured with OAuth connected and an API key from env
     When I expand the Anthropic provider
     Then I see the following nav items:
@@ -44,25 +44,26 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
       | 🔑 Login with Claude (browser)     |
       | 🔑 Login with Claude (headless)    |
       | 🔑 API key ✓ sk-ant-••••Qr7K [env] |
+      | Settings                          |
+      | + Create new profile              |
     And I do NOT see any profile rows
-    And I do NOT see a "Create new profile" button
+    And I see a "Create new profile" button
     And the header does NOT show a profile count
 
-  Scenario: Expanding an OAuth provider with stale profiles in config ignores them
-    Given Anthropic has a stale profile in user config from OAuth development
+  Scenario: Expanding an OAuth provider displays saved profiles
+    Given Anthropic has a saved profile in user config
     When I expand the Anthropic provider
-    Then the stale profile row is NOT displayed
-    And the header does NOT show "(1 profile)"
+    Then the saved profile row is displayed after Settings
+    And the header shows "(1 profile)"
     And the application does not crash or show an error
 
-  # --- Cloud API-key provider expansion ---
-  Scenario: Expanding a cloud API-key provider shows only the API key row
+  Scenario: Expanding a cloud API-key provider shows authentication settings and profile creation
     Given Google Gemini has an API key configured from env
     When I expand the Google Gemini provider
-    Then I see only the "🔑 API key" nav item
+    Then I see the "🔑 API key", "Settings", and "+ Create new profile" nav items in that order
     And I do NOT see any profile rows
     And I do NOT see any OAuth items
-    And I do NOT see a "Create new profile" button
+    And I see a "Create new profile" button
 
   # --- OpenAI API (profile-only) expansion ---
   Scenario: Expanding OpenAI API with profiles shows profile rows and create button
@@ -70,26 +71,27 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
     When I expand the OpenAI API provider
     Then I see the following nav items:
       | item                                   |
+      | Settings                               |
       | 📁 work-vllm → http://10.0.1.5:8080     |
       | 📁 home-ollama → http://localhost:11434 |
       | + Create new profile                   |
     And I do NOT see a "🔑 API key" row
     And the header shows "(2 profiles)"
 
-  Scenario: Expanding OpenAI API with no profiles shows only create button
+  Scenario: Expanding OpenAI API with no profiles shows settings and create button
     Given OpenAI API has no profiles configured
     When I expand the OpenAI API provider
-    Then I see only the "+ Create new profile" nav item
+    Then I see the "Settings" and "+ Create new profile" nav items in that order
     And I do NOT see a "🔑 API key" row
 
+  Scenario: saveProfile accepts cloud API providers
   # --- saveProfile guard ---
-  Scenario: saveProfile rejects non-OpenAI-API providers
-    When saveProfile is called with providerId "gemini"
-    Then an error is thrown: "Profiles are only supported for OpenAI API provider"
+    When saveProfile is called with providerId "gemini" and valid profile data
+    Then the profile is saved successfully
 
-  Scenario: saveProfile rejects OAuth providers
-    When saveProfile is called with providerId "anthropic"
-    Then an error is thrown: "Profiles are only supported for OpenAI API provider"
+  Scenario: saveProfile accepts OAuth providers with inherited authentication
+    When saveProfile is called with providerId "anthropic" and valid profile data without a key or URL
+    Then the profile is saved successfully
 
   Scenario: saveProfile accepts OpenAI API provider
     When saveProfile is called with providerId "openai" and valid profile data
@@ -180,6 +182,7 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
       | login item         | Enter: start login · / filter · Tab: Switch to models · Esc: close      |
       | api key            | Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close |
       | profile            | Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close |
+      | settings           | Enter: edit · / filter · Tab: Switch to models · Esc: close             |
       | create new profile | Enter: create · / filter · Tab: Switch to models · Esc: close           |
 
   Scenario: Tab hint says "Switch to models" on provider settings panel

@@ -206,10 +206,10 @@ fn remove_outbound_controls(session_id: Uuid) {
 // ── SESS-015: Subordinate chunk forwarding channels ─────────────────────────
 
 /// Sender type for subordinate chunks: (subordinate_session_id, chunk_json)
-pub type SubordinateChunkTx = mpsc::UnboundedSender<(Uuid, serde_json::Value)>;
+pub type SubordinateChunkTx = mpsc::Sender<(Uuid, serde_json::Value)>;
 
 /// Receiver type for subordinate chunks
-pub type SubordinateChunkRx = mpsc::UnboundedReceiver<(Uuid, serde_json::Value)>;
+pub type SubordinateChunkRx = mpsc::Receiver<(Uuid, serde_json::Value)>;
 
 /// Global per-session subordinate chunk senders.
 ///
@@ -226,7 +226,7 @@ static SUBORDINATE_CHUNK_SENDERS: once_cell::sync::Lazy<
 /// Returns the receiver that the relay loop should select! on.
 /// Multiple relay connections for the same session each get their own channel.
 pub fn register_subordinate_chunk_channel(parent_session_id: Uuid) -> SubordinateChunkRx {
-    let (tx, rx) = mpsc::unbounded_channel();
+    let (tx, rx) = mpsc::channel(256);
     if let Ok(mut guard) = SUBORDINATE_CHUNK_SENDERS.write() {
         guard.entry(parent_session_id).or_default().push(tx);
     }
@@ -238,11 +238,14 @@ pub fn register_subordinate_chunk_channel(parent_session_id: Uuid) -> Subordinat
 /// Used by agent_manager_handler to get a sender for forwarding subordinate
 /// chunks to the parent's relay loop.
 pub fn get_subordinate_chunk_senders(parent_session_id: Uuid) -> Vec<SubordinateChunkTx> {
-    SUBORDINATE_CHUNK_SENDERS
-        .read()
-        .ok()
-        .and_then(|guard| guard.get(&parent_session_id).cloned())
-        .unwrap_or_default()
+    let Ok(mut guard) = SUBORDINATE_CHUNK_SENDERS.write() else {
+        return Vec::new();
+    };
+    let Some(senders) = guard.get_mut(&parent_session_id) else {
+        return Vec::new();
+    };
+    senders.retain(|sender| !sender.is_closed());
+    senders.clone()
 }
 
 /// Remove all subordinate chunk senders for a session.
@@ -436,11 +439,11 @@ pub async fn handle_multiplexed_inbound(
         } => {
             let injected = match images {
                 Some(imgs) if !imgs.is_empty() => {
-                    tracing::info!("Injecting input with {} image(s): {}", imgs.len(), message);
+                    tracing::info!(%session_id, image_count = imgs.len(), input_bytes = message.len(), input = %message, "Injecting input with images");
                     InjectedInput::with_images(message, imgs)
                 }
                 _ => {
-                    tracing::info!("Injecting text input: {}", message);
+                    tracing::info!(%session_id, input_bytes = message.len(), input = %message, "Injecting text input");
                     InjectedInput::text_only(message)
                 }
             };
@@ -518,7 +521,7 @@ pub async fn handle_multiplexed_inbound(
         }
         InboundAction::SystemPing => Ok(Some(Envelope::system_pong())),
         InboundAction::AuthResponse { success, data } => {
-            tracing::info!("Auth response: success={}, data={:?}", success, data);
+            tracing::info!(success, data_present = data.is_some(), "Auth response");
             Ok(None)
         }
         InboundAction::SessionCreate { request_id } => {

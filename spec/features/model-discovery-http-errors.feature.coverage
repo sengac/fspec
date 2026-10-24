@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "Discovery preserves proxy prefixes and composes one version suffix",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug218_model_discovery_errors.rs",
+          "lines": "9-34",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unsupported model listing has a typed nonretryable error",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug218_model_discovery_errors.rs",
+          "lines": "37-70",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                357,
+                358,
+                359,
+                360,
+                361,
+                362
+              ]
+            },
+            {
+              "file": "rust/providers/src/error.rs",
+              "lines": [
+                22,
+                23,
+                65,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Other discovery errors are not unsupported listing",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug218_model_discovery_errors.rs",
+          "lines": "73-109",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/openai.rs",
+              "lines": [
+                363,
+                364,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug218_model_discovery_errors.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/openai.rs",
+      "rust/providers/src/error.rs"
+    ],
+    "totalLinesCovered": 138
+  }
+}

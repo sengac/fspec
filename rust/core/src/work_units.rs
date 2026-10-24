@@ -327,6 +327,10 @@ impl WorkUnitsWatcher {
     pub fn subscribe(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {
         self.tx.subscribe()
     }
+
+    pub fn workspace(&self) -> &Path {
+        &self._workspace
+    }
 }
 
 /// Recover the workspace root from the watched path

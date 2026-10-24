@@ -162,3 +162,56 @@ fn resolve_connect_url(explicit: Option<String>) -> Result<Url> {
     })?;
     Url::parse(&format!("ws://127.0.0.1:{}", handshake.port)).context("synthesize ws url")
 }
+
+/// Service-facing presentation of the same frontend RPC backend.
+pub async fn run_mcp(connect: Option<String>) -> Result<()> {
+    use crate::client_mcp_service::{validate_daemon_url, McpFrontend, ReadOperation};
+    use codelet_fspec_tui::FspecBackend;
+    use rmcp::ServiceExt;
+
+    common::init_tracing_client()?;
+    let url = resolve_connect_url(connect)?;
+    validate_daemon_url(&url).map_err(anyhow::Error::msg)?;
+    let (backend, bounded_rpc, full_rpc) = tokio::time::timeout(
+        std::time::Duration::from_secs(10),
+        WebSocketFspecBackend::connect_mcp_full(url),
+    )
+    .await
+    .context("daemon connection timed out")??;
+    let backend = Arc::new(backend);
+    let rpc_backend = Arc::clone(&backend);
+    let service = McpFrontend::new(move |operation| {
+        let backend = Arc::clone(&backend);
+        Box::pin(async move {
+            let result = match operation {
+                ReadOperation::Health => {
+                    serde_json::to_value(backend.health().await.map_err(|_| ())?)
+                }
+                ReadOperation::BoundedWorkUnits { detail, arguments } => {
+                    match backend
+                        .read_work_units_bounded(detail, arguments)
+                        .await
+                        .map_err(|_| ())?
+                    {
+                        Ok(text) => serde_json::from_str(&text),
+                        Err(message) => Ok(serde_json::json!({"bounded_read_error": message})),
+                    }
+                }
+                ReadOperation::WorkUnits => {
+                    serde_json::to_value(backend.list_work_units().await.map_err(|_| ())?)
+                }
+            };
+            result.map_err(|_| ())
+        })
+    });
+    let service = service.with_bounded_rpc(bounded_rpc);
+    let service =
+        crate::client_mcp_full::FullFrontend::new(service, full_rpc, move |name, args| {
+            let backend = Arc::clone(&rpc_backend);
+            Box::pin(async move { backend.invoke_mcp_rpc(&name, args).await })
+        });
+    // SDK owns negotiation/framing; stdout must contain only MCP messages.
+    let running = service.serve(rmcp::transport::stdio()).await?;
+    running.waiting().await?;
+    Ok(())
+}

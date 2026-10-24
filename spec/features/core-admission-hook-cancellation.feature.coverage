@@ -1,0 +1,63 @@
+{
+  "scenarios": [
+    {
+      "name": "Inaccessible admission authority cancels every hook phase",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct082_fail_closed_hook.rs",
+          "lines": "13-60",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction_hook.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct082_fail_closed_hook.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/compaction_hook.rs"
+    ],
+    "totalLinesCovered": 79
+  }
+}

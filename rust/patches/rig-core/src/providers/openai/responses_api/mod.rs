@@ -10,7 +10,7 @@
 use super::completion::ToolChoice;
 use super::{Client, responses_api::streaming::StreamingCompletionResponse};
 use super::{InputAudio, SystemContent};
-use crate::completion::CompletionError;
+use crate::completion::{CompletionError, GetTokenUsage};
 use crate::http_client;
 use crate::http_client::HttpClientExt;
 use crate::json_utils;
@@ -28,9 +28,11 @@ use tracing::{Instrument, Level, enabled, info_span};
 
 use std::convert::Infallible;
 use std::ops::Add;
+mod request_body;
 use std::str::FromStr;
 
 pub mod streaming;
+mod usage;
 
 /// The completion request type for OpenAI's Response API: <https://platform.openai.com/docs/api-reference/responses/create>
 /// Intended to be derived from [`crate::completion::request::CompletionRequest`].
@@ -298,7 +300,8 @@ impl TryFrom<crate::completion::Message> for Vec<InputItem> {
                                         text,
                                     }) => {
                                         text_parts.push(text.clone());
-                                        content_items.push(ToolResultContentItem::InputText { text });
+                                        content_items
+                                            .push(ToolResultContentItem::InputText { text });
                                     }
                                     crate::completion::message::ToolResultContent::Image(image) => {
                                         has_image = true;
@@ -563,46 +566,17 @@ pub struct ResponsesUsage {
     /// Output tokens
     pub output_tokens: u64,
     /// In-depth detail on output tokens (reasoning tokens)
-    pub output_tokens_details: OutputTokensDetails,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_tokens_details: Option<OutputTokensDetails>,
     /// Total tokens used (for a given prompt)
     pub total_tokens: u64,
 }
 
-impl ResponsesUsage {
-    /// Create a new ResponsesUsage instance
-    pub(crate) fn new() -> Self {
-        Self {
-            input_tokens: 0,
-            input_tokens_details: Some(InputTokensDetails::new()),
-            output_tokens: 0,
-            output_tokens_details: OutputTokensDetails::new(),
-            total_tokens: 0,
-        }
-    }
-}
-
 impl Add for ResponsesUsage {
-    type Output = Self;
+    type Output = Result<Self, CompletionError>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let input_tokens = self.input_tokens + rhs.input_tokens;
-        let input_tokens_details = self.input_tokens_details.map(|lhs| {
-            if let Some(tokens) = rhs.input_tokens_details {
-                lhs + tokens
-            } else {
-                lhs
-            }
-        });
-        let output_tokens = self.output_tokens + rhs.output_tokens;
-        let output_tokens_details = self.output_tokens_details + rhs.output_tokens_details;
-        let total_tokens = self.total_tokens + rhs.total_tokens;
-        Self {
-            input_tokens,
-            input_tokens_details,
-            output_tokens,
-            output_tokens_details,
-            total_tokens,
-        }
+        self.checked_add(rhs)
     }
 }
 
@@ -613,18 +587,12 @@ pub struct InputTokensDetails {
     pub cached_tokens: u64,
 }
 
-impl InputTokensDetails {
-    pub(crate) fn new() -> Self {
-        Self { cached_tokens: 0 }
-    }
-}
-
 impl Add for InputTokensDetails {
-    type Output = Self;
+    type Output = Result<Self, CompletionError>;
     fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            cached_tokens: self.cached_tokens + rhs.cached_tokens,
-        }
+        Ok(Self {
+            cached_tokens: usage::checked_sum(self.cached_tokens, rhs.cached_tokens)?,
+        })
     }
 }
 
@@ -635,20 +603,12 @@ pub struct OutputTokensDetails {
     pub reasoning_tokens: u64,
 }
 
-impl OutputTokensDetails {
-    pub(crate) fn new() -> Self {
-        Self {
-            reasoning_tokens: 0,
-        }
-    }
-}
-
 impl Add for OutputTokensDetails {
-    type Output = Self;
+    type Output = Result<Self, CompletionError>;
     fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            reasoning_tokens: self.reasoning_tokens + rhs.reasoning_tokens,
-        }
+        Ok(Self {
+            reasoning_tokens: usage::checked_sum(self.reasoning_tokens, rhs.reasoning_tokens)?,
+        })
     }
 }
 
@@ -709,7 +669,11 @@ impl TryFrom<(String, crate::completion::CompletionRequest)> for CompletionReque
                     .into_iter()
                     .map(<Vec<InputItem>>::try_from)
                     .collect::<Result<Vec<Vec<InputItem>>, _>>()
-                    .map_err(|e| CompletionError::ProviderError(format!("Failed to convert message history: {e}")))?
+                    .map_err(|e| {
+                        CompletionError::ProviderError(format!(
+                            "Failed to convert message history: {e}"
+                        ))
+                    })?
                     .into_iter()
                     .flatten()
                     .collect::<Vec<InputItem>>(),
@@ -728,7 +692,7 @@ impl TryFrom<(String, crate::completion::CompletionRequest)> for CompletionReque
             .as_bool();
 
         let additional_parameters = if let Some(map) = req.additional_params {
-            serde_json::from_value::<AdditionalParameters>(map).expect("Converting additional parameters to AdditionalParameters should never fail as every field is an Option")
+            serde_json::from_value::<AdditionalParameters>(map)?
         } else {
             // If there's no additional parameters, initialise an empty object
             AdditionalParameters::default()
@@ -1121,6 +1085,13 @@ where
 
     type Client = super::Client<T>;
 
+    fn prepare_request(
+        &self,
+        request: crate::completion::CompletionRequest,
+    ) -> Result<Vec<u8>, CompletionError> {
+        self.streaming_request_bytes(request)
+    }
+
     fn make(client: &Self::Client, model: impl Into<String>) -> Self {
         Self::new(client.clone(), model)
     }
@@ -1233,18 +1204,9 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
         let usage = response
             .usage
             .as_ref()
-            .map(|usage| completion::Usage {
-                input_tokens: usage.input_tokens,
-                output_tokens: usage.output_tokens,
-                total_tokens: usage.total_tokens,
-                cache_read_input_tokens: usage
-                    .input_tokens_details
-                    .as_ref()
-                    .map(|d| d.cached_tokens),
-                reasoning_tokens: Some(usage.output_tokens_details.reasoning_tokens),
-                ..Default::default()
-            })
-            .unwrap_or_default();
+            .ok_or_else(|| CompletionError::ResponseError("missing Responses usage".into()))?
+            .token_usage()
+            .ok_or_else(|| CompletionError::ResponseError("inconsistent Responses usage".into()))?;
 
         Ok(completion::CompletionResponse {
             choice,

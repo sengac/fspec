@@ -14,13 +14,13 @@ Feature: BUG-195 — clicking a session chip in the Agent view switches to that 
 
   Root cause (two stacked no-ops in production):
   1. AgentView::activate_menu_chip focuses the session through the
-     `store_handle` test seam — `None` in production — then emits
-     Action::MenuChipActivate on the action bus.
+  `store_handle` test seam — `None` in production — then emits
+  Action::MenuChipActivate on the action bus.
   2. App::dispatch_menu's MenuChipActivate arm ASSUMED the agent view already
-     focused the session (comment: "the chip's session focus already happened
-     in-view") and early-returned for ViewMode::Agent — but with the seam
-     None, step 1 focused nothing. The keyboard path (Enter on a focused chip)
-     is affected the same way: the emitted action hits the same early-return.
+  focused the session (comment: "the chip's session focus already happened
+  in-view") and early-returned for ViewMode::Agent — but with the seam
+  None, step 1 focused nothing. The keyboard path (Enter on a focused chip)
+  is affected the same way: the emitted action hits the same early-return.
 
   Fix: the AGENT branch of `App::dispatch_menu`'s MenuChipActivate arm
   resolves the chip against the PAINTED chip list (`menu_snapshot` parity —

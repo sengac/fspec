@@ -99,16 +99,15 @@ fn seed_stale_data_dir() -> tempfile::TempDir {
 
     // Backdate the mtime ~180 days so the snapshot is unambiguously
     // older than DEFAULT_CACHE_TTL (24h) — "months old" per the scenario.
-    let months_ago = std::time::SystemTime::now()
-        - std::time::Duration::from_secs(180 * 24 * 60 * 60);
+    let months_ago =
+        std::time::SystemTime::now() - std::time::Duration::from_secs(180 * 24 * 60 * 60);
     let f = File::options()
         .write(true)
         .open(&snapshot)
         .expect("open snapshot for mtime update");
     f.set_modified(months_ago).expect("backdate snapshot mtime");
 
-    codelet_common::set_data_directory(data_dir.path().to_path_buf())
-        .expect("set data directory");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
     data_dir
 }
 
@@ -183,7 +182,10 @@ async fn refresh_models_cache_force_fetches_catalog_and_returns_provider_models(
         "BUG-207: the freshly released model must appear after a forced refresh; got: {ids:?}",
     );
     for e in entries.iter().filter(|e| e.id == "claude-opus-5") {
-        assert!(!e.is_custom, "claude-opus-5 is a built-in cloud model entry");
+        assert!(
+            !e.is_custom,
+            "claude-opus-5 is a built-in cloud model entry"
+        );
     }
 
     // The on-disk snapshot is updated by the forced fetch, so the NEXT
@@ -192,8 +194,7 @@ async fn refresh_models_cache_force_fetches_catalog_and_returns_provider_models(
         .expect("data dir")
         .join("cache")
         .join("models.json");
-    let on_disk = fs::read_to_string(&snapshot)
-        .expect("read refreshed snapshot");
+    let on_disk = fs::read_to_string(&snapshot).expect("read refreshed snapshot");
     assert!(
         on_disk.contains("claude-opus-5"),
         "the forced refresh must persist the new snapshot to disk"

@@ -1,0 +1,185 @@
+{
+  "scenarios": [
+    {
+      "name": "Prompt-only retries preserve effective reasoning settings and output caps",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "39-77",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exhausted retries stop without falsely claiming thinking was disabled",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "79-111",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-turn downgrade affects the future preference rather than the active retry",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "113-152",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1380,
+                1381,
+                1382,
+                1383,
+                1384,
+                1385,
+                1386,
+                1387,
+                1388,
+                1389,
+                1390,
+                1391,
+                1392,
+                1393
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prompt-only recovery retains conversation history reasoning and completed tool pairs",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "154-218",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/recovery_thinking.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancellation during recovery prevents an unused prompt and extra request",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "220-240",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1411,
+                1412,
+                1413,
+                1414,
+                1415,
+                1416,
+                1417
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A terminal retry error stops prompt-only recovery immediately",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug222_truthful_thinking_retry.rs",
+          "lines": "242-270",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1782,
+                1783,
+                1784,
+                1785
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug222_truthful_thinking_retry.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/recovery_thinking.rs",
+      "rust/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 299
+  }
+}

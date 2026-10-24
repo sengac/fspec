@@ -6,7 +6,7 @@
 //! - Output rendering via StreamOutput trait (polymorphic)
 
 use super::message_helpers::{add_assistant_text_message, add_assistant_tool_calls_message};
-use super::output::StreamOutput;
+use super::output::{StreamEvent, StreamOutput, ToolCallEvent, ToolResultEvent};
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use tracing::debug;
@@ -145,10 +145,19 @@ pub(super) fn handle_tool_call<O: StreamOutput>(
     // CRITICAL: Track tool call for message history (CLI-008) - shared
     tool_calls_buffer.push(AssistantContent::ToolCall(tool_call.clone()));
 
-    debug!("Tool call: {} with args: {:?}", tool_name, args);
+    debug!(%tool_name, args = ?args, "Tool call");
 
     // Emit via output (polymorphic)
-    output.emit_tool_call(&tool_call.id, tool_name, args);
+    output.emit(StreamEvent::ToolCall(ToolCallEvent {
+        id: tool_call.id.clone(),
+        call_id: tool_call.call_id.clone(),
+        name: tool_name.clone(),
+        args: args.clone(),
+    }));
+
+    output
+        .prepare_tool_dispatch(&tool_call.id)
+        .map_err(anyhow::Error::msg)?;
 
     Ok(())
 }
@@ -176,7 +185,7 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
         content: OneOrMany::one(UserContent::ToolResult(tool_result_clone)),
     });
 
-    debug!("Tool result received: {:?}", tool_result);
+    debug!(result = ?tool_result, "Tool result received");
 
     // Extract content for debug capture and output - shared
     let result_parts: Vec<String> = tool_result
@@ -236,7 +245,12 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
     }
 
     // Emit via output (polymorphic)
-    output.emit_tool_result(&tool_result.id, &result_text, is_error);
+    output.emit(StreamEvent::ToolResult(ToolResultEvent {
+        id: tool_result.id.clone(),
+        call_id: tool_result.call_id.clone(),
+        content: result_text,
+        is_error,
+    }));
 
     Ok(())
 }

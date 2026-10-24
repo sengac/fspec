@@ -74,10 +74,11 @@ as a flat, expandable tree:
   1. **OAuth status** row — `Logout from OAuth [Provider]` (only when logged in)
   2. **OAuth login** rows (magenta 🔑) — the available login methods
   3. **API key** row (yellow 🔑) — every provider *except* `openai`
-  4. **Profile** rows (cyan 📁) — `openai` only: one per stored profile,
-     labeled `name → baseUrl`
-  5. **Add Profile** pseudo-row (green `+`, labeled "Create new profile") —
-     `openai` only, always present
+  4. **Settings** — shared runtime defaults for this provider
+  5. **Profile** rows (cyan 📁) — one per stored, provider-scoped profile;
+     connection profiles include `name → baseUrl`
+  6. **Add Profile** pseudo-row (green `+`, labeled "Create new profile") —
+     always present for every provider, including custom providers
 
 The `OpenAI` provider has **no API-key row**: because it is for local servers only,
 its credentials are set per profile (in the profile form) instead.
@@ -123,6 +124,30 @@ The key renders masked (one bullet per character) while you type. Pressing
 `Enter` on an empty key silently cancels.
 
 ---
+
+## Shared Settings and Profiles
+
+Every provider has a **Settings** editor and named runtime profiles. Settings
+are stored under `providers.<provider>.settings`; profiles are stored under
+`providers.<provider>.profiles.<name>`. Names are provider-scoped: Codex and
+Anthropic can both have a `careful` profile without sharing configuration.
+
+The shared editor controls context window, maximum output tokens, compaction,
+progressive streaming, auto-continue, thinking preservation, image limits, and
+loop detection. A profile inherits omitted fields individually from provider
+settings. OAuth and cloud profiles can leave connection fields empty and retain
+the provider's existing authentication and model discovery.
+
+Empty token fields mean **Automatic (model-specific)**. Context and output
+limits resolve independently; clearing one does not clear the other. Catalog
+values are never copied into saved overrides. Invalid token limits are rejected
+with a validation message rather than silently becoming Automatic.
+
+Settings apply on creation, resume, subordinate creation, and model switching.
+Switching refreshes inherited settings while preserving explicit session
+auto-continue choices. Anthropic and Gemini preserve signed thinking by default.
+Disabling progressive display buffers assistant text; transports that require
+streaming, such as Codex, still stream internally.
 
 ## OpenAI API Profile Screen
 
@@ -529,12 +554,20 @@ FSPEC_DISABLE_SCRIPT_SHADOWING=1 fspec
 
 ## Model Limits
 
-Context window and max output tokens are resolved via priority chain:
+Context window and maximum output tokens resolve independently:
 
-1. **Script override** — `get_model_limits(config)` in Rhai scripts (PROV-095)
-2. **User override** (clamped by provider hard max)
-3. **Registry value** from models.dev (clamped by provider hard max)
-4. **Provider default** constant
+1. Explicit session limit
+2. Matching model override
+3. Selected profile override
+4. Provider settings
+5. Matching models.dev `limit.context` or `limit.output`
+6. Backend fallback when metadata is unavailable
+
+Custom-provider model definitions and Rhai `get_model_limits(config)` hooks
+continue to supply backend-specific limits. Real protocol restrictions still
+apply, but historical Anthropic 200000/8192 defaults are not universal ceilings.
+Codex reserves its effective output budget for admission/accounting without
+sending the unsupported maximum-output wire parameter.
 
 ---
 

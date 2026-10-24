@@ -15,7 +15,7 @@ Feature: /compact slash command + compaction progress footer
   Slash-command wiring goes into app/dispatch_slash_commands.rs::handle_slash_command(Compact) — extending the existing arm (which currently falls through to the `[notice] /compact not yet implemented` fallback). Pattern matches RPC-046's Clear arm: synchronous nothing on the focused session, then spawn tokio task -> Action::EmitSessionNotice.
   CompactionComplete StreamChunk handler lives in dispatch_stream_chunks.rs::handle_stream_chunk_state_updates. A new arm for StreamChunk::CompactionComplete clears the per-session compaction_progress entry AND dispatches Action::EmitSessionNotice via self.action_tx so the notice lands in the originating session's scrollback regardless of focus.
   AgentViewStore extension: new pub(crate) compaction_progress_by_session: HashMap<SessionId, CompactionProgress> field + accessors get_compaction_progress / set_compaction_progress / clear_compaction_progress. Accessors live in store/agent_view/isolation_state.rs (existing per-session push-state sub-module) to keep agent_view.rs under its 300-LoC ceiling per the RPC-025 source-shape invariant.
-  SessionFooter widget gains a `compaction_progress: Option<&CompactionProgress>` field, painted left-aligned BEFORE the existing right-aligned cwd/branch block. Bar uses U+25B0 (▰) for filled and U+25B1 (▱) for empty, fixed 10 cells. Caller (views/agent.rs::render_with_store) reads agent_view_store.compaction_progress_for(current_session).
+  SessionFooter uses `compaction_progress: Option<&CompactionProgress>` for phase-only activity, painted left-aligned before the existing right-aligned cwd/branch block. BUG-213 supersedes the inherited fraction and determinate bar: legacy current/total wire fields are not measured completed work and must not be rendered. Caller reads agent_view_store.compaction_progress_for(current_session).
   Notice-line format constant: helper `format_compaction_notice(result: &CompactionResult) -> String` was MOVED by RPC-421 from app/dispatch_slash_commands.rs to app/dispatch_stream_chunks.rs (:242-251). Its SOLE caller is the CompactionComplete chunk handler in the same file (:166) — the slash-handler Ok branch emits NO success notice from the RPC result (whose numbers are measured before DAG injection and are therefore an acknowledgement, not a reduction). Exactly one `[compaction] ...` line lands per compaction, sourced from the chunk.
   """
 
@@ -30,7 +30,7 @@ Feature: /compact slash command + compaction progress footer
   #   4. /compact with no current session is a silent no-op (backend.compact_session is never called; no notice is emitted)
   #   5. AgentViewStore tracks per-session compaction progress in a `compaction_progress_by_session: HashMap<SessionId, CompactionProgress>` accessor pair (get + set + clear)
   #   6. Receiving a StreamChunk::CompactionComplete in App::dispatch MUST clear the per-session compaction_progress entry AND emit the `[compaction] ...` notice into that session's scrollback (mirrors auto-compaction in the agent loop)
-  #   7. SessionFooter MUST render a `[compacting: <phase> <current>/<total>]` segment + a 10-cell `▰▰▰▰▰▱▱▱▱▱`-style progress bar (filled = current/total * 10) on the left of the footer row whenever compaction_progress_for(focused_session) is Some
+  #   7. SessionFooter MUST render a phase-only `[compacting: <phase>]` segment without a completed-work fraction or determinate bar whenever compaction_progress_for(focused_session) is Some (BUG-213)
   #   8. When compaction_progress_for(focused_session) is None, SessionFooter paints the existing RPC-029 layout unchanged (no progress segment; cwd + branch on the right)
   #   9. Backend round-trip happens via tokio::spawn so it does not block the App dispatch task; spawned task dispatches Action::EmitSessionNotice(session_id, text) so the notice lands on the originating session even after a focus switch (mirrors RPC-046)
   #
@@ -39,7 +39,7 @@ Feature: /compact slash command + compaction progress footer
   #   2. Given the same Ok response, when SlashCommandSelected(Compact) is dispatched, then within 1 second s-1's scrollback contains the line `[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)`
   #   3. Given an App with an open session s-1 and a MockBackend whose compact_session returns Err("out of memory"), when SlashCommandSelected(Compact) is dispatched, then within 1 second s-1's scrollback contains `[error] /compact failed: out of memory`
   #   4. Given an App with NO current session, when SlashCommandSelected(Compact) is dispatched, then backend.compact_session is never called and no scrollback line is appended
-  #   5. Given an App with an open session s-1 whose compaction_progress is Some(CompactionProgress { phase: "summarising messages", current: 5, total: 10 }), when SessionFooter is rendered, then the left side contains the substring `[compacting: summarising messages 5/10]` followed by a 10-char bar with 5 filled (`▰▰▰▰▰▱▱▱▱▱`)
+  #   5. Given legacy progress with phase "summarising messages", current 5 and total 10, the footer contains `[compacting: summarising messages]` without a fraction or determinate bar (BUG-213)
   #   6. Given an App with an open session s-1 and compaction_progress is Some, when ChunkReceived(s-1, StreamChunk::CompactionComplete { compaction_result }) is dispatched, then compaction_progress_for(s-1) becomes None AND s-1's scrollback gains the `[compaction] ...` notice line
   #   7. Given two open sessions s-1 (focused) and s-2 (background) and the MockBackend's compact_session returns Ok(default CompactionResult), when SlashCommandSelected(Compact) is dispatched, then ONLY s-1 receives the `[compaction] ...` notice (s-2's scrollback is untouched)
   #   8. Given an App with no open session, when SessionFooter is rendered with workspace = None, then the row paints the existing dark-grey background and contains NO `[compacting: ...]` substring
@@ -85,8 +85,8 @@ Feature: /compact slash command + compaction progress footer
   Scenario: SessionFooter renders the compaction progress segment when progress is Some
     Given an App with an open session s-1 whose compaction_progress is Some with phase "summarising messages", current 5, total 10
     When SessionFooter is rendered into an 80x1 buffer
-    Then the rendered row contains the substring "[compacting: summarising messages 5/10]"
-    And the rendered row contains the substring "▰▰▰▰▰▱▱▱▱▱"
+    Then the rendered row contains the substring "[compacting: summarising messages]"
+    And the rendered row contains no completed-work fraction or determinate bar
 
   Scenario: SessionFooter omits the compaction segment when progress is None
     Given an App with an open session s-1 whose compaction_progress is None

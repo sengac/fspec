@@ -2,10 +2,6 @@
 //!
 //! Feature: spec/features/rpc054-provider-settings-view.feature
 //!
-//! Full-screen mode-view that ports the TS `ProviderSettingsScreen` UX onto the
-//! Rust ratatui frontend (canonical RPC-026 `ResumeSessionView` pattern). The
-//! destructive `d` opens a `ConfirmDialog`; PROV-100 wires profiles.
-
 use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
 use crossterm::event::{KeyEvent, KeyModifiers};
 use ratatui::buffer::Buffer;
@@ -34,6 +30,7 @@ mod oauth_login;
 mod oauth_login_render;
 mod paste;
 pub mod profile_form;
+mod profile_form_context;
 mod profile_form_parse;
 mod profile_form_paste;
 mod profile_form_render;
@@ -43,6 +40,7 @@ pub mod profiles_config;
 pub mod projection;
 pub mod row_render;
 mod row_segments;
+mod settings_config;
 mod status_text;
 mod test_result;
 
@@ -81,8 +79,8 @@ pub struct ProviderSettingsView {
     pub status: String,
     /// RPC-158: inline test-result decoration (see `test_result.rs`).
     pub test_result: Option<ProviderTestResult>,
-    /// PROV-111: per-profile ProfileConfig keyed by name; the EditProfile form prefills from this.
-    pub profile_configs: HashMap<String, ProfileDefinition>,
+    pub profile_configs: HashMap<(String, String), ProfileDefinition>,
+    pub provider_configs: HashMap<String, ProfileDefinition>,
     /// PROV-111: pending delete-confirm target; when set the Primary arm emits `ConfirmDeleteProfile`.
     pub(crate) pending_profile_delete: Option<(String, String)>,
     /// PROV-112: cursor restore target for the next `ProviderCredentialsLoaded`
@@ -99,6 +97,7 @@ pub struct ProviderSettingsView {
     /// PROV-113: last login (provider, method) so the OAuthError screen retries it.
     pub(crate) oauth_last_provider: Option<String>,
     pub(crate) oauth_last_method: Option<OAuthMethod>,
+    pub(crate) oauth_tasks: Vec<tokio::task::AbortHandle>,
     visible_rows: usize,
     /// RPC-353: mouse-wheel 1×–5× velocity accelerator (shared chat-view ramp).
     wheel: crate::components::scroll_viewport::WheelVelocity,
@@ -124,12 +123,14 @@ impl ProviderSettingsView {
             status: String::new(),
             test_result: None,
             profile_configs: HashMap::new(),
+            provider_configs: HashMap::new(),
             pending_profile_delete: None,
             pending_navigate_provider: None,
             browser_login_enabled: false,
             oauth_generation: 0,
             oauth_last_provider: None,
             oauth_last_method: None,
+            oauth_tasks: Vec::new(),
             visible_rows: 18,
             wheel: crate::components::scroll_viewport::WheelVelocity::new(),
             scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
@@ -203,7 +204,8 @@ impl ProviderSettingsView {
             ProviderSettingsMode::Detail { provider_id, sub } => {
                 detail::handle_detail_key(self, key, provider_id, sub)
             }
-            ProviderSettingsMode::CreateProfile { provider_id, form } => {
+            ProviderSettingsMode::CreateProfile { provider_id, form }
+            | ProviderSettingsMode::EditSettings { provider_id, form } => {
                 profile_form::handle_form_key(self, key, provider_id, form, None)
             }
             ProviderSettingsMode::EditProfile {

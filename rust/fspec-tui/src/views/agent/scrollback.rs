@@ -114,6 +114,16 @@ impl ScrollbackList {
         &mut self.chunks
     }
 
+    pub(crate) fn refresh_after_rollback(&mut self) {
+        self.resolve_selection_from_seq();
+        let maximum = self.max_offset_for_viewport();
+        self.scroll_state.offset = if self.scroll_state.stick_to_bottom {
+            maximum
+        } else {
+            self.scroll_state.offset.min(maximum)
+        };
+    }
+
     /// Re-wrap a single chunk at index `i` (or 80 cols pre-render). **RPC-091**.
     pub fn rewrap_at(&mut self, i: usize) {
         let width = if self.viewport_width != 0 {

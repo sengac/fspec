@@ -1,15 +1,11 @@
 //! Binary index file I/O for the message store (BUG-122 Layer 2).
 //!
-//! Lifted from `rust/napi/src/persistence/message_index.rs` in
-//! RPC-032 so the on-disk index format is owned by codelet-core and
-//! reachable from non-NAPI crates (codelet-rpc-embedded,
-//! codelet-sessions, codelet-fspec) without re-introducing the
-//! forbidden `rpc → napi` arrow.
+//! Shared index format for the NAPI and standalone session stores.
 //!
 //! Format of `messages.idx`:
 //! ```text
 //! [magic:          4 bytes "MIDX"]
-//! [version:        4 bytes u32 LE = 1]
+//! [version:        4 bytes u32 LE = 2]
 //! [data_file_size: 8 bytes u64 LE]  — for staleness detection
 //! [entry_count:    4 bytes u32 LE]
 //! [entries:        entry_count × 28 bytes each]
@@ -21,18 +17,21 @@
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 use tracing::warn;
 use uuid::Uuid;
 
 use super::StoredMessage;
 
+mod write;
+pub(super) use write::save_index;
+
 /// Magic bytes identifying a messages index file
 const INDEX_MAGIC: &[u8; 4] = b"MIDX";
 
 /// Current binary format version
-const INDEX_VERSION: u32 = 1;
+const INDEX_VERSION: u32 = 2;
 
 /// Size of the fixed header: magic(4) + version(4) + data_file_size(8) + entry_count(4)
 const HEADER_SIZE: usize = 20;
@@ -95,62 +94,6 @@ pub(super) fn load_index(index_path: &Path) -> Option<(HashMap<Uuid, IndexEntry>
     Some((entries, data_file_size))
 }
 
-/// Write the binary index file.
-///
-/// LOG-006 defence: the parent directory is (re)created with
-/// `create_dir_all` before any I/O. `MessageStore::new()` already
-/// creates `{data_dir}/messages/` once at construction time, but the
-/// directory can disappear between construction and any later
-/// `save_index` call (test cleanup, a sibling tool wiping `~/.fspec`,
-/// `codelet_common::set_data_directory` swap leaving a stale handle
-/// behind, etc.). Without this guard `File::create(temp_path)` or
-/// `std::fs::rename` returns `ENOENT` and the message persist surfaces
-/// as `Failed to rename index temp file: No such file or directory
-/// (os error 2)` in the combined log. `create_dir_all` is a no-op when
-/// the directory already exists.
-pub(super) fn save_index(
-    index_path: &Path,
-    index: &HashMap<Uuid, IndexEntry>,
-    data_file_size: u64,
-) -> Result<(), String> {
-    if let Some(parent) = index_path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to ensure index parent dir {parent:?}: {e}"))?;
-    }
-
-    let temp_path = index_path.with_extension("idx.tmp");
-    let mut file =
-        File::create(&temp_path).map_err(|e| format!("Failed to create index temp file: {e}"))?;
-
-    // Header
-    file.write_all(INDEX_MAGIC)
-        .map_err(|e| format!("Failed to write index magic: {e}"))?;
-    file.write_all(&INDEX_VERSION.to_le_bytes())
-        .map_err(|e| format!("Failed to write index version: {e}"))?;
-    file.write_all(&data_file_size.to_le_bytes())
-        .map_err(|e| format!("Failed to write data file size: {e}"))?;
-    file.write_all(&(index.len() as u32).to_le_bytes())
-        .map_err(|e| format!("Failed to write entry count: {e}"))?;
-
-    // Entries
-    for (uuid, entry) in index {
-        file.write_all(uuid.as_bytes())
-            .map_err(|e| format!("Failed to write uuid: {e}"))?;
-        file.write_all(&entry.byte_offset.to_le_bytes())
-            .map_err(|e| format!("Failed to write byte_offset: {e}"))?;
-        file.write_all(&entry.byte_length.to_le_bytes())
-            .map_err(|e| format!("Failed to write byte_length: {e}"))?;
-    }
-
-    file.flush()
-        .map_err(|e| format!("Failed to flush index file: {e}"))?;
-
-    std::fs::rename(&temp_path, index_path)
-        .map_err(|e| format!("Failed to rename index temp file: {e}"))?;
-
-    Ok(())
-}
-
 /// Scan a JSONL data file from `start_offset` to EOF, building index entries.
 ///
 /// For each valid JSON line, extracts the `"id"` UUID field and records the
@@ -159,76 +102,7 @@ pub(super) fn scan_jsonl_range(
     data_path: &Path,
     start_offset: u64,
 ) -> Result<(HashMap<Uuid, IndexEntry>, u64), String> {
-    let file = File::open(data_path)
-        .map_err(|e| format!("Failed to open messages file for scanning: {e}"))?;
-    let file_len = file
-        .metadata()
-        .map_err(|e| format!("Failed to get file metadata: {e}"))?
-        .len();
-
-    let mut reader = BufReader::new(file);
-    reader
-        .seek(SeekFrom::Start(start_offset))
-        .map_err(|e| format!("Failed to seek in messages file: {e}"))?;
-
-    let mut entries = HashMap::new();
-    let mut current_offset = start_offset;
-
-    let mut line_buf = String::new();
-    loop {
-        line_buf.clear();
-        let bytes_read = reader
-            .read_line(&mut line_buf)
-            .map_err(|e| format!("Failed to read line from messages file: {e}"))?;
-        if bytes_read == 0 {
-            break;
-        }
-        let trimmed = line_buf.trim();
-        if trimmed.is_empty() {
-            current_offset += bytes_read as u64;
-            continue;
-        }
-
-        // Extract just the UUID without full deserialization for speed.
-        // Fall back to full parse if the fast path fails.
-        if let Some(uuid) = extract_uuid_fast(trimmed) {
-            entries.insert(
-                uuid,
-                IndexEntry {
-                    byte_offset: current_offset,
-                    byte_length: bytes_read as u32,
-                },
-            );
-        } else {
-            warn!("Skipping unparseable line at offset {current_offset}");
-        }
-
-        current_offset += bytes_read as u64;
-    }
-
-    Ok((entries, file_len))
-}
-
-/// Fast UUID extraction from a JSON line.
-///
-/// Looks for `"id":"<uuid>"` pattern to avoid full JSON parsing during scan.
-fn extract_uuid_fast(line: &str) -> Option<Uuid> {
-    // Try fast string search first
-    let needle = "\"id\":\"";
-    if let Some(pos) = line.find(needle) {
-        let start = pos + needle.len();
-        if start + 36 <= line.len() {
-            let uuid_str = &line[start..start + 36];
-            if let Ok(uuid) = Uuid::parse_str(uuid_str) {
-                return Some(uuid);
-            }
-        }
-    }
-    // Fallback: full JSON parse
-    serde_json::from_str::<serde_json::Value>(line)
-        .ok()
-        .and_then(|v| v.get("id")?.as_str().map(String::from))
-        .and_then(|s| Uuid::parse_str(&s).ok())
+    super::framing::scan_range(data_path, start_offset).map_err(|error| error.to_string())
 }
 
 /// Read a single message from the data file at the given offset/length.
@@ -245,7 +119,7 @@ pub(super) fn read_message_at(
     file.read_exact(&mut buf)
         .map_err(|e| format!("Failed to read message bytes: {e}"))?;
 
-    serde_json::from_slice(&buf).map_err(|e| format!("Failed to deserialize message: {e}"))
+    super::framing::parse_record(&buf, entry.byte_offset).map_err(|error| error.to_string())
 }
 
 #[cfg(test)]

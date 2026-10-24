@@ -5,7 +5,6 @@
 @wip
 @AUDIT-002
 Feature: Remediate coverage-mapping audit findings (dead mappings, divergent links, hygiene)
-
   """
   Source of truth for remediation: spec/attachments/AUDIT-002/fixlist.json (P1, 608 items grouped by impl file), problems.json.gz (P0/P2, 8,999 records). Re-link via the coverage link command (featureName + scenario + implFile/implLines + testFile/testLines); validate with show-coverage + audit-coverage + the project validation checks after each band.
   """
@@ -25,7 +24,6 @@ Feature: Remediate coverage-mapping audit findings (dead mappings, divergent lin
   #   2. Maintainer runs the structural audit after P0 work and sees the dead-file count for migrated features drop to zero — each previously-dead feature now either maps to its Rust port or is retired from the coverage set
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to remediate the coverage mappings the audit flagged (dead paths, blob/divergent links, unlinked scenarios)
@@ -46,4 +44,3 @@ Feature: Remediate coverage-mapping audit findings (dead mappings, divergent lin
     And the maintainer re-runs the structural audit
     Then zero file-missing defects remain for the migrated features
     And zero lines-past-EOF defects remain for the migrated features
-

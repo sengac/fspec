@@ -6,7 +6,7 @@
 use codelet_tools::facade::ThinkingLevel;
 
 /// PROV-041: Maximum number of consecutive thinking exhaustion retries per turn.
-/// After this many retries, thinking is disabled entirely for the turn.
+/// After this many prompt-only retries, recovery stops with the available partial response.
 /// Public for testing — tests must import the real constant, not hardcode the value.
 pub const MAX_THINKING_EXHAUSTION_RETRIES: u32 = 2;
 
@@ -63,12 +63,26 @@ pub fn is_thinking_exhaustion(
     output_tokens < threshold
 }
 
+pub(super) fn is_thinking_only_exhaustion(
+    stop_reason: Option<&str>,
+    captured_reasoning: &str,
+    visible_output: &str,
+    has_tool_progress: bool,
+) -> bool {
+    !has_tool_progress
+        && !captured_reasoning.trim().is_empty()
+        && visible_output.trim().is_empty()
+        && stop_reason.is_some_and(|reason| {
+            reason.eq_ignore_ascii_case("length") || reason.eq_ignore_ascii_case("max_tokens")
+        })
+}
+
 /// PROV-041: Build a recovery message for thinking exhaustion.
 ///
 /// Generates a message to inject into the conversation that:
 /// 1. Preserves any captured thinking content as context
 /// 2. Instructs the model to be more concise in reasoning
-/// 3. Indicates the thinking budget has been reduced
+/// 3. Explains that model settings and token limits are unchanged
 ///
 /// This function is public for testing.
 pub fn build_thinking_exhaustion_recovery_message(
@@ -77,9 +91,9 @@ pub fn build_thinking_exhaustion_recovery_message(
     captured_reasoning: Option<&str>,
 ) -> String {
     let mut msg = format!(
-        "Your previous response was interrupted because you spent too many tokens on reasoning \
-         ({reasoning_tokens} reasoning tokens, only {output_tokens} output tokens). \
-         Your thinking budget has been reduced for this retry.\n\n\
+        "Your previous response reached its token limit before producing enough answer content. \
+         Recorded usage counters: {reasoning_tokens} reasoning tokens, {output_tokens} output tokens. \
+         This is a prompt-only retry; model settings and token limits are unchanged.\n\n\
          IMPORTANT: Be more concise in your reasoning. Focus on producing useful output \
          rather than extensive internal deliberation."
     );
@@ -104,16 +118,16 @@ pub fn build_thinking_exhaustion_recovery_message(
 /// This function is public for testing.
 pub fn build_thinking_budget_exhausted_message(max_retries: u32) -> String {
     format!(
-        "Thinking exhaustion occurred {max_retries} times — retry budget exhausted. \
-         Thinking/reasoning has been disabled for this turn to produce a response. \
-         The model will respond without extended reasoning."
+        "Thinking exhaustion retry budget exhausted after {max_retries} retries. \
+         No further recovery requests will be sent; model settings and token limits are unchanged. \
+         Keeping the available partial response."
     )
 }
 
 /// PROV-041: Downgrade a ThinkingLevel by one step.
 ///
 /// Degradation path: High → Medium → Low → Off → Off
-/// Used for both per-turn retry degradation and session-level progressive degradation.
+/// Used for session-level progressive degradation on subsequent turns.
 ///
 /// This function is public for testing.
 pub fn downgrade_thinking_level(level: ThinkingLevel) -> ThinkingLevel {

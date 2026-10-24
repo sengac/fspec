@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "Lost acknowledgement cannot roll back a promoted revision",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct064_lost_ack.rs",
+          "lines": "9-53",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_commit.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct064_lost_ack.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/manifest_commit.rs"
+    ],
+    "totalLinesCovered": 75
+  }
+}

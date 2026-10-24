@@ -49,6 +49,14 @@ impl App {
         chunk: &StreamChunk,
     ) {
         match chunk {
+            StreamChunk::CompactionProgressUpdate { progress } => {
+                if let Some(progress) = progress {
+                    self.agent_view_store
+                        .set_compaction_progress(session_id.clone(), progress.clone());
+                } else {
+                    self.agent_view_store.clear_compaction_progress(session_id);
+                }
+            }
             StreamChunk::SessionStateChange { state } => {
                 let new_status = session_status_from_state(*state);
                 let old = self
@@ -173,22 +181,11 @@ impl App {
             // BUG-171: exec-stdin push chunks — the sessions layer emits
             // these from `set_exec_stdin_request` on slot transitions
             // (no status flip, so the Paused-chunk probe never fires).
-            // Route them into the existing exec-stdin reducer: request →
-            // `ExecStdinPromptFetched` (reuses the HITL-guarded reducer +
-            // the HITL > exec-stdin > pause > composer precedence chain),
-            // cleared → `ExecStdinDismissed` (slot-only clear; nothing is
-            // sent, cancelled, or killed). Re-dispatch via action_tx so
-            // the reducers run through the normal dispatch path.
             StreamChunk::ExecStdinRequest { request } => {
-                let _ = self.action_tx.send(Action::ExecStdinPromptFetched {
-                    agent_session: session_id.clone(),
-                    request: request.clone(),
-                });
+                self.handle_exec_stdin_prompt_fetched(session_id.clone(), request.clone());
             }
             StreamChunk::ExecStdinRequestCleared => {
-                let _ = self.action_tx.send(Action::ExecStdinDismissed {
-                    agent_session: session_id.clone(),
-                });
+                self.handle_exec_stdin_dismissed(session_id);
             }
             // All other variants: nothing additional to record here.
             _ => {}
@@ -206,22 +203,6 @@ impl App {
                 let _ = backend.interrupt(session).await;
             });
         }
-    }
-
-    /// Fold a streamed chunk into the per-session scrollback + token
-    /// state, drive the RPC-045 state updates, and surface the RPC-079
-    /// error dialog when a chunk is an error.
-    pub(crate) fn handle_chunk_received(
-        &mut self,
-        id: &codelet_rpc_types::SessionId,
-        chunk: &StreamChunk,
-    ) {
-        if let Some(ctx) = self.agent_view_store.session_context_mut_for(id) {
-            ctx.record_chunk(chunk);
-        }
-        self.agent_view_store.apply_chunk_to_token_state(id, chunk);
-        self.handle_stream_chunk_state_updates(id, chunk); // RPC-045
-        self.maybe_push_error_dialog_for_chunk(chunk); // RPC-079
     }
 
     pub(crate) fn handle_session_status_changed(

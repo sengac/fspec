@@ -23,8 +23,9 @@ use tracing::{Instrument, Level, enabled, info_span};
 
 use std::str::FromStr;
 
-pub mod streaming;
 pub(crate) mod nonstreaming;
+mod request_body;
+pub mod streaming;
 
 /// `gpt-5.1` completion model
 pub const GPT_5_1: &str = "gpt-5.1";
@@ -508,9 +509,8 @@ fn tool_result_to_messages(
             content: ToolResultContentValue::String(tool_text),
         };
 
-        let user_content = OneOrMany::many(image_parts).expect(
-            "image_parts is guaranteed non-empty because we entered the image branch",
-        );
+        let user_content = OneOrMany::many(image_parts)
+            .expect("image_parts is guaranteed non-empty because we entered the image branch");
         let user_msg = Message::User {
             content: user_content,
             name: None,
@@ -953,22 +953,9 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
         let usage = response
             .usage
             .as_ref()
-            .map(|usage| {
-                let mut u = completion::Usage {
-                    input_tokens: usage.prompt_tokens as u64,
-                    output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
-                    total_tokens: usage.total_tokens as u64,
-                    ..Default::default()
-                };
-                if let Some(details) = &usage.prompt_tokens_details {
-                    u.cache_read_input_tokens = Some(details.cached_tokens as u64);
-                }
-                if let Some(details) = &usage.completion_tokens_details {
-                    u.reasoning_tokens = Some(details.reasoning_tokens as u64);
-                }
-                u
-            })
-            .unwrap_or_default();
+            .ok_or_else(|| CompletionError::ResponseError("missing OpenAI usage".into()))?
+            .token_usage()
+            .ok_or_else(|| CompletionError::ResponseError("inconsistent OpenAI usage".into()))?;
 
         Ok(completion::CompletionResponse {
             choice,
@@ -1075,30 +1062,37 @@ impl Default for Usage {
 
 impl fmt::Display for Usage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let cached = self.prompt_tokens_details.as_ref().map(|d| d.cached_tokens).unwrap_or(0);
+        let cached = self
+            .prompt_tokens_details
+            .as_ref()
+            .map(|d| d.cached_tokens)
+            .unwrap_or(0);
         write!(
             f,
             "Prompt tokens: {} (cached: {}) Completion tokens: {} Total tokens: {}",
-            self.prompt_tokens, cached, self.output_tokens(), self.total_tokens
+            self.prompt_tokens,
+            cached,
+            self.output_tokens(),
+            self.total_tokens
         )
     }
 }
 
 impl GetTokenUsage for Usage {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-        usage.input_tokens = self.prompt_tokens as u64;
-        usage.output_tokens = self.output_tokens();
-        usage.total_tokens = self.total_tokens as u64;
-        // Z.AI/OpenAI cache tokens
-        if let Some(details) = &self.prompt_tokens_details {
-            usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
-        }
-        // Reasoning tokens
-        if let Some(details) = &self.completion_tokens_details {
-            usage.reasoning_tokens = Some(details.reasoning_tokens as u64);
-        }
-        Some(usage)
+        crate::completion::Usage::from_inclusive(
+            self.prompt_tokens as u64,
+            self.completion_tokens
+                .map(|tokens| tokens as u64)
+                .or_else(|| (self.total_tokens as u64).checked_sub(self.prompt_tokens as u64))?,
+            self.total_tokens as u64,
+            self.prompt_tokens_details
+                .as_ref()
+                .map(|details| details.cached_tokens as u64),
+            self.completion_tokens_details
+                .as_ref()
+                .map(|details| details.reasoning_tokens as u64),
+        )
     }
 }
 
@@ -1187,6 +1181,8 @@ pub struct CompletionRequest {
     tool_choice: Option<ToolChoice>,
     #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_completion_tokens: Option<u64>,
     #[serde(flatten)]
     additional_params: Option<serde_json::Value>,
 }
@@ -1212,6 +1208,7 @@ impl TryFrom<OpenAIRequestParams> for CompletionRequest {
     type Error = CompletionError;
 
     fn try_from(params: OpenAIRequestParams) -> Result<Self, Self::Error> {
+        params.request.validate_tool_catalog_overrides()?;
         let OpenAIRequestParams {
             model,
             request: req,
@@ -1228,6 +1225,7 @@ impl TryFrom<OpenAIRequestParams> for CompletionRequest {
             chat_history,
             tools,
             temperature,
+            max_tokens,
             additional_params,
             tool_choice,
             ..
@@ -1272,6 +1270,7 @@ impl TryFrom<OpenAIRequestParams> for CompletionRequest {
             tools,
             tool_choice,
             temperature,
+            max_completion_tokens: max_tokens,
             additional_params,
         };
 
@@ -1350,6 +1349,10 @@ where
     type StreamingResponse = StreamingCompletionResponse;
 
     type Client = super::CompletionsClient<T>;
+
+    fn prepare_request(&self, request: CoreCompletionRequest) -> Result<Vec<u8>, CompletionError> {
+        self.selected_request_bytes(&self.selected_request_json(request)?)
+    }
 
     fn make(client: &Self::Client, model: impl Into<String>) -> Self {
         Self::new(client.clone(), model)
@@ -1476,9 +1479,7 @@ mod prov_081_tests {
             &self,
             _req: http::Request<T>,
         ) -> impl std::future::Future<
-            Output = crate::http_client::Result<
-                http::Response<crate::http_client::LazyBody<U>>,
-            >,
+            Output = crate::http_client::Result<http::Response<crate::http_client::LazyBody<U>>>,
         > + crate::wasm_compat::WasmCompatSend
         + 'static
         where
@@ -1496,9 +1497,7 @@ mod prov_081_tests {
             &self,
             _req: http::Request<crate::http_client::MultipartForm>,
         ) -> impl std::future::Future<
-            Output = crate::http_client::Result<
-                http::Response<crate::http_client::LazyBody<U>>,
-            >,
+            Output = crate::http_client::Result<http::Response<crate::http_client::LazyBody<U>>>,
         > + crate::wasm_compat::WasmCompatSend
         + 'static
         where
@@ -1540,8 +1539,7 @@ mod prov_081_tests {
     /// every emitted `StreamedAssistantContent` variant for assertions.
     async fn collect_streamed_contents(
         sse: &'static str,
-    ) -> Vec<core_streaming::StreamedAssistantContent<streaming::StreamingCompletionResponse>>
-    {
+    ) -> Vec<core_streaming::StreamedAssistantContent<streaming::StreamingCompletionResponse>> {
         use futures::StreamExt;
 
         let client = MockSseClient {
@@ -1561,8 +1559,7 @@ mod prov_081_tests {
         let mut out = Vec::new();
         while let Some(chunk) = stream.next().await {
             let value = chunk.expect("each chunk should be Ok");
-            let is_final =
-                matches!(value, core_streaming::StreamedAssistantContent::Final(_));
+            let is_final = matches!(value, core_streaming::StreamedAssistantContent::Final(_));
             out.push(value);
             if is_final {
                 break;
@@ -1655,8 +1652,9 @@ mod prov_081_tests {
             serde_json::from_value(body).expect("deserialize raw provider response");
 
         // @step When the provider decodes the response
-        let response: completion::CompletionResponse<CompletionResponse> =
-            raw.try_into().expect("convert into caller-visible response");
+        let response: completion::CompletionResponse<CompletionResponse> = raw
+            .try_into()
+            .expect("convert into caller-visible response");
 
         // @step Then the caller-visible CompletionResponse exposes reasoning text "analysis"
         let reasoning = extract_reasoning_texts(&response);
@@ -1702,8 +1700,9 @@ mod prov_081_tests {
             serde_json::from_value(body).expect("deserialize raw provider response");
 
         // @step When the provider decodes the response
-        let response: completion::CompletionResponse<CompletionResponse> =
-            raw.try_into().expect("convert into caller-visible response");
+        let response: completion::CompletionResponse<CompletionResponse> = raw
+            .try_into()
+            .expect("convert into caller-visible response");
 
         // @step Then the caller-visible CompletionResponse exposes reasoning text "analysis"
         let reasoning = extract_reasoning_texts(&response);
@@ -1743,8 +1742,9 @@ mod prov_081_tests {
         // @step When the provider decodes the response
         let raw: CompletionResponse = serde_json::from_value(body)
             .expect("plain response must still deserialize with no reasoning field");
-        let response: completion::CompletionResponse<CompletionResponse> =
-            raw.try_into().expect("convert into caller-visible response");
+        let response: completion::CompletionResponse<CompletionResponse> = raw
+            .try_into()
+            .expect("convert into caller-visible response");
 
         // @step Then the caller-visible CompletionResponse exposes content text "answer"
         let content = extract_text_contents(&response);
@@ -1806,9 +1806,9 @@ mod prov_081_tests {
         let reasoning_texts: Vec<String> = events
             .iter()
             .filter_map(|e| match e {
-                core_streaming::StreamedAssistantContent::ReasoningDelta {
-                    reasoning, ..
-                } => Some(reasoning.clone()),
+                core_streaming::StreamedAssistantContent::ReasoningDelta { reasoning, .. } => {
+                    Some(reasoning.clone())
+                }
                 _ => None,
             })
             .collect();
@@ -1848,9 +1848,9 @@ mod prov_081_tests {
         let reasoning_texts: Vec<String> = events
             .iter()
             .filter_map(|e| match e {
-                core_streaming::StreamedAssistantContent::ReasoningDelta {
-                    reasoning, ..
-                } => Some(reasoning.clone()),
+                core_streaming::StreamedAssistantContent::ReasoningDelta { reasoning, .. } => {
+                    Some(reasoning.clone())
+                }
                 _ => None,
             })
             .collect();
@@ -1887,9 +1887,9 @@ mod prov_081_tests {
         let combined: String = events
             .iter()
             .filter_map(|e| match e {
-                core_streaming::StreamedAssistantContent::ReasoningDelta {
-                    reasoning, ..
-                } => Some(reasoning.clone()),
+                core_streaming::StreamedAssistantContent::ReasoningDelta { reasoning, .. } => {
+                    Some(reasoning.clone())
+                }
                 _ => None,
             })
             .collect::<Vec<_>>()
@@ -1941,10 +1941,7 @@ mod prov_081_tests {
 
         // @step And the caller does not receive any ReasoningDelta
         for e in &events {
-            if let core_streaming::StreamedAssistantContent::ReasoningDelta {
-                reasoning, ..
-            } = e
-            {
+            if let core_streaming::StreamedAssistantContent::ReasoningDelta { reasoning, .. } = e {
                 panic!("unexpected ReasoningDelta: {:?}", reasoning);
             }
         }
@@ -2228,7 +2225,10 @@ mod prov_084_tests {
                 assert_eq!(tool_call_id, "call_abc");
                 // @step And the first element's content is a non-empty placeholder string
                 let text = content.as_text();
-                assert!(!text.is_empty(), "tool content placeholder must be non-empty");
+                assert!(
+                    !text.is_empty(),
+                    "tool content placeholder must be non-empty"
+                );
             }
             other => panic!("expected Message::ToolResult, got {other:?}"),
         }
@@ -2297,23 +2297,14 @@ mod prov_084_tests {
     #[test]
     fn prov_084_three_images_yield_tool_plus_user_with_three_parts() {
         // @step Given a rig user message whose content is a `ToolResult` with id "call_pdf" and three `ToolResultContent::Image` parts in page order (page-1, page-2, page-3)
-        let page1 = RigToolResultContent::image_base64(
-            "UEFHRS0xAAAA",
-            Some(ImageMediaType::PNG),
-            None,
-        );
-        let page2 = RigToolResultContent::image_base64(
-            "UEFHRS0yAAAA",
-            Some(ImageMediaType::PNG),
-            None,
-        );
-        let page3 = RigToolResultContent::image_base64(
-            "UEFHRS0zAAAA",
-            Some(ImageMediaType::PNG),
-            None,
-        );
-        let content = OneOrMany::many(vec![page1, page2, page3])
-            .expect("three-part tool result content");
+        let page1 =
+            RigToolResultContent::image_base64("UEFHRS0xAAAA", Some(ImageMediaType::PNG), None);
+        let page2 =
+            RigToolResultContent::image_base64("UEFHRS0yAAAA", Some(ImageMediaType::PNG), None);
+        let page3 =
+            RigToolResultContent::image_base64("UEFHRS0zAAAA", Some(ImageMediaType::PNG), None);
+        let content =
+            OneOrMany::many(vec![page1, page2, page3]).expect("three-part tool result content");
         let tr = RigToolResult {
             id: "call_pdf".into(),
             call_id: None,
@@ -2341,9 +2332,7 @@ mod prov_084_tests {
         };
 
         // @step And the second element contains exactly three `image_url` content parts in page order
-        let parts = user_json["content"]
-            .as_array()
-            .expect("user content array");
+        let parts = user_json["content"].as_array().expect("user content array");
         assert_eq!(parts.len(), 3, "expected three image parts");
         for part in parts {
             assert_eq!(part["type"], "image_url");
@@ -2352,9 +2341,18 @@ mod prov_084_tests {
         let url0 = parts[0]["image_url"]["url"].as_str().expect("url0");
         let url1 = parts[1]["image_url"]["url"].as_str().expect("url1");
         let url2 = parts[2]["image_url"]["url"].as_str().expect("url2");
-        assert!(url0.contains("UEFHRS0xAAAA"), "page-1 expected first: {url0}");
-        assert!(url1.contains("UEFHRS0yAAAA"), "page-2 expected second: {url1}");
-        assert!(url2.contains("UEFHRS0zAAAA"), "page-3 expected third: {url2}");
+        assert!(
+            url0.contains("UEFHRS0xAAAA"),
+            "page-1 expected first: {url0}"
+        );
+        assert!(
+            url1.contains("UEFHRS0yAAAA"),
+            "page-2 expected second: {url1}"
+        );
+        assert!(
+            url2.contains("UEFHRS0zAAAA"),
+            "page-3 expected third: {url2}"
+        );
     }
 
     #[test]
@@ -2398,9 +2396,7 @@ mod prov_084_tests {
         };
 
         // @step And the second element contains exactly one `image_url` content part
-        let parts = user_json["content"]
-            .as_array()
-            .expect("user content array");
+        let parts = user_json["content"].as_array().expect("user content array");
         assert_eq!(parts.len(), 1);
         assert_eq!(parts[0]["type"], "image_url");
 

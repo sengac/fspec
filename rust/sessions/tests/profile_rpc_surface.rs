@@ -159,31 +159,41 @@ fn scenario_save_writes_optional_fields() {
     assert_eq!(profile["compactionThreshold"]["value"], 80);
 }
 
-// Scenario: Saving a profile for a non-openai provider is rejected
+// Scenario: Saving a profile for a non-openai provider preserves other providers
 #[test]
 #[serial]
-fn scenario_save_non_openai_rejected() {
-    let tmp = TempDir::new().unwrap();
+fn scenario_save_non_openai_preserves_other_providers() -> Result<(), Box<dyn std::error::Error>> {
+    let tmp = codelet_test_helpers::setup_temp_directory()?;
     // @step Given a config with an openai profile "work-vllm"
-    let _env = seed_config(
-        tmp.path(),
-        json!({ "providers": { "openai": { "profiles": {
-            "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" }
-        } } } }),
-    );
-    let before = std::fs::read_to_string(config_path(tmp.path())).unwrap();
+    let _env = point_env(tmp.path());
+    let original = json!({ "providers": { "openai": { "profiles": {
+        "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" }
+    } } } });
+    std::fs::write(config_path(tmp.path()), serde_json::to_vec(&original)?)?;
     let handle = make_handle();
 
     // @step When I save a profile for provider "anthropic"
     let result = handle.save_profile("anthropic", "work-vllm", &basic_def("http://x", "k"));
 
-    // @step Then the call returns Err mentioning OpenAI
-    assert!(result.is_err(), "non-openai save should be Err: {result:?}");
-    assert!(result.unwrap_err().contains("OpenAI"));
+    // @step Then the call returns Ok
+    assert!(result.is_ok(), "non-openai save should succeed: {result:?}");
 
-    // @step And the configuration is left byte-identical
-    let after = std::fs::read_to_string(config_path(tmp.path())).unwrap();
-    assert_eq!(before, after);
+    // @step And the anthropic profile is saved and the existing openai profile is unchanged
+    let after: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(config_path(tmp.path()))?)?;
+    assert_eq!(
+        after["providers"]["openai"],
+        original["providers"]["openai"]
+    );
+    assert_eq!(
+        after["providers"]["anthropic"]["profiles"]["work-vllm"]["baseUrl"],
+        "http://x"
+    );
+    assert_eq!(
+        after["providers"]["anthropic"]["profiles"]["work-vllm"]["apiKey"],
+        "k"
+    );
+    Ok(())
 }
 
 // Scenario: Deleting a profile removes only the named profile

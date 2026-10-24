@@ -115,15 +115,18 @@ impl std::fmt::Display for Usage {
 
 impl GetTokenUsage for Usage {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-
-        usage.input_tokens = self.input_tokens
-            + self.cache_creation_input_tokens.unwrap_or_default()
-            + self.cache_read_input_tokens.unwrap_or_default();
-        usage.output_tokens = self.output_tokens;
-        usage.total_tokens = usage.input_tokens + usage.output_tokens;
-
-        Some(usage)
+        Some(crate::completion::Usage {
+            input_tokens: self.input_tokens,
+            output_tokens: self.output_tokens,
+            total_tokens: self
+                .input_tokens
+                .checked_add(self.output_tokens)?
+                .checked_add(self.cache_read_input_tokens.unwrap_or(0))?
+                .checked_add(self.cache_creation_input_tokens.unwrap_or(0))?,
+            cache_read_input_tokens: self.cache_read_input_tokens,
+            cache_creation_input_tokens: self.cache_creation_input_tokens,
+            reasoning_tokens: None,
+        })
     }
 }
 
@@ -168,14 +171,9 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
             )
         })?;
 
-        let usage = completion::Usage {
-            input_tokens: response.usage.input_tokens,
-            output_tokens: response.usage.output_tokens,
-            total_tokens: response.usage.input_tokens + response.usage.output_tokens,
-            cache_read_input_tokens: response.usage.cache_read_input_tokens,
-            cache_creation_input_tokens: response.usage.cache_creation_input_tokens,
-            reasoning_tokens: None,
-        };
+        let usage = response.usage.token_usage().ok_or_else(|| {
+            CompletionError::ResponseError("invalid Anthropic usage: occupancy overflow".into())
+        })?;
 
         Ok(completion::CompletionResponse {
             choice,
@@ -238,9 +236,7 @@ pub enum Content {
     },
     /// Server-side compaction block (Opus 4.6+)
     /// Contains a summary of previous conversation context
-    Compaction {
-        content: String,
-    },
+    Compaction { content: String },
     /// Catch-all for unknown content types to prevent deserialization failures
     #[serde(other)]
     Unknown,
@@ -541,6 +537,14 @@ impl TryFrom<message::Message> for Message {
                         })
                     }
                     message::UserContent::Document(message::Document {
+                        data: DocumentSourceKind::String(text),
+                        media_type: Some(DocumentMediaType::TXT),
+                        ..
+                    }) => Ok(Content::Text {
+                        text,
+                        cache_control: None,
+                    }),
+                    message::UserContent::Document(message::Document {
                         data, media_type, ..
                     }) => {
                         let media_type = media_type.ok_or(MessageError::ConversionError(
@@ -614,11 +618,12 @@ impl From<ToolResultContent> for message::ToolResultContent {
         match content {
             ToolResultContent::Text { text } => message::ToolResultContent::text(text),
             ToolResultContent::Image {
-                source: ImageSource {
-                    data,
-                    media_type: format,
-                    ..
-                },
+                source:
+                    ImageSource {
+                        data,
+                        media_type: format,
+                        ..
+                    },
             } => message::ToolResultContent::image_base64(data, Some(format.into()), None),
         }
     }
@@ -686,6 +691,7 @@ pub struct CompletionModel<T = reqwest::Client> {
     pub default_max_tokens: Option<u64>,
     /// Enable automatic prompt caching (adds cache_control breakpoints to system prompt and messages)
     pub prompt_caching: bool,
+    pub(crate) oauth_user_id: Option<String>,
 }
 
 impl<T> CompletionModel<T>
@@ -697,6 +703,10 @@ where
         let default_max_tokens = calculate_max_tokens(&model);
 
         Self {
+            oauth_user_id: client
+                .ext()
+                .oauth_mode
+                .then(super::metadata::get_oauth_user_id),
             client,
             model,
             default_max_tokens,
@@ -706,6 +716,10 @@ where
 
     pub fn with_model(client: Client<T>, model: &str) -> Self {
         Self {
+            oauth_user_id: client
+                .ext()
+                .oauth_mode
+                .then(super::metadata::get_oauth_user_id),
             client,
             model: model.to_string(),
             default_max_tokens: Some(calculate_max_tokens_custom(model)),
@@ -873,6 +887,7 @@ impl TryFrom<AnthropicRequestParams<'_>> for AnthropicCompletionRequest {
     type Error = CompletionError;
 
     fn try_from(params: AnthropicRequestParams<'_>) -> Result<Self, Self::Error> {
+        params.request.validate_tool_catalog_overrides()?;
         let AnthropicRequestParams {
             model,
             request: req,
@@ -966,6 +981,13 @@ where
     type Response = CompletionResponse;
     type StreamingResponse = StreamingCompletionResponse;
     type Client = Client<T>;
+
+    fn prepare_request(
+        &self,
+        request: completion::CompletionRequest,
+    ) -> Result<Vec<u8>, CompletionError> {
+        self.streaming_request_bytes(request)
+    }
 
     fn make(client: &Self::Client, model: impl Into<String>) -> Self {
         Self::new(client.clone(), model.into())

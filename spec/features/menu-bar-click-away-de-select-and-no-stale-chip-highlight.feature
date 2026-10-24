@@ -9,7 +9,6 @@
 @keyboard-navigation
 @BUG-197
 Feature: Menu bar: click-away must de-select a focused item/chip (all 3 surfaces) and stale ring focus leaves chips highlighted after view flips
-
   """
   Three surfaces, three ring-focus holders: Board = BoardStore.menu_focus (store/board_menu.rs; MenuDismissBar clears it); Agent = AgentView.menu_state (plain field; menu_state.clear_focus in-view); Mux = MultiplexLayout.menu_focus (menu_dismiss arm). All three paint through the shared components/menu_bar painter; the chip highlight decision is the single focused_cell() in components/menu_bar/paint.rs (ring focus OR MenuChip.active — MENU-010: the per-chip flag is set by the SURFACE's snapshot builder, never on the board).
   """
@@ -34,7 +33,6 @@ Feature: Menu bar: click-away must de-select a focused item/chip (all 3 surfaces
   #   7. Mux: ring selector on a chip (highlight visible). Left click empty bar-row space (no item, no cell hit) → the chip highlight clears; the focused pane keeps its focus (the click does not land on a pane).
   #
   # ========================================
-
   Background: User Story
     As a TUI user driving the menu bar with mouse and arrow keys
     I want to click away from a focused bar item/chip to de-select it, and never see a chip highlighted unless my selector is on it or it is my active session

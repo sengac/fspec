@@ -6,18 +6,17 @@
 @critical
 @BUG-208
 Feature: Codex live agent path with all production tools
-
   """
   Architecture notes:
   - Live regression guard for BUG-208: exercises the FULL production agent path
-    (CodexProvider::create_rig_agent with all Codex-native tool facades +
-    stream_prompt(...).multi_turn()), exactly what RigAgent::prompt_streaming_with_history
-    does in the TUI.
+  (CodexProvider::create_rig_agent with all Codex-native tool facades +
+  stream_prompt(...).multi_turn()), exactly what RigAgent::prompt_streaming_with_history
+  does in the TUI.
   - Uses real Codex OAuth credentials from ~/.codex/auth.json; the test skips
-    (returns early) when no credentials exist on the machine.
+  (returns early) when no credentials exist on the machine.
   - The BUG-208 fix lives in the patched rig-core: schema sanitizer + strict:false
-    in ResponsesToolDefinition::from (providers/openai/responses_api/mod.rs), and
-    SSE error-event surfacing in responses_api/streaming.rs.
+  in ResponsesToolDefinition::from (providers/openai/responses_api/mod.rs), and
+  SSE error-event surfacing in responses_api/streaming.rs.
   """
 
   Background: User Story

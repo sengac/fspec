@@ -104,6 +104,7 @@ fn test_token_counters_reset_after_clear() {
         cumulative_billed_input: 5000,
         cumulative_billed_output: 2000,
         reasoning_tokens: 0,
+        input_accounting: Default::default(),
     };
     assert_eq!(token_tracker.input_tokens, 5000);
 

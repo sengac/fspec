@@ -11,9 +11,9 @@ Feature: BUG-204 — agent-bar 'Close Agent' button always shows the exit confir
   bug199-agent-bar-zone-c-new-agent-close-agent-esc-semantics): the agent bar's
   'Close Agent' button was wired to the EXACT AgentEscPressed cascade, so its
   behavior was state-dependent:
-    - running session  → interrupt the run (no dialog, no teardown)
-    - non-empty draft  → clear the input buffer (no dialog, no teardown)
-    - idle, empty input → push the 'Exit Session?' dialog
+  - running session  → interrupt the run (no dialog, no teardown)
+  - non-empty draft  → clear the input buffer (no dialog, no teardown)
+  - idle, empty input → push the 'Exit Session?' dialog
   This made the button's label ("Close Agent") misleading: the user expected
   a close-action confirmation but instead got the bare Esc semantics.
 
@@ -28,12 +28,12 @@ Feature: BUG-204 — agent-bar 'Close Agent' button always shows the exit confir
   dialog) still applies to Esc; only the button's semantics change.
 
   Supersedes BUG-199 R2 scenarios:
-    - "Close Agent on a running session interrupts the run like the first Esc"
-      → "Close Agent on a running session shows the exit confirmation dialog (busy variant)"
-    - "Close Agent with a non-empty input clears the draft like Esc level 6"
-      → "Close Agent with a non-empty input shows the exit confirmation dialog (draft preserved)"
-    - "Close Agent on an idle session shows the same exit confirmation as Esc"
-      → unchanged (the dialog appears in all three states now)
+  - "Close Agent on a running session interrupts the run like the first Esc"
+  → "Close Agent on a running session shows the exit confirmation dialog (busy variant)"
+  - "Close Agent with a non-empty input clears the draft like Esc level 6"
+  → "Close Agent with a non-empty input shows the exit confirmation dialog (draft preserved)"
+  - "Close Agent on an idle session shows the same exit confirmation as Esc"
+  → unchanged (the dialog appears in all three states now)
   """
 
   # ========================================
@@ -84,7 +84,6 @@ Feature: BUG-204 — agent-bar 'Close Agent' button always shows the exit confir
   #      picking 'Cancel' closes the dialog and stays on the Agent view.
   #
   # ========================================
-
   Background: User Story
     As a TUI user in the Agent view
     I want to close the session from the bar's 'Close Agent' button
@@ -93,7 +92,6 @@ Feature: BUG-204 — agent-bar 'Close Agent' button always shows the exit confir
   # ========================================
   # SCENARIOS
   # ========================================
-
   @mouse-events
   @regression
   Scenario: 'Close Agent' on a running session shows the exit confirmation dialog (busy variant)

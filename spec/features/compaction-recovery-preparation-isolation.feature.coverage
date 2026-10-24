@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "Recovery preparation preserves the authoritative conversation",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct079_recovery_isolation.rs",
+          "lines": "17-67",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/recovery_view.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recovery preparation does not persist an empty Codex checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct079_recovery_isolation.rs",
+          "lines": "69-106",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/session/recovery_view.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                33,
+                34,
+                35,
+                36,
+                37,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct079_recovery_isolation.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/session/recovery_view.rs"
+    ],
+    "totalLinesCovered": 148
+  }
+}

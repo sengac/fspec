@@ -1,0 +1,244 @@
+{
+  "scenarios": [
+    {
+      "name": "Serialized schemas and retained suffix participate in the same budget",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_serialized_admission.rs",
+          "lines": "79-104",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/request_admission.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown media occupancy cannot certify request fit",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_serialized_admission.rs",
+          "lines": "107-117",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/request_admission.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful estimated admission preserves its request and provenance",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_serialized_admission.rs",
+          "lines": "120-152",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/request_admission.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                84,
+                85,
+                86,
+                88,
+                89,
+                90,
+                92,
+                93,
+                94,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unusable limits and unrepresentable occupancy cannot authorize admission",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_serialized_admission.rs",
+          "lines": "14-76",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/request_admission.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct071_serialized_admission.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/request_admission.rs"
+    ],
+    "totalLinesCovered": 297
+  }
+}

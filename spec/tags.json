@@ -1298,6 +1298,10 @@
           "description": "Work unit BUG-206 — session auto-restore must only restore sessions LIVE in the daemon's in-memory session map: liveness-gated candidate verification via the new list_live_sessions RPC, close invalidates the daemon active-session pointer, and NOTHING restorable means land on the board (no list_sessions disk scan, no resume-from-disk, no create_session fallback). Supersedes TUI-113's disk-aware fallback chain."
         },
         {
+          "name": "@bug-236",
+          "description": "BUG-236 token accounting lifecycle provenance and truthful compaction estimates"
+        },
+        {
           "name": "@bug120",
           "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
@@ -1340,6 +1344,10 @@
         {
           "name": "@cmpct-049",
           "description": "Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO)"
+        },
+        {
+          "name": "@cmpct-076",
+          "description": "CMPCT-076: bounded typed Codex HTTP and SSE rejection diagnostics"
         },
         {
           "name": "@code-review",
@@ -3258,7 +3266,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-10-15T10:46:15.916Z",
+    "lastUpdated": "2026-10-22T05:35:03.706Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

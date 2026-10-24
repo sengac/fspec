@@ -7,7 +7,6 @@
 @rust
 @WT-008
 Feature: /merge-worktree does not commit anything and the 'FastForward' strategy is silently ignored
-
   """
   merge_session (codelet-git) gains a strategy gate: non-FastForward strategies return Err before any copy. On success, after apply_session_changes, a commit is created in the MAIN repo by building a tree from the post-copy worktree snapshot (snapshot-aware: blobs + exec bits, symlink Link entries, gitlink Commit entries — gitignored files excluded), parented on HEAD, authored from repo user.name/user.email (fallback fspec/fspec@local), message 'fspec: merge session <id>', and the SHA is returned in MergeResult.merge_commit which surfaces through MergeOutcome.merge_commit. A merge with no tracked changes commits nothing (merge_commit None).
   """
@@ -29,7 +28,6 @@ Feature: /merge-worktree does not commit anything and the 'FastForward' strategy
   #   4. Merge a session in a repo with user.name/user.email set in git config → the merge commit is authored by that identity; in a repo with no identity config the commit still succeeds with a fallback fspec identity
   #
   # ========================================
-
   Background: User Story
     As a developer using isolated sessions
     I want to merge an isolated session back into main with /merge-worktree
@@ -40,21 +38,17 @@ Feature: /merge-worktree does not commit anything and the 'FastForward' strategy
     When the session is merged with the default FastForward strategy
     Then the merge reports success with a real merge commit SHA and the main repo's HEAD points at a new commit whose message is 'fspec: merge session <id>' and whose tree contains the session's change, with the main working tree clean
 
-
   Scenario: Requesting an unsupported merge strategy is rejected before anything is applied
     Given a temp git repo with one committed file, and an isolated session with a committed change in its worktree
     When the session is merged requesting the Squash strategy
     Then the merge returns an explicit unsupported-strategy error and nothing is committed, copied, or merged (the main repo HEAD is unchanged and the session worktree is intact)
-
 
   Scenario: Merging a session with only ignored changes creates no commit
     Given a temp git repo with one committed file, and an isolated session whose worktree only contains gitignored build artifacts (no tracked changes)
     When the session is merged with the default FastForward strategy
     Then the merge reports nothing-to-merge (NoChanges), creates no commit (the main repo HEAD is unchanged), and surfaces no merge commit SHA
 
-
   Scenario: The merge commit uses the repo's configured identity
     Given a temp git repo with user.name and user.email set in its git config, and an isolated session with a committed change in its worktree
     When the session is merged with the default FastForward strategy
     Then the merge commit is authored by the configured user.name/user.email
-

@@ -95,4 +95,3 @@ Feature: Board search dialog is a true modal that blocks board keyboard shortcut
     When I press Left and Right
     Then the dialog consumes the key
     And the board column focus is unchanged
-

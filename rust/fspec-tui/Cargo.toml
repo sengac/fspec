@@ -83,6 +83,8 @@ dirs.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
+keyring.workspace = true
+sha2.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 tokio-test.workspace = true
@@ -119,9 +121,12 @@ codelet-sessions.workspace = true
 # tests use #[serial] to serialise env-var manipulation across the
 # integration suite.
 serial_test.workspace = true
+http = "1"
+reqwest.workspace = true
+rig-core.workspace = true
 # RPC-107: catalog unit tests reach into the static CANONICAL_PROVIDERS
 # slice exposed by codelet-providers.
-codelet-providers.workspace = true
+codelet-providers = { workspace = true, features = ["test-support"] }
 # RPC-420: the producer-truth display-contract test feeds the REAL
 # producer formula (interactive_helpers::compression_ratio * 100.0)
 # into the CompactionComplete display pipeline. Already in the dep

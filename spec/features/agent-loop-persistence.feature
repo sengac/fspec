@@ -20,8 +20,8 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
   (lifted by RPC-072 Phase A as a verbatim NAPI-free copy). This card
   proves they are invoked from the agent loop body and from
   BackgroundOutput at the canonical call sites, that the on-disk envelope
-  shape matches the NAPI canonical format, and that persistence failures
-  log via tracing without aborting the stream.
+  shape preserves user and assistant payloads. Retained ordered recovery and
+  visible fail-closed inference are specified in recoverable-conversation-persistence.feature.
 
   Source-shape scenarios pin the call-site contract; behavioural
   scenarios drive the helpers directly against a hermetic temp data

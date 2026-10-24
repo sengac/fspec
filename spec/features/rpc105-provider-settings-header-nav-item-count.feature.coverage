@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "121-141",
+          "lines": "131-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -29,7 +29,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "143-160",
+          "lines": "153-168",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -53,7 +53,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "162-178",
+          "lines": "174-186",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -102,7 +102,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "180-191",
+          "lines": "192-205",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -151,7 +151,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "193-212",
+          "lines": "211-223",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -175,7 +175,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "214-275",
+          "lines": "229-296",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -199,7 +199,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "277-296",
+          "lines": "302-322",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -222,7 +222,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "298-322",
+          "lines": "328-346",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -249,7 +249,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_header_count_rpc105.rs",
-          "lines": "324-347",
+          "lines": "352-368",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -280,6 +280,6 @@
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 343
+    "totalLinesCovered": 322
   }
 }

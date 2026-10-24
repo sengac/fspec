@@ -1,0 +1,45 @@
+{
+  "scenarios": [
+    {
+      "name": "First resume of an active session preserves runtime sources",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug244/live_resume.rs",
+          "lines": "10-118",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/session_manager.rs",
+              "lines": [
+                1018
+              ]
+            },
+            {
+              "file": "rust/sessions/src/handle_impl.rs",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug244/live_resume.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/session_manager.rs",
+      "rust/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 116
+  }
+}

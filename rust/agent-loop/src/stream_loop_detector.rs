@@ -19,8 +19,8 @@
 //!    in prose, so only sustained high-count repetition is a loop.
 //! 2. **Diversity collapse** — unique-word ratio < 0.28 (window ≥ 40 words).
 //!    Catches degenerate single-token spam.
-//! 3. **Long verbatim suffix** — the last ≥ 16 words appear verbatim earlier
-//!    in the window. Catches paragraph-level loops.
+//! 3. **Long verbatim suffix** — the last ≥ 16 words have at least three
+//!    non-overlapping earlier copies in the window. Catches paragraph loops.
 //! 4. **Drift-tolerant periodicity** — the last 24 words match ≥ 85% of the
 //!    24 words immediately before them by word-pair ratio. Catches loops
 //!    that drift 1–2 words per cycle (exact-match detectors miss these).
@@ -91,8 +91,8 @@ pub struct LoopDetectorConfig {
     pub min_long_match: usize,
     /// Long verbatim suffix must appear at least this many times in the
     /// window before the signal fires (the trailing copy is not counted).
-    /// Tolerance: models legitimately re-emit the same paragraph up to
-    /// ~5 times, so the signal fires on the 6th copy.
+    /// Earlier copies must not overlap each other or the trailing copy.
+    /// The default of three fires on the fourth copy.
     pub min_long_match_repeats: usize,
     /// Minimum words before any signal is evaluated (minimum-evidence
     /// guard).
@@ -133,6 +133,8 @@ impl Default for LoopDetectorConfig {
 pub struct StreamLoopDetector {
     cfg: LoopDetectorConfig,
     words: VecDeque<String>,
+    partial_word: String,
+    discarding_word: bool,
     latched: Option<LoopSignal>,
 }
 
@@ -147,17 +149,40 @@ impl StreamLoopDetector {
         Self {
             cfg,
             words: VecDeque::new(),
+            partial_word: String::new(),
+            discarding_word: false,
             latched: None,
         }
     }
 
-    /// Feed one streaming delta. Returns the loop signal if the detector
-    /// has fired (either now or earlier — the detector latches).
+    /// Feed one streaming delta, completing words only at whitespace.
+    /// Words exceeding 4096 bytes break the evidence window and are skipped
+    /// to bound carry storage. Returns the current or latched loop signal.
     pub fn feed(&mut self, delta: &str) -> Option<LoopSignal> {
         if self.latched.is_some() {
             return self.latched.clone();
         }
-        for word in delta.split_whitespace() {
+        for character in delta.chars() {
+            if !character.is_whitespace() {
+                if !self.discarding_word {
+                    if self.partial_word.len() + character.len_utf8() <= 4096 {
+                        self.partial_word.push(character);
+                    } else {
+                        self.partial_word.clear();
+                        self.words.clear();
+                        self.discarding_word = true;
+                    }
+                }
+                continue;
+            }
+            if self.discarding_word {
+                self.discarding_word = false;
+                continue;
+            }
+            if self.partial_word.is_empty() {
+                continue;
+            }
+            let word = std::mem::take(&mut self.partial_word);
             self.words.push_back(word.to_lowercase());
             if self.words.len() > self.cfg.window {
                 self.words.pop_front();
@@ -177,6 +202,8 @@ impl StreamLoopDetector {
     /// Clear all detector state for a new turn.
     pub fn reset(&mut self) {
         self.words.clear();
+        self.partial_word.clear();
+        self.discarding_word = false;
         self.latched = None;
     }
 
@@ -217,11 +244,19 @@ impl StreamLoopDetector {
 
         // 3. Long verbatim suffix.
         let m = self.cfg.min_long_match;
-        if window.len() >= 2 * m {
+        if m > 0 && window.len() / m >= 2 {
             let suffix = &window[window.len() - m..];
-            for i in 0..=window.len() - 2 * m {
-                if &window[i..i + m] == suffix {
-                    return Some(LoopSignal::LongSuffixMatch { m });
+            let mut start = 0;
+            let mut earlier_copies = 0;
+            while start <= window.len() - 2 * m {
+                if &window[start..start + m] == suffix {
+                    earlier_copies += 1;
+                    if earlier_copies >= self.cfg.min_long_match_repeats {
+                        return Some(LoopSignal::LongSuffixMatch { m });
+                    }
+                    start += m;
+                } else {
+                    start += 1;
                 }
             }
         }
@@ -272,6 +307,7 @@ pub enum LoopEscalationOutcome {
 ///
 /// `elapsed_secs` is the caller-supplied seconds since the previous
 /// trigger (tests pass explicit values; production uses wall-clock).
+#[derive(Clone)]
 pub struct LoopEscalationPolicy {
     cooldown: Duration,
     last_trigger: Option<f64>,
@@ -395,25 +431,28 @@ mod tests {
         // (10 repeats of the 3-word tail "yes yes yes").
         let mut mixed = StreamLoopDetector::new();
         for i in 0..29 {
-            assert!(mixed.feed("Yes").is_none(), "word {i} must not fire yet");
+            assert!(mixed.feed("Yes ").is_none(), "word {i} must not fire yet");
         }
         assert!(
-            mixed.feed("yes").is_some(),
+            mixed.feed("yes ").is_some(),
             "30th mixed-case word must fire"
         );
 
         let mut lower = StreamLoopDetector::new();
         for i in 0..29 {
-            assert!(lower.feed("yes").is_none(), "word {i} must not fire yet");
+            assert!(lower.feed("yes ").is_none(), "word {i} must not fire yet");
         }
-        assert!(lower.feed("yes").is_some(), "30th lowercase word must fire");
+        assert!(
+            lower.feed("yes ").is_some(),
+            "30th lowercase word must fire"
+        );
     }
 
     #[test]
     fn latched_signal_persists_until_reset() {
         let mut det = StreamLoopDetector::new();
         for _ in 0..30 {
-            det.feed("yes");
+            det.feed("yes ");
         }
         assert!(det.signal().is_some());
         assert!(det.feed("anything else").is_some());

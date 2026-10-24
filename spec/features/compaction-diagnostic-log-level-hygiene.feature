@@ -22,7 +22,6 @@ Feature: Compaction diagnostic log-level hygiene — routine propagation at DEBU
   #   6. [generate-compaction] handler lifecycle lines (ENTER, sub-agent launch/complete, pin, fallback, SLOW-lock) stay INFO — compaction is rare and these are the audit trail for the sub-agent run.
   #
   # ========================================
-
   Background: User Story
     As a developer debugging the compaction status indicator
     I want routine per-event propagation logged at DEBUG and lifecycle decisions at INFO

@@ -330,7 +330,7 @@
       ]
     },
     {
-      "name": "Self-messaging is allowed",
+      "name": "Self-messaging to an idle session is allowed",
       "testMappings": [
         {
           "file": "rust/tools/src/agent_manager/tests.rs",

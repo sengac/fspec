@@ -51,15 +51,16 @@ pub struct GenerateCompactionArgs {
 ///
 /// Takes the RESOLVED target session id (the tool has already validated the
 /// argument and defaulted it to the calling session) and returns a future
-/// resolving to the DAG text that was pinned to the target.
+/// resolving to the accepted DAG text. Self-target application remains queued
+/// until the durable commit owner applies and publishes the candidate.
 ///
 /// The `codelet-agent-loop` closure performs the full lifecycle:
 /// 1. Capture the target's existing DAG (`detect_existing_dag`) before any clear
 /// 2. Ephemeral sub-agent (DeepSearch shape, 7 read-only tools, BUG-102
 ///    provider inheritance, AMGR-016 wall-clock timeout)
-/// 3. Pin the DAG handler-side (target == caller ⇒ `pending_dag_content` stash;
-///    target != caller ⇒ immediate pin under the target's inner lock)
-/// 4. On timeout / failure / unparseable output: free force-inject fallback DAG
+/// 3. Queue a self-target candidate or apply a cross-target candidate through
+///    the owning session's durable commit path
+/// 4. Reject failed or invalid generation without substituting a fallback DAG
 ///
 /// NOTE: returns a Future (not a sync Result) — the sub-agent makes async LLM
 /// API calls (same contract as `DeepSearchHandler`).
@@ -235,9 +236,6 @@ impl Tool for GenerateCompactionTool {
             None => self.session_id, // CMPCT-045 Rule [2]: omitted ⇒ calling session
         };
 
-        // Dispatch to the registered handler (async — sub-agent makes LLM
-        // API calls). The handler performs the pin handler-side and returns
-        // the pinned DAG text (success or fallback).
         tracing::info!(
             caller_session_id = %self.session_id,
             target_session_id = %target,
@@ -253,7 +251,11 @@ impl Tool for GenerateCompactionTool {
                     dag_chars = dag.chars().count(),
                     "[generate-compaction-tool] call EXIT ok"
                 );
-                Ok(dag)
+                if target == self.session_id {
+                    Ok(json!({ "status": "queued", "content": dag }).to_string())
+                } else {
+                    Ok(dag)
+                }
             }
             Err(e) => {
                 tracing::error!(

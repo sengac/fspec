@@ -69,7 +69,7 @@ fn urlencoded(s: &str) -> String {
 #[serial]
 async fn test_successful_browser_oauth_login_with_code_paste() {
     // @step Given no existing Claude credentials are available
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
     assert!(
         !auth_path.exists(),
@@ -194,7 +194,7 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
 #[serial]
 async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -267,7 +267,7 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
 #[serial]
 async fn test_login_times_out_after_5_minutes_without_code_submission() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let (listener, _port) = ephemeral_listener().await;
 
@@ -310,7 +310,7 @@ async fn test_login_times_out_after_5_minutes_without_code_submission() {
 #[serial]
 async fn test_token_exchange_fails_after_valid_state_validation() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -386,7 +386,7 @@ async fn test_token_exchange_fails_after_valid_state_validation() {
 #[serial]
 async fn test_user_cancels_oauth_flow_via_cancel_route() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -439,7 +439,7 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
 #[serial]
 async fn test_code_without_state_hash_separator_is_rejected() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let (listener, port) = ephemeral_listener().await;
@@ -498,7 +498,7 @@ async fn test_code_without_state_hash_separator_is_rejected() {
 async fn test_browser_fails_to_open_but_server_still_shows_form_with_link() {
     // @step Given the browser open command will fail
     // (open_browser=false simulates this — the server should still function)
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -561,7 +561,7 @@ async fn test_browser_fails_to_open_but_server_still_shows_form_with_link() {
 #[serial]
 async fn test_server_handles_404_requests_without_shutting_down() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -611,7 +611,7 @@ async fn test_server_handles_404_requests_without_shutting_down() {
 #[serial]
 async fn test_claude_auth_persistence_writes_correct_json_structure() {
     // @step Given a successful token exchange has returned tokens
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let expires = calculate_expiry(3600);

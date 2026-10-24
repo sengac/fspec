@@ -4,7 +4,6 @@
 @astgrep
 @CLI-015
 Feature: Specifying-to-testing error directs per mode
-
   """
   The `specifying→testing` AST-research gate error is mode-aware (CLI-015).
   In CLI mode it points at `fspec astgrep --help` then `fspec astgrep

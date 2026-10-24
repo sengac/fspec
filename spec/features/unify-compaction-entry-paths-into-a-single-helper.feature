@@ -19,7 +19,7 @@ Feature: Unify compaction entry paths into a single helper
   #   4. The last user message is NOT popped for Path D (Gemini continuation — prompt is mid-flight, not at tail)
   #   5. compaction_needed flag is always set on token_state; a warn! is emitted if it was already set (defense-in-depth disagreement)
   #   6. Tool progress callback is cleared via Uuid::nil on every compaction recovery entry
-  #   7. compaction_started + compaction_progress('Context limit reached', 0, total_turns.max(1)) are emitted exactly once per recovery entry by the helper; call sites must not re-emit
+  #   7. compaction_started + compaction_progress('Context limit reached', 0, 0) are emitted exactly once per recovery entry by the helper; call sites must not re-emit. BUG-213 retains the wire fields but zero/zero means unknown work, not approximate turns.
   #   8. handle_compaction_retry in compaction_retry.rs no longer emits compaction_started/progress because the helper already did (avoids the pre-existing double-emit bug)
   #
   # EXAMPLES:
@@ -54,6 +54,7 @@ Feature: Unify compaction entry paths into a single helper
     When begin_compaction_recovery is called once
     Then exactly one compaction_started event is recorded
     Then exactly one compaction_progress event with phase 'Context limit reached' is recorded
+    And its work counts are unknown rather than an approximate turn total
 
   Scenario: Helper emits a warning when compaction_needed flag was already true on entry
     Given a TokenState whose compaction_needed flag is already true before entering the helper

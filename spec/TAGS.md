@@ -349,6 +349,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bug-183` | Bug fix work unit BUG-183 — mux Esc on the Files/Checkpoints pane does nothing: the focused lazy pane must close (removed from the LIVE rendered grid only, saved layout untouched, focus clamped; degenerate no-panes exit to the single Board view) |
 | `@bug-184` | Bug fix work unit BUG-184 — mux Files/Checkpoints 10s refresh: no-op ticks dropped before re-fetch (list signature), scroll position + selection preserved on change-bearing refreshes, cascade same-key reloads keep dependent pane scroll |
 | `@bug-206` | Work unit BUG-206 — session auto-restore must only restore sessions LIVE in the daemon's in-memory session map: liveness-gated candidate verification via the new list_live_sessions RPC, close invalidates the daemon active-session pointer, and NOTHING restorable means land on the board (no list_sessions disk scan, no resume-from-disk, no create_session fallback). Supersedes TUI-113's disk-aware fallback chain. |
+| `@bug-236` | BUG-236 token accounting lifecycle provenance and truthful compaction estimates |
 | `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -360,6 +361,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@clear` | Session history clear (/clear) scenarios and the SessionEvent::Cleared lifecycle event |
 | `@clipboard` | Clipboard integration (OSC 52 escape-sequence clipboard writes) |
 | `@cmpct-049` | Work unit CMPCT-049 — compaction diagnostic log-level hygiene (routine propagation at DEBUG, lifecycle at INFO) |
+| `@cmpct-076` | CMPCT-076: bounded typed Codex HTTP and SSE rejection diagnostics |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command` | CLI command implementation |
@@ -834,4 +836,4 @@ Tags for automation integration and agentic coding workflows.
 
 ---
 
-_Last updated: 2026-10-15T10:46:15.916Z_
+_Last updated: 2026-10-22T05:35:03.706Z_

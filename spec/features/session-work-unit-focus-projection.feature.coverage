@@ -1,0 +1,255 @@
+{
+  "scenarios": [
+    {
+      "name": "Switching focus updates the menu and board badge together",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "231-255",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                34,
+                35
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/board_focus.rs",
+              "lines": [
+                7,
+                8,
+                9
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A cleared session does not inherit another session's card",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "257-293",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                49,
+                50
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/focus_state.rs",
+              "lines": [
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An older update cannot resurrect cleared focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "24-47",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/focus_state.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A reconnect snapshot restores focus without local attachment",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "49-73",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/bootstrap_focus.rs",
+              "lines": [
+                23,
+                25,
+                29,
+                31
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+              "lines": [
+                77,
+                97
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                585,
+                598,
+                607
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                1020,
+                1036,
+                1053
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/focus_events.rs",
+              "lines": [
+                17,
+                18,
+                25,
+                26,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Several sessions can share a card without losing their individual focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "75-106",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/store/board_focus.rs",
+              "lines": [
+                7,
+                8,
+                9
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                51,
+                55,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board entry into an existing session uses the authoritative focus path",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "108-152",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+              "lines": [
+                55,
+                58,
+                61
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/session_creation.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Focused card changes are visible on board agent and mux surfaces",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",
+          "lines": "154-201",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_focus.rs",
+              "lines": [
+                34,
+                35
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug230_focus_projection.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_focus.rs",
+      "rust/fspec-tui/src/store/board_focus.rs",
+      "rust/fspec-tui/src/views/agent/chrome_paint.rs",
+      "rust/fspec-tui/src/store/agent_view/focus_state.rs",
+      "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
+      "rust/fspec-tui/src/app/bootstrap_focus.rs",
+      "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/transport/focus_events.rs",
+      "rust/fspec-tui/src/app/session_creation.rs"
+    ],
+    "totalLinesCovered": 298
+  }
+}

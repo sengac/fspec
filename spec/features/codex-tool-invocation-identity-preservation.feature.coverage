@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "name": "Serialized tool blocks retain explicit invocation identities",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/tool_invocation_identity.rs",
+          "lines": "8-25",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/message_envelope.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy tool blocks remain compatible without invocation identities",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/tool_invocation_identity.rs",
+          "lines": "27-47",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/message_envelope.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streamed tool identities survive persistence and cold restore",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/tool_invocation_identity.rs",
+          "lines": "44-195",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persist.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/agent-loop/tests/tool_invocation_identity.rs",
+          "lines": "44-195",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/agent-loop/tests/tool_invocation_identity.rs",
+          "lines": "44-195",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_handlers.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/tool_invocation_identity.rs",
+      "rust/agent-loop/tests/tool_invocation_identity.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/message_envelope.rs",
+      "rust/agent-loop/src/persist.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/cli/src/interactive/stream_handlers.rs"
+    ],
+    "totalLinesCovered": 612
+  }
+}

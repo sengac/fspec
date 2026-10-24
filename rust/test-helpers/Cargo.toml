@@ -12,6 +12,7 @@ description = "Shared test-only helpers for the codelet workspace (dependency-ru
 # when walking the transitive dependency graph in
 # dependency_rules::assert_no_transitive_dependency.
 serde_json = { workspace = true }
+tempfile = { workspace = true }
 
 [lints]
 workspace = true

@@ -5,7 +5,6 @@
 @regression
 @BUG-208
 Feature: Codex models silently terminate: rig swallows SSE error events and AstGrepRefactor tool schema is rejected
-
   """
   Sanitizer lives in the patched rig-core responses_api (ResponsesToolDefinition::from / create_completion_request in rust/patches/rig-core/src/providers/openai/responses_api/mod.rs:527), so BOTH the streaming and non-streaming front doors serialize sanitized schemas — mirrors codex tools/src/json_schema.rs prepare_tool_input_schema. Minimal scope: fill properties:{} for object-typed schemas (incl. type arrays containing "object") and items default for array-typed, recursively — not a full port of codex sanitize_json_schema.
   Error-event handling also lives in the patched rig streaming.rs: add an ErrorChunk variant matched BEFORE the untagged StreamingCompletionChunk fallthrough, yielding CompletionError::ProviderError(message+code) and ending the stream — mirrors codex-api/src/sse/responses.rs:349 and the stream loop at :549/:576-580.
@@ -31,7 +30,6 @@ Feature: Codex models silently terminate: rig swallows SSE error events and AstG
   #   A: Sanitize at the rig responses_api layer (ResponsesToolDefinition::from in the patched rig-core), covering both Codex and plain OpenAI responses models via one shared code path — confirmed by user.
   #
   # ========================================
-
   Background: User Story
     As a agent user
     I want to converse with Codex-backend models (gpt-6-astra) with tools enabled
@@ -67,4 +65,3 @@ Feature: Codex models silently terminate: rig swallows SSE error events and AstG
     When the tool definition is converted for a Responses API request
     Then the serialized tool payload carries "strict": false (mirrors codex tool_definition_to_responses_api_tool)
     And the parameters schema is still sanitized (properties/items defaults filled) so the schema remains well-formed
-

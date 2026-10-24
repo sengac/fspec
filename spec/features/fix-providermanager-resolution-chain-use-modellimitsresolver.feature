@@ -1,11 +1,14 @@
+@context-window
+@providers
 @done
 @LIMITS-004
 Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
   """
   ProviderManager must resolve context_window() and max_output_tokens() through
   the ModelLimitsResolver trait so that provider hard limits clamp any registry
-  or user-override values. This prevents models.dev reporting 1M context for
-  Claude Opus 4.6 when the API only accepts 200k.
+  or user-override values where genuine endpoint restrictions exist. PROV-161
+  supersedes the historical blanket Anthropic ceiling; matching catalog limits
+  and explicit overrides are retained for modern Claude models.
   """
 
   Background: User Story
@@ -14,20 +17,20 @@ Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
     So that models.dev registry data never exceeds what the provider's API actually accepts
 
   @critical
-  Scenario: Claude context window is clamped from 1M registry to 200k
+  Scenario: Claude context window retains 1M registry value
     Given a ProviderManager configured for the Claude provider
     And select_model stores a registry context window of 1000000
-    And the Claude resolver declares max_context_window as 200000
+    And the Claude resolver declares max_context_window as None
     When context_window() is called
-    Then the result should be 200000
+    Then the result should be 1000000
 
   @critical
-  Scenario: Claude max output tokens clamped from 128k registry to 8192
+  Scenario: Claude maximum output retains 128k registry value
     Given a ProviderManager configured for the Claude provider
     And select_model stores a registry max output of 128000
-    And the Claude resolver declares max_output_tokens_limit as 8192
+    And the Claude resolver declares max_output_tokens_limit as None
     When max_output_tokens() is called
-    Then the result should be 8192
+    Then the result should be 128000
 
   Scenario: OpenAI context window passes through unclamped
     Given a ProviderManager configured for the OpenAI provider
@@ -43,7 +46,7 @@ Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
     When context_window() is called
     Then the result should be 272000
 
-  Scenario: User override is clamped by provider max
+  Scenario: Claude user override is retained without a blanket ceiling
     Given a ProviderManager configured for the Claude provider
     And the user overrides context window to 500000 via NAPI
     And the Claude resolver declares max_context_window as 200000
@@ -57,7 +60,7 @@ Feature: Fix ProviderManager Resolution Chain — Use ModelLimitsResolver
     When context_window() is called
     Then the result should be 64000
 
-  Scenario: Sub-agent propagation returns clamped values
+  Scenario: Sub-agent propagation returns effective model limits
     Given a ProviderManager configured for the Claude provider
     And select_model stores a registry context window of 1000000
     When raw_model_context_window() is called for sub-agent propagation

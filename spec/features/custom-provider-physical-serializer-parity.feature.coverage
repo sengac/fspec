@@ -1,0 +1,202 @@
+{
+  "scenarios": [
+    {
+      "name": "Custom preparation matches the selected streaming request",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_custom_serializer.rs",
+          "lines": "50-122",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/rig_model.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_preparation.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/rig_streaming.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Custom preparation rejects a script builder failure",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_custom_serializer.rs",
+          "lines": "125-158",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/rig_preparation.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            },
+            {
+              "file": "rust/providers/src/selected_request.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct071_custom_serializer.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/custom/rig_model.rs",
+      "rust/providers/src/custom/rig_preparation.rs",
+      "rust/providers/src/custom/rig_streaming.rs",
+      "rust/providers/src/selected_request.rs"
+    ],
+    "totalLinesCovered": 243
+  }
+}

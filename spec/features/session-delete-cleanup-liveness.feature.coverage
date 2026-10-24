@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Cleanup reclaims deleted session messages while the store remains alive",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/session_delete_cleanup_liveness.rs",
+          "lines": "21-61",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_delete.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleanup reclaims deleted session messages while the singleton remains alive",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/session_delete_cleanup_liveness.rs",
+          "lines": "63-92",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_delete.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/session_delete_cleanup_liveness.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/manifest_delete.rs"
+    ],
+    "totalLinesCovered": 87
+  }
+}

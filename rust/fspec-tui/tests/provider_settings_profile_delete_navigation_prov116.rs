@@ -9,63 +9,36 @@
 //! parent provider row; the Err path must NOT jump; the save path must NOT be
 //! changed (TS only navigates on delete).
 //!
-//! Determinism: the reload fold rebuilds the openai PROFILE child rows from the
-//! filesystem (`load_openai_profiles` reads `$HOME/.fspec/fspec-config.json`),
-//! so each test redirects `$HOME` to a throwaway tempdir seeded with exactly the
-//! profiles that scenario needs. A process-wide lock serialises the `$HOME`
-//! mutation so the tests in this binary cannot race. No real `~/.fspec`, no
-//! network — the cursor assertions are driven through `App::dispatch`, never by
-//! poking `selected_index` then re-reading it.
-
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-// The `env_lock()` std Mutex guard is intentionally held across `.await` points
-// to serialise the process-wide `$HOME` mutation for the duration of each test;
-// an async-aware mutex is unnecessary here (one guard per single-flow test).
-#![allow(clippy::await_holding_lock)]
 
-use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
+use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind;
 use codelet_fspec_tui::views::ProviderSettingsView;
 use codelet_fspec_tui::{App, FspecBackend};
-use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
+use codelet_rpc_types::{
+    ProfileDefinition, ProviderCredentialInfo, ProviderProfileConfig, ProviderSettingsConfig,
+};
 use tokio::time::timeout;
 
 mod common;
 use common::MockBackend;
 
-// ─────────────────────────── $HOME serialisation ───────────────────────────
-
-/// Serialises `$HOME` mutation across the tests in this binary so a concurrent
-/// test cannot observe another's seeded config.
-fn env_lock() -> MutexGuard<'static, ()> {
-    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-    LOCK.get_or_init(|| Mutex::new(()))
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-}
-
-/// A throwaway `$HOME` whose `.fspec/fspec-config.json` declares the given
-/// openai profile names (each with a dummy baseUrl). An empty slice writes a
-/// config with no openai profiles. Returns the tempdir guard (keep it alive for
-/// the test) — `$HOME` is pointed at it for the duration the lock is held.
-fn seed_home(profile_names: &[&str]) -> tempfile::TempDir {
-    let home = tempfile::tempdir().expect("home tempdir");
-    let fspec = home.path().join(".fspec");
-    std::fs::create_dir_all(&fspec).expect("create .fspec");
-    let entries: Vec<String> = profile_names
-        .iter()
-        .map(|n| format!("\"{n}\": {{ \"baseUrl\": \"https://{n}.example/v1\" }}"))
-        .collect();
-    let config = format!(
-        "{{ \"providers\": {{ \"openai\": {{ \"profiles\": {{ {} }} }} }} }}",
-        entries.join(", ")
-    );
-    std::fs::write(fspec.join("fspec-config.json"), config).expect("write fspec-config.json");
-    std::env::set_var("HOME", home.path());
-    home
+fn seed_backend_profiles(mock: &MockBackend, profiles: &[&str]) {
+    mock.seed_provider_settings(vec![ProviderSettingsConfig {
+        provider_id: "openai".to_string(),
+        settings: ProfileDefinition::default(),
+        profiles: profiles
+            .iter()
+            .map(|name| ProviderProfileConfig {
+                name: (*name).to_string(),
+                definition: profile_def(),
+            })
+            .collect(),
+    }])
+    .expect("backend provider settings fixture must be available");
 }
 
 // ─────────────────────────── dispatch helpers ───────────────────────────
@@ -188,10 +161,8 @@ fn first_profile_index(view: &ProviderSettingsView) -> usize {
         .expect("a profile row must be present in the fixture")
 }
 
-/// Build the App fixture: seed the mock credential, load the credentials so the
-/// nav tree is built from the seeded `$HOME` profiles, expand openai, and place
-/// the cursor on the first profile row. Returns the app.
-async fn app_expanded_on_first_profile(mock: Arc<MockBackend>) -> App {
+async fn app_expanded_on_first_profile(mock: Arc<MockBackend>, profiles: &[&str]) -> App {
+    seed_backend_profiles(&mock, profiles);
     mock.seed_provider_credentials(cred_list());
     let mut app = fresh_app(mock);
     app.dispatch(Action::ProviderCredentialsLoaded(cred_list()));
@@ -209,11 +180,9 @@ async fn app_expanded_on_first_profile(mock: Arc<MockBackend>) -> App {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
-    let _guard = env_lock();
     // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
-    let _home = seed_home(&["fireworks", "home"]);
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone()).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
     assert_eq!(
         profile_rows(&app.navigator().provider_settings),
         vec!["fireworks", "home"]
@@ -226,7 +195,7 @@ async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
 
     // The delete removes "fireworks" from the store: the reload now sees only
     // "home".
-    let _home = seed_home(&["home"]);
+    seed_backend_profiles(&mock, &["home"]);
 
     // @step When the user presses "d" and confirms the delete with "y"
     app.dispatch(Action::ConfirmDeleteProfile {
@@ -251,13 +220,9 @@ async fn deleting_one_of_several_profiles_returns_cursor_to_provider_row() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
-    let _guard = env_lock();
     // @step Given the "openai" provider is expanded with a single profile "fireworks"
-    // The pre-delete fixture shows a single profile; the post-delete reload
-    // reads a `$HOME` with no openai profiles (the profile is gone).
-    let _home = seed_home(&["fireworks"]);
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone()).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks"]).await;
     assert_eq!(
         profile_rows(&app.navigator().provider_settings),
         vec!["fireworks"]
@@ -270,7 +235,7 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
 
     // The delete removes the profile from the store: the reload must now see an
     // openai with no profiles.
-    let _home = seed_home(&[]);
+    seed_backend_profiles(&mock, &[]);
 
     // @step When the user presses "d" and confirms the delete with "y"
     app.dispatch(Action::ConfirmDeleteProfile {
@@ -288,20 +253,24 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
         "after deleting the only profile the cursor must return to the openai provider row"
     );
 
-    // @step And the "+ Add Profile" row is the only child shown
+    // @step And Settings and "+ Add Profile" are the only children shown
     assert!(
         profile_rows(&app.navigator().provider_settings).is_empty(),
         "no profile rows must remain after deleting the only profile"
     );
-    let has_add_profile = app
+    let children: Vec<_> = app
         .navigator()
         .provider_settings
         .nav_items
         .iter()
-        .any(|i| matches!(i.kind, NavItemKind::AddProfile));
-    assert!(
-        has_add_profile,
-        "the + Add Profile row must remain as the only child"
+        .filter(|item| {
+            item.provider_id == "openai" && !matches!(item.kind, NavItemKind::Provider { .. })
+        })
+        .map(|item| item.kind.clone())
+        .collect();
+    assert_eq!(
+        children,
+        vec![NavItemKind::Settings, NavItemKind::AddProfile]
     );
 }
 
@@ -311,13 +280,11 @@ async fn deleting_the_only_profile_returns_cursor_to_provider_row() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
-    let _guard = env_lock();
-    // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
-    let _home = seed_home(&["fireworks", "home"]);
     let mock = Arc::new(MockBackend::new());
+    // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
     // @step And the cursor is on the "fireworks" profile row
     mock.set_delete_profile_error("delete failed".to_string());
-    let mut app = app_expanded_on_first_profile(mock.clone()).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
     assert!(!cursor_on_openai_provider_row(
         &app.navigator().provider_settings
     ));
@@ -356,11 +323,9 @@ async fn failed_delete_does_not_move_cursor_and_preserves_profiles() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn saving_a_profile_does_not_move_cursor_to_provider_row() {
-    let _guard = env_lock();
     // @step Given the "openai" provider is expanded with profiles "fireworks" and "home"
-    let _home = seed_home(&["fireworks", "home"]);
     let mock = Arc::new(MockBackend::new());
-    let mut app = app_expanded_on_first_profile(mock.clone()).await;
+    let mut app = app_expanded_on_first_profile(mock.clone(), &["fireworks", "home"]).await;
 
     // @step And the cursor is on the "fireworks" profile row
     assert!(!cursor_on_openai_provider_row(

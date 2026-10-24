@@ -129,7 +129,7 @@ pub(super) struct ToolCallAccumulator {
 pub struct RhaiStreamProcessor {
     engine: Arc<Engine>,
     ast: Arc<AST>,
-    provider: String,
+    pub(super) provider: String,
     config: Dynamic,
     /// Tool-call accumulators keyed by id. Insertion order is preserved
     /// through the companion `tool_call_order` vec so the final

@@ -81,14 +81,18 @@ pub struct RhaiCustomProvider {
     http_client: reqwest::Client,
 }
 
+#[path = "model_identity.rs"]
+mod model_identity;
+
 impl RhaiCustomProvider {
     /// Construct a new provider from a config + a script loader + the
-    /// alias of the model to use (must be a key of `config.models`).
+    /// configured model alias or a unique upstream model ID.
     pub fn new(
         config: Arc<ProviderConfig>,
         loader: Arc<ScriptLoader>,
         model_alias: String,
     ) -> Result<Self, CustomProviderError> {
+        let model_alias = model_identity::resolve_model_alias(&config, model_alias)?;
         let model_def = config.models.get(&model_alias).ok_or_else(|| {
             CustomProviderError::RhaiRuntimeError(format!(
                 "model alias '{model_alias}' not found in config.models"

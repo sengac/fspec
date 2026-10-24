@@ -6,7 +6,7 @@
 Feature: Model selector model-change re-resolves nothing server-side (drops rich metadata)
   """
   Extract creation-time resolution (model-type detect plus select_model/set_model_direct plus limits compute) into a shared helper (model_resolution::apply_model_selection) so create_session_with_id and set_model call the same code, avoiding drift. The inner provider_manager is reached via codelet_cli Session::provider_manager_mut() (session/mod.rs:148).
-  Offline-testable via a CROSS-FAMILY switch (same-provider switches are not observable because the Claude limits resolver clamps every anthropic model to ctx 200000 / out 8192): a session created on anthropic/claude-opus-4-5 (ctx 200000, out 8192) switched to google/gemini-2.5-pro (ctx 1048576, out 65536, 80% compaction) changes all three cached limit fields without network. Dummy ANTHROPIC_API_KEY + GOOGLE_GENERATIVE_AI_API_KEY env vars satisfy credential detection. Test via SessionManagerHandle create_session then set_model then get_session_model, mirroring rpc081_restore_session_messages.rs setup.
+  Offline-testable via a cross-family switch: a session created on anthropic/claude-opus-4-5 (models.dev context 200000, output 64000) switched to google/gemini-2.5-pro (context 1048576, output 65536, 80% compaction) changes all three cached limit fields without network. There is no universal Anthropic output clamp: creation and switching use the same shared runtime and catalog resolution. Dummy ANTHROPIC_API_KEY + GOOGLE_GENERATIVE_AI_API_KEY env vars satisfy credential detection. Test via SessionManagerHandle create_session then set_model then get_session_model, mirroring rpc081_restore_session_messages.rs setup.
   Scope: re-resolve the registry-derivable LIMIT fields (context_window, max_output_tokens, compaction_threshold) and the inner manager's selected model, with NO wire change. The per-selection facade override (and reasoning surfacing) for custom models is NOT in scope here — it requires widening the set_model wire to carry the facade and is tracked as a follow-up (RPC-348). A busy-session guard declines the switch while a request is streaming.
   Fix lives in rust/sessions handle_impl.rs set_model. After swapping the label strings on BackgroundSession, re-resolve on the inner session provider_manager and call session.set_model_limits with the recomputed context_window / max_output_tokens / compaction_threshold, mirroring the creation-time chain.
   """
@@ -27,8 +27,8 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
   #   9. set_model stays synchronous: it reuses the inner session's existing provider_manager via provider_manager_mut(); select_model/set_model_direct, context_window(), max_output_tokens() and resolve_compaction_threshold() are all sync, so no async with_model_support() rebuild is needed.
   #
   # EXAMPLES:
-  #   1. Session created on anthropic/claude-opus-4-5 (output cap 32000); developer switches to anthropic/claude-haiku-3-5 (output cap 8192); get_session_model now reports max_output_tokens 8192 and a recomputed compaction_threshold, not the stale 32000
-  #   2. After switching opus to haiku, the inner session's provider manager reports the haiku model id as its selected model, so the next request issues against haiku
+  #   1. Session created on anthropic/claude-opus-4-5 (catalog output cap 64000); developer switches to google/gemini-2.5-pro (catalog output cap 65536); get_session_model reports 65536 and a recomputed compaction_threshold, not the stale 64000
+  #   2. After switching opus to gemini, the inner session's provider manager reports the gemini model id as its selected model, so the next request issues against gemini
   #   3. set_model called with a model id that does not exist in the registry returns Err and leaves the session's prior model and cached limits intact
   #   4. set_model called on a nonexistent session id returns Err containing "Session not found"
   #
@@ -52,7 +52,7 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
     So that the session immediately uses the new model's real context window, output cap, compaction threshold, and request configuration instead of stale values from the previous model
 
   Scenario: Switching model re-resolves the cached limits to the new model
-    Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 8192
+    Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
     When I switch the session model to provider "google" model "gemini-2.5-pro" via set_model
     Then set_model returns Ok
     And get_session_model reports context_window 1048576 for the session
@@ -68,7 +68,7 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
     Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 8192
     When I switch the session model to provider "anthropic" model "does-not-exist-model" via set_model
     Then set_model returns Err
-    And get_session_model still reports context_window 200000 and max_output_tokens 8192 for the session
+    And get_session_model still reports context_window 200000 and max_output_tokens 64000 for the session
 
   Scenario: Switching the model on an unknown session reports session not found
     Given a SessionManagerHandle with no session registered for the id "nonexistent-uuid"

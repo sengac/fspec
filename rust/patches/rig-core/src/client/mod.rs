@@ -255,6 +255,10 @@ where
 }
 
 impl<Ext, H> Client<Ext, H> {
+    pub fn http_client(&self) -> &H {
+        &self.http_client
+    }
+
     pub fn base_url(&self) -> &str {
         &self.base_url
     }

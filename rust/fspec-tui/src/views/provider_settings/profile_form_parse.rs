@@ -132,9 +132,13 @@ pub(super) fn parse_loop_detection_max_retries(raw: &str) -> Result<Option<u32>,
 pub fn build_definition(
     form: &super::profile_form::ProfileForm,
 ) -> Result<Option<ProfileDefinition>, String> {
-    if form.base_url.is_empty() || form.api_key.is_empty() || form.name.trim().is_empty() {
+    if (!form.context.settings && form.name.trim().is_empty())
+        || (!form.context.inherited_auth && (form.base_url.is_empty() || form.api_key.is_empty()))
+    {
         return Ok(None);
     }
+    let context_window = parse_token_limit(&form.context_window, "Context Window")?;
+    let max_output_tokens = parse_token_limit(&form.max_output_tokens, "Max Output Tokens")?;
     // PROV-142: parse the Auto-Continue field. Empty ⇒ None (off, today's
     // behavior); "0" ⇒ Some(0) (explicit-off sentinel); "n" (n >= 1) ⇒
     // Some(n) (on with budget n); non-numeric ⇒ reject with a hint.
@@ -154,22 +158,34 @@ pub fn build_definition(
     Ok(Some(ProfileDefinition {
         base_url: form.base_url.clone(),
         api_key: form.api_key.clone(),
-        context_window: form.context_window.trim().parse::<u32>().ok(),
-        max_output_tokens: form.max_output_tokens.trim().parse::<u32>().ok(),
+        context_window,
+        max_output_tokens,
         compaction_threshold_type,
         compaction_threshold_value,
-        streaming: Some(form.streaming),
+        streaming: if form.context.inherited_auth {
+            form.context.streaming
+        } else {
+            Some(form.streaming)
+        },
         auto_continue,
         // PROV-143: always carry the explicit toggle so the on-disk
         // profile reflects the form (true ⇒ preserved, false ⇒ stripped).
-        preserve_thinking: Some(form.preserve_thinking),
+        preserve_thinking: if form.context.inherited_auth {
+            form.context.preserve_thinking
+        } else {
+            Some(form.preserve_thinking)
+        },
         // PROV-144: carry the parsed Max Images limit (empty ⇒ None so the
         // persistence read-modify-write REMOVES the key ⇒ default 4).
         max_images,
         // PROV-145: always carry the explicit loop-detection toggle so
         // the on-disk profile reflects the form (true ⇒ detector on,
         // false ⇒ detector off).
-        loop_detection_enabled: Some(form.loop_detection),
+        loop_detection_enabled: if form.context.inherited_auth {
+            form.context.loop_detection
+        } else {
+            Some(form.loop_detection)
+        },
         // PROV-145: carry the parsed loop-detection numeric fields
         // (empty ⇒ None so the persistence read-modify-write REMOVES the
         // keys ⇒ the RIG-014 defaults apply).
@@ -177,4 +193,16 @@ pub fn build_definition(
         loop_detection_max_repeats,
         loop_detection_max_retries,
     }))
+}
+
+fn parse_token_limit(raw: &str, label: &str) -> Result<Option<u32>, String> {
+    if raw.trim().is_empty() {
+        return Ok(None);
+    }
+    raw.trim()
+        .parse::<u32>()
+        .ok()
+        .filter(|value| *value > 0)
+        .map(Some)
+        .ok_or_else(|| format!("{label} must be a positive whole number, or empty for Automatic"))
 }

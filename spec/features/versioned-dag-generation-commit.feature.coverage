@@ -1,0 +1,203 @@
+{
+  "scenarios": [
+    {
+      "name": "Appended work survives a captured prefix commit",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct055_generation_commit.rs",
+          "lines": "14-48",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An older candidate cannot replace a newer generation",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct055_generation_commit.rs",
+          "lines": "100-135",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Changed prefix or model identity rejects a candidate",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct055_generation_commit.rs",
+          "lines": "137-162",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Obsolete publication cannot announce a replaced generation",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct055_generation_commit.rs",
+          "lines": "50-98",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct055_generation_commit.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/compaction_commit.rs"
+    ],
+    "totalLinesCovered": 269
+  }
+}

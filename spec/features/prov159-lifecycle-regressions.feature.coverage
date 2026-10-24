@@ -1,0 +1,274 @@
+{
+  "scenarios": [
+    {
+      "name": "External authentication transitions fence pending login",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
+          "lines": "48-79",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Equivalent home paths share cancellation",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
+          "lines": "83-98",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stale device completion preserves a replacement session",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
+          "lines": "103-146",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/device_session.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Login deadline remains effective while persistence is blocked",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
+          "lines": "150-209",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancellation remains effective while persistence is blocked",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov159_lifecycle_regressions.rs",
+          "lines": "213-243",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/auth_lifecycle.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov159_lifecycle_regressions.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/auth_lifecycle.rs",
+      "rust/providers/src/codex/device_session.rs"
+    ],
+    "totalLinesCovered": 360
+  }
+}

@@ -157,14 +157,22 @@ pub(super) fn build_right_line(
         ),
         Style::default().fg(Color::DarkGray),
     ));
+    let context_label =
+        if tokens.committed_generation.is_some() && tokens.context_threshold_tokens == 0 {
+            "context unknown".to_owned()
+        } else if tokens.estimated {
+            format!("{}% estimated", tokens.context_fill_pct)
+        } else {
+            format!("{}%", tokens.context_fill_pct)
+        };
     let pct_text = match compaction_reduction {
         // CMPCT-040: render the stored reduction verbatim — no `.abs()`.
         // The single writer (dispatch_stream_chunks.rs CompactionComplete
         // handler) clamps to >= 0, so the display layer needs no defense;
         // if a negative ever slipped through it must be shown honestly,
         // never sign-flipped into a fake positive badge.
-        Some(r) => format!("[{}%: COMPACTED {r}%]", tokens.context_fill_pct),
-        None => format!("[{}%]", tokens.context_fill_pct),
+        Some(reduction) => format!("[{context_label}: COMPACTED {reduction}%]"),
+        None => format!("[{context_label}]"),
     };
     spans.push(Span::styled(
         pct_text,

@@ -75,6 +75,7 @@ hex = "0.4"
 # append_message_with_metadata, …) routes through. lazy_static is the
 # same crate codelet-napi already uses; not yet in workspace.dependencies.
 lazy_static = "1.4"
+tempfile.workspace = true
 
 # RPC-058: scheduler engine lift requires cron parsing + timezone +
 # proper-lockfile-compatible file lock from codelet-common.
@@ -82,7 +83,6 @@ croner = { workspace = true }
 chrono-tz = { workspace = true }
 
 [dev-dependencies]
-tempfile.workspace = true
 tokio-test.workspace = true
 serial_test.workspace = true
 proptest.workspace = true

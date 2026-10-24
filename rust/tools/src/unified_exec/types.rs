@@ -57,23 +57,7 @@ impl ExecCommand {
 
     /// Display string for session listing (truncated to 60 chars).
     pub fn display(&self) -> String {
-        match self {
-            ExecCommand::Shell(s) => {
-                if s.len() > 60 {
-                    format!("{}...", &s[..57])
-                } else {
-                    s.clone()
-                }
-            }
-            ExecCommand::Argv(args) => {
-                let joined = args.join(" ");
-                if joined.len() > 60 {
-                    format!("{}...", &joined[..57])
-                } else {
-                    joined
-                }
-            }
-        }
+        crate::truncation::truncate_line(&self.blocklist_check_string(), 60)
     }
 
     /// Get the command string for blocklist checking.

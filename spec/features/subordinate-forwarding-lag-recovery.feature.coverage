@@ -1,0 +1,244 @@
+{
+  "scenarios": [
+    {
+      "name": "A stalled subordinate forwarder replays evicted terminal events in order",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
+          "lines": "35-78",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/subordinate_output.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            },
+            {
+              "file": "rust/sessions/src/subordinate_forwarding.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay output applies bounded backpressure and survives disconnection",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
+          "lines": "80-113",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/bridge_relay.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ]
+            },
+            {
+              "file": "rust/sessions/src/subordinate_forwarding.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Destroying a subordinate drains terminal output and closes its subscription",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
+          "lines": "115-153",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/subordinate_output.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            },
+            {
+              "file": "rust/sessions/src/subordinate_forwarding.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelling a subscription releases its bounded receiver",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug217_subordinate_forwarding.rs",
+          "lines": "155-180",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/subordinate_output.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            },
+            {
+              "file": "rust/sessions/src/subordinate_forwarding.rs",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug217_subordinate_forwarding.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/subordinate_output.rs",
+      "rust/sessions/src/subordinate_forwarding.rs",
+      "rust/tools/src/bridge_relay.rs"
+    ],
+    "totalLinesCovered": 285
+  }
+}

@@ -639,7 +639,7 @@
       ]
     },
     {
-      "name": "Saving a profile for a non-openai provider is rejected",
+      "name": "Saving a profile for a non-openai provider preserves other providers",
       "testMappings": [
         {
           "file": "rust/sessions/tests/profile_rpc_surface.rs",

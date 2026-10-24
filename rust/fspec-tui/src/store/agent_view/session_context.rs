@@ -31,9 +31,20 @@ use crate::views::agent::{
     session_transition::SessionTransition, ChunkKind, ChunkSource, ScrollbackList,
 };
 
+#[path = "provider_waiting.rs"]
+mod provider_waiting;
+
+fn next_transcript_nonce() -> u64 {
+    static NEXT_TRANSCRIPT_NONCE: std::sync::atomic::AtomicU64 =
+        std::sync::atomic::AtomicU64::new(1);
+    NEXT_TRANSCRIPT_NONCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
 #[derive(Debug)]
 pub struct SessionContext {
     pub id: SessionId,
+    pub(crate) transcript_nonce: u64,
+    pub transcript_originals: HashMap<u64, Vec<codelet_rpc_types::TranscriptOriginal>>,
     pub work_unit_id: Option<String>,
     pub scrollback: ScrollbackList,
     pub scrollback_next_seq: u64,
@@ -52,11 +63,13 @@ pub struct SessionContext {
     /// `src/tui/utils/thinkingBlockManager.ts`: "last streaming
     /// thinking with no `UserInput` after it".
     pub in_flight_thinking: Option<usize>,
+    pub(super) response_attempt: Option<super::response_attempt::ResponseAttemptCheckpoint>,
     /// **BUG-194**: the session's own thinking-indicator transition
     /// slot (per-session `InputTransitionState` + spinner clock).
     /// Ticked by `AgentView::tick_session_transition` from this
     /// session's own `SessionStatus` — focus movement never touches it.
     pub input_transition: SessionTransition,
+    pub provider_waiting: Option<String>,
     /// **RPC-391**: Edit/Write tool inputs captured at tool-call time,
     /// keyed by `ToolCallInfo.id`, consumed on the matching ToolResult to
     /// build the colored diff. Mirrors TS `pendingToolDiffsRef`.
@@ -67,14 +80,18 @@ impl SessionContext {
     pub fn new(id: SessionId) -> Self {
         Self {
             id,
+            transcript_nonce: next_transcript_nonce(),
+            transcript_originals: HashMap::new(),
             work_unit_id: None,
             scrollback: ScrollbackList::new(),
             scrollback_next_seq: 0,
             input_draft: String::new(),
             in_flight_assistant: None,
             in_flight_thinking: None,
+            response_attempt: None,
             pending_tool_diffs: HashMap::new(),
             input_transition: SessionTransition::default(),
+            provider_waiting: None,
         }
     }
 
@@ -94,6 +111,7 @@ impl SessionContext {
     /// downstream consumers (scrollback, turn modal, copy, re-wrap, mux
     /// panes) paint text cleaned exactly once.
     pub fn record_chunk(&mut self, chunk: &StreamChunk) {
+        self.apply_provider_waiting(chunk);
         super::record_chunk::record_chunk(self, chunk);
     }
 
@@ -113,10 +131,14 @@ impl SessionContext {
     }
 
     pub fn reset_scrollback(&mut self) {
+        self.transcript_nonce = next_transcript_nonce();
+        self.transcript_originals.clear();
+        self.provider_waiting = None;
         self.scrollback.reset();
         self.scrollback_next_seq = 0;
         self.in_flight_assistant = None;
         self.in_flight_thinking = None;
+        self.response_attempt = None;
         self.pending_tool_diffs.clear();
         // BUG-194: a session reset drops the in-flight thinking-indicator
         // transition (no stale spinner/finish-sweep survives a /clear).

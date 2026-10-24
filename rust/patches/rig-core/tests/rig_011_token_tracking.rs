@@ -130,7 +130,7 @@ fn make_responses_usage(reasoning_tokens: u64, cached_tokens: u64) -> ResponsesU
         input_tokens: 1000,
         input_tokens_details: Some(InputTokensDetails { cached_tokens }),
         output_tokens: 500,
-        output_tokens_details: OutputTokensDetails { reasoning_tokens },
+        output_tokens_details: Some(OutputTokensDetails { reasoning_tokens }),
         total_tokens: 1500,
     }
 }
@@ -326,9 +326,7 @@ fn test_completions_api_streaming_propagates_reasoning_tokens() {
     };
 
     // @step When the Usage event is emitted during streaming
-    let crate_usage = streaming_resp
-        .token_usage()
-        .expect("should return usage");
+    let crate_usage = streaming_resp.token_usage().expect("should return usage");
 
     // @step Then the emitted completion::Usage should have reasoning_tokens Some(3000)
     assert_eq!(crate_usage.reasoning_tokens, Some(3000));

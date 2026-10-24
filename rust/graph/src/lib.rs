@@ -129,16 +129,21 @@ pub async fn call_learnings_extraction_llm(
     // Each provider returns a different Agent<T> generic, so we can't abstract over them.
     macro_rules! call_with_provider {
         ($get_method:ident) => {{
-            let provider = manager
+            call_with_provider!(
+                $get_method,
+                provider,
+                provider.client().agent(provider.model())
+            )
+        }};
+        ($get_method:ident, $provider:ident, $builder:expr) => {{
+            let $provider = manager
                 .$get_method()
                 .map_err(|e| {
                     tracing::warn!("[KGRAPH] Failed to get provider for learnings extraction: {e}");
                     e
                 })
                 .ok()?;
-            let agent = provider
-                .client()
-                .agent(provider.model())
+            let agent = $builder
                 .preamble(learnings_extraction::LEARNINGS_EXTRACTION_PROMPT)
                 .build();
             match agent.prompt(&prompt_text).await {
@@ -191,7 +196,11 @@ pub async fn call_learnings_extraction_llm(
         }
         "gemini" => call_with_provider!(get_gemini),
         "zai" => call_with_provider!(get_zai),
-        "codex" => call_with_provider!(get_codex),
+        "codex" => call_with_provider!(
+            get_codex,
+            provider,
+            rig::agent::AgentBuilder::new(provider.completion_model())
+        ),
         _ => {
             tracing::warn!(
                 "[KGRAPH] Unsupported provider for learnings extraction: {provider_name}"

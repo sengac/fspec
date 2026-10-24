@@ -29,7 +29,7 @@ pub use codelet_rpc::{
 };
 
 use codelet_rpc::FspecService;
-use codelet_rpc_types::{LogRecord, SessionId, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{LogRecord, SessionId, StreamChunk, WorkUnitFocus, WorkUnitInfo};
 use futures::StreamExt;
 use std::sync::Arc;
 use tarpc::{
@@ -101,5 +101,9 @@ impl EmbeddedTransport {
     /// custom tracing::Layer.
     pub fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {
         self.service.logs_rx()
+    }
+
+    pub fn work_unit_focus_rx(&self) -> broadcast::Receiver<(SessionId, WorkUnitFocus)> {
+        self.service.work_unit_focus_rx()
     }
 }

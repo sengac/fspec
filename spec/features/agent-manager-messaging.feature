@@ -3,7 +3,7 @@
 Feature: Agent messaging — plain, bidirectional, any-to-any
   """
   Add Message variant to AgentManagerAction enum in types.rs: Message { session_id: String, message: String }. Add MessageDelivered variant to AgentManagerResult.
-  Handler implementation in agent_manager_handler.rs: Message action looks up target session by ID from SessionManager, calls session.receive_incoming_message() with IncomingMessage { source_session_id, role_name, message, images: None }. Uses try_send which returns TrySendError::Full for channel-full case.
+  Handler implementation in agent_manager_handler.rs: Message action looks up the target session by ID from SessionManager and calls the shared session.receive_agent_message() admission method with IncomingMessage { source_session_id, role_name, message, images: None }. Busy recipients are rejected with session_busy. Successful admission marks the recipient running before publishing the message; channel-full delivery still returns delivery_failed.
   The sender's role is obtained from the calling session's role field (Option<String> on BackgroundSession, simplified from SupervisorRole in AMGR-008). If None, pass empty string as role_name.
   No new channels or select branches needed — the existing incoming_message_rx branch in agent_loop's tokio::select! already handles delivery to the target. Messages are formatted via format_incoming_message() before being sent to the LLM.
   """
@@ -15,18 +15,18 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
   # BUSINESS RULES:
   #   1. Any session can send a message to any other session by ID — no access control on sending (supervisor→subordinate, subordinate→supervisor, peer-to-peer)
   #   2. Messages are delivered through the target session's existing incoming_message channel (mpsc, capacity 16) — reuses the IncomingMessage infrastructure
-  #   3. Messages queue if the target is mid-generation — no interruption of LLM processing. Picked up on next agent_loop iteration via tokio::select!
+  #   3. Messages are accepted only when the target is idle. Busy targets return session_busy with instructions to await_idle before sending again; rejected messages are never queued.
   #   4. If the incoming_message channel is full (16 pending messages), the send fails with error code delivery_failed
   #   5. Message action requires both session_id (target) and message (text content) parameters. Missing either returns error code invalid_parameter
   #   6. Success response shape: { delivered: true, session_id: 'target-id' }. Error response shape: { error: true, code: string, message: string }
   #   7. The message is delivered as an IncomingMessage with source_session_id set to the sender's session ID and role_name set to the sender's role (or empty if no role)
-  #   8. Sending a message to your own session ID is allowed (self-messaging) — no special case needed
+  #   8. Self-messaging follows the same idle-only rule; an active agent cannot queue messages to itself.
   #
   # EXAMPLES:
   #   1. Supervisor spawns subordinate, then sends message(session_id=subordinate, message='Analyze auth.rs for security issues') — gets { delivered: true, session_id: 'subordinate-uuid' }
   #   2. Subordinate sends message back to its spawner with results — message(session_id=spawner, message='Found 2 SQL injection vulnerabilities') — gets { delivered: true }
   #   3. Agent sends message to nonexistent session_id — gets { error: true, code: 'session_not_found', message: '...' }
-  #   4. Agent sends 17 messages rapidly to a target that is busy processing — first 16 succeed, 17th gets { error: true, code: 'delivery_failed', message: '...' }
+  #   4. Agent sends messages rapidly to an idle target — the first succeeds and claims the target as running; subsequent sends return session_busy without queueing.
   #   5. Two subordinates of the same supervisor send messages to each other (peer-to-peer) — both deliveries succeed, no spawner relationship required
   #   6. Agent calls message action without session_id — gets { error: true, code: 'invalid_parameter', message: 'session_id is required' }
   #   7. Target session receives message while idle — message appears as next input and triggers agent processing with formatted sender info
@@ -114,8 +114,8 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
 
   @message
   @self
-  Scenario: Self-messaging is allowed
-    Given a session with AgentManager available
+  Scenario: Self-messaging to an idle session is allowed
+    Given an idle session with AgentManager available
     When the agent calls AgentManager with action "message" targeting its own session_id with message "note to self"
     Then the response should contain "delivered" as true
     And the session's incoming message channel should contain the self-addressed message

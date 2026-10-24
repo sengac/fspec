@@ -7,7 +7,6 @@
 @bug
 @BUG-184
 Feature: Mux Files/Checkpoints panes: 10s refresh loses scroll position and lacks loading dialog parity with single-view mode
-
   """
   BUG-182's GitStateWatcher (codelet-core git_state.rs) polls every 10s and broadcasts a GitState frame {branch, checkpoint_counts, changed_files, checkpoints} only when it differs from the last published snapshot. The TUI's dispatch_git_state.rs R4 re-fetches the visible lazy panes (Changed Files, Checkpoints) on every frame. BUG-184 hardens that path: a list_signature (LoadTracker.list_signature, set whenever the view replaces its list) records the identity of the displayed list — sanitized path/change-type/staged for files; sanitized work_unit_id/name/auto-flag for checkpoints (timestamp EXCLUDED: rows never render it and the fallback 'now' stamp churns without an index sidecar; order DOES participate). A frame leg whose signature matches the displayed list's signature is DROPPED before any re-fetch (no RPC, no dialog flash, no churn). Change-bearing refreshes preserve the list scroll offset (clamped to list_len - visible_rows; shorter-than-window lists fall back to 0) and snap the selection into the preserved window (first visible row for a fallback; last visible row + window scroll when the selection slid past the bottom). Cascade same-key reloads (checkpoints set_files on the same work_unit_id+name; set_diff on the same work_unit_id+name+path) preserve the dependent pane's scroll/selection; a key change resets it. The initial-load loading dialog is untouched — it already renders mux-aware (TUI-106/TUI-108 mux-aware is_view_loading gate); the user decision 'Initial only' means the background refresh stays dialog-free, which the no-op drop + scroll preservation deliver.
   """
@@ -32,7 +31,6 @@ Feature: Mux Files/Checkpoints panes: 10s refresh loses scroll position and lack
   #   6. Cascade same-key reload: a change-bearing checkpoint refresh re-fetches the (re-)selected checkpoint's files and diff → the Files pane keeps its scroll/selection and the Diff pane keeps its scroll (clamped to the new diff length); selecting a DIFFERENT checkpoint resets both panes to the top
   #
   # ========================================
-
   Background: User Story
     As a TUI user watching live git state in mux mode
     I want to see the Files/Checkpoints panes update every 10 seconds without jumping
@@ -41,7 +39,6 @@ Feature: Mux Files/Checkpoints panes: 10s refresh loses scroll position and lack
   # ========================================
   # SCENARIOS
   # ========================================
-
   Scenario: Steady-state tick: a GitState frame matching the displayed checkpoints list is dropped before any re-fetch
     Given a mux layout with a loaded, displayed Checkpoints pane displaying 5 checkpoints with the list scrolled past the top
     When a GitState frame arrives whose checkpoints leg renders identically to the displayed list
@@ -88,10 +85,8 @@ Feature: Mux Files/Checkpoints panes: 10s refresh loses scroll position and lack
     And the pane does not flash the loading dialog
     And the file list scroll offset is unchanged
 
-
   Scenario: Change-bearing refresh: a committed checkpoint keeps the window and lands on the first visible row
     Given a loaded Checkpoints pane displaying 30 checkpoints scrolled to the bottom with checkpoint-29 selected
     When a change-bearing git-state refresh lands a list in which checkpoint-29 was removed (it no longer exists)
     Then the selection moves to the first visible row of the preserved window
     And the window keeps its point (clamped to the last full page of the fresh list)
-

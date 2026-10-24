@@ -1,0 +1,90 @@
+{
+  "scenarios": [
+    {
+      "name": "Terminal cache measurements survive the stream",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "175-200",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "lines": [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "lines": [182,183,223,224,225,229,230,231,232,233,234,235,253,255,259,260,329,330,331,332,333,334,336,337] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adjacent requests do not share cache evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "202-215",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "lines": [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "lines": [182,183,223,224,225,229,230,231,232,253,255,259,260,329,330,331,332,333,334,336,337] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Measured zero cache remains distinct from absent cache",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "217-231",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "lines": [14,15,16,17,18,19,20,21,22,23,24,25,53,54,55,56,57,58,59] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "lines": [85,86,87,89,90,91,92,93,94,95,96,97,98] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terminal usage without a request start is rejected",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "36-73",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "lines": [28,29,30,31,32,33] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "lines": [229,230,231,232,329,330,331,332] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overflowing cache occupancy is rejected without a successful terminal response",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "75-125",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "lines": [53,54,55,56,57,58,59,60,61,62,63,64,65,66] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "lines": [85,86,87,88,89,90,91,92,93,94,95,96,97,98,229,230,231,232,233,234,235] },
+            { "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs", "lines": [116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131] }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonstreaming cache usage agrees with terminal streaming measurements",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct066_anthropic_terminal_usage.rs",
+          "lines": "233-272",
+          "implMappings": [
+            { "file": "rust/patches/rig-core/src/providers/anthropic/completion.rs", "lines": [116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,174,175,176,178,179,180,181,182] }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": ["rust/providers/tests/cmpct066_anthropic_terminal_usage.rs"],
+    "implFiles": ["rust/patches/rig-core/src/providers/anthropic/request_usage.rs", "rust/patches/rig-core/src/providers/anthropic/streaming.rs", "rust/patches/rig-core/src/providers/anthropic/completion.rs"],
+    "totalLinesCovered": 423
+  }
+}

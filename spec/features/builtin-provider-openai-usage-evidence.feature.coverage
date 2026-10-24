@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "Streaming Chat missing usage is rejected",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs",
+          "lines": "128-139",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonstreaming Chat missing usage is rejected",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs",
+          "lines": "178-189",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "lines": [
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct Chat missing usage is rejected",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs",
+          "lines": "191-206",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                954,
+                955,
+                956,
+                957,
+                958,
+                959
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit measured zero remains valid at every Chat boundary",
+      "testMappings": [
+        {
+          "file": "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs",
+          "lines": "208-238",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/completion/usage_normalization.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/patches/rig-core/tests/cmpct065_openai_usage_evidence.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/mod.rs",
+      "rust/patches/rig-core/src/completion/usage_normalization.rs"
+    ],
+    "totalLinesCovered": 104
+  }
+}

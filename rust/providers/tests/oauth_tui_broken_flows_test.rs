@@ -26,7 +26,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 #[serial]
 async fn test_form_page_served_at_root_url_with_auth_link() {
     // @step Given the Claude browser OAuth server is started with a PKCE challenge
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let pkce = generate_pkce();
 
     // @step And the server binds to an ephemeral port

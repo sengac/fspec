@@ -80,13 +80,15 @@ pub fn unregister_manager() {
 /// does not know about — both degrade to "no isolation / no stage" at the
 /// tool layer (today's allow-all behavior, never stricter).
 fn session_by_id(session_id_str: &str) -> Option<Arc<BackgroundSession>> {
+    let id = uuid::Uuid::parse_str(session_id_str).ok()?;
+    let session_id = codelet_tools::tool_admission::authorization_identity(id).to_string();
     let registered = TOOL_CALLBACKS_MANAGER
         .lock()
         .expect("tool callbacks manager lock poisoned")
         .clone();
     match registered {
-        Some(manager) => manager.get_session(session_id_str).ok(),
-        None => SessionManager::instance().get_session(session_id_str).ok(),
+        Some(manager) => manager.get_session(&session_id).ok(),
+        None => SessionManager::instance().get_session(&session_id).ok(),
     }
 }
 

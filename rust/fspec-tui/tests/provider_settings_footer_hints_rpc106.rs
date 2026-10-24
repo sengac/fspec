@@ -363,29 +363,47 @@ fn footer_updates_in_real_time_when_navigating_between_kinds() {
         "precondition: provider-row hint at index 0"
     );
 
-    // openai expanded with one profile produces:
-    //   [0] Provider, [1] Profile { prof1 }, [2] AddProfile
-    // (openai has is_oauth_provider=false and id==openai so ApiKey is skipped.)
-
     // @step When I move selection Down onto the ApiKey row
     // (openai uses Profile children — the "edit/delete" hint applies to both
     //  Profile and ApiKey identically; we use the Profile row here as the
     //  canonical "edit · delete" target.)
-    view.selected_index = 1;
+    view.selected_index = view
+        .nav_items
+        .iter()
+        .position(|item| {
+            item.provider_id == "openai"
+                && matches!(
+                    &item.kind,
+                    codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::Profile {
+                        profile_name
+                    } if profile_name == "prof1"
+                )
+        })
+        .expect("OpenAI prof1 row must be present");
     // @step Then the footer hint equals "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
         view.footer_hint(),
         "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
-        "after Down once → Profile row"
+        "after selecting the OpenAI Profile row"
     );
 
     // @step When I move selection Down onto the AddProfile row
-    view.selected_index = 2;
+    view.selected_index = view
+        .nav_items
+        .iter()
+        .position(|item| {
+            item.provider_id == "openai"
+                && matches!(
+                    item.kind,
+                    codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::AddProfile
+                )
+        })
+        .expect("OpenAI add-profile row must be present");
     // @step Then the footer hint equals "Enter: create · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
         view.footer_hint(),
         "Enter: create · / filter · Tab: Switch to models · Esc: close",
-        "after Down twice → AddProfile row"
+        "after selecting the OpenAI AddProfile row"
     );
 }
 

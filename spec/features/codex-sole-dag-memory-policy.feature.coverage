@@ -1,0 +1,485 @@
+{
+  "scenarios": [
+    {
+      "name": "Native memory activation fails before sending a request",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+          "lines": "16-62",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/memory_policy.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unsolicited native memory output never commits or completes",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+          "lines": "65-134",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/native.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/stream_events.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native checkpoint and trigger input cannot bypass the DAG policy",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+          "lines": "137-200",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/history.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Encrypted reasoning and hosted search remain independent of native memory",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+          "lines": "203-259",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/native.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonterminal native memory snapshots cannot authorize local tools",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_policy_boundaries.rs",
+          "lines": "28-70",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/memory_policy.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed native memory terminals still return typed policy errors",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_policy_boundaries.rs",
+          "lines": "73-125",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/memory_policy.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                194,
+                195
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected replacement requests retain the committed checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_policy_boundaries.rs",
+          "lines": "128-217",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed direct completions preserve the committed checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_direct_checkpoint.rs",
+          "lines": "13-98",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/model.rs",
+              "lines": [
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed streamed completions preserve the committed checkpoint",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct077_direct_checkpoint.rs",
+          "lines": "13-98",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                175,
+                176,
+                177,
+                178
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 9,
+    "coveragePercent": 129,
+    "testFiles": [
+      "rust/providers/tests/cmpct077_sole_dag_memory.rs",
+      "rust/providers/tests/cmpct077_policy_boundaries.rs",
+      "rust/providers/tests/cmpct077_direct_checkpoint.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/model.rs",
+      "rust/providers/src/codex/memory_policy.rs",
+      "rust/providers/src/codex/native.rs",
+      "rust/providers/src/codex/stream_events.rs",
+      "rust/providers/src/codex/streaming.rs",
+      "rust/providers/src/codex/history.rs"
+    ],
+    "totalLinesCovered": 879
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "scenarios": [
+    {
+      "name": "Ignore invalid buffering payloads",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug241_metadata_protocol.rs",
+          "lines": "19-65",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Respect buffering source precedence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug241_metadata_protocol.rs",
+          "lines": "67-118",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve faster model advice per event",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug241_metadata_protocol.rs",
+          "lines": "120-230",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata.rs",
+              "lines": [
+                52,
+                70,
+                76,
+                80,
+                94,
+                105,
+                119,
+                123,
+                132,
+                139,
+                143,
+                147,
+                168,
+                176,
+                188
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                126
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scope optional metadata to metadata events",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug241_metadata_protocol.rs",
+          "lines": "232-280",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/metadata_protocol.rs",
+              "lines": [
+                5,
+                7,
+                28,
+                43,
+                56,
+                66,
+                91,
+                120,
+                137,
+                148
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug241_metadata_protocol.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/metadata_protocol.rs",
+      "rust/providers/src/codex/metadata.rs",
+      "rust/providers/src/codex/recovery.rs",
+      "rust/providers/src/codex/websocket.rs",
+      "rust/providers/src/codex/metadata_delivery.rs"
+    ],
+    "totalLinesCovered": 321
+  }
+}

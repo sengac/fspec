@@ -32,7 +32,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 #[serial]
 async fn test_login_to_github_com_copilot_deployment_via_oauth_device_flow() {
     // @step Given I have an active GitHub Copilot subscription on github.com
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And no existing github-copilot credential exists on disk
     let auth_path = get_copilot_auth_path();
@@ -149,7 +149,7 @@ async fn test_login_to_github_com_copilot_deployment_via_oauth_device_flow() {
 #[serial]
 async fn test_login_to_github_enterprise_with_normalized_enterprise_url() {
     // @step Given I have an active GitHub Copilot subscription on a GitHub Enterprise instance
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And no existing github-copilot credential exists on disk
     let auth_path = get_copilot_auth_path();
@@ -392,7 +392,7 @@ async fn test_logout_deletes_the_github_copilot_credential_file() {
     use codelet_providers::copilot::{write_copilot_auth, CopilotAuthJson};
 
     // @step Given I am logged in to github-copilot with a credential at "~/.fspec/credentials/copilot_auth.json"
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let auth = CopilotAuthJson::from_github_oauth_token("ghu_logged_in".to_string(), None);
     write_copilot_auth(&auth)

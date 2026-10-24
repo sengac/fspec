@@ -17,7 +17,8 @@ use super::{
 /// Route a bracketed-paste blob to the active input mode's paste sink.
 pub(super) fn handle_paste(view: &mut ProviderSettingsView, text: &str) -> ProviderSettingsEvent {
     match view.mode.clone() {
-        ProviderSettingsMode::CreateProfile { provider_id, form } => {
+        ProviderSettingsMode::CreateProfile { provider_id, form }
+        | ProviderSettingsMode::EditSettings { provider_id, form } => {
             profile_form_paste::handle_form_paste(view, provider_id, form, None, text)
         }
         ProviderSettingsMode::EditProfile {

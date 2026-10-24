@@ -42,6 +42,9 @@ pub fn create_handler(
     Arc::new(move |action: SessionSearchAction, session_id: Uuid| {
         let is_trimming = compaction_trimming.load(Ordering::Relaxed);
         match action {
+            SessionSearchAction::Originals { request } => {
+                persistence::originals::retrieve_originals(request).into()
+            }
             SessionSearchAction::Recent { count } => handle_recent(&project_path, count),
             SessionSearchAction::Search {
                 query,
@@ -458,17 +461,12 @@ fn get_user_message_previews(
     (first, last)
 }
 
-/// Extract work unit ID from session name (convention: "Work on AMGR-001" or similar)
-///
-/// Uses the ripgrep engine (grep-regex) consistent with all regex matching in
-/// this module — Rule [6].
 fn extract_work_unit_id(session: &codelet_core::persistence::SessionManifest) -> Option<String> {
-    // Work unit IDs follow the pattern: PREFIX-NNN (e.g., AMGR-001, AUTH-003)
-    // Ripgrep returns byte offsets — safe here since [A-Z]+-\d+ only matches ASCII,
-    // so start/end are always valid char boundaries.
-    let matcher = RegexMatcherBuilder::new().build(r"[A-Z]+-\d+").ok()?;
-    let (start, end) = ripgrep_find(&matcher, &session.name)?;
-    Some(session.name[start..end].to_string())
+    session
+        .work_unit_focus
+        .context
+        .as_ref()
+        .map(|context| context.id.clone())
 }
 
 /// Resolve message content, handling blob references

@@ -6,7 +6,6 @@
 @clear
 @rpc-436
 Feature: Daemon-side session cleared broadcast (manager-level liveness gate)
-
   """
   SessionManager-level support for RPC-436's wire fan-out (the sibling
   feature session-events-cleared-fan-out): SessionManager gains
@@ -32,7 +31,6 @@ Feature: Daemon-side session cleared broadcast (manager-level liveness gate)
   #   2. clear_session_history is called for an unknown id: the Err("Session not found") contract holds and NO cleared event is emitted
   #
   # ========================================
-
   Background: User Story
     As a daemon operator
     I want session clears to be observable as an in-process broadcast
@@ -43,7 +41,6 @@ Feature: Daemon-side session cleared broadcast (manager-level liveness gate)
     When clear_session_history is called for a session id that is not in the manager's live map
     Then the clear returns the existing not-found error
     And no cleared event is observed on the cleared broadcast
-
 
   Scenario: Clearing a live session pushes exactly one cleared event carrying its id
     Given the session manager holds one live session

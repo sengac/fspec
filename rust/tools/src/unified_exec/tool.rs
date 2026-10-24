@@ -5,6 +5,7 @@
 
 use super::exec_stdin::spawn_exec_stdin_detector;
 use super::output::{collect_output_until_deadline_interruptible, truncate_output_str};
+use super::owner_scope::{capture_owner, ProcessRegistration};
 use super::process_store::{global_store, ProcessEntry};
 use super::reaper::{generate_session_id, spawn_reaper};
 use super::spawning::{spawn_pipe_process, spawn_pty_process};
@@ -164,6 +165,7 @@ impl Tool for UnifiedExecTool {
 impl UnifiedExecTool {
     /// Handle the `run` action — spawn a process, collect output, return result.
     async fn handle_run(&self, params: &Value) -> Result<UnifiedExecResult, ToolError> {
+        let owner = capture_owner(self.session_id);
         let command_val = params.get("command").ok_or(ToolError::Validation {
             tool: "unified_exec",
             message: "command is required for run action".to_string(),
@@ -209,6 +211,9 @@ impl UnifiedExecTool {
             } else {
                 spawn_pipe_process(&command, workdir.as_deref())?
             };
+        let session_id = generate_session_id();
+        let owner_registration = owner
+            .map(|owner| ProcessRegistration::new(owner, session_id.clone(), kill_handle.clone()));
 
         let start = Instant::now();
         let output = collect_output_until_deadline_interruptible(
@@ -246,8 +251,8 @@ impl UnifiedExecTool {
             }
             _ => {
                 // Process still running — store and return session_id
-                let session_id = generate_session_id();
                 let entry = ProcessEntry {
+                    owner_registration,
                     child,
                     stdin_tx,
                     output_buffer,

@@ -1,6 +1,5 @@
-//! PROV-108 — provider-profile persistence (save / delete) for local-server
-//! `openai` profiles stored under `~/.fspec/fspec-config.json`
-//! (`providers.openai.profiles.<name>`).
+//! Provider-profile persistence for built-in and custom providers stored under
+//! `~/.fspec/fspec-config.json` (`providers.<id>.profiles.<name>`).
 //!
 //! Feature: spec/features/provider-config-profile-persistence.feature
 //!
@@ -84,28 +83,21 @@ pub struct ProfileDef {
     pub loop_detection_max_retries: Option<u32>,
 }
 
-/// Canonical openai-only guard predicate — the single source of truth for
-/// which providers support profile persistence (TS `profile-management.ts`
-/// `saveProfile` guard). Every caller (handle override, NAPI binding) and this
-/// module's own defense-in-depth checks reference this so the semantics cannot
-/// drift across layers.
+/// Profiles are supported for every nonempty logical provider identifier.
 pub fn profiles_supported(provider_id: &str) -> bool {
-    provider_id == "openai"
+    !provider_id.trim().is_empty()
 }
 
-/// Canonical user-facing error message for an unsupported (non-`openai`)
-/// profile provider. Referenced by the handle override and the NAPI binding so
-/// the wording is identical everywhere.
+/// Shared validation error for an empty logical provider identifier.
 pub fn profiles_unsupported_error(provider_id: &str) -> String {
-    format!("Profiles are only supported for the OpenAI API provider (got '{provider_id}')")
+    format!("A nonempty provider identifier is required (got '{provider_id}')")
 }
 
 /// Create or update a profile, persisting to `~/.fspec/fspec-config.json`.
 ///
 /// Resolves the config path via the `FSPEC_USER_DIR`/home-dir convention and
-/// delegates to [`save_profile_at`]. Profiles are only supported for the
-/// `openai` provider (see [`profiles_supported`]); a non-openai call is a
-/// no-op at this layer — the `Err` is surfaced by the handle / NAPI callers.
+/// delegates to [`save_profile_at`]. Built-in and custom providers share the
+/// same provider-qualified storage without modifying inherited credentials.
 ///
 /// Every config-file read and write is logged (path + outcome) via the shared
 /// `tracing` system so a silent failure (e.g. an unresolvable home directory)
@@ -146,8 +138,7 @@ pub fn delete_profile(provider_id: &str, profile_name: &str) -> std::io::Result<
 /// persisting to `~/.fspec/fspec-config.json`.
 ///
 /// Resolves the config path via the `FSPEC_USER_DIR`/home-dir convention and
-/// delegates to [`rename_profile_at`]. A non-openai call is a no-op at this
-/// layer (the `Err` is surfaced by the handle / NAPI callers).
+/// delegates to [`rename_profile_at`].
 pub fn rename_profile(
     provider_id: &str,
     old_name: &str,
@@ -195,9 +186,17 @@ fn set_or_remove(obj: &mut Map<String, Value>, key: &str, value: Option<Value>) 
 
 /// Apply the connection-level fields onto an existing (or freshly created)
 /// profile object, leaving `customModels` and any unknown keys untouched.
-fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
-    profile.insert("baseUrl".to_string(), Value::String(def.base_url.clone()));
-    profile.insert("apiKey".to_string(), Value::String(def.api_key.clone()));
+pub(crate) fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
+    set_or_remove(
+        profile,
+        "baseUrl",
+        (!def.base_url.is_empty()).then(|| Value::String(def.base_url.clone())),
+    );
+    set_or_remove(
+        profile,
+        "apiKey",
+        (!def.api_key.is_empty()).then(|| Value::String(def.api_key.clone())),
+    );
     set_or_remove(
         profile,
         "contextWindow",
@@ -297,13 +296,14 @@ pub fn save_profile_at(
             Value::Object(Map::new())
         }
     };
+    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
     let Some(root_obj) = root.as_object_mut() else {
         return Ok(());
     };
     let Some(providers) = ensure_object(root_obj, "providers") else {
         return Ok(());
     };
-    let Some(provider) = ensure_object(providers, provider_id) else {
+    let Some(provider) = ensure_object(providers, &storage_id) else {
         return Ok(());
     };
     let Some(profiles) = ensure_object(provider, "profiles") else {
@@ -335,9 +335,10 @@ pub fn delete_profile_at(
     let Some(mut root) = read_config_value(config_path) else {
         return Ok(());
     };
+    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
     let Some(profiles) = root
         .get_mut("providers")
-        .and_then(|p| p.get_mut(provider_id))
+        .and_then(|p| p.get_mut(&storage_id))
         .and_then(|p| p.get_mut("profiles"))
         .and_then(Value::as_object_mut)
     else {
@@ -376,13 +377,14 @@ pub fn rename_profile_at(
         Some(value @ Value::Object(_)) => value,
         _ => Value::Object(Map::new()),
     };
+    let storage_id = crate::provider_settings::provider_storage_id(&root, provider_id);
     let Some(root_obj) = root.as_object_mut() else {
         return Ok(());
     };
     let Some(providers) = ensure_object(root_obj, "providers") else {
         return Ok(());
     };
-    let Some(provider) = ensure_object(providers, provider_id) else {
+    let Some(provider) = ensure_object(providers, &storage_id) else {
         return Ok(());
     };
     let Some(profiles) = ensure_object(provider, "profiles") else {

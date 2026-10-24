@@ -4,16 +4,15 @@ use async_stream::stream;
 use futures::StreamExt;
 use http::Request;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
 use crate::completion::{CompletionError, CompletionRequest, GetTokenUsage};
 use crate::http_client::HttpClientExt;
 use crate::http_client::sse::{Event, GenericEventSource};
-use crate::json_utils::{self, merge};
+use crate::json_utils;
 use crate::message::{ToolCall, ToolFunction};
-use crate::providers::openai::completion::{self, CompletionModel, OpenAIRequestParams, Usage};
+use crate::providers::openai::completion::{self, CompletionModel, Usage};
 use crate::streaming::{self, RawStreamingChoice};
 
 // ================================================================
@@ -82,19 +81,7 @@ pub struct StreamingCompletionResponse {
 
 impl GetTokenUsage for StreamingCompletionResponse {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-        usage.input_tokens = self.usage.prompt_tokens as u64;
-        usage.output_tokens = self.usage.total_tokens as u64 - self.usage.prompt_tokens as u64;
-        usage.total_tokens = self.usage.total_tokens as u64;
-        // Z.AI/OpenAI cache tokens
-        if let Some(details) = &self.usage.prompt_tokens_details {
-            usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
-        }
-        // Reasoning tokens
-        if let Some(details) = &self.usage.completion_tokens_details {
-            usage.reasoning_tokens = Some(details.reasoning_tokens as u64);
-        }
-        Some(usage)
+        self.usage.token_usage()
     }
 
     /// PROV-039: Return the captured stop_reason (mapped from OpenAI finish_reason)
@@ -119,20 +106,8 @@ where
             return super::nonstreaming::stream_nonstreaming(self, completion_request).await;
         }
 
-        let request = super::CompletionRequest::try_from(OpenAIRequestParams {
-            model: self.model.clone(),
-            request: completion_request,
-            strict_tools: self.strict_tools,
-            tool_result_array_content: self.tool_result_array_content,
-        })?;
-        let request_messages = serde_json::to_string(&request.messages)
-            .expect("Converting to JSON from a Rust struct shouldn't fail");
-        let mut request_as_json = serde_json::to_value(request).expect("this should never fail");
-
-        request_as_json = merge(
-            request_as_json,
-            json!({"stream": true, "stream_options": {"include_usage": true}}),
-        );
+        let request_as_json = self.selected_request_json(completion_request)?;
+        let request_messages = serde_json::to_string(&request_as_json["messages"])?;
 
         if enabled!(Level::TRACE) {
             tracing::trace!(
@@ -142,7 +117,7 @@ where
             );
         }
 
-        let req_body = serde_json::to_vec(&request_as_json)?;
+        let req_body = self.selected_request_bytes(&request_as_json)?;
 
         let req = self
             .client
@@ -211,7 +186,7 @@ where
                     let data = match serde_json::from_str::<StreamingCompletionChunk>(&message.data) {
                         Ok(data) => data,
                         Err(error) => {
-                            tracing::error!(?error, message = message.data, "Failed to parse SSE message");
+                            tracing::error!(?error, body_bytes = message.data.len(), body = %message.data, "Failed to parse SSE message");
                             continue;
                         }
                     };
@@ -223,22 +198,9 @@ where
                         final_usage = Some(usage.clone());
                         // Emit usage event for real-time token tracking
                         // Include cached tokens from Z.AI/OpenAI prompt_tokens_details
-                        let cached_tokens = usage.prompt_tokens_details
-                            .as_ref()
-                            .map(|d| d.cached_tokens as u64)
-                            .unwrap_or(0);
-                        let reasoning_tokens = usage.completion_tokens_details
-                            .as_ref()
-                            .map(|d| d.reasoning_tokens as u64);
-                        let crate_usage = crate::completion::Usage {
-                            input_tokens: usage.prompt_tokens as u64,
-                            output_tokens: usage.output_tokens(),
-                            total_tokens: usage.total_tokens as u64,
-                            cache_read_input_tokens: if cached_tokens > 0 { Some(cached_tokens) } else { None },
-                            reasoning_tokens,
-                            ..Default::default()
-                        };
-                        yield Ok(streaming::RawStreamingChoice::Usage(crate_usage));
+                        if let Some(normalized) = usage.token_usage() {
+                            yield Ok(streaming::RawStreamingChoice::Usage(normalized));
+                        }
                     }
 
                     // Expect at least one choice
@@ -378,8 +340,9 @@ where
                 }
                 Err(error) => {
                     tracing::error!(?error, "SSE error");
-                    yield Err(CompletionError::ProviderError(error.to_string()));
-                    break;
+                    event_source.close();
+                    yield Err(CompletionError::HttpError(error));
+                    return;
                 }
             }
         }
@@ -399,7 +362,14 @@ where
             ));
         }
 
-        let final_usage = final_usage.unwrap_or_default();
+        let Some(final_usage) = final_usage else {
+            yield Err(CompletionError::ResponseError("missing OpenAI usage".into()));
+            return;
+        };
+        if final_usage.token_usage().is_none() {
+            yield Err(CompletionError::ResponseError("inconsistent OpenAI usage".into()));
+            return;
+        }
         if !span.is_disabled() {
             span.record("gen_ai.usage.input_tokens", final_usage.prompt_tokens);
             span.record("gen_ai.usage.output_tokens", final_usage.total_tokens - final_usage.prompt_tokens);

@@ -312,6 +312,8 @@ Work in git worktrees for safe experimentation and parallel development. See [do
 
 fspec agents have full access to your file system, network, and shell. See [docs/SECURITY.md](docs/SECURITY.md) for sandboxing recommendations and ExitBox integration.
 
+Diagnostic logs omit conversation and tool payloads by default. See [docs/PRIVACY_LOGGING.md](docs/PRIVACY_LOGGING.md) for explicit local payload diagnostics, credential safeguards, private storage, and retention.
+
 ---
 
 ## Command and file blocklist

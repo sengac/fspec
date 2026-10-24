@@ -1,0 +1,127 @@
+{
+  "scenarios": [
+    {
+      "name": "Reject malformed committed memory during cold replay",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct070_cold_boundary.rs",
+          "lines": "11-126",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid promoted memory cannot be reconciled",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct070_cold_boundary.rs",
+          "lines": "128-169",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct070_cold_boundary.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/compaction_boundary.rs",
+      "rust/core/src/persistence/compaction_commit.rs"
+    ],
+    "totalLinesCovered": 236
+  }
+}

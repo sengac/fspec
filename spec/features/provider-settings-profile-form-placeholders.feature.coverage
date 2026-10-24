@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "109-128",
+          "lines": "110-127",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -64,7 +64,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "133-152",
+          "lines": "133-150",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -123,7 +123,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "157-176",
+          "lines": "156-174",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -182,7 +182,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "181-207",
+          "lines": "180-204",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
@@ -228,7 +228,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
-          "lines": "212-252",
+          "lines": "210-250",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profile_form.rs",
@@ -266,6 +266,6 @@
       "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
       "rust/fspec-tui/src/views/provider_settings/profile_form.rs"
     ],
-    "totalLinesCovered": 302
+    "totalLinesCovered": 295
   }
 }

@@ -45,6 +45,20 @@ pub enum InputTransitionState {
     },
 }
 
+pub fn paint_input_or_spinner_with_waiting(
+    area: Rect,
+    buf: &mut Buffer,
+    input: &MultiLineInput,
+    state: &InputTransitionState,
+    waiting: Option<&str>,
+) {
+    if let (InputTransitionState::Loading { elapsed_ms }, Some(message)) = (state, waiting) {
+        paint_spinner(area, buf, *elapsed_ms, message, "(Esc to stop)");
+    } else {
+        paint_input_or_spinner(area, buf, input, state);
+    }
+}
+
 impl InputTransitionState {
     /// `(elapsed_ms - phase_start) / INK_FRAME_TIME_MS` clamped at 0.
     fn frame_count(elapsed_ms_since_start: u64) -> usize {

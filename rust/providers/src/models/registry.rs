@@ -90,16 +90,8 @@ impl ModelRegistry {
             ProviderError::config("registry", format!("Unknown provider: {provider}"))
         })?;
 
-        // Try exact match first
-        if let Some(model_info) = provider_info.models.get(model) {
+        if let Some(model_info) = super::lookup::find_model(&provider_info.models, model) {
             return Ok(model_info);
-        }
-
-        // Try to find a model whose ID starts with the given input
-        for (key, model_info) in &provider_info.models {
-            if key.starts_with(model) || model_info.id.starts_with(model) {
-                return Ok(model_info);
-            }
         }
 
         // Not found - provide suggestions

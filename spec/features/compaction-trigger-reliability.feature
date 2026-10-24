@@ -124,7 +124,7 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     Given an active Claude session with a user override threshold of 150,000 tokens
     And resolve_compaction_threshold returns the override value
     When the session's total input tokens exceed 150,000
-    Then the compaction hook fires at the override threshold, not the default base formula
+    Then the compaction hook fires at the override threshold, not the default 80 percent threshold
     And compaction recovery runs
 
   @integration

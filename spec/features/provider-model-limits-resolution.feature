@@ -1,11 +1,13 @@
+@context-window
+@providers
 @done
 @LIMITS-003
 @provider
-@model-limits
 Feature: Provider Model Limits Resolution
   """
   Each provider implements the ModelLimitsResolver trait in its own existing file
   (claude.rs, openai.rs, gemini.rs, codex/mod.rs, zai.rs, copilot/provider.rs).
+  PROV-161 supersedes historical blanket Anthropic ceilings; 200000/8192 remain fallback values only.
   """
 
   # ========================================
@@ -13,7 +15,7 @@ Feature: Provider Model Limits Resolution
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Claude: max_context_window=Some(200_000), max_output_tokens_limit=Some(8_192), defaults=200k/8k — until CONFIG-007 opt-in
+  #   1. Claude: no blanket maxima; defaults=200k/8k when metadata and overrides are absent.
   #   2. OpenAI: max_context_window=None (trusts registry), defaults=128k/4k, reads OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS env vars as default overrides
   #   3. Gemini: max_context_window=None (trusts registry), defaults=1M/8k — API genuinely supports advertised limits
   #   4. Codex: max_context_window=None, defaults=272k/4k, should_send_max_output_tokens()=false since API rejects it
@@ -22,7 +24,7 @@ Feature: Provider Model Limits Resolution
   #   7. Each provider implementation must have unit tests verifying clamp behavior, default values, and should_send_max_output_tokens
   #
   # EXAMPLES:
-  #   1. Claude selects claude-opus-4-6 (registry: 1M/128k) → resolver clamps to 200k/8k
+  #   1. Claude selects claude-opus-4-6 (registry: 1M/128k) → resolver retains 1M/128k.
   #   2. Claude selects claude-sonnet-4 (registry: 200k/8k) → resolver returns 200k/8k (no clamp needed, values agree)
   #   3. OpenAI selects gpt-4o (registry: 128k/16k) → resolver returns 128k/16k (trusted)
   #   4. Codex with no registry data → resolver returns 272k/4k defaults, should_send_max_output=false
@@ -34,15 +36,15 @@ Feature: Provider Model Limits Resolution
     And each provider implements the ModelLimitsResolver trait
 
   # -- Claude Provider -------------------------------------------------------
-  Scenario: Claude resolver clamps registry context window to 200k
-    Given the Claude provider's resolver declares max_context_window as 200000
+  Scenario: Claude resolver retains catalog context window
+    Given the Claude provider's resolver declares max_context_window as None
     When the registry reports a context window of 1000000
-    Then the resolved context window should be clamped to 200000
+    Then the resolved context window should be 1000000
 
-  Scenario: Claude resolver clamps registry max output tokens to 8192
-    Given the Claude provider's resolver declares max_output_tokens_limit as 8192
+  Scenario: Claude resolver retains catalog maximum output tokens
+    Given the Claude provider's resolver declares max_output_tokens_limit as None
     When the registry reports max output tokens of 128000
-    Then the resolved max output tokens should be clamped to 8192
+    Then the resolved max output tokens should be 128000
 
   Scenario: Claude resolver returns correct defaults
     Given the Claude provider's resolver is queried with no registry or user data

@@ -208,6 +208,14 @@ async fn header_inserts_work_unit_prefix_between_session_number_and_model() {
         Some("RPC-029".to_string()),
         Some("implementing".to_string()),
     );
+    store.set_work_unit_context(
+        SessionId::new("s-1"),
+        codelet_rpc_types::WorkUnitContext {
+            id: "RPC-029".into(),
+            title: "Header card".into(),
+            status: "implementing".into(),
+        },
+    );
     // @step When the App renders AgentView against a 120x20 TestBackend
     let buf = render_buffer(120, 20, &mut store, &mut view);
     let top = &rows_of(&buf)[0];

@@ -1,0 +1,58 @@
+{
+  "scenarios": [
+    {
+      "name": "Unreadable recovery records never become empty admission capacity",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug246_corrupt_admission.rs",
+          "lines": "10-56",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                42,
+                67,
+                107,
+                138,
+                154,
+                179,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Corrupted recovery ordering is never replaced with an invented sequence",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug246_corrupt_admission.rs",
+          "lines": "58-92",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry_io.rs",
+              "lines": [
+                11,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug246_corrupt_admission.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/persistence_retry.rs",
+      "rust/agent-loop/src/persistence_retry_io.rs"
+    ],
+    "totalLinesCovered": 91
+  }
+}

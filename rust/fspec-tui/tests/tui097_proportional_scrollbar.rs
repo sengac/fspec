@@ -22,6 +22,7 @@ fn make_session(id: &str, name: &str) -> SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: None,
+        work_unit_focus: Default::default(),
     }
 }
 

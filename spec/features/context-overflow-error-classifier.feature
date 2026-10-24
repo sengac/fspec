@@ -4,7 +4,6 @@
 @compaction
 @CMPCT-044
 Feature: Context-overflow error classifier
-
   """
   CMPCT-044 (classifier slice): the stream-loop error cascade only
   triggered compaction when the API error matched the fixed

@@ -269,7 +269,7 @@ impl LlmProvider for CopilotProvider {
         self.ensure_fresh_copilot_token().await?;
 
         let (preamble, prompt) = extract_prompt_data(messages);
-        let rig_tools = convert_tools_to_rig(tools);
+        let rig_tools = convert_tools_to_rig(tools)?;
 
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
             .max_tokens(crate::copilot::MAX_OUTPUT_TOKENS as u64)

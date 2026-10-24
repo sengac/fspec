@@ -81,6 +81,7 @@ pub fn loopback_listen_ports_for_inodes(content: &str, inodes: &HashSet<u64>) ->
 }
 
 /// The socket inodes held by `pid` (`/proc/<pid>/fd/*` → `socket:[N]`).
+#[cfg(target_os = "linux")]
 fn collect_socket_inodes(pid: u32) -> HashSet<u64> {
     let mut inodes = HashSet::new();
     let Ok(entries) = std::fs::read_dir(format!("/proc/{pid}/fd")) else {

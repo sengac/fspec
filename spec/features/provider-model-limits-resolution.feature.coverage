@@ -1,15 +1,20 @@
 {
   "scenarios": [
     {
-      "name": "Claude resolver clamps registry context window to 200k",
+      "name": "Claude resolver retains catalog context window",
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "414-430",
+          "lines": "415-432",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
                 185,
                 186,
                 187,
@@ -25,21 +30,7 @@
                 197,
                 198,
                 199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214
+                200
               ]
             }
           ]
@@ -47,15 +38,20 @@
       ]
     },
     {
-      "name": "Claude resolver clamps registry max output tokens to 8192",
+      "name": "Claude resolver retains catalog maximum output tokens",
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "434-452",
+          "lines": "435-452",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
                 185,
                 186,
                 187,
@@ -71,21 +67,7 @@
                 197,
                 198,
                 199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214
+                200
               ]
             }
           ]
@@ -97,11 +79,16 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "454-474",
+          "lines": "455-472",
           "implMappings": [
             {
               "file": "rust/providers/src/claude.rs",
               "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
                 185,
                 186,
                 187,
@@ -117,21 +104,7 @@
                 197,
                 198,
                 199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214
+                200
               ]
             }
           ]
@@ -143,21 +116,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "476-500",
+          "lines": "477-497",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
                 97,
                 98,
                 99,
@@ -179,7 +142,8 @@
                 115,
                 116,
                 117,
-                118
+                118,
+                119
               ]
             }
           ]
@@ -191,21 +155,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "503-523",
+          "lines": "500-517",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
                 97,
                 98,
                 99,
@@ -227,7 +181,8 @@
                 115,
                 116,
                 117,
-                118
+                118,
+                119
               ]
             }
           ]
@@ -239,21 +194,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "526-546",
+          "lines": "520-537",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
                 97,
                 98,
                 99,
@@ -275,7 +220,8 @@
                 115,
                 116,
                 117,
-                118
+                118,
+                119
               ]
             }
           ]
@@ -287,21 +233,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "549-574",
+          "lines": "540-561",
           "implMappings": [
             {
               "file": "rust/providers/src/openai.rs",
               "lines": [
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
                 97,
                 98,
                 99,
@@ -323,7 +259,8 @@
                 115,
                 116,
                 117,
-                118
+                118,
+                119
               ]
             }
           ]
@@ -335,17 +272,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "577-595",
+          "lines": "566-582",
           "implMappings": [
             {
               "file": "rust/providers/src/gemini.rs",
               "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
                 43,
                 44,
                 45,
@@ -366,11 +297,7 @@
                 60,
                 61,
                 62,
-                63,
-                64,
-                65,
-                66,
-                67
+                63
               ]
             }
           ]
@@ -382,48 +309,38 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "598-614",
+          "lines": "587-602",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/mod.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
                 115,
                 116,
-                117
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
               ]
             }
           ]
@@ -435,48 +352,38 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "616-632",
+          "lines": "605-619",
           "implMappings": [
             {
               "file": "rust/providers/src/codex/mod.rs",
               "lines": [
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
                 115,
                 116,
-                117
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
               ]
             }
           ]
@@ -488,17 +395,11 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "635-651",
+          "lines": "624-638",
           "implMappings": [
             {
               "file": "rust/providers/src/zai.rs",
               "lines": [
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
                 64,
                 65,
                 66,
@@ -519,11 +420,7 @@
                 81,
                 82,
                 83,
-                84,
-                85,
-                86,
-                87,
-                88
+                84
               ]
             }
           ]
@@ -535,38 +432,32 @@
       "testMappings": [
         {
           "file": "rust/providers/src/model_limits.rs",
-          "lines": "654-672",
+          "lines": "643-661",
           "implMappings": [
             {
               "file": "rust/providers/src/copilot/provider.rs",
               "lines": [
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278,
-                279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291,
-                292,
-                293,
-                294
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
               ]
             }
           ]
@@ -589,6 +480,6 @@
       "rust/providers/src/zai.rs",
       "rust/providers/src/copilot/provider.rs"
     ],
-    "totalLinesCovered": 620
+    "totalLinesCovered": 487
   }
 }

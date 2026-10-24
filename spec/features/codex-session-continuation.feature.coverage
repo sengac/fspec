@@ -1,0 +1,221 @@
+{
+  "scenarios": [
+    {
+      "name": "A backend checkpoint survives session reload and a new user turn",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
+          "lines": "42-91",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            },
+            {
+              "file": "rust/sessions/src/session_restore.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "rust/cli/src/session/provider.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy and non-Codex sessions keep ordinary history behavior",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
+          "lines": "93-120",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            },
+            {
+              "file": "rust/sessions/src/session_restore.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conversation replacement invalidates typed continuation",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov149_codex_reload.rs",
+          "lines": "122-148",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive_helpers.rs",
+              "lines": [
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/history.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1764,
+                1765,
+                1766,
+                1767,
+                1768,
+                1769,
+                1770,
+                1771,
+                1772,
+                1773,
+                1774,
+                1775
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/prov149_codex_reload.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/session.rs",
+      "rust/providers/src/codex/history.rs",
+      "rust/sessions/src/session_restore.rs",
+      "rust/cli/src/session/provider.rs",
+      "rust/cli/src/interactive_helpers.rs",
+      "rust/sessions/src/background_session.rs"
+    ],
+    "totalLinesCovered": 227
+  }
+}

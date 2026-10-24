@@ -90,7 +90,7 @@ mod rig015 {
             "before",
             "escalating",
         ];
-        words.iter().map(|w| w.to_string()).collect()
+        words.iter().map(|w| format!("{w} ")).collect()
     }
 
     /// Total stream length: 30 normal words + 300 loop words.
@@ -101,7 +101,7 @@ mod rig015 {
     fn looping_stream() -> Vec<String> {
         let mut stream = normal_words();
         for i in 0..300 {
-            stream.push(LOOP_PHRASE[i % LOOP_PHRASE.len()].to_string());
+            stream.push(format!("{} ", LOOP_PHRASE[i % LOOP_PHRASE.len()]));
         }
         stream
     }

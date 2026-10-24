@@ -39,6 +39,7 @@ impl App {
         // cycle source — without it Shift+Left/Right keep surfacing the
         // destroyed session).
         self.agent_view_store.remove_session_if_open(&session_id);
+        self.rebuild_focus_occupancy();
         self.mux_sync_window();
 
         // Step 4: current-work-unit pointer clear (stale chrome guard —

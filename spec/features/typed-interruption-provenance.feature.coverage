@@ -1,0 +1,202 @@
+{
+  "scenarios": [
+    {
+      "name": "A genuine loop abort survives teardown and persistence",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug220_interruption_provenance.rs",
+          "lines": "41-58",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                6,
+                13,
+                18
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1722,
+                1739
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                102,
+                105,
+                108
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                244
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                775
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                269,
+                525,
+                527
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/persist.rs",
+              "lines": [
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User stop takes precedence in either arrival order",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug220_interruption_provenance.rs",
+          "lines": "62-84",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                6,
+                13,
+                18
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1722,
+                1739
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                102,
+                105,
+                108
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                244
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                775
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                269,
+                525,
+                527
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/persist.rs",
+              "lines": [
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Running tool cancellation preserves its initiating cause",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug220_interruption_provenance.rs",
+          "lines": "127-216",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/background_session/interruption.rs",
+              "lines": [
+                6,
+                13,
+                18
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1722,
+                1739
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/interruption.rs",
+              "lines": [
+                102,
+                105,
+                108
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/output.rs",
+              "lines": [
+                244
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                775
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/background_output.rs",
+              "lines": [
+                269,
+                525,
+                527
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/persist.rs",
+              "lines": [
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug220_interruption_provenance.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/background_session/interruption.rs",
+      "rust/sessions/src/background_session.rs",
+      "rust/cli/src/interactive/interruption.rs",
+      "rust/cli/src/interactive/output.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/agent-loop/src/background_output.rs",
+      "rust/agent-loop/src/persist.rs"
+    ],
+    "totalLinesCovered": 173
+  }
+}

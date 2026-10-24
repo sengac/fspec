@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "Session presentation retains diagnostics without routine notices",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov153_codex_session_status.rs",
+          "lines": "13-99",
+          "implMappings": [
+            {
+              "file": "rust/sessions/src/provider_status.rs",
+              "lines": [
+                16,
+                19,
+                24,
+                30,
+                42,
+                51
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/metadata_delivery.rs",
+              "lines": [
+                26,
+                31,
+                54,
+                66,
+                74
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/session.rs",
+              "lines": [
+                166,
+                171,
+                184,
+                196,
+                199
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                91,
+                92,
+                100,
+                107
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                982,
+                1027,
+                1755
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/prov153_codex_session_status.rs"
+    ],
+    "implFiles": [
+      "rust/sessions/src/provider_status.rs",
+      "rust/providers/src/codex/metadata_delivery.rs",
+      "rust/providers/src/codex/session.rs",
+      "rust/providers/src/codex/streaming.rs",
+      "rust/sessions/src/background_session.rs"
+    ],
+    "totalLinesCovered": 110
+  }
+}

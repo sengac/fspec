@@ -59,6 +59,7 @@ fn test_effective_tokens_applies_90_percent_cache_discount() {
         reasoning_tokens: 0,
         cumulative_billed_input: 0,
         cumulative_billed_output: 0,
+        input_accounting: Default::default(),
     };
 
     // @step When effective_tokens() is called
@@ -78,6 +79,7 @@ fn test_token_tracker_accumulates_cache_tokens() {
     // @step Given a TokenTracker initialized with cache tokens from API response
     let mut tracker = TokenTracker {
         input_tokens: 8000,
+        input_accounting: Default::default(),
         output_tokens: 500,
         cache_read_input_tokens: Some(3000),
         cache_creation_input_tokens: Some(1000),
@@ -119,6 +121,7 @@ fn test_effective_tokens_handles_missing_cache_values() {
         input_tokens: 10000,
         output_tokens: 500,
         cache_read_input_tokens: None,
+        input_accounting: Default::default(),
         cache_creation_input_tokens: None,
         reasoning_tokens: 0,
         cumulative_billed_input: 0,
@@ -144,6 +147,7 @@ fn test_total_tokens_includes_input_and_output() {
         input_tokens: 10000,
         output_tokens: 500,
         cache_read_input_tokens: Some(3000),
+        input_accounting: Default::default(),
         cache_creation_input_tokens: None,
         reasoning_tokens: 0,
         cumulative_billed_input: 0,

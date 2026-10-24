@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "88-107",
+          "lines": "86-99",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -46,7 +46,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "109-141",
+          "lines": "106-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -87,7 +87,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "143-170",
+          "lines": "139-162",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -128,7 +128,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "172-199",
+          "lines": "169-192",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -169,7 +169,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "201-228",
+          "lines": "199-227",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -210,7 +210,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "230-257",
+          "lines": "234-257",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -251,7 +251,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "259-277",
+          "lines": "264-277",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -307,7 +307,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "279-302",
+          "lines": "284-302",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -366,7 +366,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "304-343",
+          "lines": "309-347",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -443,7 +443,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "388-420",
+          "lines": "416-443",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -479,7 +479,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
-          "lines": "422-440",
+          "lines": "450-462",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
@@ -522,6 +522,6 @@
       "rust/fspec-tui/src/views/provider_settings/footer_hints.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 660
+    "totalLinesCovered": 615
   }
 }

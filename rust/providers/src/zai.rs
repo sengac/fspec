@@ -391,7 +391,7 @@ impl LlmProvider for ZAIProvider {
         let (preamble, prompt) = extract_prompt_data(messages);
 
         // Convert tools to rig format
-        let rig_tools = convert_tools_to_rig(tools);
+        let rig_tools = convert_tools_to_rig(tools)?;
 
         // Build and send completion request
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)

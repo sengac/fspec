@@ -19,6 +19,7 @@ use super::{LRU_PROTECT_COUNT, MAX_UNIFIED_EXEC_PROCESSES};
 /// eviction path, and `quiet_secs` all need its `try_wait`); the
 /// handle is the means by which an external waiter (the BashTool
 /// delegation loop) terminates the whole tree on abort.
+#[derive(Clone)]
 pub struct ChildHandle {
     pub(crate) kill: Arc<dyn Fn() + Send + Sync>,
 }
@@ -51,6 +52,7 @@ pub fn now_micros() -> u64 {
 
 /// A single managed process entry in the store.
 pub struct ProcessEntry {
+    pub(super) owner_registration: Option<super::owner_scope::ProcessRegistration>,
     /// The child process handle
     pub child: Child,
     /// Channel to send bytes to the process stdin
@@ -99,6 +101,27 @@ impl ProcessStore {
         }
     }
 
+    pub(super) async fn close_owned_session(
+        &self,
+        session_id: &str,
+        owner: &super::owner_scope::SharedOwner,
+    ) {
+        let entry = {
+            let mut entries = self.entries.lock().await;
+            let owned = entries.get(session_id).is_some_and(|entry| {
+                entry
+                    .owner_registration
+                    .as_ref()
+                    .is_some_and(|registration| registration.belongs_to(owner))
+            });
+            owned.then(|| entries.remove(session_id)).flatten()
+        };
+        if let Some(mut entry) = entry {
+            entry.kill_handle.kill();
+            let _ = entry.child.kill().await;
+        }
+    }
+
     /// TOOL-022 P4: record the exit status of a session whose entry was
     /// removed (reaper / eviction), so a racing poller can recover it.
     pub async fn stash_exit(&self, session_id: &str, status: std::process::ExitStatus) {
@@ -122,6 +145,13 @@ impl ProcessStore {
     /// Insert a new process entry. Returns the session_id.
     pub async fn insert(&self, session_id: String, entry: ProcessEntry) {
         let mut entries = self.entries.lock().await;
+        if entry
+            .owner_registration
+            .as_ref()
+            .is_some_and(super::owner_scope::ProcessRegistration::stopped)
+        {
+            return;
+        }
         entries.insert(session_id, entry);
     }
 
@@ -279,8 +309,8 @@ impl ProcessStore {
     /// and was killed, `Ok(false)` when it was already gone (reaper /
     /// poll drained it first) — NOT an error.
     pub async fn close_session(&self, session_id: &str) -> Result<bool, String> {
-        let mut entries = self.entries.lock().await;
-        match entries.remove(session_id) {
+        let entry = self.entries.lock().await.remove(session_id);
+        match entry {
             Some(mut entry) => {
                 // TOOL-022 P4: full process tree (PTY child + anchor /
                 // process group), not just the direct child.

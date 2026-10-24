@@ -11,13 +11,13 @@
 //! check compaction thresholds before each internal API call.
 
 use super::message_helpers::add_assistant_tool_calls_message;
-use super::output::{ContextFillInfo, StreamOutput};
+use super::output::StreamOutput;
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
 use crate::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
 use crate::interactive_helpers::{
-    convert_messages_to_turns, execute_compaction, inject_synthetic_tool_results_for_orphans,
+    convert_messages_to_turns, inject_synthetic_tool_results_for_orphans,
     reconcile_session_messages,
 };
 use crate::session::Session;
@@ -82,8 +82,7 @@ fn process_turn_annotations(
 // Error classifiers moved to error_classifiers.rs
 use super::error_classifiers::{
     classify_compaction_branch, extract_prompt_cancelled, is_context_overflow_error,
-    is_image_content_error, is_prompt_too_long_error, is_stall_timeout_error,
-    is_transient_network_error, is_truncated_tool_call_error, CompactionBranch,
+    is_image_content_error, is_stall_timeout_error, is_truncated_tool_call_error, CompactionBranch,
 };
 
 // Image recovery moved to recovery_image.rs
@@ -98,8 +97,9 @@ use super::recovery_truncation::{
 // Thinking recovery moved to recovery_thinking.rs
 use super::recovery_thinking::{
     build_thinking_budget_exhausted_message, build_thinking_exhaustion_recovery_message,
-    downgrade_thinking_level, is_thinking_exhaustion, MAX_THINKING_EXHAUSTION_RETRIES,
-    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+    downgrade_thinking_level, is_thinking_exhaustion, is_thinking_only_exhaustion,
+    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
+    THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
 };
 
 // Network recovery moved to recovery_network.rs
@@ -111,30 +111,6 @@ use super::recovery_stall::{build_stall_timeout_message, stall_timeout_duration}
 // CMPCT-027: Compaction retry circuit breaker — bound cascaded compaction
 // rounds per user turn. See `recovery_compaction::MAX_COMPACTION_RETRIES`.
 use super::recovery_compaction::MAX_COMPACTION_RETRIES;
-
-/// Emit context fill information from API token usage.
-/// Extracted as a standalone function so it can be shared with the in-loop
-/// compaction restart (`in_loop_compaction_restart!()` macro) and related
-/// recovery handlers.
-pub(super) fn emit_context_fill_from_usage<O: StreamOutput>(
-    output: &O,
-    usage: &ApiTokenUsage,
-    threshold: u64,
-    context_window: u64,
-) {
-    let total_tokens = usage.total_context();
-    let fill_percentage = if threshold > 0 {
-        ((total_tokens as f64 / threshold as f64) * 100.0) as u32
-    } else {
-        0
-    };
-    output.emit_context_fill(&ContextFillInfo {
-        fill_percentage,
-        effective_tokens: total_tokens,
-        threshold,
-        context_window,
-    });
-}
 
 // CMPCT-002 / CMPCT-023: `signal_compaction_needed(...)` used to live here.
 // As of the compaction-recovery unification, all production entry paths
@@ -252,6 +228,25 @@ where
     use std::time::Instant;
     use uuid::Uuid;
 
+    codelet_tools::tool_attribution::configure_tool_server(
+        agent.tool_server_handle(),
+        session_id.to_string(),
+    )
+    .await?;
+    session.ensure_compaction_inference_ready()?;
+    let compaction_cancellation = crate::compaction_cancellation::CompactionCancellation::new(
+        is_interrupted.clone(),
+        interrupt_notify.clone(),
+    );
+    let agent = session
+        .configure_agent(agent)
+        .with_settlement_session(session_id);
+    let progressive_output = super::progressive_output::ProgressiveOutput::new(
+        output,
+        session.provider_manager().runtime_options().streaming != Some(false),
+    );
+    let output = &progressive_output;
+
     // CLI-022: Generate request ID for correlation
     let request_id = Uuid::new_v4().to_string();
     let api_start_time = Instant::now();
@@ -271,6 +266,16 @@ where
     // HOOK-BASED COMPACTION (CTX-002: Optimized compaction trigger)
     let context_window = session.provider_manager().context_window() as u64;
     let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
+    let preparer = agent
+        .selected_request_preparer(
+            prompt,
+            codelet_providers::request_admission::AdmissionLimits {
+                context_capacity: (context_window > 0).then_some(context_window),
+                output_reservation: (max_output_tokens > 0).then_some(max_output_tokens),
+            },
+        )
+        .await?;
+    session.install_selected_preparer(preparer.clone());
     // CTX-007: Resolve per-model compaction threshold through priority chain:
     // 1. User-configured override > 2. Built-in model family default > 3. Legacy formula
     let model_id = session.current_model_id();
@@ -332,36 +337,20 @@ where
         output.emit_compaction_started();
 
         // UX-002: Emit progress for automatic compaction
-        let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
-        output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
+        output.emit_compaction_progress("Analyzing context", 0, 0);
 
-        // CMPCT-050: close any persisted orphan tool_call before the
-        // defensive orphan guard runs (Path A is structurally separate from
-        // the B/C/D/032/overflow paths — it has no begin_compaction_recovery
-        // choke point). A prior failed compaction or mid-tool-call interrupt
-        // can leave a dangling Assistant(ToolCall); without this preflight
-        // pre-prompt compaction would refuse and the turn would proceed into
-        // a context that still exceeds the limit. No-op when clean.
-        let injected = inject_synthetic_tool_results_for_orphans(&mut session.messages);
-        if injected > 0 {
-            warn!(
-                "[stream_loop] CMPCT-050: closed {injected} orphan tool_call(s) before pre-prompt compaction"
-            );
-        }
-
-        match execute_compaction(session, compaction_in_progress.clone(), Some(prompt)).await {
-            Ok(()) => {
-                output.emit_compaction_continuing();
-                session.token_tracker.reset_after_compaction();
-                compaction_just_ran = true;
-            }
-            Err(e) => {
-                // Log but continue - the API might still work, or will fail with clear error
-                error!("Pre-prompt compaction failed: {}", e);
-                // UX-002: Use structured compaction failed event
-                output.emit_compaction_failed(&format!("{e}, continuing anyway"));
-            }
-        }
+        let preparation_state = Arc::new(Mutex::new(TokenState::default()));
+        crate::compactor_sub_agent::run_compactor_sub_agent_round_cancellable(
+            session,
+            session_id,
+            &preparation_state,
+            &compaction_in_progress,
+            output,
+            &compaction_cancellation,
+        )
+        .await?;
+        output.emit_compaction_continuing();
+        compaction_just_ran = true;
     }
 
     // GEMINI-THINK: For Gemini preview models with thinking enabled, ensure thought signatures
@@ -491,6 +480,7 @@ where
     };
 
     // Start streaming with history and hook
+    let request_history_len = session.messages.len();
     let mut stream = agent
         .prompt_streaming_with_history_and_hook(effective_prompt, &mut session.messages, hook)
         .await;
@@ -536,6 +526,8 @@ where
     let mut assistant_text = String::new();
     // PROV-041: Accumulate reasoning/thinking content for preservation on exhaustion
     let mut accumulated_reasoning = String::new();
+    let mut response_attempt_snapshot = None;
+    let mut input_observation = codelet_core::compaction::InputUsageObservation::default();
     // PROV-039: Track stop_reason from FinalResponse for truncation detection
     let mut final_stop_reason: Option<String> = None;
     // PROV-040: Track consecutive truncation retries to prevent infinite loops
@@ -553,6 +545,7 @@ where
     let mut network_retry_in_progress = false;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
+    let mut summary_handoff = false;
     // AMGR-016-FIX: Track whether a tool is currently executing inside rig's multi-turn stream.
     // Between a ToolCall chunk and the corresponding ToolResult chunk, stream.next() is blocked
     // running the tool. The stall timeout must be disabled during this window because tools
@@ -584,6 +577,8 @@ where
     // TOKEN-003: seed the session-cumulative reasoning base so the 🧠 counter
     // continues from the previous turn's value instead of restarting at 0.
     let prev_reasoning = session.token_tracker.reasoning_tokens;
+    let mut finalized_output = prev_output_tokens;
+    let mut finalized_reasoning = prev_reasoning;
 
     // STREAMING-DISPLAY: Use StreamingTokenDisplay to track tokens during streaming
     // This encapsulates:
@@ -613,8 +608,13 @@ where
     output.emit_tokens(&streaming_display.current().into());
     // CTX-004: For initial state, use 0 for output since no new output yet in this turn
     // PROV-001: Create initial usage with prev_input_tokens as raw (cache already counted in it)
-    let initial_usage = ApiTokenUsage::new(prev_input_tokens, 0, 0, 0);
-    emit_context_fill_from_usage(output, &initial_usage, threshold, context_window);
+    let context_projection = super::context_projection::ContextProjection {
+        session_id,
+        model: session.current_model_id().unwrap_or_default(),
+        capacity: context_window,
+        threshold,
+    };
+    context_projection.emit(output, None, None);
 
     // CMPCT-027: In-loop compaction-restart block shared by Paths B, C, and D.
     //
@@ -653,9 +653,13 @@ where
     // Followed by `continue;` at each call site (Paths B, C, D).
     macro_rules! in_loop_compaction_restart {
         ($policy:expr) => {{
-            in_loop_compaction_restart!($policy, false);
+            in_loop_compaction_restart!(
+                $policy,
+                crate::compactor_sub_agent::has_compactor_sub_agent_handler(session_id)
+            );
         }};
         ($policy:expr, $compactor_sub_agent:expr) => {{
+            let use_compactor_sub_agent = $compactor_sub_agent;
             compaction_retry_count += 1;
             if compaction_retry_count > MAX_COMPACTION_RETRIES {
                 let msg = super::recovery_compaction::build_compaction_budget_exhausted_message(
@@ -672,21 +676,31 @@ where
                 ));
             }
 
-            if $compactor_sub_agent {
-                // CMPCT-044: the in-view compaction could not resolve the
-                // overflow — escalate to the compactor sub-agent. The
-                // escalation sits inside this macro so it shares the
-                // MAX_COMPACTION_RETRIES budget with the in-view rounds;
-                // the sub-agent round performs the pin (or the free
-                // fallback pin) and resets token_state in place.
-                crate::compactor_sub_agent::run_compactor_sub_agent_round(
+            let selected_policy: super::recovery_compaction::CompactionRecoveryPolicy = $policy;
+            let policy_prompt =
+                super::recovery_compaction::compaction_retry_prompt(selected_policy);
+            let retry_prompt = if use_compactor_sub_agent {
+                format!("{prompt}\n\n{policy_prompt}")
+            } else {
+                policy_prompt.to_owned()
+            };
+            if use_compactor_sub_agent {
+                let admitted_prompt = retry_prompt.clone();
+                session.install_selected_preparer(preparer.clone().map_history(move |messages| {
+                    let mut history = messages.to_vec();
+                    history.push(Message::user(admitted_prompt.clone()));
+                    history
+                }));
+                crate::compactor_sub_agent::run_compactor_sub_agent_round_cancellable(
                     session,
                     session_id,
                     &token_state,
                     &compaction_in_progress,
                     output,
+                    &compaction_cancellation,
                 )
                 .await?;
+                output.emit_compaction_continuing();
             } else {
                 super::recovery_compaction::execute_compaction_and_capture_events(
                     session,
@@ -713,19 +727,12 @@ where
             }
             let new_hook = CompactionHook::new(Arc::clone(&token_state), threshold);
 
-            // CMPCT-028: pick the retry prompt from the caller-supplied
-            // policy and log the selection so operators can audit which
-            // branch fired. The string returned by `compaction_retry_prompt`
-            // is static (`&'static str`), so forwarding it into rig is
-            // zero-cost.
-            let selected_policy: super::recovery_compaction::CompactionRecoveryPolicy = $policy;
-            let retry_prompt =
-                super::recovery_compaction::compaction_retry_prompt(selected_policy);
             debug!(
                 policy = ?selected_policy,
                 retry_prompt = retry_prompt,
                 compaction_retry_count = compaction_retry_count,
                 max_compaction_retries = MAX_COMPACTION_RETRIES,
+                use_compactor_sub_agent,
                 "[stream_loop] CMPCT-028: issuing in-loop post-compaction retry stream with policy-selected prompt"
             );
 
@@ -741,8 +748,8 @@ where
             // enclosing loop's `match stream.next().await` keeps running.
             stream = agent
                 .prompt_streaming_with_history_and_hook(
-                    retry_prompt,
-                    &mut session.messages,
+                    &retry_prompt,
+                    session.inference_messages(),
                     new_hook,
                 )
                 .await;
@@ -773,6 +780,24 @@ where
         // Check interruption at start of each iteration (works for both modes)
         // Use Acquire ordering to synchronize with Release store from interrupt setter
         if is_interrupted.load(Acquire) {
+            drop(stream);
+            super::interruption::record_tool_cancellations(
+                session,
+                &mut tool_calls_buffer,
+                output,
+                match output.interruption_reason() {
+                    Some(codelet_rpc_types::InterruptionReason::User) => {
+                        super::interruption::CancellationReason::UserInterruption
+                    }
+                    Some(codelet_rpc_types::InterruptionReason::LoopDetector) => {
+                        super::interruption::CancellationReason::LoopDetector
+                    }
+                    None if event_stream.is_some() => {
+                        super::interruption::CancellationReason::UserInterruption
+                    }
+                    None => super::interruption::CancellationReason::Unspecified,
+                },
+            )?;
             // Emit interrupted notification
             let queued = if let Some(ref mut iq) = input_queue {
                 iq.dequeue_all()
@@ -826,7 +851,7 @@ where
                         let _ = st.format_status();
                         None // No chunk, continue loop
                     }
-                    _ = tokio::time::sleep(effective_stall_timeout) => {
+                    _ = super::provider_recovery::wait_for_stall_deadline(&session.provider_session, session.current_provider_name(), effective_stall_timeout) => {
                         // AMGR-016: CLI mode stall timeout — same behavior as NAPI mode.
                         // No data received for effective_stall_timeout duration — terminal error.
                         let stall_msg = build_stall_timeout_message(effective_stall_timeout.as_secs());
@@ -854,7 +879,7 @@ where
                         tokio::select! {
                             c = stream.next() => Some(c),
                             _ = interrupt_fut => None, // Wakes immediately when interrupt() called
-                            _ = tokio::time::sleep(effective_stall_timeout) => {
+                            _ = super::provider_recovery::wait_for_stall_deadline(&session.provider_session, session.current_provider_name(), effective_stall_timeout) => {
                                 // AMGR-016: No data received for effective_stall_timeout duration.
                                 // Emit a clear error and break — this is a terminal error
                                 // that must NOT be caught by error classifiers (Rule [5], [6]).
@@ -875,7 +900,11 @@ where
                     None => {
                         // Fallback for any mode without notify (shouldn't happen in practice)
                         // AMGR-016: Still apply stall timeout even without interrupt notify
-                        match tokio::time::timeout(effective_stall_timeout, stream.next()).await {
+                        let next = tokio::select! {
+                            chunk = stream.next() => Ok(chunk),
+                            _ = super::provider_recovery::wait_for_stall_deadline(&session.provider_session, session.current_provider_name(), effective_stall_timeout) => Err(()),
+                        };
+                        match next {
                             Ok(chunk) => Some(chunk),
                             Err(_elapsed) => {
                                 let stall_msg =
@@ -900,6 +929,28 @@ where
         // Process chunk if we got one
         if let Some(chunk) = chunk {
             match chunk {
+                Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                    StreamedAssistantContent::ResponseAttemptStarted,
+                ))) => {
+                    input_observation = Default::default();
+                    response_attempt_snapshot = Some((
+                        assistant_text.len(),
+                        accumulated_reasoning.len(),
+                        streaming_display.clone(),
+                    ));
+                    output.emit(super::output::StreamEvent::ResponseAttemptStarted);
+                }
+                Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                    StreamedAssistantContent::ResponseAttemptAborted,
+                ))) => {
+                    input_observation = Default::default();
+                    if let Some((text, reasoning, display)) = response_attempt_snapshot.take() {
+                        assistant_text.truncate(text);
+                        accumulated_reasoning.truncate(reasoning);
+                        streaming_display = display;
+                    }
+                    output.emit(super::output::StreamEvent::ResponseAttemptAborted);
+                }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::Text(text),
                 ))) => {
@@ -1025,6 +1076,27 @@ where
                     }
                     tool_execution_in_progress = false;
 
+                    let handoff = super::compaction_handoff::requires_handoff(
+                        last_tool_name.as_deref(),
+                        turn_tool_infos.last().map(|info| &info.input),
+                        session_id,
+                        &tool_result,
+                    );
+                    match handoff {
+                        Ok(true) => {
+                            session.block_compaction_inference(
+                                "queued candidate awaits durable reconciliation".into(),
+                            );
+                            summary_handoff = true;
+                            break;
+                        }
+                        Err(error) => {
+                            session.block_compaction_inference(error.reason.clone());
+                            return Err(error.into());
+                        }
+                        Ok(false) => {}
+                    }
+
                     // CONT-005/CONT-006: done() immediate termination
                     // (Option D). An accepted done() is identified via the
                     // DONE_ACCEPTANCE registry (rig's ToolResult has no tool
@@ -1044,6 +1116,13 @@ where
                             codelet_tools::take_done_acceptance(session_id)
                         })
                     {
+                        drop(stream);
+                        super::interruption::record_tool_cancellations(
+                            session,
+                            &mut tool_calls_buffer,
+                            output,
+                            super::interruption::CancellationReason::AcceptedCompletion,
+                        )?;
                         // Flush pending assistant text into history
                         // (interrupt-path pattern) before closing the turn.
                         if !assistant_text.is_empty() {
@@ -1087,6 +1166,7 @@ where
                     // MessageStart which causes "bouncing" during tool loops.
                     // For Gemini: Always update input_tokens since they don't have separate start/delta events.
 
+                    input_observation.observe(&mut session.token_tracker, &usage);
                     if usage.output_tokens == 0 {
                         // MessageStart - new API call starting (Anthropic pattern)
                         // STREAMING-DISPLAY: Start new segment (accumulates previous output)
@@ -1097,19 +1177,7 @@ where
                         if let Some(update) = streaming_display.update_from_usage(&usage) {
                             output.emit_tokens(&update.into());
                             // CTX-004: Context fill uses CURRENT API values
-                            let fill_usage = ApiTokenUsage::new(
-                                update.input_tokens,
-                                update.cache_read_tokens,
-                                update.cache_creation_tokens,
-                                usage.output_tokens, // Current segment output for fill calculation
-                            )
-                            .with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
-                            emit_context_fill_from_usage(
-                                output,
-                                &fill_usage,
-                                threshold,
-                                context_window,
-                            );
+                            context_projection.emit(output, None, Some(usage));
                         }
                     }
                 }
@@ -1134,35 +1202,44 @@ where
                     // Get usage from FinalResponse
                     let usage = final_resp.usage();
 
-                    // PROV-002: OpenAI-compatible providers (including Z.AI) don't emit Usage events
-                    // during streaming - they only return usage in FinalResponse.
-                    // STREAMING-DISPLAY: update_from_final_response handles this case
-                    let final_update = if !streaming_display.has_authoritative_output()
-                        && usage.input_tokens > 0
+                    let context = final_resp.request_context();
+                    let physical =
+                        context.map_or(usage, |context| context.usage.unwrap_or_default());
+                    input_observation.finish(&mut session.token_tracker, &physical);
+                    let final_update = if physical.input_tokens > 0
+                        || physical.cache_read_input_tokens.unwrap_or(0) > 0
+                        || physical.cache_creation_input_tokens.unwrap_or(0) > 0
+                        || usage.output_tokens > 0
+                        || usage.reasoning_tokens.unwrap_or(0) > 0
                     {
-                        // OpenAI-compatible path: no Usage events during streaming
-                        trace!(
-                            "OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
-                            usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens
-                        );
-                        streaming_display.update_from_final_response(&usage)
+                        let display_usage = rig::completion::Usage {
+                            input_tokens: physical.input_tokens,
+                            cache_read_input_tokens: physical.cache_read_input_tokens,
+                            cache_creation_input_tokens: physical.cache_creation_input_tokens,
+                            ..usage
+                        };
+                        streaming_display = StreamingTokenDisplay::new(
+                            physical.input_tokens,
+                            finalized_output,
+                            physical.cache_read_input_tokens.unwrap_or(0),
+                            physical.cache_creation_input_tokens.unwrap_or(0),
+                        )
+                        .with_prev_reasoning(finalized_reasoning);
+                        streaming_display.update_from_final_response(&display_usage)
                     } else {
-                        // Anthropic/Gemini path: already have authoritative values from Usage events
-                        // Just get current display values
                         streaming_display.current()
                     };
+                    finalized_output = final_update.output_tokens;
+                    finalized_reasoning = final_update.reasoning_tokens;
 
                     // Emit final token update
                     output.emit_tokens(&final_update.into());
                     // CTX-004: Context fill uses current values
-                    let fill_usage = ApiTokenUsage::new(
-                        final_update.input_tokens,
-                        final_update.cache_read_tokens,
-                        final_update.cache_creation_tokens,
-                        usage.output_tokens,
-                    )
-                    .with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
-                    emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
+                    context_projection.emit(
+                        output,
+                        context,
+                        context.and_then(|context| context.usage),
+                    );
 
                     // CLI-022: Capture api.response.end event
                     // PROV-001: Capture both aggregated (for billing) and display (for UI debugging) values
@@ -1220,6 +1297,7 @@ where
                         }
                     }
 
+                    let mut completion_usage = usage;
                     // GEMINI-TURN: Check if Gemini model needs a continuation prompt
                     // Extracted to gemini_continuation.rs
                     {
@@ -1236,15 +1314,32 @@ where
                             threshold,
                             &assistant_text,
                             &streaming_display,
-                            &mut final_stop_reason,
+                            session_id,
                         )
                         .await?
                         {
                             GeminiContinuationResult::NoContinuation => {
                                 // Fall through to normal processing below
                             }
-                            GeminiContinuationResult::Completed => {
-                                return Ok(());
+                            GeminiContinuationResult::Completed {
+                                text,
+                                display,
+                                usage,
+                                tool_calls,
+                                stop_reason,
+                            } => {
+                                assistant_text = text;
+                                streaming_display = display;
+                                completion_usage = usage;
+                                final_stop_reason = stop_reason;
+                                auto_continue_segment_tool_calls += tool_calls;
+                                let completed = streaming_display.current();
+                                finalized_output = completed.output_tokens;
+                                finalized_reasoning = completed.reasoning_tokens;
+                            }
+                            GeminiContinuationResult::Finished { display } => {
+                                streaming_display = display;
+                                break;
                             }
                             GeminiContinuationResult::CompactionNeeded(policy) => {
                                 // CMPCT-027: Path D — compaction was triggered
@@ -1289,17 +1384,24 @@ where
                     // This must happen AFTER handle_final_response (so the response is in history)
                     // but BEFORE emitting done (so we can retry if needed).
                     {
-                        let usage = final_resp.usage();
+                        let usage = completion_usage;
                         let reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
                         let output_tokens = usage.output_tokens;
                         let stop_reason_ref = final_stop_reason.as_deref();
 
-                        if is_thinking_exhaustion(
-                            stop_reason_ref,
-                            reasoning_tokens,
-                            output_tokens,
-                            THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
-                        ) {
+                        if !is_interrupted.load(Acquire)
+                            && (is_thinking_exhaustion(
+                                stop_reason_ref,
+                                reasoning_tokens,
+                                output_tokens,
+                                THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+                            ) || is_thinking_only_exhaustion(
+                                stop_reason_ref,
+                                &accumulated_reasoning,
+                                &assistant_text,
+                                auto_continue_segment_tool_calls > 0,
+                            ))
+                        {
                             thinking_exhaustion_retry_count += 1;
                             // PROV-041: Track cross-turn exhaustion for session-level degradation
                             // Only increment once per turn (first detection), not on retries
@@ -1323,13 +1425,16 @@ where
                                 && session.thinking_exhaustion_cross_turn_count
                                     >= THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD
                             {
+                                let previous_level = session.session_thinking_level;
                                 session.session_thinking_level =
                                     downgrade_thinking_level(session.session_thinking_level);
                                 session.thinking_exhaustion_cross_turn_count = 0;
-                                output.emit_status(&format!(
-                                    "Reasoning effort automatically reduced to {:?} due to repeated thinking budget exhaustion",
-                                    session.session_thinking_level,
-                                ));
+                                if session.session_thinking_level != previous_level {
+                                    output.emit_status(&format!(
+                                        "Reasoning preference for subsequent turns reduced to {:?} due to repeated thinking budget exhaustion; current retry settings are unchanged",
+                                        session.session_thinking_level,
+                                    ));
+                                }
                             }
 
                             if thinking_exhaustion_retry_count <= MAX_THINKING_EXHAUSTION_RETRIES {
@@ -1350,8 +1455,11 @@ where
 
                                 // Emit warning to the user
                                 output.emit_status(&format!(
-                                    "Thinking exhaustion detected (attempt {thinking_exhaustion_retry_count}/{MAX_THINKING_EXHAUSTION_RETRIES}). Retrying with reduced reasoning budget..."
+                                    "Thinking exhaustion detected (attempt {thinking_exhaustion_retry_count}/{MAX_THINKING_EXHAUSTION_RETRIES}). Retrying with a prompt-only concise-reasoning request; model settings and token limits are unchanged..."
                                 ));
+                                if is_interrupted.load(Acquire) {
+                                    continue;
+                                }
 
                                 // PROV-041: Context preservation at >90% utilization (Rule[5])
                                 let current_tokens = session.token_tracker.input_tokens
@@ -1377,15 +1485,12 @@ where
 
                                 // PROV-041: Create fresh hook and token state for the retry
                                 // (same pattern as PROV-040 truncation recovery)
-                                let retry_token_state = Arc::new(Mutex::new(TokenState {
-                                    input_tokens: session.token_tracker.input_tokens,
-                                    cache_read_input_tokens: 0,
-                                    cache_creation_input_tokens: 0,
-                                    output_tokens: 0,
-                                    compaction_needed: false,
-                                }));
-                                let retry_hook =
-                                    CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                                let retry_hook = super::retry_compaction_hook(
+                                    &token_state,
+                                    session.token_tracker.input_tokens,
+                                    0,
+                                    threshold,
+                                );
 
                                 debug!(
                                     "API REQUEST (thinking exhaustion recovery {}/{}) - Provider: {}, Model: {}",
@@ -1433,7 +1538,9 @@ where
                                     )
                                     .with_prev_reasoning(prev_reasoning);
 
-                                debug!("[stream_loop] PROV-041: Created new stream for thinking exhaustion retry");
+                                debug!(
+                                    "[stream_loop] PROV-041: Created new stream for thinking exhaustion retry"
+                                );
                                 continue;
                             } else {
                                 // Budget exhausted — emit warning and continue with best available response
@@ -1647,15 +1754,12 @@ where
                                 // state + hook, restart stream, push the
                                 // nudge as a plain user message, reset
                                 // per-stream locals, continue the loop.
-                                let nudge_token_state = Arc::new(Mutex::new(TokenState {
-                                    input_tokens: session.token_tracker.input_tokens,
-                                    cache_read_input_tokens: 0,
-                                    cache_creation_input_tokens: 0,
-                                    output_tokens: 0,
-                                    compaction_needed: false,
-                                }));
-                                let nudge_hook =
-                                    CompactionHook::new(Arc::clone(&nudge_token_state), threshold);
+                                let nudge_hook = super::retry_compaction_hook(
+                                    &token_state,
+                                    session.token_tracker.input_tokens,
+                                    0,
+                                    threshold,
+                                );
 
                                 stream = agent
                                     .prompt_streaming_with_history_and_hook(
@@ -1701,6 +1805,26 @@ where
                     break;
                 }
                 Some(Err(e)) => {
+                    input_observation = Default::default();
+                    if crate::compactor_sub_agent::has_terminal_overflow_owner(session_id)
+                        && is_context_overflow_error(&e)
+                    {
+                        if session.messages.len() == request_history_len + 1
+                            && assistant_text.is_empty()
+                            && accumulated_reasoning.is_empty()
+                            && turn_tool_infos.is_empty()
+                        {
+                            session.messages.truncate(request_history_len);
+                        }
+                        session.block_compaction_inference(
+                            "terminal overflow requires outer recovery reconciliation".into(),
+                        );
+                        return Err(e.context("Agent error"));
+                    }
+                    if super::request_failure::block_terminal_request_failure(session, &e) {
+                        output.emit_error(&e.to_string());
+                        return Err(e.context("Agent error"));
+                    }
                     // PROV-009-DEBUG: Log EVERY error at debug level to trace compaction issues
                     debug!(
                         "[stream_loop] STREAM ERROR RECEIVED: error={}, type={:?}",
@@ -1831,12 +1955,14 @@ where
                     // ALL error classifiers and never be retried (Rule [5], Rule [6]).
                     // This guard prevents accidental classification as network/truncation errors.
                     if is_stall_timeout_error(&error_str) {
-                        error!("AMGR-016: Stall timeout reached error classifier cascade (unexpected path)");
+                        error!(
+                            "AMGR-016: Stall timeout reached error classifier cascade (unexpected path)"
+                        );
                         output.emit_error(&error_str);
-                        return Err(anyhow::anyhow!("Agent error: {e}"));
+                        return Err(e.context("Agent error"));
                     }
 
-                    let is_prompt_too_long = is_prompt_too_long_error(&error_str);
+                    let is_prompt_too_long = is_context_overflow_error(&e);
 
                     // PROV-010: Only trigger compaction if there are actual user/assistant turns to compact
                     // session.messages may contain system prompts but no compactable turns
@@ -1940,14 +2066,16 @@ where
                             compactor = compaction_retry_count > 0,
                             "[stream_loop] CMPCT-027: in-loop compaction restart (overflow)"
                         );
-                        in_loop_compaction_restart!(policy, compaction_retry_count > 0);
+                        in_loop_compaction_restart!(policy);
                         continue;
                     }
 
                     // EXT-016: Check if this is an image content error (dimensions, size, etc.)
                     // Try to recover by sanitizing image content from conversation history
                     if is_image_content_error(&error_str) {
-                        warn!("Received image content error from API, attempting to sanitize conversation history");
+                        warn!(
+                            "Received image content error from API, attempting to sanitize conversation history"
+                        );
 
                         // Pop the last user message first (same pattern as prompt-too-long)
                         if let Some(last_msg) = session.messages.last() {
@@ -1961,7 +2089,9 @@ where
                         let sanitized = sanitize_image_content(&mut session.messages);
 
                         if sanitized {
-                            info!("Sanitized image content from conversation history — session can continue");
+                            info!(
+                                "Sanitized image content from conversation history — session can continue"
+                            );
                             output.emit_error(&format!(
                                 "{error_str}\n\n[Images removed from conversation history to recover session]"
                             ));
@@ -1994,15 +2124,12 @@ where
                             let recovery_prompt = build_truncation_recovery_message(&error_str);
 
                             // Create fresh hook and token state for the retry
-                            let retry_token_state = Arc::new(Mutex::new(TokenState {
-                                input_tokens: session.token_tracker.input_tokens,
-                                cache_read_input_tokens: 0,
-                                cache_creation_input_tokens: 0,
-                                output_tokens: 0,
-                                compaction_needed: false,
-                            }));
-                            let retry_hook =
-                                CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                            let retry_hook = super::retry_compaction_hook(
+                                &token_state,
+                                session.token_tracker.input_tokens,
+                                0,
+                                threshold,
+                            );
 
                             debug!(
                                 "API REQUEST (truncation recovery {}/{}) - Provider: {}, Model: {}",
@@ -2059,7 +2186,9 @@ where
                         let budget_error =
                             build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
                         output.emit_error(&budget_error);
-                        return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {MAX_TRUNCATION_RETRIES} attempts"));
+                        return Err(anyhow::anyhow!(
+                            "Agent error: truncation retry budget exhausted after {MAX_TRUNCATION_RETRIES} attempts"
+                        ));
                     }
 
                     // NET-001: Check for transient network/connection errors.
@@ -2067,7 +2196,10 @@ where
                     // retry the request using the full conversation history rather than failing.
                     // The retry happens here (stream_loop level) because chat completion APIs
                     // are stateless — SSE-level reconnection would lose accumulated state.
-                    if is_transient_network_error(&error_str) {
+                    if super::provider_recovery::should_retry_network_error(
+                        session.current_provider_name(),
+                        e.as_ref(),
+                    ) {
                         network_retry_count += 1;
 
                         if network_retry_count <= MAX_NETWORK_RETRIES {
@@ -2100,15 +2232,12 @@ where
                             }
 
                             // Create fresh hook and token state for the retry
-                            let retry_token_state = Arc::new(Mutex::new(TokenState {
-                                input_tokens: session.token_tracker.input_tokens,
-                                cache_read_input_tokens: 0,
-                                cache_creation_input_tokens: 0,
-                                output_tokens: session.token_tracker.output_tokens,
-                                compaction_needed: false,
-                            }));
-                            let retry_hook =
-                                CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                            let retry_hook = super::retry_compaction_hook(
+                                &token_state,
+                                session.token_tracker.input_tokens,
+                                session.token_tracker.output_tokens,
+                                threshold,
+                            );
 
                             debug!(
                                 "API REQUEST (network retry {}/{}) - Provider: {}, Model: {}",
@@ -2245,7 +2374,7 @@ where
                     }
 
                     output.emit_error(&error_str);
-                    return Err(anyhow::anyhow!("Agent error: {e}"));
+                    return Err(e.context("Agent error"));
                 }
                 None => {
                     // PROV-005-DEBUG: Log stream ended
@@ -2257,9 +2386,7 @@ where
                     if let Ok(state) = token_state.lock() {
                         debug!(
                             "[stream_loop] At stream end: compaction_needed={}, input={}, output={}",
-                            state.compaction_needed,
-                            state.input_tokens,
-                            state.output_tokens
+                            state.compaction_needed, state.input_tokens, state.output_tokens
                         );
                     }
 
@@ -2323,7 +2450,8 @@ where
     // only breaks after appending it via `handle_final_response`), so
     // `begin_compaction_recovery`'s partial-text flush is a no-op; the
     // helper still flushes the token tracker and emits lifecycle events.
-    let post_loop_needs_recovery = !is_interrupted.load(Acquire)
+    let post_loop_needs_recovery = !summary_handoff
+        && !is_interrupted.load(Acquire)
         && token_state
             .lock()
             .map(|s| s.compaction_needed)
@@ -2414,7 +2542,12 @@ where
         );
         session
             .token_tracker
-            .update_from_usage(&final_usage, final_display.output_tokens);
+            .update_display_only(&final_usage, final_display.output_tokens);
+        let settled =
+            codelet_core::persistence::load_session(session_id).map_err(anyhow::Error::msg)?;
+        session.token_tracker.cumulative_billed_input = settled.token_usage.cumulative_billed_input;
+        session.token_tracker.cumulative_billed_output =
+            settled.token_usage.cumulative_billed_output;
         tracing::debug!(
             "CMPCT-001: After update: cumulative_billed_input={}, cumulative_billed_output={}",
             session.token_tracker.cumulative_billed_input,

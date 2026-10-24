@@ -14,6 +14,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "action_type", rename_all = "snake_case")]
 pub enum SessionSearchAction {
+    Originals {
+        #[serde(flatten)]
+        request: super::originals::OriginalsRequest,
+    },
     /// List recent sessions for discovery
     Recent {
         /// Number of sessions to return (default: 10)
@@ -181,6 +185,13 @@ pub struct SessionMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "result_type", rename_all = "snake_case")]
 pub enum SessionSearchResult {
+    Originals {
+        #[serde(flatten)]
+        page: super::originals::OriginalPage,
+    },
+    OriginalsError {
+        error: super::originals::OriginalsError,
+    },
     /// Result from the `recent` action
     Recent { sessions: Vec<SessionSummary> },
     /// Result from the `search` action

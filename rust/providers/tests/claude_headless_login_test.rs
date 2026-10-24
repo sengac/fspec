@@ -84,7 +84,7 @@ fn blocking_callback(
 #[serial]
 async fn test_successful_headless_login_with_code_paste() {
     // @step Given no Claude credentials exist in claude_auth.json
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
     assert!(
         !auth_path.exists(),
@@ -181,7 +181,7 @@ async fn test_successful_headless_login_with_code_paste() {
 #[serial]
 async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -228,7 +228,7 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
 #[serial]
 async fn test_code_without_state_hash_separator_is_rejected() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -278,7 +278,7 @@ async fn test_code_without_state_hash_separator_is_rejected() {
 #[serial]
 async fn test_headless_login_times_out_when_callback_blocks() {
     // @step Given a headless Claude login is configured with a short timeout
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     // @step When the code-entry callback blocks without returning
@@ -316,7 +316,7 @@ async fn test_headless_login_times_out_when_callback_blocks() {
 #[serial]
 async fn test_token_exchange_failure_after_valid_state_validation() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -373,7 +373,7 @@ async fn test_token_exchange_failure_after_valid_state_validation() {
 #[serial]
 async fn test_empty_code_string_is_rejected_before_validation() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_fspec_home();
+    let (temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -421,7 +421,7 @@ async fn test_empty_code_string_is_rejected_before_validation() {
 #[serial]
 async fn test_headless_login_produces_same_claude_auth_json_output_as_browser_oauth() {
     // @step Given a headless Claude login completes successfully
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     let mock_server = MockServer::start().await;
     let token_body = build_claude_token_response_json("at_struct_test", "rt_struct_test", 7200);

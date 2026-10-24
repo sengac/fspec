@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/napi/tests/rpc421_honest_ack_test.rs",
-          "lines": "75-122",
+          "lines": "74-123",
           "implMappings": [
             {
               "file": "rust/sessions/src/handle_impl.rs",
@@ -111,7 +111,7 @@
       "testMappings": [
         {
           "file": "rust/napi/tests/rpc421_honest_ack_test.rs",
-          "lines": "132-174",
+          "lines": "133-176",
           "implMappings": [
             {
               "file": "rust/napi/src/session_bindings.rs",
@@ -241,9 +241,8 @@
     ],
     "implFiles": [
       "rust/sessions/src/handle_impl.rs",
-      "rust/napi/src/session_bindings.rs",
-      "rust/cli/src/interactive/repl_loop.rs"
+      "rust/napi/src/session_bindings.rs"
     ],
-    "totalLinesCovered": 360
+    "totalLinesCovered": 293
   }
 }

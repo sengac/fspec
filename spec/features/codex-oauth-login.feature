@@ -1,10 +1,17 @@
+@wip
+@providers
+@authentication
+@oauth
+@rust
 @PROV-011
 Feature: Codex OAuth Login Flow - Browser and Device Auth for ChatGPT Subscription
   """
+  PROV-159 acceptance coverage now lives in dedicated prov159-* features.
   Rust implementation: codex_oauth.rs module alongside existing codex_auth.rs. PKCE using sha2+base64 crates (already in dependencies). HTTP server using hyper (lightweight, already used by rig). Browser open via open crate.
   CodexProvider::new() changes: Try read_codex_auth() first (existing path). If no credentials found, initiate OAuth flow. After successful OAuth, persist tokens and create provider with access_token as Bearer auth + endpoint rewrite.
   Two auth modes for CodexProvider: (1) Legacy token-exchange mode (existing - gets OpenAI API key from id_token), (2) Direct Codex API mode (new - Bearer access_token to chatgpt.com/backend-api/codex). OpenCode uses mode 2 exclusively.
   NAPI binding: codex_oauth_browser_login() → starts server, returns auth URL. codex_oauth_device_login() → returns user_code+URL, polls internally. Both return serialized tokens. TUI calls these via NAPI from ProviderSettingsScreen.
+  PROV-159 supersedes the historical file-only write and cancellation assumptions above. Its A1-A17 scenarios and primary coverage now live in the seven dedicated prov159-* features grouped by physical test target. This feature retains PROV-011's historical scenarios and coverage. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its upstream companions.
   """
 
   # ========================================

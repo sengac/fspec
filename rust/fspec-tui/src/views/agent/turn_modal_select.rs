@@ -29,6 +29,29 @@ use super::turn_modal::TurnContentModal;
 use super::AgentView;
 
 impl AgentView {
+    pub(crate) fn dismiss_retracted_turn_modal(&mut self, store: &AgentViewStore) {
+        let Some(seq) = self.turn_modal_seq else {
+            return;
+        };
+        if store
+            .current_session_context()
+            .and_then(|ctx| ctx.scrollback.full_text_for_seq(seq))
+            .is_some_and(|text| !text.is_empty())
+        {
+            return;
+        }
+        self.turn_modal_seq = None;
+        self.turn_modal_offset = 0;
+        self.turn_modal_selection = None;
+        self.turn_modal_rows.clear();
+        self.turn_modal_body_origin = None;
+        self.turn_modal_scrollbar_drag.reset();
+        self.turn_modal_scrollbar_rect = None;
+        self.turn_modal_total_rows = 0;
+        self.turn_modal_viewport_rows = 0;
+        self.recognizer = Default::default();
+    }
+
     /// COPY-008: cache the modal body layout then paint the modal + its
     /// live selection highlight. Single entry point called from
     /// `render_with_store` so that orchestrator stays under 300 LoC.

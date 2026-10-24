@@ -1,4 +1,6 @@
-@done
+@authentication
+@providers
+@wip
 @rust
 @ts-parity
 @oauth
@@ -8,6 +10,8 @@
 Feature: Anthropic + Codex OAuth login wiring (browser, headless, device)
   """
   Builds on PROV-112's OAuth boundary (FspecBackend OAuth trait methods, codelet-providers-direct via embedded; websocket no-op defaults). Adds ProviderSettingsMode variants OAuthBrowserWaiting{provider_id}, OAuthDeviceWaiting{provider_id,user_code,verification_url}, OAuthHeadlessCodeEntry{provider_id,authorize_url,pkce_verifier,code_input}, OAuthSuccess{provider_id}, OAuthError{provider_id,error} (replacing DetailSub::OAuthNotice for login rows), plus their sub-handlers + renderers. Backend methods forward to codelet-providers: claude_oauth_server::claude_browser_oauth_login, claude_oauth headless start (sync) + complete (async), codex codex_oauth_server::browser_oauth_login, codex_device_auth start + poll. Dispatch via dispatch_provider_settings_oauth.rs (spawn→backend→status→list_provider_credentials refresh). list_actions.rs Enter on OauthLogin routes by method (browser/headless) and provider; success reload returns cursor to provider row. Generation counter (per-flow monotonically increasing) invalidates stale results after Esc/cancel. Browser rows gated to embedded transport. Offline tests: MockBackend with scripted Ok/Err + call counters; view/key tests drive handle_key; no real OAuth network or ~/.fspec mutation. Files <300 LoC; clippy -D warnings + fmt clean; NO git; do not touch user WIP. Reference: spec/attachments/PROV-105/oauth-parity-spec.md §3,§4.1,§4.2,§6; napi/src/{claude,codex}_oauth.rs for exact flow semantics.
+  PROV-159 supersedes historical file-only writes, presentation-only cancellation and forced disk refresh assumptions above. Acceptance rows A1-A17 are distributed across codex-refreshing-client, codex-oauth-login, codex-oauth-napi-bindings, provider-settings-oauth-login and provider-settings-oauth-disconnect. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its two upstream companions. Centralize lifecycle/storage/refresh policy in codelet-providers; RPC, NAPI, legacy refresh and provider deletion delegate to it. Fence credential commits by account AND login generation; preserve independent API keys, unrelated document fields and supported CODEX_HOME sharing. Existing clients must deliberately rebind or require reauthentication, never silently retain an old account.
+  The distribution above describes the original planning layout only: all PROV-159 acceptance scenarios now live in the dedicated prov159-* features grouped by primary physical test target. A11-A13 are owned by prov159-rpc-lifecycle.feature with real embedded tarpc tests. This feature retains PROV-113's historical scenarios and coverage.
   """
 
   # ========================================

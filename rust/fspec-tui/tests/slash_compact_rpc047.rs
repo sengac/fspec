@@ -368,17 +368,15 @@ fn session_footer_renders_compaction_progress_when_some() {
 
     let row = row_text(&buf, 0);
 
-    // @step Then the rendered row contains the substring "[compacting: summarising messages 5/10]"
+    // @step Then the rendered row contains the substring "[compacting: summarising messages]"
     assert!(
-        row.contains("[compacting: summarising messages 5/10]"),
-        "expected `[compacting: summarising messages 5/10]` substring in row, got {row:?}",
+        row.contains("[compacting: summarising messages]"),
+        "expected phase-only activity in row, got {row:?}",
     );
-    // @step And the rendered row contains the substring "▰▰▰▰▰▱▱▱▱▱"
+    // @step And the rendered row contains no completed-work fraction or determinate bar
     assert!(
-        row.contains(
-            "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
-        ),
-        "expected `▰▰▰▰▰▱▱▱▱▱` bar in row, got {row:?}",
+        !row.contains("5/10") && !row.contains('▰') && !row.contains('▱'),
+        "unexpected measured-work presentation in row, got {row:?}",
     );
 }
 

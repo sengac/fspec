@@ -36,7 +36,7 @@ use codelet_rpc_types::{
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
-    TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    TokenRestoreState, WorkUnitContext, WorkUnitFocus, WorkUnitInfo, WorkspaceInfo,
 };
 use std::path::PathBuf;
 use std::sync::{
@@ -52,9 +52,11 @@ mod changed_files;
 #[doc(hidden)]
 pub mod checkpoints;
 mod log_layer;
+pub mod mcp_dispatch;
 mod oauth_copilot;
 mod oauth_disconnect;
 mod oauth_login;
+pub mod work_unit_reads;
 pub use log_layer::{register_log_layer, BroadcastLogLayer};
 
 use changed_files::collect_changed_files;
@@ -292,6 +294,14 @@ pub trait FspecService {
     /// `SessionManagerHandle::save_profile` (read-modify-write preserving
     /// customModels + sibling keys). Without an attached handle returns
     /// `Ok(())` (silent no-op, idempotent like `set_session_model`).
+    async fn list_provider_settings(
+    ) -> Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, String>;
+
+    async fn save_provider_settings(
+        provider_id: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String>;
+
     async fn save_profile(
         provider_id: String,
         profile_name: String,
@@ -408,6 +418,14 @@ pub trait FspecService {
     /// restore_session_token_state in a single round-trip. Used by the
     /// TUI's `/resume` flow.
     async fn resume_session(session_id: SessionId) -> Result<(), String>;
+
+    async fn get_work_unit_focus(session_id: SessionId) -> Result<WorkUnitFocus, String>;
+
+    async fn set_work_unit_focus(
+        session_id: SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> Result<WorkUnitFocus, String>;
 
     /// RPC-037: read the work-unit context bound to a session.
     async fn get_work_unit_context(session_id: SessionId) -> Option<WorkUnitContext>;
@@ -673,6 +691,25 @@ pub trait FspecService {
 
     /// RPC-059: list every loop registered against a session.
     async fn loop_list(session_id: SessionId) -> Vec<RegisteredLoop>;
+
+    async fn get_transcript_page(
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> Result<codelet_rpc_types::TranscriptPage, codelet_rpc_types::TranscriptError>;
+
+    /// Appended wire variant; requires read-v2 handshake negotiation.
+    async fn read_work_units_bounded(detail: bool, arguments: String) -> Result<String, String>;
+    /// Snapshot request identities with their pending interaction payloads.
+    async fn get_interaction_snapshot(session_id: SessionId) -> Result<String, String>;
+    /// Atomic request-bound replacement for legacy pause/HITL responses.
+    async fn reply_interaction_checked(
+        session_id: SessionId,
+        method: String,
+        request_id: String,
+        arguments: String,
+    ) -> Result<(), String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -729,6 +766,8 @@ pub struct SharedFspecService {
     /// reads via `.load()` are cheaper than `RwLock` and the swap is a
     /// rare event (only on SIGHUP).
     watcher: ArcSwap<WorkUnitsWatcher>,
+    focus_subscription:
+        std::sync::Mutex<Option<codelet_core::work_unit_subscription::WorkUnitSubscription>>,
     session_manager: Option<Arc<dyn SessionManagerHandle>>,
     chunks_tx: broadcast::Sender<(SessionId, StreamChunk)>,
     logs_tx: broadcast::Sender<LogRecord>,
@@ -782,6 +821,7 @@ impl SharedFspecService {
         Self {
             watcher: ArcSwap::new(watcher),
             session_manager: None,
+            focus_subscription: std::sync::Mutex::new(None),
             chunks_tx,
             logs_tx,
             list_work_units_calls: Arc::new(AtomicU64::new(0)),
@@ -794,6 +834,17 @@ impl SharedFspecService {
         }
     }
 
+    pub fn work_unit_focus_rx(&self) -> broadcast::Receiver<(SessionId, WorkUnitFocus)> {
+        match &self.session_manager {
+            Some(handle) => handle.work_unit_focus_rx(),
+            None => {
+                let (sender, receiver) = broadcast::channel(1);
+                drop(sender);
+                receiver
+            }
+        }
+    }
+
     /// Construct the shared impl with both a workspace watcher and a
     /// session manager handle (RPC-007). The host (rpc-server bin,
     /// EmbeddedTransport host, or rust/napi) constructs the concrete
@@ -802,6 +853,17 @@ impl SharedFspecService {
         watcher: Arc<WorkUnitsWatcher>,
         session_manager: Arc<dyn SessionManagerHandle>,
     ) -> Self {
+        let handle = Arc::downgrade(&session_manager);
+        let subscription = codelet_core::work_unit_subscription::WorkUnitSubscription::new(
+            &watcher,
+            move |project| {
+                if let Some(handle) = handle.upgrade() {
+                    if let Err(error) = handle.reconcile_work_units(project) {
+                        tracing::warn!(%error, "work-unit observation failed");
+                    }
+                }
+            },
+        );
         let (chunks_tx, _) = broadcast::channel(DEFAULT_CHUNKS_CAPACITY);
         let (logs_tx, _) = broadcast::channel(DEFAULT_LOGS_CAPACITY);
         let (checkpoints_progress_tx, _) =
@@ -809,6 +871,7 @@ impl SharedFspecService {
         Self {
             watcher: ArcSwap::new(watcher),
             session_manager: Some(session_manager),
+            focus_subscription: std::sync::Mutex::new(Some(subscription)),
             chunks_tx,
             logs_tx,
             list_work_units_calls: Arc::new(AtomicU64::new(0)),
@@ -870,6 +933,26 @@ impl SharedFspecService {
     /// updates after the swap — they observe the silence as "watcher
     /// re-armed" and resync via `list_work_units_snapshot()`.
     pub fn rebuild_watcher(&self, new_watcher: WorkUnitsWatcher) {
+        let mut subscription = self
+            .focus_subscription
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        *subscription = None;
+        if let Some(manager) = &self.session_manager {
+            let handle = Arc::downgrade(manager);
+            *subscription = Some(
+                codelet_core::work_unit_subscription::WorkUnitSubscription::new(
+                    &new_watcher,
+                    move |project| {
+                        if let Some(handle) = handle.upgrade() {
+                            if let Err(error) = handle.reconcile_work_units(project) {
+                                tracing::warn!(%error, "replacement work-unit observation failed");
+                            }
+                        }
+                    },
+                ),
+            );
+        }
         self.watcher.store(Arc::new(new_watcher));
     }
 
@@ -1131,6 +1214,74 @@ impl FspecServiceImpl {
 }
 
 impl FspecService for FspecServiceImpl {
+    async fn get_interaction_snapshot(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+    ) -> Result<String, String> {
+        self.inner
+            .session_manager()
+            .ok_or("Session manager unavailable")?
+            .interaction_snapshot(&session_id)
+    }
+    async fn reply_interaction_checked(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        method: String,
+        request_id: String,
+        arguments: String,
+    ) -> Result<(), String> {
+        if arguments.len() > 65536 {
+            return Err("Approval response exceeds input limit".into());
+        }
+        self.inner
+            .session_manager()
+            .ok_or("Session manager unavailable")?
+            .reply_interaction_checked(&session_id, &method, &request_id, &arguments)
+    }
+
+    async fn read_work_units_bounded(
+        self,
+        _ctx: Context,
+        detail: bool,
+        arguments: String,
+    ) -> Result<String, String> {
+        if arguments.len() > 4096 {
+            return Err("Arguments exceed limit".into());
+        }
+        let args: serde_json::Value =
+            serde_json::from_str(&arguments).map_err(|_| "Invalid arguments")?;
+        let args = args.as_object().ok_or("Arguments must be an object")?;
+        // Validate before taking a snapshot. The watcher still owns a full local snapshot.
+        let page = if detail {
+            None
+        } else {
+            Some(work_unit_reads::Page::parse(Some(args))?)
+        };
+        let chunk = if detail {
+            Some(work_unit_reads::Detail::parse(Some(args))?)
+        } else {
+            None
+        };
+        let snapshot = serde_json::to_value(self.inner.list_work_units_snapshot())
+            .map_err(|_| "Snapshot failed")?;
+        let mut result = match (page, chunk) {
+            (Some(page), _) => page.apply(snapshot)?,
+            (_, Some(chunk)) => chunk.apply(snapshot)?,
+            _ => return Err("Invalid read".into()),
+        };
+        if result.is_null() {
+            return Err("Invalid workspace IDs".into());
+        }
+        result["backend_fetch"] = serde_json::json!("bounded_rpc");
+        let text = serde_json::to_string(&result).map_err(|_| "Serialization failed")?;
+        if text.len() > 256 * 1024 {
+            return Err("Response exceeds limit".into());
+        }
+        Ok(text)
+    }
+
     async fn list_work_units(self, _ctx: Context) -> Vec<WorkUnitInfo> {
         self.inner.list_work_units_snapshot()
     }
@@ -1601,6 +1752,28 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
+    async fn list_provider_settings(
+        self,
+        _ctx: Context,
+    ) -> Result<Vec<codelet_rpc_types::ProviderSettingsConfig>, String> {
+        self.inner
+            .session_manager()
+            .ok_or_else(|| "list_provider_settings: no session manager attached".to_string())?
+            .list_provider_settings()
+    }
+
+    async fn save_provider_settings(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String> {
+        self.inner
+            .session_manager()
+            .ok_or_else(|| "save_provider_settings: no session manager attached".to_string())?
+            .save_provider_settings(&provider_id, &definition)
+    }
+
     async fn save_profile(
         self,
         _ctx: Context,
@@ -1794,6 +1967,22 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
+    async fn get_transcript_page(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        cursor: Option<codelet_rpc_types::TranscriptCursor>,
+        snapshot_end: Option<u64>,
+        max_bytes: u32,
+    ) -> Result<codelet_rpc_types::TranscriptPage, codelet_rpc_types::TranscriptError> {
+        self.inner
+            .session_manager()
+            .ok_or_else(|| {
+                codelet_rpc_types::TranscriptError::SessionUnavailable(session_id.value.clone())
+            })?
+            .get_transcript_page(&session_id, cursor, snapshot_end, max_bytes)
+    }
+
     async fn get_buffered_output(
         self,
         _ctx: Context,
@@ -1859,6 +2048,30 @@ impl FspecService for FspecServiceImpl {
             Some(handle) => handle.resume_session(&session_id),
             None => Ok(()),
         }
+    }
+
+    async fn get_work_unit_focus(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+    ) -> Result<WorkUnitFocus, String> {
+        self.inner
+            .session_manager()
+            .ok_or_else(|| "Session manager unavailable".to_string())?
+            .get_work_unit_focus(&session_id)
+    }
+
+    async fn set_work_unit_focus(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        work_unit_id: Option<String>,
+        source: String,
+    ) -> Result<WorkUnitFocus, String> {
+        self.inner
+            .session_manager()
+            .ok_or_else(|| "Session manager unavailable".to_string())?
+            .set_work_unit_focus(&session_id, work_unit_id, source)
     }
 
     async fn get_work_unit_context(

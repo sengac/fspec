@@ -3,7 +3,10 @@ use crate::{
     agent::CancelSignal,
     completion::GetTokenUsage,
     json_utils,
-    message::{AssistantContent, ImageMediaType, MimeType, Reasoning, ToolResult, ToolResultContent, UserContent},
+    message::{
+        AssistantContent, ImageMediaType, MimeType, Reasoning, ToolResult, ToolResultContent,
+        UserContent,
+    },
     streaming::{StreamedAssistantContent, StreamedUserContent, StreamingCompletion},
     wasm_compat::{WasmBoxedFuture, WasmCompatSend},
 };
@@ -48,8 +51,7 @@ const TOOL_RESULT_SUFFIX_BYTES: usize = 512;
 /// CMPCT-031: Remediation hint embedded in every truncation marker so the
 /// model can reason about what to do next (re-run with a narrower query,
 /// use `--failures-only` / `--summary` flags, etc.).
-const TOOL_RESULT_TRUNCATION_HINT: &str =
-    "tool output exceeded MAX_TOOL_RESULT_TEXT_BYTES; re-run with a narrower query or use --failures-only / --summary flags";
+const TOOL_RESULT_TRUNCATION_HINT: &str = "tool output exceeded MAX_TOOL_RESULT_TEXT_BYTES; re-run with a narrower query or use --failures-only / --summary flags";
 
 /// CMPCT-031: Return the largest byte index `<= limit` that falls on a
 /// UTF-8 character boundary within `s`. Used to trim `preview` safely.
@@ -152,13 +154,24 @@ fn pdf_pages_to_contents(pages: &[serde_json::Value]) -> Vec<ToolResultContent> 
 
             // EXT-016: Validate PDF page dimensions before creating Image content
             if let Some(error_msg) = check_image_dimensions(data) {
-                tracing::warn!("parse_tool_result_content: rejecting oversized PDF page {}", page_num);
+                tracing::warn!(
+                    "parse_tool_result_content: rejecting oversized PDF page {}",
+                    page_num
+                );
                 contents.push(ToolResultContent::text(error_msg));
             } else {
                 image_parts += 1;
                 last_rendered_page = page_index;
-                tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
-                contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                tracing::info!(
+                    "parse_tool_result_content: PDF page {} as Image, media_type={:?}",
+                    page_num,
+                    media_type
+                );
+                contents.push(ToolResultContent::image_base64(
+                    data,
+                    Some(media_type),
+                    None,
+                ));
             }
         }
     }
@@ -241,8 +254,15 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
 
                 // Parse the media type string to ImageMediaType
                 if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
-                    tracing::info!("parse_tool_result_content: returning Image, media_type={:?}", media_type);
-                    return vec![ToolResultContent::image_base64(data, Some(media_type), None)];
+                    tracing::info!(
+                        "parse_tool_result_content: returning Image, media_type={:?}",
+                        media_type
+                    );
+                    return vec![ToolResultContent::image_base64(
+                        data,
+                        Some(media_type),
+                        None,
+                    )];
                 }
             }
         }
@@ -312,6 +332,8 @@ pub enum MultiTurnStreamItem<R> {
 pub struct FinalResponse {
     response: String,
     aggregated_usage: crate::completion::Usage,
+    #[serde(default)]
+    context: Option<crate::completion::RequestContext>,
     /// PROV-039: stop_reason from the provider (e.g., "end_turn", "max_tokens", "tool_use")
     #[serde(skip_serializing_if = "Option::is_none")]
     stop_reason: Option<String>,
@@ -322,6 +344,7 @@ impl FinalResponse {
         Self {
             response: String::new(),
             aggregated_usage: crate::completion::Usage::new(),
+            context: None,
             stop_reason: None,
         }
     }
@@ -332,6 +355,10 @@ impl FinalResponse {
 
     pub fn usage(&self) -> crate::completion::Usage {
         self.aggregated_usage
+    }
+
+    pub fn request_context(&self) -> Option<&crate::completion::RequestContext> {
+        self.context.as_ref()
     }
 
     /// PROV-039: Get the stop_reason from the provider
@@ -349,6 +376,7 @@ impl<R> MultiTurnStreamItem<R> {
         Self::FinalResponse(FinalResponse {
             response: response.to_string(),
             aggregated_usage,
+            context: None,
             stop_reason: None,
         })
     }
@@ -362,6 +390,7 @@ impl<R> MultiTurnStreamItem<R> {
         Self::FinalResponse(FinalResponse {
             response: response.to_string(),
             aggregated_usage,
+            context: None,
             stop_reason,
         })
     }
@@ -477,13 +506,14 @@ where
         };
 
         let mut current_max_depth = 0;
-        let mut last_prompt_error = String::new();
+        let mut last_prompt_error = prompt.clone();
 
         let mut last_text_response = String::new();
         let mut is_text_response = false;
         let mut max_depth_reached = false;
 
         let mut aggregated_usage = crate::completion::Usage::new();
+        let mut latest_context = None;
 
         let cancel_signal = CancelSignal::new();
 
@@ -499,7 +529,7 @@ where
 
             'outer: loop {
                 if current_max_depth > self.max_depth + 1 {
-                    last_prompt_error = current_prompt.rag_text().unwrap_or_default();
+                    last_prompt_error = current_prompt.clone();
                     max_depth_reached = true;
                     break;
                 }
@@ -522,7 +552,7 @@ where
                         reader.len(),
                         cancel_signal.is_cancelled()
                     );
-                    
+
                     hook.on_completion_call(&current_prompt, &reader.to_vec(), cancel_signal.clone())
                         .await;
 
@@ -531,12 +561,13 @@ where
                         "[rig/streaming] AFTER on_completion_call - cancel_signal_cancelled={}",
                         cancel_signal.is_cancelled()
                     );
-                    
+
                     if cancel_signal.is_cancelled() {
                         tracing::warn!(
                             "[rig/streaming] !!! CANCEL SIGNAL IS SET - yielding PromptCancelled !!!"
                         );
                         yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
+                        break 'outer;
                     }
                 }
 
@@ -556,6 +587,7 @@ where
                     gen_ai.output.messages = tracing::field::Empty,
                 );
 
+                yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::ResponseAttemptStarted));
                 let mut stream = tracing::Instrument::instrument(
                     agent
                     .stream_completion(current_prompt.clone(), (*chat_history.read().await).clone())
@@ -570,12 +602,35 @@ where
                 let mut tool_calls = vec![];
                 let mut tool_results = vec![];
                 let mut reasoning_blocks: Vec<AssistantContent> = vec![];
+                let mut turn_text = String::new();
+                let mut attempt_snapshot = None;
                 // PROV-039: Capture the last stop_reason from the provider's Final event
                 let mut last_stop_reason: Option<String> = None;
 
                 while let Some(content) = stream.next().await {
                     match content {
+                        Ok(StreamedAssistantContent::ResponseAttemptStarted) => {
+                            attempt_snapshot = Some((
+                                turn_text.len(),
+                                reasoning_blocks.len(),
+                                last_text_response.clone(),
+                                is_text_response,
+                                did_call_tool,
+                            ));
+                            yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::ResponseAttemptStarted));
+                        }
+                        Ok(StreamedAssistantContent::ResponseAttemptAborted) => {
+                            if let Some((text, reasoning, response, was_text, called_tool)) = attempt_snapshot.take() {
+                                turn_text.truncate(text);
+                                reasoning_blocks.truncate(reasoning);
+                                last_text_response = response;
+                                is_text_response = was_text;
+                                did_call_tool = called_tool;
+                            }
+                            yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::ResponseAttemptAborted));
+                        }
                         Ok(StreamedAssistantContent::Text(text)) => {
+                            turn_text.push_str(&text.text);
                             if !is_text_response {
                                 last_text_response = String::new();
                                 is_text_response = true;
@@ -585,6 +640,7 @@ where
                                 hook.on_text_delta(&text.text, &last_text_response, cancel_signal.clone()).await;
                                 if cancel_signal.is_cancelled() {
                                     yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
+                                    break 'outer;
                                 }
                             }
                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Text(text)));
@@ -607,7 +663,19 @@ where
                             let tc_result = async {
                                 let tool_span = tracing::Span::current();
                                 let tool_args = json_utils::value_to_json_string(&tool_call.function.arguments);
+                                let mut assistant_content = reasoning_blocks.clone();
+                                if !turn_text.is_empty() {
+                                    assistant_content.push(AssistantContent::text(&turn_text));
+                                }
+                                assistant_content.extend(tool_calls.clone());
+                                assistant_content.push(AssistantContent::ToolCall(tool_call.clone()));
+                                let assistant = Message::Assistant {
+                                    id: None,
+                                    content: OneOrMany::many(assistant_content)
+                                        .expect("tool call supplies nonempty assistant content"),
+                                };
                                 if let Some(ref hook) = self.hook {
+                                    hook.on_tool_call_message(&assistant).await;
                                     hook.on_tool_call(&tool_call.function.name, tool_call.call_id.clone(), &tool_args, cancel_signal.clone()).await;
                                     if cancel_signal.is_cancelled() {
                                         return Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
@@ -629,6 +697,15 @@ where
                                 tool_span.record("gen_ai.tool.call.result", &tool_result);
 
                                 if let Some(ref hook) = self.hook {
+                                    hook.on_tool_result_message(
+                                        &assistant,
+                                        &tool_call,
+                                        &ToolResult {
+                                            id: tool_call.id.clone(),
+                                            call_id: tool_call.call_id.clone(),
+                                            content: vec_to_one_or_many(parse_tool_result_content(&tool_result)),
+                                        },
+                                    ).await;
                                     hook.on_tool_result(&tool_call.function.name, tool_call.call_id.clone(), &tool_args, &tool_result.to_string(), cancel_signal.clone())
                                     .await;
 
@@ -658,6 +735,9 @@ where
 
                                         if !tool_calls.is_empty() {
                                             let mut assistant_content = reasoning_blocks.clone();
+                                            if !turn_text.is_empty() {
+                                                assistant_content.push(AssistantContent::text(&turn_text));
+                                            }
                                             assistant_content.append(&mut tool_calls);
                                             match OneOrMany::many(assistant_content) {
                                                 Ok(content) => {
@@ -714,6 +794,7 @@ where
                                 }
                                 Err(e) => {
                                     yield Err(e);
+                                    break 'outer;
                                 }
                             }
                         },
@@ -754,6 +835,14 @@ where
                             yield Ok(MultiTurnStreamItem::Usage(usage));
                         },
                         Ok(StreamedAssistantContent::Final(final_resp)) => {
+                            latest_context = final_resp.request_context().cloned().or_else(|| {
+                                Some(crate::completion::RequestContext {
+                                    model: String::new(),
+                                    generation: 0,
+                                    request: uuid::Uuid::new_v4().to_string(),
+                                    usage: final_resp.context_usage(),
+                                })
+                            });
                             if let Some(usage) = final_resp.token_usage() { aggregated_usage += usage; };
                             // PROV-039: Capture stop_reason from the provider's streaming response
                             if let Some(reason) = final_resp.stop_reason() {
@@ -772,6 +861,7 @@ where
                                         "[rig/streaming] cancel_signal is CANCELLED after on_stream_completion_response_finish - yielding PromptCancelled"
                                     );
                                     yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
+                                    break 'outer;
                                 }
                             }
 
@@ -800,6 +890,9 @@ where
                 // When thinking is enabled, reasoning blocks MUST come before tool_use blocks
                 if !tool_calls.is_empty() {
                     let mut assistant_content = reasoning_blocks.clone();
+                    if !turn_text.is_empty() {
+                        assistant_content.push(AssistantContent::text(&turn_text));
+                    }
                     assistant_content.extend(tool_calls.clone());
                     chat_history.write().await.push(Message::Assistant {
                         id: None,
@@ -853,7 +946,12 @@ where
                         last_stop_reason
                     );
                     // PROV-039: Propagate stop_reason through to the MultiTurnStreamItem
-                    yield Ok(MultiTurnStreamItem::final_response_with_stop_reason(&last_text_response, aggregated_usage, last_stop_reason.clone()));
+                    yield Ok(MultiTurnStreamItem::FinalResponse(FinalResponse {
+                        response: last_text_response.clone(),
+                        aggregated_usage,
+                        context: latest_context.clone(),
+                        stop_reason: last_stop_reason.clone(),
+                    }));
                     break;
                 }
             }
@@ -862,7 +960,7 @@ where
                 yield Err(Box::new(PromptError::MaxDepthError {
                     max_depth: self.max_depth,
                     chat_history: Box::new((*chat_history.read().await).clone()),
-                    prompt: Box::new(last_prompt_error.clone().into()),
+                    prompt: Box::new(last_prompt_error.clone()),
                 }).into());
             }
         };
@@ -926,6 +1024,14 @@ pub trait StreamingPromptHook<M>: Clone + Send + Sync
 where
     M: CompletionModel,
 {
+    fn on_tool_call_message(&self, _assistant: &Message) -> impl Future<Output = ()> + Send {
+        async {}
+    }
+
+    fn request_usage_observer(&self) -> Option<crate::completion::RequestUsageObserver> {
+        None
+    }
+
     #[allow(unused_variables)]
     /// Called before the prompt is sent to the model
     fn on_completion_call(
@@ -933,6 +1039,16 @@ where
         prompt: &Message,
         history: &[Message],
         cancel_sig: CancelSignal,
+    ) -> impl Future<Output = ()> + Send {
+        async {}
+    }
+
+    #[allow(unused_variables)]
+    fn on_tool_result_message(
+        &self,
+        assistant: &Message,
+        call: &crate::message::ToolCall,
+        result: &ToolResult,
     ) -> impl Future<Output = ()> + Send {
         async {}
     }
@@ -1003,11 +1119,11 @@ impl<M> StreamingPromptHook<M> for () where M: CompletionModel {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use base64::Engine as _;
     use crate::client::ProviderClient;
     use crate::client::completion::CompletionClient;
     use crate::providers::anthropic;
     use crate::streaming::StreamingPrompt;
+    use base64::Engine as _;
     use futures::StreamExt;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -1154,7 +1270,10 @@ mod tests {
         assert!(parsed.is_object(), "marker must be a JSON object");
 
         // @step And the marker has field "status" equal to "truncated"
-        assert_eq!(parsed.get("status").and_then(|v| v.as_str()), Some("truncated"));
+        assert_eq!(
+            parsed.get("status").and_then(|v| v.as_str()),
+            Some("truncated")
+        );
 
         // @step And the marker has field "original_bytes" equal to the original byte length
         assert_eq!(
@@ -1315,8 +1434,8 @@ mod tests {
 
         // @step When the marker is read back as UTF-8 and parsed as JSON
         assert!(text.is_ascii() || std::str::from_utf8(text.as_bytes()).is_ok());
-        let parsed: serde_json::Value = serde_json::from_str(&text)
-            .expect("marker must parse as JSON from UTF-8 bytes");
+        let parsed: serde_json::Value =
+            serde_json::from_str(&text).expect("marker must parse as JSON from UTF-8 bytes");
 
         // @step Then parsing succeeds with no errors
         let obj = parsed.as_object().expect("marker must be a JSON object");
@@ -1439,12 +1558,12 @@ mod tests {
     fn test_final_response_end_turn_stop_reason() {
         // @step Given the agent is using any provider in streaming mode
         // (FinalResponse is provider-agnostic)
-
         // @step And the model completes its response naturally with stop_reason "end_turn"
         let resp = FinalResponse {
             response: "complete text".to_string(),
             aggregated_usage: crate::completion::Usage::new(),
             stop_reason: Some("end_turn".to_string()),
+            context: None,
         };
 
         // @step When the FinalResponse is yielded from the streaming pipeline
@@ -1457,7 +1576,6 @@ mod tests {
         // @step And the persisted AssistantMessage stop_reason is "end_turn"
         assert_eq!(resp.stop_reason(), Some("end_turn"));
     }
-
     /// FinalResponse with max_tokens stop_reason
     #[test]
     fn test_final_response_carries_max_tokens_stop_reason() {
@@ -1465,6 +1583,7 @@ mod tests {
             response: "truncated text".to_string(),
             aggregated_usage: crate::completion::Usage::new(),
             stop_reason: Some("max_tokens".to_string()),
+            context: None,
         };
         assert_eq!(resp.stop_reason(), Some("max_tokens"));
     }
@@ -1535,7 +1654,10 @@ mod tests {
             .count();
 
         // @step Then at most MAX_TOOL_RESULT_PDF_PAGES (20) Image parts are returned
-        assert_eq!(images, MAX_TOOL_RESULT_PDF_PAGES, "image count must equal the cap");
+        assert_eq!(
+            images, MAX_TOOL_RESULT_PDF_PAGES,
+            "image count must equal the cap"
+        );
 
         // @step And a trailing text part states how many pages were dropped and the next offset
         assert_eq!(texts, 1, "exactly one trailing truncation text part");
@@ -1606,14 +1728,21 @@ mod tests {
             .count();
 
         // @step Then at most MAX_TOOL_RESULT_PDF_PAGES (20) Image parts are returned
-        assert_eq!(images, MAX_TOOL_RESULT_PDF_PAGES, "nested variant must obey the cap");
+        assert_eq!(
+            images, MAX_TOOL_RESULT_PDF_PAGES,
+            "nested variant must obey the cap"
+        );
 
         // @step And a trailing text part states how many pages were dropped and the next offset
         let trailing = result.last().expect("parts must be non-empty");
         match trailing {
             ToolResultContent::Text(t) => {
                 assert!(t.text.contains("47"), "truncation notice: {}", t.text);
-                assert!(t.text.contains("offset=21"), "truncation notice: {}", t.text);
+                assert!(
+                    t.text.contains("offset=21"),
+                    "truncation notice: {}",
+                    t.text
+                );
             }
             other => panic!("trailing part must be Text, got {other:?}"),
         }
@@ -1668,8 +1797,7 @@ mod tests {
 
         // @step And the count cap is applied to the remaining pages independently
         assert_eq!(
-            images,
-            MAX_TOOL_RESULT_PDF_PAGES,
+            images, MAX_TOOL_RESULT_PDF_PAGES,
             "the cap counts Image parts only, not rejections"
         );
     }

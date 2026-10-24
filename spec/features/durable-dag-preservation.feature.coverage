@@ -1,0 +1,474 @@
+{
+  "scenarios": [
+    {
+      "name": "Preserve durable payloads and file awareness in the shared validator",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "82-93",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject missing or rewritten durable content",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "95-112",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject malformed or empty required file metadata",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "114-133",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/dag_syntax.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            },
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject inaccessible or invalid authoritative source",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "135-167",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            },
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assemble missing file metadata deterministically before validation",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "169-196",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            },
+            {
+              "file": "rust/core/src/compaction/dag_syntax.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unavailable originals reject source capture and promotion",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "198-260",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty authoritative reminders cannot authorize preservation",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "262-276",
+          "implMappings": [
+            {
+              "file": "rust/core/src/compaction/dag_validation.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cached originals cannot conceal missing durable evidence",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/cmpct072_durable_preservation.rs",
+          "lines": "13-60",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/compaction_boundary.rs",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/session_replay.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/compaction_commit.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/cmpct072_durable_preservation.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/compaction/dag_validation.rs",
+      "rust/core/src/compaction/dag_syntax.rs",
+      "rust/core/src/persistence/compaction_boundary.rs",
+      "rust/core/src/persistence/compaction_commit.rs",
+      "rust/core/src/persistence/session_replay.rs"
+    ],
+    "totalLinesCovered": 533
+  }
+}

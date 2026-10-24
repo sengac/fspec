@@ -193,9 +193,9 @@ where
             self.threshold
         );
 
-        // Handle mutex lock gracefully - if poisoned, skip the check
         let Ok(mut state) = self.state.lock() else {
-            tracing::error!("CompactionHook state mutex poisoned, skipping compaction check");
+            tracing::error!("CompactionHook state mutex poisoned, cancelling inference");
+            cancel_sig.cancel();
             return;
         };
 
@@ -255,20 +255,27 @@ where
         &self,
         _prompt: &Message,
         response: &<M as CompletionModel>::StreamingResponse,
-        _cancel_sig: CancelSignal,
+        cancel_sig: CancelSignal,
     ) {
-        if let Some(usage) = response.token_usage() {
-            // Handle mutex lock gracefully - if poisoned, skip the update
-            let Ok(mut state) = self.state.lock() else {
-                tracing::error!("CompactionHook state mutex poisoned, skipping token update");
-                return;
-            };
-            state.input_tokens = usage.input_tokens;
+        let Ok(mut state) = self.state.lock() else {
+            tracing::error!("CompactionHook state mutex poisoned, cancelling completion");
+            cancel_sig.cancel();
+            return;
+        };
+        if let Some(usage) = response.context_usage() {
+            state.input_tokens = usage
+                .input_tokens
+                .saturating_add(usage.cache_read_input_tokens.unwrap_or(0))
+                .saturating_add(usage.cache_creation_input_tokens.unwrap_or(0));
             // Cache tokens are stored in the Usage struct if available
-            state.cache_read_input_tokens = usage.cache_read_input_tokens.unwrap_or(0);
-            state.cache_creation_input_tokens = usage.cache_creation_input_tokens.unwrap_or(0);
+            state.cache_read_input_tokens = 0;
+            state.cache_creation_input_tokens = 0;
             // CTX-002: Capture output tokens for accurate total calculation
-            state.output_tokens = usage.output_tokens;
+            state.output_tokens = usage
+                .output_tokens
+                .saturating_add(usage.reasoning_tokens.unwrap_or(0));
+        } else {
+            *state = TokenState::default();
         }
     }
 }

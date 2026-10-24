@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "Daemon stderr never inherits local payload authorization",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_privacy_logging.rs",
+          "lines": "64-97",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                247,
+                249,
+                250,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default local logs preserve errors without conversation payloads",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_privacy_logging.rs",
+          "lines": "99-152",
+          "implMappings": [
+            {
+              "file": "rust/fspec/src/common.rs",
+              "lines": [
+                224,
+                229,
+                234,
+                264,
+                269,
+                274
+              ]
+            },
+            {
+              "file": "rust/tools/src/bridge_relay.rs",
+              "lines": [
+                442,
+                446,
+                524
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_handlers.rs",
+              "lines": [
+                148,
+                184
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/agent_loop.rs",
+              "lines": [
+                111,
+                198,
+                234,
+                350,
+                931
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/mod.rs",
+              "lines": [
+                36,
+                96,
+                100
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1245,
+                1277
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                30,
+                43,
+                58,
+                65,
+                83,
+                119,
+                155,
+                165,
+                184,
+                226,
+                242,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit local payload diagnostics are bounded and credential safe",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_privacy_logging.rs",
+          "lines": "154-205",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/private_files.rs",
+              "lines": [
+                4,
+                6,
+                8,
+                13
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                30,
+                43,
+                58,
+                65,
+                83,
+                119,
+                155,
+                165,
+                184,
+                226,
+                242,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Broadcast never inherits local payload authorization",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_privacy_logging.rs",
+          "lines": "207-256",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/log_layer.rs",
+              "lines": [
+                45,
+                56,
+                91,
+                107,
+                148,
+                157,
+                161,
+                181,
+                190,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug239_privacy_logging.rs"
+    ],
+    "implFiles": [
+      "rust/fspec/src/common.rs",
+      "rust/tools/src/bridge_relay.rs",
+      "rust/cli/src/interactive/stream_handlers.rs",
+      "rust/agent-loop/src/agent_loop.rs",
+      "rust/common/src/logging/mod.rs",
+      "rust/sessions/src/background_session.rs",
+      "rust/common/src/logging/privacy.rs",
+      "rust/common/src/logging/private_files.rs",
+      "rust/rpc/src/log_layer.rs"
+    ],
+    "totalLinesCovered": 254
+  }
+}

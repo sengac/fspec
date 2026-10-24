@@ -7,16 +7,24 @@
 use rig::{completion::ToolDefinition, tool::Tool};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
+use crate::chrome_browser::{ChromeBrowser, ChromeError};
 use crate::limits::OutputLimits;
 use crate::page_fetcher::PageFetcher;
 use crate::search_engine::SearchEngine;
 use crate::truncation::{format_truncation_warning, process_output_lines, truncate_output};
 use crate::ToolError;
 use codelet_common::web_search::WebSearchAction;
+
+#[cfg(test)]
+#[path = "browser_recovery_tests.rs"]
+mod recovery_tests;
+
+#[path = "browser_cache.rs"]
+mod browser_cache;
+use browser_cache::BrowserCache;
 
 /// Convert ChromeError to ToolError for unified error handling at the API boundary
 impl From<ChromeError> for ToolError {
@@ -63,83 +71,24 @@ impl From<ChromeError> for ToolError {
 }
 
 /// Global browser instance - lazily initialized on first use, can be recreated on error
-static BROWSER: Mutex<Option<Arc<ChromeBrowser>>> = Mutex::new(None);
-
-/// Current headless mode of the browser instance
-static BROWSER_HEADLESS: Mutex<bool> = Mutex::new(true);
+static BROWSER: BrowserCache<ChromeBrowser> = BrowserCache::new();
 
 /// Create a new browser instance with specified headless mode
-fn create_browser_with_headless(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError> {
-    let config = ChromeConfig::default();
-    // Override headless setting from config with requested value
-    let mut launch_config = config;
+fn create_browser_with_headless(
+    headless: bool,
+    previous: Option<&ChromeBrowser>,
+) -> Result<Arc<ChromeBrowser>, ChromeError> {
+    let mut launch_config = previous
+        .map(|browser| browser.config().clone())
+        .unwrap_or_default();
     launch_config.headless = headless;
 
     let browser = ChromeBrowser::new(launch_config)?;
     Ok(Arc::new(browser))
 }
 
-/// Get or initialize the global browser instance
-/// If the browser connection has closed, creates a new one
-/// Returns the browser (may restart if headless mode changed)
-fn get_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
-    let mut guard = BROWSER
-        .lock()
-        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}")))?;
-
-    // If we have a browser, return it
-    if let Some(ref browser) = *guard {
-        return Ok(Arc::clone(browser));
-    }
-
-    // Create a new browser with default headless mode
-    let headless_guard = BROWSER_HEADLESS
-        .lock()
-        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire headless lock: {e}")))?;
-    let headless = *headless_guard;
-    drop(headless_guard);
-
-    let browser = create_browser_with_headless(headless)?;
-    *guard = Some(Arc::clone(&browser));
-    Ok(browser)
-}
-
-/// Ensure browser is in correct headless mode, recreating if necessary
-fn ensure_browser_mode(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError> {
-    let mut headless_guard = BROWSER_HEADLESS
-        .lock()
-        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire headless lock: {e}")))?;
-
-    // If mode changed, we need to recreate the browser
-    if *headless_guard != headless {
-        *headless_guard = headless;
-        drop(headless_guard);
-
-        // Clear the old browser instance
-        clear_browser();
-
-        // Create new browser with the correct mode
-        let browser = create_browser_with_headless(headless)?;
-
-        // Store it
-        let mut guard = BROWSER.lock().map_err(|e| {
-            ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}"))
-        })?;
-        *guard = Some(Arc::clone(&browser));
-        drop(guard);
-
-        Ok(browser)
-    } else {
-        drop(headless_guard);
-        get_browser()
-    }
-}
-
-/// Clear the cached browser instance (called on connection errors)
-fn clear_browser() {
-    if let Ok(mut guard) = BROWSER.lock() {
-        *guard = None;
-    }
+fn browser_is_healthy(browser: &ChromeBrowser) -> bool {
+    browser.browser().get_version().is_ok()
 }
 
 /// Shutdown the browser and release all resources
@@ -150,13 +99,9 @@ fn clear_browser() {
 ///
 /// Safe to call multiple times or when no browser is running.
 pub fn shutdown_browser() {
-    if let Ok(mut guard) = BROWSER.lock() {
-        if let Some(browser) = guard.take() {
-            // Drop the Arc - if this is the last reference, Chrome will be killed
-            // via Browser -> BrowserInner -> Process -> TemporaryProcess -> kill()
-            drop(browser);
-            tracing::info!("Browser shutdown complete");
-        }
+    if let Some(browser) = BROWSER.clear() {
+        drop(browser);
+        tracing::info!("Browser shutdown complete");
     }
 }
 
@@ -184,33 +129,17 @@ pub fn install_browser_cleanup_handler() {
     }
 }
 
-/// Check if an error indicates a dead browser connection
-fn is_connection_closed_error(err: &ChromeError) -> bool {
-    let msg = match err {
-        ChromeError::TabError(msg) => msg,
-        ChromeError::NavigationError(msg) => msg,
-        ChromeError::EvaluationError(msg) => msg,
-        ChromeError::ConnectionError(msg) => msg,
-        _ => return false,
-    };
-    msg.contains("connection is closed") || msg.contains("connection closed")
-}
-
 /// Execute a browser operation with automatic retry on connection failure
 fn with_browser_retry<T, F>(operation: F) -> Result<T, ChromeError>
 where
     F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
 {
-    let browser = get_browser()?;
-    match operation(Arc::clone(&browser)) {
-        Ok(result) => Ok(result),
-        Err(ref e) if is_connection_closed_error(e) => {
-            clear_browser();
-            let new_browser = get_browser()?;
-            operation(new_browser)
-        }
-        Err(e) => Err(e),
-    }
+    BROWSER.run(
+        None,
+        browser_is_healthy,
+        create_browser_with_headless,
+        operation,
+    )
 }
 
 /// Execute a browser operation with a specific headless mode
@@ -219,17 +148,12 @@ fn with_browser_mode<T, F>(headless: bool, operation: F) -> Result<T, ChromeErro
 where
     F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
 {
-    let browser = ensure_browser_mode(headless)?;
-
-    match operation(Arc::clone(&browser)) {
-        Ok(result) => Ok(result),
-        Err(ref e) if is_connection_closed_error(e) => {
-            clear_browser();
-            let new_browser = ensure_browser_mode(headless)?;
-            operation(new_browser)
-        }
-        Err(e) => Err(e),
-    }
+    BROWSER.run(
+        Some(headless),
+        browser_is_healthy,
+        create_browser_with_headless,
+        operation,
+    )
 }
 
 /// Web Search Tool

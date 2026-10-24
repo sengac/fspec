@@ -148,7 +148,7 @@ mod tests {
 
     // -- Test doubles -------------------------------------------------------
 
-    /// A Claude-like resolver that clamps to 200 000.
+    /// A resolver for an endpoint with genuine hard ceilings.
     struct ClampingResolver {
         max_ctx: Option<usize>,
         default_ctx: usize,
@@ -411,44 +411,44 @@ mod provider_resolver_tests {
 
     // -- Claude Provider Tests ----------------------------------------------
 
-    /// Scenario: Claude resolver clamps registry context window to 200k
+    /// Scenario: Claude resolver retains catalog context window
     #[test]
-    fn claude_resolver_clamps_registry_context_window_to_200k() {
-        // @step Given the Claude provider's resolver declares max_context_window as 200000
+    fn claude_resolver_retains_catalog_context_window() {
+        // @step Given the Claude provider's resolver declares max_context_window as None
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-sonnet-4-20250514",
         )
         .expect("Should create provider");
 
-        assert_eq!(resolver.max_context_window(), Some(200_000));
+        assert_eq!(resolver.max_context_window(), None);
 
         // @step When the registry reports a context window of 1000000
         let registry_value = Some(1_000_000);
 
-        // @step Then the resolved context window should be clamped to 200000
+        // @step Then the resolved context window should be 1000000
         let result = resolve_context_window(registry_value, None, &resolver);
-        assert_eq!(result, 200_000);
+        assert_eq!(result, 1_000_000);
     }
 
-    /// Scenario: Claude resolver clamps registry max output tokens to 8192
+    /// Scenario: Claude resolver retains catalog maximum output tokens
     #[test]
-    fn claude_resolver_clamps_registry_max_output_tokens_to_8192() {
-        // @step Given the Claude provider's resolver declares max_output_tokens_limit as 8192
+    fn claude_resolver_retains_catalog_maximum_output_tokens() {
+        // @step Given the Claude provider's resolver declares max_output_tokens_limit as None
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-sonnet-4-20250514",
         )
         .expect("Should create provider");
 
-        assert_eq!(resolver.max_output_tokens_limit(), Some(8_192));
+        assert_eq!(resolver.max_output_tokens_limit(), None);
 
         // @step When the registry reports max output tokens of 128000
         let registry_value = Some(128_000);
 
-        // @step Then the resolved max output tokens should be clamped to 8192
+        // @step Then the resolved max output tokens should be 128000
         let result = resolve_max_output_tokens(registry_value, None, &resolver);
-        assert_eq!(result, 8_192);
+        assert_eq!(result, 128_000);
     }
 
     /// Scenario: Claude resolver returns correct defaults
@@ -683,15 +683,15 @@ mod integration_all_providers {
 
     #[test]
     fn claude_sonnet_4_resolves_context_200k_output_8192() {
-        // @step Given the Claude provider resolver with max_context_window 200000 and max_output_tokens_limit 8192
+        // @step Given the Claude provider resolver without blanket context or output ceilings
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-sonnet-4-20250514",
         )
         .expect("Should create provider");
 
-        assert_eq!(resolver.max_context_window(), Some(200_000));
-        assert_eq!(resolver.max_output_tokens_limit(), Some(8_192));
+        assert_eq!(resolver.max_context_window(), None);
+        assert_eq!(resolver.max_output_tokens_limit(), None);
 
         // @step When resolve_context_window is called with registry value 200000 and no user override
         let ctx = resolve_context_window(Some(200_000), None, &resolver);
@@ -703,28 +703,28 @@ mod integration_all_providers {
     }
 
     // =========================================================================
-    // Scenario: Claude Opus 4.6 clamps 1M registry to 200k and 128k output to 8192
+    // Scenario: Claude Opus 4.6 retains 1M context and 128k output
     // =========================================================================
 
     #[test]
-    fn claude_opus_4_6_clamps_1m_to_200k_and_128k_to_8192() {
-        // @step Given the Claude provider resolver with max_context_window 200000 and max_output_tokens_limit 8192
+    fn claude_opus_4_6_retains_1m_context_and_128k_output() {
+        // @step Given the Claude provider resolver without blanket context or output ceilings
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-opus-4-6-20250610",
         )
         .expect("Should create provider");
 
-        assert_eq!(resolver.max_context_window(), Some(200_000));
-        assert_eq!(resolver.max_output_tokens_limit(), Some(8_192));
+        assert_eq!(resolver.max_context_window(), None);
+        assert_eq!(resolver.max_output_tokens_limit(), None);
 
         // @step When resolve_context_window is called with registry value 1000000 and no user override
         let ctx = resolve_context_window(Some(1_000_000), None, &resolver);
         let out = resolve_max_output_tokens(Some(128_000), None, &resolver);
 
-        // @step Then context_window should be 200000 and max_output_tokens should be 8192
-        assert_eq!(ctx, 200_000, "Claude must clamp 1M registry to 200k");
-        assert_eq!(out, 8_192, "Claude must clamp 128k output to 8192");
+        // @step Then context_window should be 1000000 and max_output_tokens should be 128000
+        assert_eq!(ctx, 1_000_000);
+        assert_eq!(out, 128_000);
     }
 
     // =========================================================================
@@ -853,12 +853,12 @@ mod integration_all_providers {
     }
 
     // =========================================================================
-    // Scenario: User override exceeding provider max is clamped
+    // Scenario: Claude user override above historical defaults is retained
     // =========================================================================
 
     #[test]
-    fn user_override_exceeding_provider_max_is_clamped() {
-        // @step Given the Claude provider resolver with max_context_window 200000
+    fn claude_user_override_above_historical_defaults_is_retained() {
+        // @step Given the Claude provider resolver without a blanket context ceiling
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-sonnet-4-20250514",
@@ -869,15 +869,9 @@ mod integration_all_providers {
         let ctx = resolve_context_window(None, Some(500_000), &resolver);
         let out = resolve_max_output_tokens(None, Some(32_000), &resolver);
 
-        // @step Then context_window should be clamped to 200000
-        assert_eq!(
-            ctx, 200_000,
-            "User override 500k must be clamped to Claude max 200k"
-        );
-        assert_eq!(
-            out, 8_192,
-            "User override 32k must be clamped to Claude max 8192"
-        );
+        // @step Then context_window should be 500000
+        assert_eq!(ctx, 500_000);
+        assert_eq!(out, 32_000);
     }
 
     // =========================================================================
@@ -891,20 +885,19 @@ mod integration_all_providers {
         std::env::remove_var("OPENAI_CONTEXT_WINDOW");
         std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
 
-        // Claude with 1M registry → clamped to 200k
         // @step When context_window() and max_output_tokens() are called with registry values
         let claude =
             ProviderManager::for_testing(ProviderType::Claude, Some(1_000_000), Some(128_000));
         // @step Then each provider returns correctly clamped or pass-through values
         assert_eq!(
             claude.context_window(),
-            200_000,
-            "Claude: 1M clamped to 200k"
+            1_000_000,
+            "Claude retains catalog context"
         );
         assert_eq!(
             claude.max_output_tokens(),
-            8_192,
-            "Claude: 128k clamped to 8192"
+            128_000,
+            "Claude retains catalog output"
         );
 
         // OpenAI with registry values → pass-through
@@ -952,11 +945,11 @@ mod integration_all_providers {
     }
 
     // =========================================================================
-    // Scenario: Sub-agent propagation returns clamped values for Claude
+    // Scenario: Sub-agent propagation returns catalog context for Claude
     // =========================================================================
 
     #[test]
-    fn sub_agent_propagation_returns_clamped_claude() {
+    fn sub_agent_propagation_returns_catalog_context_for_claude() {
         // @step Given a ProviderManager with Claude and registry context_window of 1000000
         let mut manager =
             ProviderManager::for_testing(ProviderType::Claude, Some(1_000_000), Some(128_000));
@@ -968,16 +961,16 @@ mod integration_all_providers {
         let raw_ctx = manager.raw_model_context_window();
         let raw_out = manager.raw_model_max_output_tokens();
 
-        // @step Then the returned value should be 200000 not 1000000
+        // @step Then the returned value should be 1000000
         assert_eq!(
             raw_ctx,
-            Some(200_000),
-            "Sub-agent gets clamped 200k, not raw 1M"
+            Some(1_000_000),
+            "Sub-agent receives effective catalog context"
         );
         assert_eq!(
             raw_out,
-            Some(8_192),
-            "Sub-agent gets clamped 8192, not raw 128k"
+            Some(128_000),
+            "Sub-agent receives effective catalog output"
         );
     }
 
@@ -999,9 +992,9 @@ mod integration_all_providers {
         );
     }
 
-    /// Edge case: User override below provider max → not clamped
+    /// Edge case: User override below fallback defaults is retained
     #[test]
-    fn user_override_below_provider_max_not_clamped() {
+    fn user_override_below_fallback_defaults_is_retained() {
         let resolver = crate::claude::ClaudeProvider::from_api_key_with_model(
             "sk-ant-api03-test-key",
             "claude-sonnet-4-20250514",
@@ -1009,10 +1002,7 @@ mod integration_all_providers {
         .expect("Should create provider");
 
         let ctx = resolve_context_window(None, Some(100_000), &resolver);
-        assert_eq!(
-            ctx, 100_000,
-            "User override 100k is below Claude max 200k, should not clamp"
-        );
+        assert_eq!(ctx, 100_000, "Explicit context override is retained");
     }
 
     /// Edge case: Registry and user override both present — user wins
@@ -1029,25 +1019,23 @@ mod integration_all_providers {
         assert_eq!(ctx, 150_000, "User override 150k wins over registry 200k");
     }
 
-    /// Edge case: ProviderManager override_model_limits stores and clamps correctly
+    /// Edge case: ProviderManager override_model_limits retains explicit values
     #[test]
-    fn provider_manager_override_model_limits_clamps() {
+    fn provider_manager_override_model_limits_retains_explicit_values() {
         let mut manager =
             ProviderManager::for_testing(ProviderType::Claude, Some(200_000), Some(8_192));
 
-        // Override with values exceeding provider max
         manager.override_model_limits(Some(500_000), Some(64_000));
 
-        // Both should be clamped to Claude's hard max
         assert_eq!(
             manager.context_window(),
-            200_000,
-            "Override 500k clamped to 200k"
+            500_000,
+            "Explicit context override is retained"
         );
         assert_eq!(
             manager.max_output_tokens(),
-            8_192,
-            "Override 64k clamped to 8192"
+            64_000,
+            "Explicit output override is retained"
         );
     }
 
@@ -1068,7 +1056,7 @@ mod integration_all_providers {
         );
     }
 
-    /// Copilot with registry values → pass-through (not clamped like Claude)
+    /// Copilot with registry values → pass-through
     #[test]
     fn copilot_with_registry_values_passes_through() {
         let copilot =

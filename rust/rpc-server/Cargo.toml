@@ -34,6 +34,10 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 
 [dev-dependencies]
+codelet-common = { workspace = true }
+codelet-sessions = { workspace = true }
+serial_test = { workspace = true }
+codelet-test-helpers = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
 url = { workspace = true }

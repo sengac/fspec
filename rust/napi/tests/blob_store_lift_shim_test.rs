@@ -115,6 +115,7 @@ fn napi_blob_shim_round_trips_an_envelope_with_blob_extraction() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_napi_shim_rpc034".to_string(),
+                call_id: None,
                 content: large_content.clone(),
                 is_error: false,
                 tool_use_result: None,

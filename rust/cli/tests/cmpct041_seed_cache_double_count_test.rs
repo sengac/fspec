@@ -20,19 +20,19 @@ use codelet_cli::interactive::output::TokenInfo;
 use codelet_cli::session::Session;
 use codelet_core::{ApiTokenUsage, StreamingTokenDisplay};
 
+#[path = "support/gemini_continuation_source.rs"]
+mod gemini_source;
+
 // ===========================================================================
 // Helpers
 // ===========================================================================
 
 fn fresh_session() -> Session {
-    // Mirror cmpct038_measurement_basis_test: in multi-credential
-    // environments ProviderManager::new() refuses to auto-select, so fall
-    // back to an explicit provider.
-    let provider_manager = codelet_providers::ProviderManager::new()
-        .or_else(|_| codelet_providers::ProviderManager::with_provider("gemini"))
-        .or_else(|_| codelet_providers::ProviderManager::with_provider("zai"))
-        .or_else(|_| codelet_providers::ProviderManager::with_provider("claude"))
-        .expect("Need at least one API key for tests");
+    let provider_manager = codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    );
     Session::from_provider_manager(provider_manager)
 }
 
@@ -146,17 +146,14 @@ fn stream_loop_seed_sites_route_through_audited_constructor() {
     // shape is matched robustly, then assert each `::new` sources from a
     // display snapshot's raw `input_tokens` (display basis), never from
     // `token_tracker` (cache-inclusive basis).
-    let gemini_path =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/gemini_continuation.rs");
-    let gemini_src = fs::read_to_string(&gemini_path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", gemini_path.display(), e));
+    let gemini_src = gemini_source::gemini_continuation_source();
     let normalized: String = gemini_src.split_whitespace().collect::<Vec<_>>().join("");
 
     let gemini_new_calls = gemini_src.matches("StreamingTokenDisplay::new(").count();
     assert_eq!(
-        gemini_new_calls, 2,
-        "gemini_continuation.rs must contain exactly its two display-basis \
-         re-seed sites; found {gemini_new_calls}"
+        gemini_new_calls, 3,
+        "Gemini continuation must contain its two display-basis re-seed sites \
+         and one physical-usage finalization site; found {gemini_new_calls}"
     );
     assert!(
         normalized.contains("StreamingTokenDisplay::new(current_display.input_tokens,"),
@@ -164,9 +161,17 @@ fn stream_loop_seed_sites_route_through_audited_constructor() {
          current_display (raw input + separate cache fields)"
     );
     assert!(
-        normalized.contains("StreamingTokenDisplay::new(cont_final.input_tokens,"),
+        normalized.contains("StreamingTokenDisplay::new(current.input_tokens,"),
         "the nested-continuation re-seed must source from the display-basis \
-         snapshot cont_final (raw input + separate cache fields)"
+         snapshot current (raw input + separate cache fields)"
+    );
+    assert!(
+        normalized.contains(
+            "StreamingTokenDisplay::new(physical.input_tokens,self.finalized_output,\
+             physical.cache_read_input_tokens.unwrap_or(0),\
+             physical.cache_creation_input_tokens.unwrap_or(0),"
+        ),
+        "finalization must source raw input and separate cache fields from physical usage"
     );
     assert!(
         !normalized.contains("StreamingTokenDisplay::new(session.token_tracker"),

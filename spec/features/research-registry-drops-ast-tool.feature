@@ -4,7 +4,6 @@
 @research-tools
 @CLI-015
 Feature: Research registry drops the ast tool
-
   """
   The `fspec research` command's static registry no longer includes the `ast`
   tool (CLI-015): AST code search moved to the native AstGrep tool (harness

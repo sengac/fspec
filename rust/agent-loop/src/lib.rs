@@ -36,24 +36,34 @@
 
 pub mod agent_loop;
 pub mod agent_manager_handler;
+mod auxiliary_agent_builder;
 pub mod background_output;
+mod bridge_control;
 pub mod bridges;
+mod compaction_builder;
+pub mod compaction_evidence;
+pub mod compaction_execution;
 pub mod deep_search_handler;
 pub mod deep_search_provider_config;
 pub mod dispatch;
 pub mod error;
+pub mod fspec_handler;
 pub mod generate_compaction_handler; // CMPCT-044: clean compaction sub-agent spawner
 pub mod graph_search_handler;
 pub mod hooks;
 pub mod inject_summary_handler;
 pub mod persist;
+pub mod persistence_retry;
 pub mod schedule_handler;
 pub mod session_search_handler;
 pub mod stream_chunk_json;
+mod stream_journal;
 pub mod stream_loop_detector;
 pub mod terminal_overflow_recovery; // CMPCT-044: terminal-error-arm overflow recovery
 pub mod thinking_config;
 pub mod thinking_level_detection;
+pub mod turn_compaction;
+pub mod user_persistence;
 
 pub use agent_loop::agent_loop;
 pub use background_output::{BackgroundOutput, BackgroundProgressEmitter};

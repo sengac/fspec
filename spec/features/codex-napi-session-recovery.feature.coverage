@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "NAPI dispatch shares recovery state with its owning session",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov160_napi_session_recovery.rs",
+          "lines": "52-157",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/provider_session.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            },
+            {
+              "file": "rust/napi/src/agent_loop.rs",
+              "lines": [
+                67,
+                68,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI dispatch clears routing state from the previous turn",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/prov160_napi_turn_routing.rs",
+          "lines": "36-113",
+          "implMappings": [
+            {
+              "file": "rust/napi/src/provider_session.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/prov160_napi_session_recovery.rs",
+      "rust/agent-loop/tests/prov160_napi_turn_routing.rs"
+    ],
+    "implFiles": [
+      "rust/napi/src/provider_session.rs",
+      "rust/napi/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 211
+  }
+}

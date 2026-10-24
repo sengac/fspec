@@ -1,12 +1,4 @@
-//! PROV-109: profile write surface for the ProviderSettingsView —
-//! `SaveProfile` / `DeleteProfile` / `ConfirmDeleteProfile` dispatch handlers.
-//!
-//! Split out of `dispatch_provider_settings.rs` to keep that file under the
-//! 300-LoC ceiling. Each helper mirrors the RPC-054 save/delete pattern:
-//! spawn a tokio task that awaits the PROV-108 backend round-trip, then
-//! follow up with a `list_provider_credentials` refresh whose
-//! `ProviderCredentialsLoaded` fold reloads the openai profile slice so the
-//! view repaints with the new state.
+//! Provider profile writes and backend-loaded settings refresh dispatch.
 
 use tokio::task::JoinHandle;
 
@@ -15,38 +7,36 @@ use crate::components::Action;
 use super::state::App;
 
 impl App {
-    /// RPC-054 / RPC-349 / PROV-111: fold a `list_provider_credentials`
-    /// response into the view. The raw list backs the legacy
-    /// `visible_providers` path; RPC-349 projects it into the rich NavItem
-    /// tree; PROV-100 loads the OpenAI profile display slice; PROV-111 also
-    /// loads the FULL per-profile ProfileConfig map so Enter on a Profile row
-    /// prefills the EditProfile form. All are small sync local-file reads
-    /// (no tokio). Re-loaded on every refresh so a saved/deleted profile's
-    /// edit prefill stays in sync — this is the end-to-end repaint path.
+    /// Fold credentials into the navigation tree, then reload settings and
+    /// provider-qualified profile definitions from the backend.
     pub(crate) fn handle_provider_credentials_loaded(
         &mut self,
         list: Vec<codelet_rpc_types::ProviderCredentialInfo>,
     ) {
-        use crate::views::provider_settings::{profiles_config, projection};
-        let profiles = profiles_config::load_openai_profiles();
-        let profile_configs = profiles_config::load_openai_profile_configs()
-            .into_iter()
-            .collect();
-        let display = projection::project_display_infos(&list, &profiles);
         let view = &mut self.navigator.provider_settings;
-        view.set_providers(list);
-        view.set_provider_display_infos(display);
-        view.set_profile_configs(profile_configs);
+        view.apply_provider_credentials(list);
         // PROV-112: after the nav rebuild, honour a pending navigate target
         // (set by the OAuth disconnect dispatch) so the cursor returns to the
         // parent provider row once the Logout row disappears.
         view.apply_pending_navigate();
+        self.spawn_provider_settings_read();
     }
 
     /// PROV-109: route the profile write actions. Called from the catch-all
     /// arm of `try_dispatch_provider_settings`. Returns `true` if handled.
     pub(crate) fn try_dispatch_profile_write(&mut self, action: &Action) -> bool {
         match action {
+            Action::ProviderSettingsConfigsLoaded(configs) => {
+                self.navigator
+                    .provider_settings
+                    .set_provider_settings_configs(configs.clone());
+            }
+            Action::SaveProviderSettings {
+                provider_id,
+                definition,
+            } => {
+                self.handle_save_provider_settings(provider_id.clone(), definition.clone());
+            }
             Action::SaveProfile {
                 provider_id,
                 profile_name,

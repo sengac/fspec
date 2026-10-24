@@ -44,6 +44,7 @@ fn is_copyable_mode(mode: &ProviderSettingsMode) -> bool {
     matches!(
         mode,
         ProviderSettingsMode::CreateProfile { .. }
+            | ProviderSettingsMode::EditSettings { .. }
             | ProviderSettingsMode::EditProfile { .. }
             | ProviderSettingsMode::Detail {
                 sub: DetailSub::EditApiKey { .. },
@@ -58,6 +59,7 @@ fn is_copyable_mode(mode: &ProviderSettingsMode) -> bool {
 fn handle_copy(view: &ProviderSettingsView) -> ProviderSettingsEvent {
     let text = match &view.mode {
         ProviderSettingsMode::CreateProfile { form, .. }
+        | ProviderSettingsMode::EditSettings { form, .. }
         | ProviderSettingsMode::EditProfile { form, .. } => {
             if !form.is_editing_name && form.field_index == 1 {
                 // API Key field — mask; never expose the plaintext secret.

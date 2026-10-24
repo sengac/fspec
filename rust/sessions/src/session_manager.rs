@@ -146,7 +146,7 @@ impl SessionManagerHooks for NoopSessionManagerHooks {
 ///    side keeps spawning the agent loop, the scheduler, the footer
 ///    poller, and the IsolationStateChange chunk fan-out unchanged.
 pub struct SessionManager {
-    sessions: RwLock<IndexMap<Uuid, Arc<BackgroundSession>>>,
+    pub(crate) sessions: RwLock<IndexMap<Uuid, Arc<BackgroundSession>>>,
     /// Tracks subordinate-supervisor relationships between sessions (WATCH-002)
     chain_of_command: crate::chain_of_command::ChainOfCommand,
     /// Tracks the currently active (attached) session for navigation (VIEWNV-001)
@@ -188,6 +188,7 @@ pub struct SessionManager {
     /// removal, a clear is REPEATABLE (a cleared session stays live), so
     /// exactly one event per successful clear.
     session_cleared_tx: broadcast::Sender<SessionId>,
+    pub(crate) work_unit_focus_tx: broadcast::Sender<(SessionId, codelet_rpc_types::WorkUnitFocus)>,
     /// RPC-040: NAPI-side subsystems injected via the hooks trait.
     hooks: ArcSwap<Arc<dyn SessionManagerHooks>>,
     /// RPC-386: Weak self-reference, populated via [`SessionManager::init_self_weak`]
@@ -229,6 +230,7 @@ impl SessionManager {
         // already-empty scrollback is a no-op), so a lagged receiver
         // recovers via RecvError::Lagged without producing a wrong state.
         let (session_cleared_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
+        let (work_unit_focus_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let default_hooks: Arc<dyn SessionManagerHooks> = Arc::new(NoopSessionManagerHooks);
         Self {
             sessions: RwLock::new(IndexMap::new()),
@@ -245,6 +247,7 @@ impl SessionManager {
             session_created_tx,
             session_removed_tx,
             session_cleared_tx,
+            work_unit_focus_tx,
             hooks: ArcSwap::from_pointee(default_hooks),
             self_weak: OnceLock::new(),
         }
@@ -542,6 +545,7 @@ impl SessionManager {
                 worktree_path: None,
                 role: None,
                 updated_at_ms: Some(m.updated_at.timestamp_millis()),
+                work_unit_focus: m.work_unit_focus,
             })
             .collect();
         tracing::info!(
@@ -1010,6 +1014,8 @@ impl SessionManager {
 
         let result = create_background_session_inner(params, provider_manager).await?;
         let session = result.session;
+        self.restore_activity_focus(&session, manifest)?;
+        session.prepare_manifest_restore();
         let input_rx = result.input_rx;
         let mcp_injection_rx = result.mcp_injection_rx;
 
@@ -1370,6 +1376,7 @@ impl SessionManager {
             self.hooks().stop_footer_poller(id);
             self.hooks().cleanup_session_loops(uuid);
             codelet_tools::cleanup_mcp_session(uuid);
+            codelet_tools::tool_admission::unregister_session(uuid);
             unregister_pre_tool_hook(uuid);
             codelet_tools::unregister_bash_abort_flag(uuid);
             codelet_tools::unregister_footer_cwd(uuid);
@@ -1449,8 +1456,7 @@ impl SessionManager {
         tracing::debug!(session_id = %uuid, "clear_session_history: starting");
 
         let session = self.get_session(id)?;
-        tokio::task::block_in_place(|| session.clear_history());
-        Ok(())
+        tokio::task::block_in_place(|| session.clear_history()).map_err(|error| error.to_string())
     }
 
     // === ChainOfCommand delegation methods (WATCH-002) ===

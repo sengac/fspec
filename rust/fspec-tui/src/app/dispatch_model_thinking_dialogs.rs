@@ -73,49 +73,7 @@ impl App {
             self.handle_model_selected_no_session(provider_id, model_id);
             return;
         };
-        // RPC-337: remember the chosen model id so the ModelSelector's
-        // green `(current)` marker lights up on reopen.
-        self.agent_view_store
-            .set_selected_model_id(session_id.clone(), model_id.clone());
-        if tokio::runtime::Handle::try_current().is_err() {
-            tracing::warn!(
-                target: "model_select",
-                "[MODEL-SELECT] handle_model_selected: no tokio runtime -> skipping backend write"
-            );
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let sid_for_refresh = session_id.clone();
-        tracing::info!(
-            target: "model_select",
-            session_id = ?session_id,
-            provider_id = %provider_id,
-            model_id = %model_id,
-            "[MODEL-SELECT] handle_model_selected: spawning backend.set_session_model write"
-        );
-        let handle = tokio::spawn(async move {
-            match backend
-                .set_session_model(session_id, provider_id, model_id)
-                .await
-            {
-                Ok(()) => tracing::info!(
-                    target: "model_select",
-                    "[MODEL-SELECT] backend.set_session_model OK"
-                ),
-                Err(e) => tracing::error!(
-                    target: "model_select",
-                    error = %e,
-                    "[MODEL-SELECT] backend.set_session_model FAILED"
-                ),
-            }
-            // Best-effort chrome refresh — the SessionHeader badges
-            // come from RPC-018's get_model_info path.
-            if let Ok(info) = backend.get_model_info(sid_for_refresh.clone()).await {
-                let _ = action_tx.send(Action::ModelInfoLoaded(sid_for_refresh, info));
-            }
-        });
-        self.pending_tasks.push(handle);
+        self.spawn_model_sync(session_id, Some((provider_id, model_id)));
     }
 
     /// MODEL-006: the `session_id == None` branch of `handle_model_selected`.
@@ -262,6 +220,9 @@ impl App {
             Action::ModelSelected(s, p, m) => {
                 self.handle_model_selected(s.clone(), p.clone(), m.clone());
             }
+            Action::ModelSelectionLoaded(session, revision, result) => {
+                self.handle_model_selection_loaded(session, *revision, result);
+            }
             Action::ThinkingLevelSelected(s, l) => {
                 self.handle_thinking_level_selected(s.clone(), *l);
             }
@@ -278,6 +239,13 @@ impl App {
             }
             Action::WorkUnitAttached(s, ctx) => {
                 self.handle_work_unit_attached(s.clone(), ctx.clone());
+            }
+            Action::WorkUnitFocusChanged(session, focus) => {
+                self.handle_work_unit_focus_changed(session.clone(), focus.clone());
+            }
+            Action::SessionObserved(info) => self.handle_session_observed(info.clone()),
+            Action::WorkUnitSessionCreated(session, card) => {
+                self.handle_work_unit_session_created(session.clone(), card.clone());
             }
             // RPC-051 Esc cascade — helper in dispatch_esc_cascade.rs.
             Action::AgentEscPressed => self.handle_agent_esc_pressed(),

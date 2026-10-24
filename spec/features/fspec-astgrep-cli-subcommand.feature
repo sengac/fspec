@@ -4,7 +4,6 @@
 @astgrep
 @CLI-015
 Feature: fspec astgrep CLI subcommand
-
   """
   The `fspec astgrep` clap subcommand gives one-shot CLI users the same AST
   code search the native agent gets from the AstGrep tool. The bridge

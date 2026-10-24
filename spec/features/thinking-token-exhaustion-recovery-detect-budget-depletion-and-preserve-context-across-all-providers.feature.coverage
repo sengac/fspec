@@ -1,11 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "Anthropic thinking exhaustion detected and recovered with reduced budget",
+      "name": "Anthropic thinking exhaustion detected and recovered with a prompt-only retry",
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "22-68",
+          "lines": "22-62",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -305,11 +305,11 @@
       ]
     },
     {
-      "name": "OpenAI thinking exhaustion detected and recovered with lower reasoning effort",
+      "name": "OpenAI thinking exhaustion detected and recovered with a prompt-only retry",
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "74-110",
+          "lines": "68-107",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -609,11 +609,11 @@
       ]
     },
     {
-      "name": "Gemini thinking exhaustion detected and recovered with lower thinking level",
+      "name": "Gemini thinking exhaustion detected and recovered with a prompt-only retry",
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "116-153",
+          "lines": "113-153",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -917,7 +917,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "159-195",
+          "lines": "159-193",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -991,7 +991,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "201-262",
+          "lines": "199-259",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -1079,7 +1079,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "268-319",
+          "lines": "265-315",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -1135,7 +1135,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "325-362",
+          "lines": "321-356",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -1275,7 +1275,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "368-406",
+          "lines": "362-400",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -1335,7 +1335,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/thinking_exhaustion_recovery_test.rs",
-          "lines": "412-440",
+          "lines": "406-434",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",

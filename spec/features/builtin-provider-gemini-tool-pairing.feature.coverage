@@ -1,0 +1,126 @@
+{
+  "scenarios": [
+    {
+      "name": "Streaming Gemini pairs distinct tool identities with function names",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_gemini_tool_pairing.rs",
+          "lines": "82-107",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/request_body.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct Gemini pairs distinct tool identities with function names",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_gemini_tool_pairing.rs",
+          "lines": "109-143",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/request_body.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct071_builtin_gemini_tool_pairing.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/gemini/request_body.rs"
+    ],
+    "totalLinesCovered": 139
+  }
+}

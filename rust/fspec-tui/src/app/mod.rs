@@ -17,13 +17,15 @@
 //!     `App::render` / `App::run` (terminal + crossterm + render-tick).
 
 pub mod bootstrap;
+mod bootstrap_focus;
 pub mod bootstrap_git_state; // BUG-182: (g) git_state_changed_rx subscriber (300-LoC ceiling)
 pub mod bootstrap_model; // PROV-120: initialize_startup_model body (300-LoC ceiling)
-pub mod bootstrap_session_removed; // RPC-434: (h) session_removed_rx subscriber (300-LoC ceiling)
 pub mod bootstrap_session_cleared; // RPC-437: (i) session_cleared_rx subscriber (300-LoC ceiling)
+pub mod bootstrap_session_removed; // RPC-434: (h) session_removed_rx subscriber (300-LoC ceiling)
 pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
+mod dispatch_archive;
 pub mod dispatch_attach;
 pub mod dispatch_blocklist;
 pub mod dispatch_board_keybinding; // BOARD-023/MENU-005: board 'u' menu-bar help dialog + help/exit rows
@@ -33,12 +35,15 @@ pub mod dispatch_checkpoint_delete;
 pub mod dispatch_checkpoint_diff;
 pub mod dispatch_checkpoint_restore;
 pub mod dispatch_checkpoints;
+mod dispatch_committed_compaction;
 pub mod dispatch_compaction_complete; // CMPCT-049: CompactionComplete arm body (300-LoC ceiling)
 pub mod dispatch_compaction_hide;
+mod dispatch_continue_sync;
 pub mod dispatch_create_session_dialog;
 pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
 pub mod dispatch_exec_stdin; // TOOL-022 P2: exec-stdin overlay reducers + probe
+mod dispatch_focus;
 pub mod dispatch_fspec_runner;
 pub mod dispatch_git_state; // BUG-182: git-state frame fold (R3/R4)
 pub mod dispatch_history_recall;
@@ -49,6 +54,7 @@ pub mod dispatch_menu_mux; // MENU-004/BUG-200: mux top bar arms + ring seam edg
 pub mod dispatch_menu_zone_c; // MENU-009: Zone C button activation arm
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
+mod dispatch_model_sync;
 pub mod dispatch_model_thinking_dialogs;
 pub mod dispatch_mux; // MUX-001: mux mode Action arms + /mux apply
 pub mod dispatch_mux_apply; // MUX-001: /mux subcommand + dialog-draft applier
@@ -58,6 +64,7 @@ pub mod dispatch_pause_route;
 pub mod dispatch_pending_input;
 pub mod dispatch_provider_settings;
 pub mod dispatch_provider_settings_copilot;
+mod dispatch_provider_settings_defaults;
 pub mod dispatch_provider_settings_oauth;
 pub mod dispatch_provider_settings_profiles;
 pub mod dispatch_reconnect;
@@ -78,6 +85,8 @@ pub mod dispatch_slash_submit; // RPC-022/BUG-169: handle_input_submitted typed-
 pub mod dispatch_slash_update; // UPD-002: /update apply + shared engine round-trip
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
+mod dispatch_transcript;
+mod dispatch_transcript_live;
 pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
 pub mod dispatch_work_unit_entry;
@@ -94,6 +103,7 @@ pub mod session_creation;
 pub mod session_restore; // TUI-113: auto-restore last active session on startup/reconnect
 pub mod slash_parser;
 pub mod state;
+pub mod transcript_sync;
 pub mod update_parser; // UPD-002: /update subcommand parser + message formatting
 
 pub use events::synth_key;

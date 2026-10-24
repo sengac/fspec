@@ -1,0 +1,366 @@
+{
+  "scenarios": [
+    {
+      "name": "Accepted summary submission stops inference at the tool boundary",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct052_inference_handoff.rs",
+          "lines": "221-238",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/compaction_handoff.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queued summary does not claim durable application",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct052_inference_handoff.rs",
+          "lines": "240-272",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/inject_summary.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected summary submission blocks subsequent inference",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct052_inference_handoff.rs",
+          "lines": "274-298",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/compaction_handoff.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Self-target generation yields before ordinary inference",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct052_inference_handoff.rs",
+          "lines": "65-83",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/compaction_handoff.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected self-target generation blocks ordinary inference",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cmpct052_inference_handoff.rs",
+          "lines": "85-109",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/compaction_handoff.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/cmpct052_inference_handoff.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/interactive/compaction_handoff.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/tools/src/inject_summary.rs"
+    ],
+    "totalLinesCovered": 368
+  }
+}

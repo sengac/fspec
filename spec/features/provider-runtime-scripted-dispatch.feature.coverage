@@ -1,0 +1,258 @@
+{
+  "scenarios": [
+    {
+      "name": "Selected scripted model dispatches with its original alias",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
+          "lines": "167-181",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/model_identity.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/provider.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Named scripted runtime profile preserves dispatch identity",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
+          "lines": "183-201",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/model_identity.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            },
+            {
+              "file": "rust/providers/src/custom/provider.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exact scripted aliases take priority over upstream ID matches",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
+          "lines": "203-216",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/model_identity.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown scripted model identifiers are rejected",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
+          "lines": "218-234",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/model_identity.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ambiguous scripted upstream IDs are rejected",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov161_scripted_dispatch.rs",
+          "lines": "236-255",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/custom/model_identity.rs",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov161_scripted_dispatch.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/custom/model_identity.rs",
+      "rust/providers/src/custom/provider.rs"
+    ],
+    "totalLinesCovered": 236
+  }
+}

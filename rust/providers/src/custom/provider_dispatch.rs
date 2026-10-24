@@ -118,8 +118,9 @@ impl RhaiCustomProvider {
             has_thinking_config = thinking_config.is_some(),
             "[rhai-dispatch] invoke_build_request: calling Rhai build_request"
         );
+        let tools = crate::tool_contract::attributed_tools(tools)?;
         let result = self
-            .invoke_request_builder("build_request", messages, tools, thinking_config)
+            .invoke_request_builder("build_request", messages, &tools, thinking_config)
             .await?;
         tracing::warn!(
             provider = %self.config_name(),
@@ -148,7 +149,9 @@ impl RhaiCustomProvider {
         let request = request_to_rhai(messages, tools, thinking_config.as_ref())
             .map_err(ProviderError::from)?;
         let result = self.call_fn1(fn_name, request).await?;
-        Ok(dynamic_to_json_value(&result))
+        let body = dynamic_to_json_value(&result);
+        crate::tool_contract::validate_catalog(&body, tools)?;
+        Ok(body)
     }
 
     /// Invoke `parse_response(raw)` and bridge it to `CompletionResponse`.

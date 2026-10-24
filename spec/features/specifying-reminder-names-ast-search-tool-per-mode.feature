@@ -4,7 +4,6 @@
 @astgrep
 @CLI-015
 Feature: Specifying reminder names the AST search tool per mode
-
   """
   The SPECIFYING status-change reminder is mode-aware (CLI-015): in harness
   mode (FSPEC_CAPTURE_MODE=1) it names the native AstGrep tool; in CLI mode

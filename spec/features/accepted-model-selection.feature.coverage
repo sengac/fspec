@@ -1,0 +1,216 @@
+{
+  "scenarios": [
+    {
+      "name": "A later rejection retains an earlier accepted pending selection",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "18-64",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pending and rejected selection preserves accepted identity",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "122-133",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful selection publishes backend identity rather than request alias",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "136-144",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selection feedback stays with its originating session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "147-165",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delayed earlier selection cannot overwrite a newer request",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "168-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Earlier chrome hydration cannot overwrite an accepted selection",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "197-213",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reconciliation failure retains accepted display and surfaces feedback",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "216-227",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selection without a runtime does not publish an unaccepted model",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/bug226_accepted_model.rs",
+          "lines": "230-240",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_model_sync.rs",
+              "lines": [
+                20,
+                30,
+                38,
+                45,
+                52,
+                76,
+                84,
+                89,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/bug226_accepted_model.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_model_sync.rs"
+    ],
+    "totalLinesCovered": 226
+  }
+}

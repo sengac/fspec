@@ -72,6 +72,7 @@ impl App {
                     self.dispatch(action);
                 }
                 _ = tick.tick() => {
+                    self.poll_transcripts();
                     // COPY-006: drive long-press selection Begin from the tick.
                     self.navigator.agent.poll_selection_tick();
                     let is_busy = self.is_session_busy();

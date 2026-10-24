@@ -137,8 +137,11 @@ fn expanding_api_key_provider_reveals_editable_api_key_row() {
         "expected exactly one ApiKey row under gemini"
     );
 
-    // Focus the ApiKey row (index 1 — provider row is index 0).
-    view.selected_index = 1;
+    view.selected_index = view
+        .nav_items
+        .iter()
+        .position(|item| item.provider_id == "gemini" && matches!(item.kind, NavItemKind::ApiKey))
+        .expect("Gemini API-key row must be present");
     assert!(matches!(
         view.focused_nav_item().map(|i| &i.kind),
         Some(NavItemKind::ApiKey)
@@ -191,11 +194,11 @@ fn expanding_configured_oauth_provider_reveals_logout_and_login_rows() {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: Expanding an uncredentialed OAuth provider reveals only login rows
+// Scenario: Expanding an uncredentialed OAuth provider reveals login rows
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn expanding_uncredentialed_oauth_provider_reveals_only_login_rows() {
+fn expanding_uncredentialed_oauth_provider_reveals_login_rows() {
     // @step Given the Provider Settings view has loaded a "codex" provider of credential type "oauth" that is not configured
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(project_display_infos(
@@ -296,10 +299,10 @@ fn header_item_count_grows_when_provider_is_expanded() {
     // @step When the "gemini" provider row is expanded
     view.toggle_expansion("gemini");
 
-    // @step Then the header item count reports 2 items
+    // @step Then the header item count reports 4 items
     assert!(
-        view.title_text().contains("2 items"),
-        "expanded: header should report 2 items, got {:?}",
+        view.title_text().contains("4 items"),
+        "expanded: header should report 4 items, got {:?}",
         view.title_text()
     );
 }

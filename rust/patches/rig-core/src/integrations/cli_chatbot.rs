@@ -194,7 +194,7 @@ where
                         break;
                     }
 
-                    tracing::info!("Prompt:\n{input}\n");
+                    tracing::info!(input_bytes = input.len(), input = %input, "Prompt received");
 
                     println!();
                     println!("========================== Response ============================");

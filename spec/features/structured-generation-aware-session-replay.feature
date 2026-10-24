@@ -1,0 +1,37 @@
+@done
+@session
+@compaction-resume
+@phase-1
+@CMPCT-061
+Feature: Structured generation aware session replay
+  Cold replay preserves model content independently of UI presentation.
+
+  """
+  Supported text, signed thinking, tool calls and tool results retain their
+  original order and identity. Unsupported blocks fail before either provider
+  or generic history mutation. A replay snapshot carries its session and
+  committed manifest revision. Installing an older revision is an explicit
+  conflict, not an archive fallback. Reinstallation replaces the previous
+  replay rather than appending it, retaining fresh runtime context separately,
+  including runtime messages added after the previous replay installation.
+  """
+
+  Scenario: Structured assistant and tool history survives on the next wire
+    Given persisted assistant strings signed thinking tool calls and tool results
+    When cold restore prepares the next provider request
+    Then the request preserves text thinking signature call identity and results
+
+  Scenario: Repeated restore replaces rather than duplicates history
+    Given a populated session with a committed summary and retained suffix
+    When the same committed history is restored twice
+    Then one summary and one suffix remain with unchanged runtime context
+
+  Scenario: Unsupported replay blocks fail before any history mutation
+    Given a valid prefix followed by an unsupported persisted content block
+    When structured restore is attempted
+    Then restore fails without installing the prefix or inventing replacement content
+
+  Scenario: A stale replay revision cannot replace a newer committed history
+    Given replay envelopes captured before a newer message commit
+    When the older snapshot is restored
+    Then restore reports a revision conflict and retains the installed history

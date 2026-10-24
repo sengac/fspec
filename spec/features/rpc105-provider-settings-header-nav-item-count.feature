@@ -44,8 +44,8 @@ Feature: Provider settings: header line shows total nav items not configured cou
     Given a ProviderSettingsView with 17 canonical providers loaded as display infos
     And no providers are expanded
     And no filter is applied
-    When I toggle expansion of "anthropic" which has 3 children
-    Then the title text equals "Provider Settings (20 items)"
+    When I toggle expansion of "anthropic" which has 5 children
+    Then the title text equals "Provider Settings (22 items)"
 
   Scenario: Title count shrinks when a filter is applied
     Given a ProviderSettingsView with 17 canonical providers loaded as display infos
@@ -55,9 +55,9 @@ Feature: Provider settings: header line shows total nav items not configured cou
 
   Scenario: Title count reflects both filter and expansion
     Given a ProviderSettingsView with 17 canonical providers loaded as display infos
-    And "anthropic" is expanded with 3 children
+    And "anthropic" is expanded with 5 children
     When the user types the filter character sequence "anth"
-    Then the title text equals "Provider Settings (4 items)"
+    Then the title text equals "Provider Settings (6 items)"
 
   Scenario: Title text never contains the substring "configured"
     Given a ProviderSettingsView with 17 canonical providers loaded as display infos

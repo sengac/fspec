@@ -6,7 +6,6 @@
 @rpc
 @BUG-187
 Feature: GitState capture on the production service wiring runs off the async pool
-
   """
   BUG-187 companion (service-wiring half of the watcher blocking-pool fix).
   SharedFspecService::with_cwd (rust/rpc/src/lib.rs) wires the capture
@@ -31,7 +30,6 @@ Feature: GitState capture on the production service wiring runs off the async po
   #   1. A manual ghost-checkpoint ref AUTH-001/baseline is written into the repo's .git from another terminal; within 5 seconds the service's snapshot carries the new count AND the capture counter has ticked (the re-capture ran through the wiring's hook).
   #
   # ========================================
-
   Background: User Story
     As a TUI user supervising agents
     I want git state to stay live through the production wiring

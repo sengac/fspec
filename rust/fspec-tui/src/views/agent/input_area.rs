@@ -28,7 +28,7 @@ use crate::store::AgentViewStore;
 
 use super::exec_stdin_prompt;
 use super::hitl_prompt;
-use super::input_transition::paint_input_or_spinner;
+use super::input_transition::paint_input_or_spinner_with_waiting;
 use super::pause_prompt;
 use super::{multiline_input_render, transition_driver, AgentView, INPUT_PLACEHOLDER_HINT};
 
@@ -171,7 +171,10 @@ impl AgentView {
             .and_then(|s| store.session_context_for(s))
             .map(|c| c.input_transition.state.clone())
             .unwrap_or_default();
-        paint_input_or_spinner(padded, buf, &self.input, &state);
+        let waiting = sid
+            .and_then(|session| store.session_context_for(session))
+            .and_then(|context| context.provider_waiting.as_deref());
+        paint_input_or_spinner_with_waiting(padded, buf, &self.input, &state, waiting);
         // BUG-194: cache the spinner line in the session's OWN slot
         // (the Hiding transition captures this pane's last painted
         // line, not another pane's).
@@ -212,7 +215,10 @@ impl AgentView {
         if !matches!(state, super::input_transition::InputTransitionState::Idle) {
             // The running/compacting/finishing pane paints the
             // identical indicator row as its focused twin.
-            paint_input_or_spinner(padded, buf, &self.input, &state);
+            let waiting = sid
+                .and_then(|session| store.session_context_for(session))
+                .and_then(|context| context.provider_waiting.as_deref());
+            paint_input_or_spinner_with_waiting(padded, buf, &self.input, &state, waiting);
             // Cache the spinner line in this pane's session slot (the
             // Hiding transition captures the line THIS pane painted
             // last).

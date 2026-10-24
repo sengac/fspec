@@ -76,21 +76,30 @@ pub struct BackendError {
 pub struct StreamingCompletionResponse {
     /// Token usage
     pub usage: ResponsesUsage,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub request_context: Option<crate::completion::RequestContext>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub request_usage: Vec<(String, crate::completion::Usage)>,
 }
 
 impl GetTokenUsage for StreamingCompletionResponse {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
-        let mut usage = crate::completion::Usage::new();
-        usage.input_tokens = self.usage.input_tokens;
-        usage.output_tokens = self.usage.output_tokens;
-        usage.total_tokens = self.usage.total_tokens;
-        usage.cache_read_input_tokens = self
-            .usage
-            .input_tokens_details
-            .as_ref()
-            .map(|d| d.cached_tokens);
-        usage.reasoning_tokens = Some(self.usage.output_tokens_details.reasoning_tokens);
-        Some(usage)
+        self.usage.token_usage()
+    }
+
+    fn context_usage(&self) -> Option<crate::completion::Usage> {
+        match &self.request_context {
+            Some(context) => context.usage,
+            None => self.token_usage(),
+        }
+    }
+
+    fn request_context(&self) -> Option<&crate::completion::RequestContext> {
+        self.request_context.as_ref()
+    }
+
+    fn request_usage_records(&self) -> Vec<(String, crate::completion::Usage)> {
+        self.request_usage.clone()
     }
 }
 
@@ -254,18 +263,15 @@ where
         completion_request: crate::completion::CompletionRequest,
     ) -> Result<streaming::StreamingCompletionResponse<StreamingCompletionResponse>, CompletionError>
     {
-        let mut request = self.create_completion_request(completion_request)?;
-        request.stream = Some(true);
+        let body = self.streaming_request_bytes(completion_request)?;
 
         if enabled!(Level::TRACE) {
             tracing::trace!(
                 target: "rig::completions",
                 "OpenAI Responses streaming completion request: {}",
-                serde_json::to_string_pretty(&request)?
+                String::from_utf8_lossy(&body)
             );
         }
-
-        let body = serde_json::to_vec(&request)?;
 
         let req = self
             .client
@@ -298,7 +304,7 @@ where
         let mut event_source = GenericEventSource::new(client, req);
 
         let stream = stream! {
-            let mut final_usage = ResponsesUsage::new();
+            let mut final_usage = None;
             // BUG-208: set when a backend error event terminated the stream; in that
             // case no (silent, empty) FinalResponse may be emitted afterwards.
             let mut stream_errored = false;
@@ -411,20 +417,12 @@ where
                                 span.record("gen_ai.response.id", response.id);
                                 span.record("gen_ai.response.model", response.model);
                                 if let Some(usage) = response.usage {
-                                    final_usage = usage.clone();
+                                    final_usage = Some(usage.clone());
                                     // Emit Usage event so stream_loop gets real-time token data
                                     // (mirrors what Chat Completions API already does)
-                                    let crate_usage = crate::completion::Usage {
-                                        input_tokens: usage.input_tokens,
-                                        output_tokens: usage.output_tokens,
-                                        total_tokens: usage.total_tokens,
-                                        cache_read_input_tokens: usage.input_tokens_details
-                                            .as_ref()
-                                            .map(|d| d.cached_tokens),
-                                        reasoning_tokens: Some(usage.output_tokens_details.reasoning_tokens),
-                                        cache_creation_input_tokens: None, // Responses API doesn't report cache creation
-                                    };
-                                    yield Ok(RawStreamingChoice::Usage(crate_usage));
+                                    if let Some(normalized) = usage.token_usage() {
+                                        yield Ok(RawStreamingChoice::Usage(normalized));
+                                    }
                                 }
                             } else {
                                 continue;
@@ -436,8 +434,9 @@ where
                     }
                     Err(error) => {
                         tracing::error!(?error, "SSE error");
-                        yield Err(CompletionError::ProviderError(error.to_string()));
-                        break;
+                        event_source.close();
+                        yield Err(CompletionError::HttpError(error));
+                        return;
                     }
                 }
             }
@@ -456,12 +455,22 @@ where
                 yield Ok(tool_call.to_owned())
             }
 
+            let Some(final_usage) = final_usage else {
+                yield Err(CompletionError::ResponseError("missing Responses usage".into()));
+                return;
+            };
+            if final_usage.token_usage().is_none() {
+                yield Err(CompletionError::ResponseError("inconsistent Responses usage".into()));
+                return;
+            }
             span.record("gen_ai.usage.input_tokens", final_usage.input_tokens);
             span.record("gen_ai.usage.output_tokens", final_usage.output_tokens);
             tracing::info!("OpenAI stream finished");
 
             yield Ok(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-                usage: final_usage
+                usage: final_usage,
+                request_context: None,
+                request_usage: Vec::new(),
             }));
         }.instrument(span);
 

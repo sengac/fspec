@@ -67,7 +67,10 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
         // RPC-391: if an Edit/Write diff was captured at tool-call time,
         // replace the raw body with the marker-encoded diff (collapsed
         // inline + full for the modal) and tag the card as a diff.
-        let pending = ctx.pending_tool_diffs.remove(&info.tool_call_id);
+        let pending = ctx
+            .pending_tool_diffs
+            .remove(&info.tool_call_id)
+            .filter(|_| !info.is_error);
         if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
             if let Some(source) = chunk.source.as_mut() {
                 if let Some(pending) = pending.as_ref() {
@@ -94,7 +97,7 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                         .skip(1)
                         .collect::<Vec<_>>()
                         .join("\n");
-                    if body.is_empty() {
+                    if body.is_empty() || info.is_error {
                         // TUI-111: content was already sanitized at
                         // record_chunk ingress — no re-sanitize here.
                         let clean = info.content.clone();

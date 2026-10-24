@@ -166,6 +166,8 @@ impl App {
         // If the deleted session is currently open, remove it from
         // open_sessions and clamp the index.
         self.agent_view_store.remove_session_if_open(&id);
+        self.transcript_sync.remove(&id);
+        self.rebuild_focus_occupancy();
         // MUX-002: closing a session shrinks the open-session list —
         // re-clamp the mux agent window (agent slots stay in the grid).
         self.mux_sync_window();

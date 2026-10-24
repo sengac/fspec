@@ -1,4 +1,7 @@
-@done
+@oauth
+@authentication
+@providers
+@wip
 @provider-settings
 @tui
 @ts-parity
@@ -7,6 +10,8 @@
 Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
   """
   Wiring boundary (napi-direct via embedded transport, PROV-105 §8.2): new FspecBackend OAuth methods forward to rust/napi/src/{claude,codex,copilot}_oauth.rs; websocket transport gets no-op/unsupported defaults. New rpc-types flow/result types; FspecService RPC methods; Action enum variants (OAuthDisconnect{provider_id}, ProviderCredentialsLoaded refresh). New ProviderSettingsMode::DisconnectOAuth{provider_id} replaces the dead-end DetailSub::OAuthNotice for the disconnect path. New dispatch_provider_settings_oauth.rs mirrors the PROV-109 dispatch_provider_settings_profiles.rs spawn→backend→ProviderCredentialsLoaded refresh loop. list_actions.rs routes Enter/d on OauthStatus to DisconnectOAuth (not open_delete_confirm). Disconnect clear is per-provider: anthropic deletes claude_auth.json, github-copilot deletes copilot_auth.json, codex removes only the tokens field (preserves OPENAI_API_KEY); all idempotent, errors swallowed without leaking RPC names. Files <300 LoC; clippy -D warnings + fmt clean; NO git; do not touch user WIP (main.rs, session_manager.rs) — hence napi-direct rather than through-core. Offline tests use a MockBackend implementing FspecBackend OAuth methods with call counters + scripted Ok/Err (mirrors PROV-109 provider_settings_profile_dispatch tests).
+  PROV-159 supersedes historical file-only writes, presentation-only cancellation and forced disk refresh assumptions above. Acceptance rows A1-A17 are distributed across codex-refreshing-client, codex-oauth-login, codex-oauth-napi-bindings, provider-settings-oauth-login and provider-settings-oauth-disconnect. Research: spec/attachments/PROV-159/prov159-oauth-research.md and its two upstream companions. Centralize lifecycle/storage/refresh policy in codelet-providers; RPC, NAPI, legacy refresh and provider deletion delegate to it. Fence credential commits by account AND login generation; preserve independent API keys, unrelated document fields and supported CODEX_HOME sharing. Existing clients must deliberately rebind or require reauthentication, never silently retain an old account.
+  The distribution above describes the original planning layout only: all PROV-159 acceptance scenarios now live in the dedicated prov159-* features grouped by primary physical test target. A1, A3 and A16 are owned by prov159-oauth-logout, prov159-provider-deletion and prov159-credential-storage respectively. This feature retains PROV-112's historical scenarios and coverage.
   """
 
   # ========================================
@@ -104,18 +109,16 @@ Feature: OAuth backend/RPC/transport surface + disconnect-oauth confirm flow
   @provider-settings
   @oauth
   @integration
-  Scenario: A backend clear error returns to list silently without leaking the RPC name
+  Scenario: A backend clear error returns to list with a safe failure message
     Given a provider "github-copilot" is expanded with OAuth tokens present
     And the backend clear-credential method is scripted to return an error
     And the user has opened the DisconnectOAuth confirm
     When the user presses "y"
     Then the UI returns to list
+    And a clear logout failure is shown without credential contents
     And no RPC or method name is shown anywhere in the UI
     And the clear operation is idempotent on a subsequent reload
 
-  @tui
-  @provider-settings
-  @oauth
   Scenario Outline: Disconnect routes to the correct per-provider clear method
     Given a provider "<provider>" is expanded with OAuth tokens present
     And the user has opened the DisconnectOAuth confirm

@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "Enabled sessions reuse sockets with full current DAG input",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "106-128",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 214, 215, 216, 217, 218, 219, 220, 221, 222]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Changed history and reset preserve full current input",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "130-155",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [87, 88, 89, 90, 91, 92, 93, 94, 95, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unsupported handshakes fail without transport downgrade",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "157-186",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [172, 173, 174, 175, 176]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication fails while accepted disconnects recover on WebSocket",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "188-235",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [172, 173, 174, 175, 176, 232, 233, 234]
+            },
+            {
+              "file": "rust/providers/src/codex/reconnect.rs",
+              "lines": [176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancellation retires the socket within a bounded deadline",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "237-265",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 195, 196, 197, 198]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Socket and SSE transcripts preserve observable provider behavior",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/prov156_codex_websocket.rs",
+          "lines": "267-298",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/websocket.rs",
+              "lines": [209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/prov156_codex_websocket.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/websocket.rs",
+      "rust/providers/src/codex/reconnect.rs"
+    ],
+    "totalLinesCovered": 317
+  }
+}

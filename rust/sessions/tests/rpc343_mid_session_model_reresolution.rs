@@ -8,10 +8,9 @@
 //! max_output_tokens / compaction_threshold) and updates the inner
 //! request-issuing provider manager — not just the cosmetic label strings.
 //!
-//! Offline-testable via a CROSS-FAMILY switch. The Claude limits resolver
-//! clamps every anthropic model to ctx 200000 / out 8192 with an identical base
-//! compaction threshold, so an anthropic→anthropic switch is NOT observable on
-//! limits. `google/gemini-2.5-pro` resolves (from the models.dev cache) to
+//! Offline-testable via a CROSS-FAMILY switch. `anthropic/claude-opus-4-5`
+//! resolves from models.dev to ctx 200000 / out 64000, while
+//! `google/gemini-2.5-pro` resolves (from the models.dev cache) to
 //! ctx 1048576 / out 65536 with the gemini 80% compaction rule, so all three
 //! cached fields differ. Dummy credential env vars are set so credential
 //! detection passes; no network access occurs (select_model only validates
@@ -28,17 +27,51 @@ use codelet_sessions::SessionManager;
 
 /// Ensure credential detection passes offline for both providers under test.
 /// Values are dummies — `set_model` re-resolution makes no network calls.
-fn set_dummy_credentials() {
-    std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
-    std::env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "AIza-test-dummy-key");
+struct TestDirectory {
+    directory: tempfile::TempDir,
+    environment: Vec<(&'static str, Option<std::ffi::OsString>)>,
+}
+
+impl TestDirectory {
+    fn new() -> Self {
+        let fixture = Self {
+            directory: codelet_test_helpers::setup_temp_directory()
+                .expect("create model switch test directory"),
+            environment: [
+                "FSPEC_USER_DIR",
+                "ANTHROPIC_API_KEY",
+                "GOOGLE_GENERATIVE_AI_API_KEY",
+            ]
+            .into_iter()
+            .map(|key| (key, std::env::var_os(key)))
+            .collect(),
+        };
+        std::env::set_var("FSPEC_USER_DIR", fixture.directory.path());
+        std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy-key");
+        std::env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "AIza-test-dummy-key");
+        codelet_common::set_data_directory(fixture.directory.path().to_owned())
+            .expect("configure model switch test directory");
+        codelet_core::persistence::reset_stores_for_tests();
+        fixture
+    }
+}
+
+impl Drop for TestDirectory {
+    fn drop(&mut self) {
+        codelet_core::persistence::reset_stores_for_tests();
+        for (key, value) in &self.environment {
+            match value {
+                Some(value) => std::env::set_var(key, value),
+                None => std::env::remove_var(key),
+            }
+        }
+    }
 }
 
 /// Build a manager rooted in a throwaway data dir, defaulted to opus, and
 /// create one real session. Returns the manager plus the new session id.
-async fn manager_with_opus_session() -> (Arc<SessionManager>, SessionId) {
-    set_dummy_credentials();
-    let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+async fn manager_with_opus_session() -> (Arc<SessionManager>, SessionId, TestDirectory) {
+    let directory = TestDirectory::new();
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-opus-4-5");
     let handle: &dyn SessionManagerHandle = manager.as_ref();
@@ -47,16 +80,17 @@ async fn manager_with_opus_session() -> (Arc<SessionManager>, SessionId) {
         !sid.value.is_empty(),
         "session creation must succeed offline (empty id means create_session errored)"
     );
-    (manager, sid)
+    (manager, sid, directory)
 }
 
 // =============================================================================
 // Scenario: Switching model re-resolves the cached limits to the new model
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn switching_model_reresolves_cached_limits() {
-    // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 8192
-    let (manager, sid) = manager_with_opus_session().await;
+    // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
+    let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let before = handle.get_session_model(&sid);
     assert_eq!(
@@ -65,8 +99,8 @@ async fn switching_model_reresolves_cached_limits() {
         before.context_window
     );
     assert_eq!(
-        before.max_output_tokens, 8192,
-        "opus baseline max_output_tokens should be 8192, got {}",
+        before.max_output_tokens, 64000,
+        "opus baseline max_output_tokens should be 64000, got {}",
         before.max_output_tokens
     );
     let stale_threshold = before.compaction_threshold;
@@ -103,9 +137,10 @@ async fn switching_model_reresolves_cached_limits() {
 // Scenario: Switching model updates the inner provider manager's selected model
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn switching_model_updates_inner_provider_manager() {
     // @step Given a session created on "anthropic/claude-opus-4-5"
-    let (manager, sid) = manager_with_opus_session().await;
+    let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
 
     // @step When I switch the session model to provider "google" model "gemini-2.5-pro" via set_model
@@ -126,9 +161,10 @@ async fn switching_model_updates_inner_provider_manager() {
 // Scenario: Switching to an unknown model fails and leaves the prior limits intact
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn switching_to_unknown_model_preserves_prior_limits() {
-    // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 8192
-    let (manager, sid) = manager_with_opus_session().await;
+    // @step Given a session created on "anthropic/claude-opus-4-5" whose resolved context_window is 200000 and max_output_tokens is 64000
+    let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let before = handle.get_session_model(&sid);
     assert_eq!(
@@ -137,8 +173,8 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
         before.context_window
     );
     assert_eq!(
-        before.max_output_tokens, 8192,
-        "opus baseline max_output_tokens should be 8192, got {}",
+        before.max_output_tokens, 64000,
+        "opus baseline max_output_tokens should be 64000, got {}",
         before.max_output_tokens
     );
 
@@ -151,7 +187,7 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
         "set_model with an unknown model should return Err, got {result:?}"
     );
 
-    // @step And get_session_model still reports context_window 200000 and max_output_tokens 8192 for the session
+    // @step And get_session_model still reports context_window 200000 and max_output_tokens 64000 for the session
     let after = handle.get_session_model(&sid);
     assert_eq!(
         after.context_window, 200000,
@@ -159,7 +195,7 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
         after.context_window
     );
     assert_eq!(
-        after.max_output_tokens, 8192,
+        after.max_output_tokens, 64000,
         "max_output_tokens must be left intact after a failed switch, got {}",
         after.max_output_tokens
     );
@@ -169,6 +205,7 @@ async fn switching_to_unknown_model_preserves_prior_limits() {
 // Scenario: Switching the model on an unknown session reports session not found
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn switching_model_on_unknown_session_reports_not_found() {
     // @step Given a SessionManagerHandle with no session registered for the id "nonexistent-uuid"
     let manager = Arc::new(SessionManager::new());
@@ -192,9 +229,10 @@ async fn switching_model_on_unknown_session_reports_not_found() {
 // Scenario: Switching the model while the session is busy is declined
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn switching_model_while_busy_is_declined() {
     // @step Given a session created on "anthropic/claude-opus-4-5" whose inner session is currently locked
-    let (manager, sid) = manager_with_opus_session().await;
+    let (manager, sid, _directory) = manager_with_opus_session().await;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let before = handle.get_session_model(&sid);
     let session = manager.get_session(&sid.value).expect("session must exist");

@@ -3,8 +3,8 @@
 //! Extracted from `rust/napi/src/session_manager.rs` by RPC-043.
 //! `NapiSessionManagerHooks` is the napi-side implementation of
 //! [`codelet_sessions::session_manager::SessionManagerHooks`]. It wires
-//! session lifecycle events to the napi-side helpers that own the agent
-//! loop (`crate::agent_loop`), the scheduler (`crate::scheduler`), and
+//! session lifecycle events to the shared agent loop (`codelet_agent_loop`),
+//! the scheduler (`crate::scheduler`), and
 //! the footer poller (`crate::footer_poller`).
 //!
 //! `install_napi_session_manager_hooks` is called once from
@@ -26,7 +26,7 @@ impl codelet_sessions::session_manager::SessionManagerHooks for NapiSessionManag
         mcp_injection_rx: tokio::sync::mpsc::Receiver<codelet_tools::McpInjection>,
     ) {
         tokio::spawn(async move {
-            crate::agent_loop::agent_loop(session, input_rx, mcp_injection_rx).await;
+            codelet_agent_loop::agent_loop(session, input_rx, mcp_injection_rx).await;
         });
     }
 

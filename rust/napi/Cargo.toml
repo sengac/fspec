@@ -24,6 +24,7 @@ napi = { version = "3", default-features = false, features = ["napi4", "async", 
 napi-derive = "3"
 
 # Codelet crates
+codelet-agent-loop = { path = "../agent-loop" }
 codelet-cli = { path = "../cli" }       # RPC-043: agent_loop.rs (run_interactive_session, StreamOutput), persist.rs (codelet_cli::session::Session, system_reminders), bridges.rs (handler closures), session_bindings.rs (session_compact, session_set_model)
 codelet-core = { path = "../core" }     # RPC-043: agent_loop.rs (lifecycle_hooks engine fns), persist.rs (AssistantContent persistence)
 codelet-git = { path = "../git" }       # RPC-043: agent_loop.rs (worktree helpers), bridges.rs (git bridge wiring), footer_poller.rs (get_current_branch)
@@ -124,17 +125,13 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 tempfile = "3"
 
 [dev-dependencies]
+codelet-test-helpers.workspace = true
 sha2 = "0.10"
 hex = "0.4"
 serial_test = "3"
 wiremock = "0.6.5"
 reqwest = "0.12"
 base64 = "0.22"
-# CMPCT-038: twin-parity test — the NAPI twin's apply_pending_dag_and_emit
-# must produce the identical CompactionResult to the agent-loop twin.
-# Dev-only: production codelet-napi must NOT depend on codelet-agent-loop.
-codelet-agent-loop = { path = "../agent-loop" }
-
 [build-dependencies]
 napi-build = "2"
 

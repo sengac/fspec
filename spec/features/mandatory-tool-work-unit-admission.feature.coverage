@@ -1,0 +1,252 @@
+{
+  "scenarios": [
+    {
+      "name": "Valid attribution changes caller focus before execution and survives tool failure",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "24-59",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/sessions/src/tool_admission.rs",
+              "lines": [
+                9,
+                14,
+                15,
+                16,
+                17,
+                23,
+                24,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid attribution cannot mutate focus or execute a tool",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "61-93",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/tools/src/tool_admission/registry.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NONE clears activity without weakening permissions",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "95-126",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Metadata is removed before strict delegation while audit arguments are retained",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "128-153",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invocation order rather than result completion determines activity",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "155-175",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/sessions/src/focus_reconciliation.rs",
+              "lines": [
+                16,
+                22,
+                30,
+                33,
+                36,
+                40,
+                65,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Child targets and auxiliary agents do not steal another session's focus",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "177-201",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/tools/src/tool_admission/auxiliary.rs",
+              "lines": [
+                42,
+                43,
+                54,
+                59,
+                62,
+                67,
+                80,
+                81
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/compaction_builder.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                77,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hot-added tools and completion tools enforce admission as ordinary tools",
+      "testMappings": [
+        {
+          "file": "rust/sessions/tests/tool026_admission.rs",
+          "lines": "203-229",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/tool_admission.rs",
+              "lines": [
+                96,
+                97,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/tool/middleware.rs",
+              "lines": [
+                13,
+                14,
+                54,
+                55,
+                56,
+                57,
+                58,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/sessions/tests/tool026_admission.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/tool_admission.rs",
+      "rust/sessions/src/tool_admission.rs",
+      "rust/tools/src/tool_admission/registry.rs",
+      "rust/sessions/src/focus_reconciliation.rs",
+      "rust/tools/src/tool_admission/auxiliary.rs",
+      "rust/agent-loop/src/compaction_builder.rs",
+      "rust/patches/rig-core/src/tool/middleware.rs"
+    ],
+    "totalLinesCovered": 288
+  }
+}

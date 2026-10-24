@@ -138,7 +138,11 @@ async fn a_session_cleared_from_another_client_resets_its_local_tab_live_no_poll
         Some(&s),
         "precondition: S is focused"
     );
-    assert_eq!(session_chunk_count(&app, &s), 4, "precondition: scrollback seeded");
+    assert_eq!(
+        session_chunk_count(&app, &s),
+        4,
+        "precondition: scrollback seeded"
+    );
 
     // @step When session S is cleared from another machine connected to the same daemon
     // The bootstrap session-cleared subscriber folds the broadcast frame
@@ -178,7 +182,9 @@ async fn a_session_cleared_from_another_client_resets_its_local_tab_live_no_poll
         "the RPC-100 chrome fold must mark S Cleared"
     );
     assert!(
-        app.agent_view_store().compaction_reduction_for(&s).is_none(),
+        app.agent_view_store()
+            .compaction_reduction_for(&s)
+            .is_none(),
         "the RPC-100 chrome fold must clear S's compaction reduction"
     );
 }
@@ -211,7 +217,10 @@ async fn a_clear_event_for_a_background_session_resets_only_that_session() {
         .expect("ctx s-1")
         .input_draft
         .push_str("draft on background session");
-    app.navigator_mut().agent.input.set_value("draft on focused session");
+    app.navigator_mut()
+        .agent
+        .input
+        .set_value("draft on focused session");
 
     // @step When a SessionCleared event for S-1 is processed
     // Direct dispatch (the handler is a property of the App, transport
@@ -238,7 +247,11 @@ async fn a_clear_event_for_a_background_session_resets_only_that_session() {
     );
 
     // @step And S-2's scrollback, input buffer and focus are untouched
-    assert_eq!(session_chunk_count(&app, &s2), 3, "S-2's scrollback must survive");
+    assert_eq!(
+        session_chunk_count(&app, &s2),
+        3,
+        "S-2's scrollback must survive"
+    );
     assert!(
         !app.navigator().agent.input.is_empty(),
         "S-2's (focused) input buffer must survive — only the cleared session is touched"
@@ -251,7 +264,9 @@ async fn a_clear_event_for_a_background_session_resets_only_that_session() {
 
     // @step And S-1's per-session token and compaction badge state is reset
     assert!(
-        app.agent_view_store().compaction_reduction_for(&s1).is_none(),
+        app.agent_view_store()
+            .compaction_reduction_for(&s1)
+            .is_none(),
         "S-1's compaction reduction must be cleared (RPC-100 chrome)"
     );
 }
@@ -284,8 +299,16 @@ async fn clear_events_for_a_session_without_an_open_tab_are_a_no_op() {
     app.dispatch(Action::SessionCleared(closed.clone()));
 
     // @step Then the TUI ignores the events as no-ops — no tab is created, no panic, and the surviving session's focus and state are untouched
-    assert_eq!(tabs_for(&app, &closed), 0, "no tab may be created by a stale clear");
-    assert_eq!(tabs_for(&app, &keep), 1, "the surviving tab must be untouched");
+    assert_eq!(
+        tabs_for(&app, &closed),
+        0,
+        "no tab may be created by a stale clear"
+    );
+    assert_eq!(
+        tabs_for(&app, &keep),
+        1,
+        "the surviving tab must be untouched"
+    );
     assert_eq!(
         app.agent_view_store().current_session(),
         Some(&keep),
@@ -371,7 +394,7 @@ async fn bootstrap_spawns_the_session_cleared_subscriber_with_degenerate_default
     // adds the 9th: session_cleared).
     assert_eq!(
         app.subscriber_task_count(),
-        9,
+        10,
         "bootstrap must spawn the new session-cleared subscriber task (8 pre-RPC-437)"
     );
 

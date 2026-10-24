@@ -174,7 +174,7 @@ where
         if !status.is_success() {
             // Log the error text but don't store it in an unused variable
             let error_text = http_client::text(response).await.unwrap_or_default();
-            tracing::error!("Error response: {}", error_text);
+            tracing::error!(status = status.as_u16(), response_body = %error_text, "Error response");
             return Err(MiraError::ApiError(status.as_u16()));
         }
 
@@ -526,9 +526,7 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
                         // Log warning for unsupported content types
                         for c in content.iter() {
                             if !matches!(c, AssistantContent::Text(_)) {
-                                tracing::warn!(target: "rig",
-                                    "Unsupported content type encountered: {:?}. The Mira provider currently only supports text content", c
-                                );
+                                tracing::warn!(target: "rig", content = ?c, "Unsupported content type encountered; Mira supports only text content");
                             }
                         }
 

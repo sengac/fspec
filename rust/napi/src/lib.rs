@@ -42,10 +42,8 @@ pub mod navigation;
 //
 //   - session_bindings: the 66+ #[napi] free-function wrappers and the
 //     12 #[napi(object)] result/argument shapes.
-//   - agent_loop: pub(crate) async fn agent_loop, the run_with_provider!
-//     macro, agent_loop_dispatch_supports_provider, the InputWithImages
-//     helper struct, BackgroundOutput + BackgroundProgressEmitter
-//     StreamOutput sinks, and the agent_loop_dispatch_tests module.
+//   - agent_loop: compatibility exports of the shared engine, dispatch
+//     predicate, and StreamOutput sinks, plus dispatch regression tests.
 //   - persist: the five persist_* helpers used by agent_loop.rs and a
 //     pair of #[napi] restore wrappers in session_bindings.rs.
 //   - footer_poller: FOOTER_POLLER_TOKENS + spawn/stop helpers invoked

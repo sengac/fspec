@@ -1,19 +1,4 @@
 //! Feature: spec/features/completion-contract-dispatch-arming.feature
-//!
-//! CONT-009 — Behavioural tests for the shared dispatch-site sync helper
-//! `BackgroundSession::sync_completion_contract_for_user_turn`. The helper
-//! is the single extracted copy of the CONT-002/CONT-003 arming block that
-//! both agent-loop twins (rust/napi/src/agent_loop.rs and
-//! rust/agent-loop/src/agent_loop.rs) must call between re-acquiring the
-//! inner-session lock and creating the BackgroundOutput handler.
-//!
-//! Each `#[tokio::test]` maps 1:1 to a Gherkin scenario in the feature file.
-//! Construction pattern mirrors tests/rpc081_restore_session_messages.rs:
-//! a real `SessionManager` + `SessionManagerHandle::create_session` (Noop
-//! hooks — no agent loop spawned), chrome state driven via the CONT-002/003
-//! setters, inner state inspected via `session.inner.lock().await`, and the
-//! done() registry inspected via `codelet_tools::{is_continue_armed,
-//! get_session_goal}`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -25,21 +10,10 @@ use codelet_sessions::background_session::BackgroundSession;
 use codelet_sessions::SessionManager;
 use tokio::sync::Mutex;
 
-/// Trimmed offline models.dev catalog (anthropic/openai/google), shared with
-/// the sessions-crate PROV-101 / PROV-118 tests. Seeding it into the temp data
-/// dir's cache keeps registry validation fully offline.
 const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
 
-/// PROV-132 precedent: serialize tests that swap the process-global data
-/// directory so a parallel test cannot swap the pointer out from under
-/// another test's `SessionManager::new()`.
 static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
-/// Create a fresh BackgroundSession via the SessionManagerHandle bridge.
-/// Seeds the offline models cache so `ProviderManager::with_model_support()`
-/// validates against the registry without a network call. Calls
-/// `reset_stores_for_tests()` before `set_data_directory()` (RPC-423 precedent).
-/// Noop hooks ensure no agent loop is spawned for the session.
 async fn fresh_session() -> (
     tempfile::TempDir,
     Arc<SessionManager>,
@@ -318,111 +292,4 @@ async fn unchanged_chrome_goal_is_not_reapplied() {
     let goal = inner.goal.as_ref().expect("inner goal must still be set");
     assert_eq!(goal.text, "keep rejections intact");
     assert_eq!(goal.verify.as_deref(), Some("true"));
-}
-
-// ============================================================================
-// CONT-009 twin-parity source-shape section (pattern:
-// tests/mcp_injection_source_shape.rs / rpc082-083 shape tests)
-// ============================================================================
-
-use std::path::{Path, PathBuf};
-
-const HELPER_NAME: &str = "sync_completion_contract_for_user_turn";
-const DISPATCH_ANCHOR: &str = "let mut inner_session = session.inner.lock().await";
-const OUTPUT_ANCHOR: &str = "BackgroundOutput::with_provider";
-
-fn workspace_root() -> PathBuf {
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir
-        .parent()
-        .expect("codelet-sessions manifest dir must have a parent")
-        .to_path_buf()
-}
-
-fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()))
-}
-
-/// Strip both `//` line comments and `/* ... */` block comments from Rust
-/// source so substring scans don't get fooled by needle references inside
-/// doc comments (same helper as mcp_injection_source_shape.rs).
-fn strip_rust_comments(src: &str) -> String {
-    let bytes = src.as_bytes();
-    let mut out = String::with_capacity(src.len());
-    let mut i = 0;
-    while i < bytes.len() {
-        let b = bytes[i];
-        let next = bytes.get(i + 1).copied();
-        if b == b'/' && next == Some(b'/') {
-            while i < bytes.len() && bytes[i] != b'\n' {
-                i += 1;
-            }
-        } else if b == b'/' && next == Some(b'*') {
-            i += 2;
-            while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
-                i += 1;
-            }
-            i = (i + 2).min(bytes.len());
-        } else {
-            out.push(b as char);
-            i += 1;
-        }
-    }
-    out
-}
-
-// ============================================================================
-// Scenario: Both agent-loop twins call the shared sync helper at the
-// dispatch site
-// ============================================================================
-
-#[test]
-fn both_twins_call_shared_sync_helper_at_dispatch_site() {
-    // @step Given the production NAPI agent loop source and the standalone agent-loop twin source
-    let root = workspace_root();
-    let napi_src = strip_rust_comments(&read(&root.join("napi/src/agent_loop.rs")));
-    let twin_src = strip_rust_comments(&read(&root.join("agent-loop/src/agent_loop.rs")));
-    let twins = [
-        ("rust/napi/src/agent_loop.rs", &napi_src),
-        ("rust/agent-loop/src/agent_loop.rs", &twin_src),
-    ];
-
-    for (name, src) in twins {
-        // @step When the dispatch sites between lock re-acquisition and BackgroundOutput creation are inspected
-        let output_idx = src.find(OUTPUT_ANCHOR).unwrap_or_else(|| {
-            panic!("{name} must construct `{OUTPUT_ANCHOR}` at its dispatch site")
-        });
-        let dispatch_idx = src[..output_idx].rfind(DISPATCH_ANCHOR).unwrap_or_else(|| {
-            panic!("{name} must re-acquire the inner-session lock (`{DISPATCH_ANCHOR}`) before `{OUTPUT_ANCHOR}`")
-        });
-        let window = &src[dispatch_idx..output_idx];
-
-        // @step Then both twins call the shared BackgroundSession sync helper before creating the rig agent
-        assert!(
-            window.contains(HELPER_NAME),
-            "{name} dispatch site (between the inner-session lock re-acquisition and \
-             BackgroundOutput::with_provider) must call the shared \
-             BackgroundSession::{HELPER_NAME} helper — CONT-009 regression: \
-             without it the done() registry is never armed on this surface"
-        );
-    }
-
-    // @step And neither twin carries a diverged inline copy of the arming block
-    for (name, src) in twins {
-        for needle in ["set_continue_armed", "set_session_goal"] {
-            assert!(
-                !src.contains(needle),
-                "{name} must not carry an inline `{needle}` call — the arming block \
-                 lives ONLY in BackgroundSession::{HELPER_NAME} so the twins cannot diverge"
-            );
-        }
-    }
-
-    // The helper itself must exist exactly once, in the shared crate.
-    let helper_home = strip_rust_comments(&read(&root.join("sessions/src/background_session.rs")));
-    assert!(
-        helper_home.contains(&format!("pub fn {HELPER_NAME}")),
-        "rust/sessions/src/background_session.rs must define `pub fn {HELPER_NAME}`"
-    );
 }

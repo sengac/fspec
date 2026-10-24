@@ -1,0 +1,717 @@
+{
+  "scenarios": [
+    {
+      "name": "HTTP context rejection retains typed evidence through the model stream",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "16-48",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unrelated and malformed rejection evidence never implies context overflow",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "132-160",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                31,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exhausted setup retries preserve final rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "163-192",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/recovery.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SSE failures retain typed bounded diagnostics without completion",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "195-241",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/lifecycle.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                106,
+                107,
+                108,
+                109
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/streaming.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejection diagnostics do not disclose credentials or private headers",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "244-273",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/diagnostic_redaction.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stalled rejection body terminates within its diagnostic deadline",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "276-294",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sensitive header credentials stay private throughout rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "51-107",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostic_redaction.rs",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A broken rejection body preserves typed unknown evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+          "lines": "110-129",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct completion rejections retain bounded private typed evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_direct_rejections.rs",
+          "lines": "36-92",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct completion rejection capture obeys its deadline",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct076_direct_rejections.rs",
+          "lines": "95-107",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/codex/client_http.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            },
+            {
+              "file": "rust/providers/src/codex/diagnostics.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct076_rejection_diagnostics.rs",
+      "rust/providers/tests/cmpct076_direct_rejections.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/codex/diagnostics.rs",
+      "rust/providers/src/codex/recovery.rs",
+      "rust/providers/src/codex/lifecycle.rs",
+      "rust/providers/src/codex/streaming.rs",
+      "rust/providers/src/codex/diagnostic_redaction.rs",
+      "rust/providers/src/codex/client_http.rs"
+    ],
+    "totalLinesCovered": 835
+  }
+}

@@ -29,7 +29,6 @@ Feature: Per-profile Max Images Read tool budget enforcement
   # ========================================
   # Read tool enforcement: no-vision (0)
   # ========================================
-
   Scenario: A no-vision profile fails image-file reads with a clear message
     Given a session against a profile with maxImages 0
     When the Read tool is called on a PNG image file
@@ -47,7 +46,6 @@ Feature: Per-profile Max Images Read tool budget enforcement
   # ========================================
   # Read tool enforcement: over-budget (n >= 1)
   # ========================================
-
   Scenario: A PDF read exceeding the image budget fails with the limit message
     Given a session against a profile with maxImages 2
     And a PDF file with 10 pages
@@ -73,7 +71,6 @@ Feature: Per-profile Max Images Read tool budget enforcement
   # ========================================
   # Session lifecycle: budget follows the model
   # ========================================
-
   Scenario: A mid-session model switch updates the image budget
     Given a session against a profile with maxImages 8
     When the session switches mid-session to a profile with maxImages 0

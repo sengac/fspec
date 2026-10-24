@@ -27,7 +27,8 @@ impl RhaiCustomProvider {
         tools: &[ToolDefinition],
         thinking_config: Option<serde_json::Value>,
     ) -> Result<serde_json::Value, ProviderError> {
-        self.invoke_request_builder("build_stream_request", messages, tools, thinking_config)
+        let tools = crate::tool_contract::attributed_tools(tools)?;
+        self.invoke_request_builder("build_stream_request", messages, &tools, thinking_config)
             .await
     }
 

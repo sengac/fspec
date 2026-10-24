@@ -16,6 +16,7 @@ impl App {
     /// Returns true when one of the capabilities claimed the action.
     pub(crate) fn dispatch_capability_fallback(&mut self, action: &Action) -> bool {
         self.try_dispatch_model_selector(action)
+            || self.try_dispatch_continue_sync(action)
             || self.try_dispatch_model_thinking_dialogs(action)
             || self.try_dispatch_pause_hitl(action)
             || self.try_dispatch_exec_stdin(action)

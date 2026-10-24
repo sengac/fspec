@@ -4,7 +4,6 @@
 @rlcd
 @tools
 Feature: RLCD semantic security layer over the regex blocklist
-
   """
   The RLCD engine (current backend: laya-rs) acts as a semantic security
   SECOND-STAGE over the existing regex blocklist for Bash and file

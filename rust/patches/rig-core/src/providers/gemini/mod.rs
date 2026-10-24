@@ -12,8 +12,10 @@
 pub mod client;
 pub mod completion;
 pub mod embedding;
+mod request_body;
 pub mod streaming;
 pub mod transcription;
+mod usage;
 
 pub use client::Client;
 

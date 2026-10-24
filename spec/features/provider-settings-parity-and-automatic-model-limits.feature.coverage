@@ -1,0 +1,389 @@
+{
+  "scenarios": [
+    {
+      "name": "Every provider exposes settings and named profiles",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_parity_prov161.rs",
+          "lines": "76-99",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth profiles inherit authentication",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_parity_prov161.rs",
+          "lines": "102-136",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_context.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Automatic token limits remain independent in the editor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_parity_prov161.rs",
+          "lines": "139-182",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                158,
+                159,
+                160,
+                161,
+                162,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_submit.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid token overrides cannot silently become automatic",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_parity_prov161.rs",
+          "lines": "185-218",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+              "lines": [
+                140,
+                141,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/profile_form_submit.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Same named profiles remain isolated in the editor",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/provider_settings_parity_prov161.rs",
+          "lines": "221-279",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/settings_config.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/provider_settings_parity_prov161.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/views/provider_settings/nav_item.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_context.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_parse.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "rust/fspec-tui/src/views/provider_settings/profile_form_submit.rs",
+      "rust/fspec-tui/src/views/provider_settings/settings_config.rs",
+      "rust/fspec-tui/src/views/provider_settings/list_actions.rs"
+    ],
+    "totalLinesCovered": 458
+  }
+}

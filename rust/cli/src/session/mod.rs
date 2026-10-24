@@ -1,14 +1,21 @@
 // Session management for persistent context in multi-turn conversations
 //
 // This module implements the SessionWrapper pattern matching rust's architecture:
-// - Session owns ProviderManager and messages Vec
-// - Messages persist across REPL iterations
-// - Provider switching clears context
 // - Interruption support with snapshot/restore
 //
 // Reference: spec/features/persistent-context-in-multi-turn-system.feature
 
+pub mod compaction;
 pub mod context_gathering; // CLI-016: Context gathering with AGENTS.md discovery
+mod preservation;
+mod provider;
+mod recovery_view;
+mod reminder_partition;
+mod reminders;
+pub mod replay;
+mod restore_compaction;
+mod runtime;
+mod selected_compaction;
 pub mod system_reminders; // CLI-012: System-reminder infrastructure
 
 pub use system_reminders::SystemReminderType;
@@ -36,6 +43,14 @@ pub struct Session {
     /// Persists across REPL iterations, cleared on provider switch
     /// Uses rig::message::Message directly for rig integration (CLI-008)
     pub messages: Vec<rig::message::Message>,
+    pub restored_replay: Option<replay::ReplayInstallation>,
+    pub provider_session: codelet_providers::session::ProviderSession,
+    pub(crate) compaction_inference_block: Option<String>,
+    pub(crate) pending_compaction_commit:
+        Option<codelet_core::persistence::compaction_boundary::CompactionIdentity>,
+    pub(crate) selected_preparer: Option<selected_compaction::SelectedPreparation>,
+    pub(crate) compaction_working_messages: Option<recovery_view::CompactionWorkingView>,
+    pub(crate) compaction_operation: Option<crate::compaction_operation::CompactionOperation>,
 
     /// Conversation turns for compaction analysis (CLI-009)
     /// Grouped messages representing user/assistant exchanges
@@ -115,21 +130,7 @@ impl Session {
             ProviderManager::new()?
         };
 
-        Ok(Self {
-            provider_manager,
-            messages: Vec::new(),
-            turns: Vec::new(),
-            token_tracker: TokenTracker::default(),
-            annotations: std::collections::HashMap::new(),
-            thinking_exhaustion_cross_turn_count: 0,
-            session_thinking_level: codelet_tools::facade::ThinkingLevel::High,
-            continue_enabled: false,
-            continue_budget: crate::interactive::auto_continue::DEFAULT_CONTINUE_BUDGET,
-            continue_nudges_used: 0,
-            goal: None,
-            done_rejections: 0,
-            preserve_thinking_enabled: true,
-        })
+        Ok(Self::from_provider_manager(provider_manager))
     }
 
     /// MODEL-001: Create a new session from an existing ProviderManager
@@ -142,7 +143,16 @@ impl Session {
     /// # Returns
     /// * `Session` - New session with the given provider manager
     pub fn from_provider_manager(provider_manager: ProviderManager) -> Self {
-        Self {
+        let mut session = Self {
+            selected_preparer: None,
+            compaction_working_messages: None,
+            compaction_operation: None,
+            pending_compaction_commit: None,
+            restored_replay: None,
+            compaction_inference_block: None,
+            provider_session: codelet_providers::session::ProviderSession::for_provider(
+                provider_manager.current_provider_name(),
+            ),
             provider_manager,
             messages: Vec::new(),
             turns: Vec::new(),
@@ -156,7 +166,9 @@ impl Session {
             goal: None,
             done_rejections: 0,
             preserve_thinking_enabled: true,
-        }
+        };
+        session.apply_provider_runtime_settings();
+        session
     }
 
     /// Get current provider name
@@ -179,13 +191,17 @@ impl Session {
     /// # Returns
     /// * `Result<()>` - Success or error if provider unavailable
     pub fn switch_provider(&mut self, provider_name: &str) -> Result<()> {
+        self.reset_provider_state()?;
         // Clear conversation context before switching (matches codelet behavior)
         self.messages.clear();
         self.turns.clear();
         self.token_tracker = TokenTracker::default();
+        self.token_tracker.invalidate_input();
 
         // Switch provider
         self.provider_manager.switch_provider(provider_name)?;
+        self.provider_session =
+            codelet_providers::session::ProviderSession::for_provider(self.current_provider_name());
 
         Ok(())
     }
@@ -220,112 +236,6 @@ impl Session {
     pub fn add_system_reminder(&mut self, reminder_type: SystemReminderType, content: &str) {
         // Use existing add_system_reminder function which implements deduplication
         self.messages = add_system_reminder(&self.messages, reminder_type, content);
-    }
-
-    /// CONT-003: Set or replace the session goal.
-    ///
-    /// Resets done_rejections and continue_nudges_used (doc §3), and injects
-    /// the compaction-proof CompletionContract system reminder carrying the
-    /// goal text, verify command (if any), and the done() evidence
-    /// requirement.
-    pub fn set_goal(&mut self, text: &str, verify: Option<&str>) {
-        self.goal = Some(SessionGoal {
-            text: text.to_string(),
-            verify: verify.map(str::to_string),
-            set_at: std::time::SystemTime::now(),
-        });
-        self.done_rejections = 0;
-        self.continue_nudges_used = 0;
-        self.refresh_goal_reminder();
-    }
-
-    /// CONT-003: Drop the session goal (fall back to the continue toggle).
-    ///
-    /// Resets done_rejections and removes the CompletionContract system
-    /// reminder from the conversation.
-    pub fn clear_goal(&mut self) {
-        self.goal = None;
-        self.done_rejections = 0;
-        self.messages = system_reminders::remove_system_reminders_of_type(
-            &self.messages,
-            SystemReminderType::CompletionContract,
-        );
-    }
-
-    /// CONT-003: (Re-)inject the CompletionContract reminder from the current
-    /// goal state (also used when the verify command is attached/replaced).
-    pub fn refresh_goal_reminder(&mut self) {
-        if let Some(goal) = &self.goal {
-            let verify_line = match &goal.verify {
-                Some(cmd) => format!("\nVerify command: {cmd}"),
-                None => String::new(),
-            };
-            let content = format!(
-                "Active goal: {}{}\ndone() requires evidence and a goal_assessment \
-                 demonstrating this goal is met.",
-                goal.text, verify_line
-            );
-            self.add_system_reminder(SystemReminderType::CompletionContract, &content);
-        }
-    }
-
-    /// Inject context reminders at session start (CLI-016)
-    ///
-    /// Discovers AGENTS.md files and gathers environment information,
-    /// injecting them as system reminders for the LLM.
-    ///
-    /// This should be called once after Session::new() to provide initial context.
-    ///
-    /// # Example
-    /// ```
-    /// use codelet_cli::session::Session;
-    ///
-    /// let mut session = Session::new(None).unwrap();
-    /// session.inject_context_reminders();
-    /// ```
-    pub fn inject_context_reminders(&mut self) {
-        self.inject_context_reminders_with_isolation(None);
-    }
-
-    /// GIT-034: Inject context reminders with isolation context
-    ///
-    /// Same as `inject_context_reminders()` but also includes isolation context
-    /// for worktree sessions. When the session is isolated, the environment
-    /// reminder will include Isolation, Worktree path, and Base commit fields.
-    ///
-    /// # Arguments
-    /// * `isolation` - Optional isolation context for worktree sessions
-    ///
-    /// # Example
-    /// ```
-    /// use codelet_cli::session::Session;
-    /// use codelet_cli::session::context_gathering::IsolationContext;
-    ///
-    /// let mut session = Session::new(None).unwrap();
-    /// let isolation = IsolationContext {
-    ///     is_isolated: true,
-    ///     worktree_path: Some(".fspec/worktrees/abc123/".to_string()),
-    ///     base_commit: Some("7a8b9c0d".to_string()),
-    /// };
-    /// session.inject_context_reminders_with_isolation(Some(&isolation));
-    /// ```
-    pub fn inject_context_reminders_with_isolation(
-        &mut self,
-        isolation: Option<&context_gathering::IsolationContext>,
-    ) {
-        use context_gathering::{discover_agents_md, gather_environment_info_with_isolation};
-
-        // Inject AGENTS.md content if found
-        if let Some(content) = discover_agents_md(None) {
-            self.add_system_reminder(SystemReminderType::SystemPrompt, &content);
-        }
-
-        // Inject environment information with optional isolation context
-        let env_info = gather_environment_info_with_isolation(isolation);
-        self.add_system_reminder(
-            SystemReminderType::Environment,
-            &env_info.to_reminder_content(),
-        );
     }
 }
 

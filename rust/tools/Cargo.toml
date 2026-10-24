@@ -94,6 +94,8 @@ libc = "0.2"
 pprof = { workspace = true }
 
 [dev-dependencies]
+proptest.workspace = true
+codelet-test-helpers = { path = "../test-helpers" }
 tempfile.workspace = true
 tokio-test.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

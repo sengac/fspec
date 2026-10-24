@@ -88,14 +88,31 @@ pub(super) fn handle_oauth_login_key(
     }
 }
 
-/// Esc during a login: bump the generation (so a late result is dropped) and
-/// return to the list. No backend cancel is needed — the spawned task's result
-/// is simply ignored on arrival.
 pub(super) fn cancel_to_list(view: &mut ProviderSettingsView) -> ProviderSettingsEvent {
+    view.cancel_oauth_tasks();
     view.oauth_generation = view.oauth_generation.wrapping_add(1);
     view.mode = ProviderSettingsMode::List;
     view.status.clear();
     ProviderSettingsEvent::Consumed
+}
+
+impl ProviderSettingsView {
+    pub(crate) fn track_oauth_task(&mut self, handle: &tokio::task::JoinHandle<()>) {
+        self.oauth_tasks.retain(|task| !task.is_finished());
+        self.oauth_tasks.push(handle.abort_handle());
+    }
+
+    fn cancel_oauth_tasks(&mut self) {
+        for task in self.oauth_tasks.drain(..) {
+            task.abort();
+        }
+    }
+}
+
+impl Drop for ProviderSettingsView {
+    fn drop(&mut self) {
+        self.cancel_oauth_tasks();
+    }
 }
 
 /// Retry the last login from the error screen. The github-copilot device flow

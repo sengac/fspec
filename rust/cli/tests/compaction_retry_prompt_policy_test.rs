@@ -43,7 +43,11 @@ impl StreamOutput for RecordingOutput {
 }
 
 fn fresh_session() -> Session {
-    Session::new(None).expect("failed to create test session")
+    Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    ))
 }
 
 fn fresh_token_state() -> Arc<Mutex<TokenState>> {

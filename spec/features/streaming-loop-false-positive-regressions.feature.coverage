@@ -1,0 +1,262 @@
+{
+  "scenarios": [
+    {
+      "name": "Detection is invariant under arbitrary subword chunk boundaries",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_stream_word_evidence.rs",
+          "lines": "28-60",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two legitimate pathname references are not repetition collapse",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_stream_word_evidence.rs",
+          "lines": "82-96",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Long suffix detection honors the configured earlier copy threshold",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_stream_word_evidence.rs",
+          "lines": "62-79",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overlapping matches do not inflate long suffix evidence",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_stream_word_evidence.rs",
+          "lines": "98-114",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reset clears partial words and overlong words do not create evidence",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug216_stream_word_evidence.rs",
+          "lines": "116-141",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_loop_detector.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug216_stream_word_evidence.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/stream_loop_detector.rs"
+    ],
+    "totalLinesCovered": 275
+  }
+}

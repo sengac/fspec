@@ -13,6 +13,8 @@ pub mod client;
 pub mod completion;
 pub mod decoders;
 pub mod metadata;
+mod request_body;
+mod request_usage;
 pub mod streaming;
 
 pub use client::{Client, ClientBuilder};

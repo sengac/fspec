@@ -5,7 +5,6 @@
 @foundation-management
 @DISC-003
 Feature: foundation-status read-only progress report command
-
   """
   DISC-003 (part 1/5): the new `foundation-status` command — a Rust-only, read-only progress report for the foundation discovery workflow. Reports the phase (none | draft | final), an 8-row per-field progress table with previews, the remaining fields with fix commands and examples, and the finalize next-action. Args {json?: bool}. Performs no writes.
   """
@@ -15,7 +14,7 @@ Feature: foundation-status read-only progress report command
     I want to discover and fill the project foundation with clear per-step guidance and progress
     So that I always know what fields remain, what to do next, and what content is appropriate, without guessing or re-reading raw JSON
 
-    Scenario: foundation-status reports missing phase when no foundation exists
+  Scenario: foundation-status reports missing phase when no foundation exists
     Given an empty project root with no spec/foundation.json and no spec/foundation.json.draft
     When I dispatch foundation-status
     Then the dispatcher returns success=true

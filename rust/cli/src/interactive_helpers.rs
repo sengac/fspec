@@ -12,7 +12,7 @@ use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::SystemTime;
-use tracing::{debug, warn};
+use tracing::warn;
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
@@ -205,16 +205,14 @@ pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {
 pub fn recalculate_token_tracker(session: &mut Session) {
     let total_tokens = estimate_message_tokens(&session.messages);
 
-    session.token_tracker.input_tokens = total_tokens;
-    session.token_tracker.output_tokens = 0;
+    session.token_tracker.set_estimated_input(total_tokens);
 }
 
 /// CMPCT-046: estimate the total context size (in tokens) of a message
 /// list from its content.
 ///
-/// This is the pre-compaction basis fallback for providers that do not
-/// report usage (e.g. OpenAI streaming without `include_usage`), where
-/// `token_tracker.input_tokens` stays 0 across the whole session. It uses
+/// This is the pre-compaction basis fallback when input accounting is
+/// unavailable or has not yet been initialized. It uses
 /// the SAME per-message `count_tokens` accounting as
 /// [`recalculate_token_tracker`] (which sets the tracker from this sum),
 /// so the estimated pre-compaction basis and the post-pin recalculated
@@ -227,32 +225,41 @@ pub fn estimate_message_tokens(messages: &[Message]) -> u64 {
         .sum()
 }
 
-/// CMPCT-046: the honest pre-compaction token basis.
-///
-/// Prefers the tracker's `input_tokens` when the provider reported usage
-/// (the normal case); when it is 0 — the provider did not report usage, so
-/// the tracker never saw a context total — falls back to the content
-/// estimate so a real compaction never reports `original_tokens = 0` (the
-/// live cross-session GenerateCompaction run exposed exactly this: 166
-/// messages compacted but `CompactionComplete` shipped `0 -> 4686`, a
-/// 0% ratio). A 0-basis with a non-empty message list is a diagnostic
-/// anomaly, so the fallback warns.
+/// Numeric compatibility entry point; a total alone cannot establish provenance.
 pub fn pre_compaction_basis(tracker_input_tokens: u64, messages: &[Message]) -> u64 {
     if tracker_input_tokens > 0 {
         return tracker_input_tokens;
     }
-    if messages.is_empty() {
-        return 0;
-    }
-    let estimated = estimate_message_tokens(messages);
-    if estimated > 0 {
+    estimate_message_tokens(messages)
+}
+
+/// Capture a compaction measurement with factual input-accounting diagnostics.
+pub fn tracked_pre_compaction_basis(
+    tracker: &codelet_core::compaction::TokenTracker,
+    messages: &[Message],
+) -> u64 {
+    let basis = pre_compaction_basis(tracker.input_tokens, messages);
+    let accounting = tracker.input_accounting;
+    let source = if tracker.input_tokens > 0 {
+        "tracker"
+    } else {
+        "content_estimate"
+    };
+    if basis > 0 && accounting == codelet_core::compaction::InputAccounting::Unavailable {
         warn!(
-            "pre_compaction_basis: tracker input_tokens is 0 (provider reported no usage); \
-             falling back to a content estimate of {estimated} tokens over {} messages",
-            messages.len()
+            ?accounting, source, basis, message_count = messages.len(),
+            "compaction basis: observed response input accounting unavailable; using content estimate"
+        );
+    } else {
+        tracing::debug!(
+            ?accounting,
+            source,
+            basis,
+            message_count = messages.len(),
+            "compaction token basis"
         );
     }
-    estimated
+    basis
 }
 
 /// Reset a session to only its system reminders, clearing all conversation.
@@ -271,7 +278,10 @@ pub fn pre_compaction_basis(tracker_input_tokens: u64, messages: &[Message]) -> 
 /// After calling this, the caller should:
 /// - Push their specific message (compaction instruction or DAG content)
 /// - Call `recalculate_token_tracker(session)`
-pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
+pub fn reset_session_to_reminders(
+    session: &mut Session,
+) -> Result<(usize, usize), codelet_providers::session::ExtensionError> {
+    session.reset_provider_state()?;
     use crate::session::system_reminders::partition_for_compaction;
 
     let (system_reminders, compactable) = partition_for_compaction(&session.messages);
@@ -281,7 +291,7 @@ pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
     session.messages.extend(system_reminders);
     session.turns.clear();
 
-    counts
+    Ok(counts)
 }
 
 /// CMPCT-029: Correlation key used to match Assistant(ToolCall) with its
@@ -588,89 +598,10 @@ pub async fn execute_compaction(
     compaction_in_progress: Arc<AtomicBool>,
     last_user_message: Option<&str>,
 ) -> Result<()> {
-    use crate::compaction_dag::{
-        detect_existing_dag, COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
-    };
-
-    debug!(
-        "[execute_compaction] In-view DAG flow — messages_len={}",
-        session.messages.len()
-    );
-
-    // CMPCT-029: defensive guard — refuse to run when session.messages still
-    // contains orphan tool_calls. Recovery paths (stream_loop.rs Path C)
-    // must have already reconciled with rig's PromptCancelled chat_history
-    // and injected synthetic cancelled tool_results for any remaining
-    // dangling calls. If we reach here with orphans still present, the
-    // compaction input would corrupt the next API request's tool-pair
-    // invariant — fail loudly instead of proceeding.
-    if let Err(orphans) = validate_no_orphan_tool_calls(&session.messages) {
-        warn!(
-            orphan_count = orphans.len(),
-            orphan_call_ids = ?orphans,
-            "[execute_compaction] Orphan tool_calls detected — refusing to compact"
-        );
-        return Err(anyhow::anyhow!(
-            "execute_compaction refuses to proceed: {} orphan tool_call(s) without matching tool_result: [{}]",
-            orphans.len(),
-            orphans.join(", ")
-        ));
-    }
-
-    // Step 1: Set compaction_in_progress flag BEFORE clearing
-    // This enables Layer 0 trimming in SessionSearch
+    session
+        .prepare_compaction_view(last_user_message)
+        .map_err(anyhow::Error::msg)?;
     compaction_in_progress.store(true, Ordering::SeqCst);
-
-    // Step 1.5 (CMPCT-019): Detect existing DAG BEFORE clearing messages
-    // This must happen before reset_session_to_reminders which clears everything
-    let existing_dag = detect_existing_dag(&session.messages);
-
-    // Step 2-3: Partition, clear, restore system reminders, clear turns
-    let (reminder_count, compactable_count) = reset_session_to_reminders(session);
-
-    debug!(
-        "[execute_compaction] partition: system_reminders={}, compactable={}",
-        reminder_count, compactable_count
-    );
-
-    // Step 4: Select instruction variant based on existing DAG presence (CMPCT-019)
-    let base_instruction = match existing_dag {
-        Some((dag_content, max_turn_end)) => {
-            let next_turn = max_turn_end.saturating_add(1);
-            debug!(
-                "[execute_compaction] INCREMENTAL mode — max_turn_end={}, searching from turn {}",
-                max_turn_end, next_turn
-            );
-            COMPACTION_INSTRUCTION_INCREMENTAL
-                .replace("{existing_dag_content}", &dag_content)
-                .replace("{last_compacted_turn}", &next_turn.to_string())
-        }
-        None => {
-            debug!("[execute_compaction] FRESH mode — no existing DAG found");
-            COMPACTION_INSTRUCTION_FRESH.to_string()
-        }
-    };
-
-    // When last_user_message is present, append it so the agent knows what to resume
-    let instruction = match last_user_message {
-        Some(prompt) => format!(
-            "{base_instruction}\n\nAfter building the DAG and calling inject_summary, resume working on:\n{prompt}"
-        ),
-        None => base_instruction,
-    };
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&instruction)),
-    });
-
-    // Step 5: Recalculate token tracker from post-clear messages
-    recalculate_token_tracker(session);
-
-    debug!(
-        "[execute_compaction] In-view DAG flow complete — messages_len={}, tokens={}",
-        session.messages.len(),
-        session.token_tracker.input_tokens
-    );
-
     Ok(())
 }
 
@@ -685,32 +616,44 @@ pub async fn prompt_provider(
     manager: &codelet_providers::ProviderManager,
     prompt: &str,
 ) -> anyhow::Result<String> {
+    use codelet_providers::LlmProvider;
+    use rig::client::CompletionClient;
     // TOOL-012: Generate session_id for tool handler lookup API consistency
     let session_id = uuid::Uuid::new_v4();
+    let output_limit = crate::provider_runtime::output_limit(manager);
+    let preserve_thinking = crate::provider_runtime::preserve_thinking(manager);
 
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent(session_id, None, None);
-            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            let rig_agent = provider.client().agent(provider.model()).build();
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent)
+                .with_output_limit(output_limit)
+                .with_preserve_thinking(preserve_thinking);
             agent.prompt(prompt).await
         }
         "openai" => {
             let provider = manager.get_openai(session_id)?;
-            let rig_agent = provider.create_rig_agent(session_id, None, None);
-            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            let rig_agent = provider.client().agent(provider.model()).build();
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent)
+                .with_output_limit(output_limit)
+                .with_preserve_thinking(preserve_thinking);
             agent.prompt(prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent(session_id, None, None);
-            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            let rig_agent = rig::agent::AgentBuilder::new(provider.completion_model()).build();
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent)
+                .with_output_limit(output_limit)
+                .with_preserve_thinking(preserve_thinking);
             agent.prompt(prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent(session_id, None, None);
-            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            let rig_agent = provider.client().agent(provider.model()).build();
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent)
+                .with_output_limit(output_limit)
+                .with_preserve_thinking(preserve_thinking);
             agent.prompt(prompt).await
         }
         _ => Err(anyhow::anyhow!(

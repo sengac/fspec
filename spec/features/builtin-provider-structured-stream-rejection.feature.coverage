@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "OpenAI Chat preserves physical HTTP rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_stream_rejections.rs",
+          "lines": "11-67",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                341,
+                342,
+                343,
+                344,
+                345,
+                346
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini preserves physical HTTP rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_stream_rejections.rs",
+          "lines": "120-139",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses preserves physical HTTP rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_stream_rejections.rs",
+          "lines": "141-155",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                435,
+                436,
+                437,
+                438,
+                439,
+                440
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic preserves physical HTTP rejection evidence",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/cmpct071_builtin_stream_rejections.rs",
+          "lines": "157-171",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "lines": [
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/cmpct071_builtin_stream_rejections.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/openai/completion/streaming.rs",
+      "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+      "rust/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+      "rust/patches/rig-core/src/providers/anthropic/streaming.rs"
+    ],
+    "totalLinesCovered": 135
+  }
+}

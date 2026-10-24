@@ -183,17 +183,6 @@ pub fn is_system_reminder(msg: &Message) -> bool {
     }
 }
 
-/// Extracts the type from a Message if it's a system reminder.
-fn get_reminder_type(msg: &Message) -> Option<SystemReminderType> {
-    match msg {
-        Message::User { content } => match content.first() {
-            UserContent::Text(t) => extract_type_from_content(&t.text),
-            _ => None,
-        },
-        _ => None,
-    }
-}
-
 /// Partitions messages into system-reminders and compactable messages.
 ///
 /// CLI-013: Only extracts the LATEST reminder of each type for preservation.
@@ -211,36 +200,7 @@ fn get_reminder_type(msg: &Message) -> Option<SystemReminderType> {
 /// # Returns
 /// Tuple of (latest system-reminders only, compactable messages including old reminders)
 pub fn partition_for_compaction(messages: &[Message]) -> (Vec<Message>, Vec<Message>) {
-    use std::collections::HashMap;
-
-    // First pass: find the LAST occurrence index of each reminder type
-    let mut last_occurrence: HashMap<SystemReminderType, usize> = HashMap::new();
-    for (i, msg) in messages.iter().enumerate() {
-        if let Some(reminder_type) = get_reminder_type(msg) {
-            last_occurrence.insert(reminder_type, i);
-        }
-    }
-
-    // Second pass: partition - only keep reminders at their last occurrence index
-    let mut system_reminders = Vec::new();
-    let mut compactable = Vec::new();
-
-    for (i, msg) in messages.iter().enumerate() {
-        if let Some(reminder_type) = get_reminder_type(msg) {
-            // Only preserve this reminder if it's the LAST one of its type
-            if last_occurrence.get(&reminder_type) == Some(&i) {
-                system_reminders.push(msg.clone());
-            } else {
-                // Older versions go to compactable (will be summarized away)
-                compactable.push(msg.clone());
-            }
-        } else {
-            // Non-reminder messages are compactable
-            compactable.push(msg.clone());
-        }
-    }
-
-    (system_reminders, compactable)
+    super::reminder_partition::partition(messages)
 }
 
 /// Checks if a message is a system reminder of a specific type.

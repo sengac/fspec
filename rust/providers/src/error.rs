@@ -5,6 +5,20 @@
 
 use thiserror::Error;
 
+#[derive(Debug, Clone, Copy, Error)]
+pub enum ModelDiscoveryFailure {
+    #[error("authentication failed (HTTP {0})")]
+    Authentication(u16),
+    #[error("transport failed")]
+    Transport,
+    #[error("transport timed out")]
+    Timeout,
+    #[error("invalid models response")]
+    Protocol,
+    #[error("HTTP failure ({0})")]
+    Http(u16),
+}
+
 /// Unified error type for all providers
 ///
 /// This error type distinguishes between authentication, API, and rate limit errors,
@@ -18,6 +32,15 @@ pub enum ProviderError {
     /// API error - general API communication failure
     #[error("[{provider}] API error: {message}")]
     Api { provider: String, message: String },
+
+    #[error("[{provider}] Model discovery unsupported (HTTP {status})")]
+    ModelDiscoveryUnsupported { provider: String, status: u16 },
+
+    #[error("[{provider}] Model discovery failed: {failure}")]
+    ModelDiscoveryFailed {
+        provider: String,
+        failure: ModelDiscoveryFailure,
+    },
 
     /// Rate limit error - too many requests, should retry after delay
     #[error("[{provider}] Rate limit exceeded: {message}")]
@@ -59,6 +82,8 @@ impl ProviderError {
             // All other errors are not retryable
             ProviderError::Authentication { .. } => false,
             ProviderError::Api { .. } => false,
+            ProviderError::ModelDiscoveryUnsupported { .. } => false,
+            ProviderError::ModelDiscoveryFailed { .. } => false,
             ProviderError::Configuration { .. } => false,
             ProviderError::Model { .. } => false,
             ProviderError::Content { .. } => false,
@@ -83,6 +108,8 @@ impl ProviderError {
         match self {
             ProviderError::Authentication { provider, .. } => provider,
             ProviderError::Api { provider, .. } => provider,
+            ProviderError::ModelDiscoveryUnsupported { provider, .. } => provider,
+            ProviderError::ModelDiscoveryFailed { provider, .. } => provider,
             ProviderError::RateLimit { provider, .. } => provider,
             ProviderError::Configuration { provider, .. } => provider,
             ProviderError::Model { provider, .. } => provider,

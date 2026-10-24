@@ -1,0 +1,119 @@
+{
+  "scenarios": [
+    {
+      "name": "Explicit boundaries order journal-only requests before later originals",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug250_request_boundaries.rs",
+          "lines": "28-64",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                21,
+                55,
+                56,
+                58,
+                70,
+                71,
+                76,
+                84,
+                91,
+                100,
+                111
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/transcript/projection.rs",
+              "lines": [
+                33,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid explicit boundaries never become inferred coordinates",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug250_request_boundaries.rs",
+          "lines": "95-125",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                21,
+                55,
+                56,
+                58,
+                70,
+                71,
+                76,
+                84,
+                91,
+                100,
+                111
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/transcript/projection.rs",
+              "lines": [
+                33,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Request boundaries cannot change after the first delta",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug250_request_boundaries.rs",
+          "lines": "68-91",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/archive/journal.rs",
+              "lines": [
+                21,
+                55,
+                56,
+                58,
+                70,
+                71,
+                76,
+                84,
+                91,
+                100,
+                111
+              ]
+            },
+            {
+              "file": "rust/core/src/persistence/transcript/projection.rs",
+              "lines": [
+                33,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/bug250_request_boundaries.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/archive/journal.rs",
+      "rust/core/src/persistence/transcript/projection.rs"
+    ],
+    "totalLinesCovered": 131
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "Measured token fields survive JSON forwarding",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct069_token_forwarding.rs",
+          "lines": "7-35",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_chunk_json.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown token fields remain unknown in JSON",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/cmpct069_token_forwarding.rs",
+          "lines": "37-66",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_chunk_json.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/cmpct069_token_forwarding.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/stream_chunk_json.rs"
+    ],
+    "totalLinesCovered": 87
+  }
+}

@@ -1,0 +1,728 @@
+{
+  "scenarios": [
+    {
+      "name": "A delayed pending snapshot cannot restore a cleared command prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "10-30",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A delayed empty snapshot cannot hide a newly pushed prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "32-46",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A delayed pending snapshot cannot replace a newer command prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "48-62",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dismissing or answering a prompt invalidates outstanding snapshots",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "64-94",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The latest probe for a session wins regardless of delivery order",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "96-124",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prompt updates in another session do not invalidate a snapshot",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "126-151",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fresh snapshots still display and clear command prompts",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "153-168",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Human approval retains precedence over a fresh command snapshot",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "170-194",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+              "lines": [
+                47,
+                51,
+                52,
+                53,
+                54,
+                55,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+              "lines": [
+                60,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                64,
+                65,
+                66,
+                80,
+                81,
+                82,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Finishing a model turn preserves a live command prompt",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs",
+          "lines": "196-208",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/store/agent_view/record_chunk.rs",
+              "lines": [
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/exec_stdin_probe_freshness_bug209.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_exec_stdin.rs",
+      "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/fspec-tui/src/store/agent_view/exec_stdin_state.rs",
+      "rust/fspec-tui/src/store/agent_view/record_chunk.rs"
+    ],
+    "totalLinesCovered": 630
+  }
+}

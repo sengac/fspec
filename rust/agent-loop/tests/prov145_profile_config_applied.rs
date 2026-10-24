@@ -119,14 +119,13 @@ const NORMAL_WORDS: [&str; 10] = [
 /// The looping phrase (3 words).
 const LOOP_PHRASE: [&str; 3] = ["alpha", "beta", "gamma"];
 
-/// Build the full deterministic loop stream: 10 normal words + 50 loop
-/// words. The extra 10 loop words (beyond the phrase × 10) keep feeding
-/// the LATCHED default detector after it fires at word 40, so the
-/// escalation policy's cooldown re-trigger escalates to abort.
+/// Build the full deterministic loop stream: 10 normal words + 80 loop
+/// words. After warning, enough new complete words remain to independently
+/// trigger again and escalate to abort.
 fn loop_stream_words() -> Vec<String> {
-    let mut words: Vec<String> = NORMAL_WORDS.iter().map(|w| w.to_string()).collect();
-    for i in 0..50 {
-        words.push(LOOP_PHRASE[i % LOOP_PHRASE.len()].to_string());
+    let mut words: Vec<String> = NORMAL_WORDS.iter().map(|w| format!("{w} ")).collect();
+    for i in 0..80 {
+        words.push(format!("{} ", LOOP_PHRASE[i % LOOP_PHRASE.len()]));
     }
     words
 }

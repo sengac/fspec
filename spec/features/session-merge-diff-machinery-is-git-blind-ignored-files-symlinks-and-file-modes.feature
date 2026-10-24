@@ -12,19 +12,19 @@ Feature: Session merge/diff machinery is git-blind: ignored files, symlinks, and
   (audit: spec/attachments/WT-006/wt-006.md):
 
   (a) Gitignored untracked files were silently invisible. An isolated
-      session that produced build artifacts (target/, node_modules/,
-      logs) reported "nothing to merge" while the worktree was full of
-      new files, and the merge-side scan used for conflict detection
-      was missing those files from its picture of main.
+  session that produced build artifacts (target/, node_modules/,
+  logs) reported "nothing to merge" while the worktree was full of
+  new files, and the merge-side scan used for conflict detection
+  was missing those files from its picture of main.
 
   (b) Symlinks could not round-trip. get_tree_files dropped Link tree
-      entries, so the diff/apply/merge machinery treated every
-      committed symlink as "deleted in the worktree" and the merge
-      deletion sweep removed the symlink from the main worktree.
+  entries, so the diff/apply/merge machinery treated every
+  committed symlink as "deleted in the worktree" and the merge
+  deletion sweep removed the symlink from the main worktree.
 
   (c) File modes were flattened. build_tree_from_index /
-      build_tree_from_files only preserved the executable flag and
-      ghost checkpoints recorded every non-executable file as 0o644.
+  build_tree_from_files only preserved the executable flag and
+  ghost checkpoints recorded every non-executable file as 0o644.
 
   Fix: the diff/merge/checkpoint machinery now works on a richer
   tree snapshot that distinguishes blobs, symlinks (by target),
@@ -96,7 +96,6 @@ Feature: Session merge/diff machinery is git-blind: ignored files, symlinks, and
   # ========================================
   # Part A: Gitignored files are surfaced honestly
   # ========================================
-
   @git
   @session-merge
   Scenario: Session diff reports build artifacts as ignored rather than as changes
@@ -126,13 +125,12 @@ Feature: Session merge/diff machinery is git-blind: ignored files, symlinks, and
     Then files_changed is 0
     And the ignored files are surfaced in the summary's files_ignored list
 
-  # ========================================
-  # Part B: Symlinks round-trip through worktree creation, diff, and merge
-  # ========================================
-
   @git
   @session-management
   Scenario: Worktree checkout materializes committed symlinks as real symlinks
+  # ========================================
+  # Part B: Symlinks round-trip through worktree creation, diff, and merge
+  # ========================================
     Given a git repository with a committed symlink "links/config" pointing to "real/config.txt"
     When I create a session worktree at HEAD
     Then "links/config" in the worktree is a symlink
@@ -174,13 +172,12 @@ Feature: Session merge/diff machinery is git-blind: ignored files, symlinks, and
     Then files_changed contains "links/config"
     And files_deleted does not contain "links/config"
 
-  # ========================================
-  # Part C: File modes (the executable bit) survive merge and checkpoints
-  # ========================================
-
   @git
   @session-merge
   Scenario: Merging a session preserves the executable bit of an unchanged executable file
+  # ========================================
+  # Part C: File modes (the executable bit) survive merge and checkpoints
+  # ========================================
     Given a git repository with an executable file "bin/tool" committed at mode 100755
     And a session worktree where tracked file "src/main.rs" has been modified
     When I merge that session into main
@@ -204,22 +201,15 @@ Feature: Session merge/diff machinery is git-blind: ignored files, symlinks, and
     Then "bin/tool" has its original content
     And "bin/tool" in the working tree is executable again
 
-  # ========================================
-  # Part D: Submodules (gitlinks) are atomic
-  # ========================================
-
   @git
   @session-management
   Scenario: A committed submodule is reported as present (not deleted) and survives a merge
+  # ========================================
+  # Part D: Submodules (gitlinks) are atomic
+  # ========================================
     Given a git repository with a committed submodule (gitlink) "vendor/lib"
     And a session worktree where tracked file "src/main.rs" has been modified
     When I get the session diff for that session
     Then files_deleted does not contain "vendor/lib"
     When I merge that session into main
     Then "vendor/lib" in main still exists with its content
-
-  # ========================================
-  # (TUI behavior — /merge-worktree with only ignored changes — lives in
-  #  spec/features/merge-worktree-ignored-only-nothing-to-merge.feature so
-  #  the 1:1 feature↔test-file mapping holds per file.)
-  # ========================================

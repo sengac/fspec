@@ -460,6 +460,7 @@ fn fake_session(id: &str) -> SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: None,
+        work_unit_focus: Default::default(),
     }
 }
 

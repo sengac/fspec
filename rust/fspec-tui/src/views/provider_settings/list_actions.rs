@@ -57,6 +57,17 @@ pub(super) fn enter_on_nav_item(
             view.toggle_expansion(&provider_id);
             ProviderSettingsEvent::Consumed
         }
+        NavItemKind::Settings => {
+            let definition = view
+                .provider_configs
+                .get(&provider_id)
+                .cloned()
+                .unwrap_or_default();
+            let form = ProfileForm::from_settings(&provider_id, &definition);
+            view.mode = ProviderSettingsMode::EditSettings { provider_id, form };
+            view.status.clear();
+            ProviderSettingsEvent::Consumed
+        }
         // ApiKey rows open the inline edit form.
         NavItemKind::ApiKey => {
             view.mode = ProviderSettingsMode::Detail {
@@ -76,9 +87,11 @@ pub(super) fn enter_on_nav_item(
         // old read-only Detail/Summary placeholder (the blank-screen bug).
         NavItemKind::Profile { profile_name } => {
             let name = bare_profile_name(&profile_name);
-            let form = match view.profile_config_for(&name) {
-                Some(def) => ProfileForm::from_definition(&name, def),
-                None => ProfileForm::from_definition(&name, &Default::default()),
+            let form = match view.profile_config_for(&provider_id, &name) {
+                Some(def) => ProfileForm::from_provider_definition(&provider_id, &name, def),
+                None => {
+                    ProfileForm::from_provider_definition(&provider_id, &name, &Default::default())
+                }
             };
             view.mode = ProviderSettingsMode::EditProfile {
                 provider_id,
@@ -111,10 +124,8 @@ pub(super) fn enter_on_nav_item(
         // (TS initializeNewProfile): empty name being edited, default base
         // URL. Replaces the old explicit no-op.
         NavItemKind::AddProfile => {
-            view.mode = ProviderSettingsMode::CreateProfile {
-                provider_id,
-                form: ProfileForm::new_create(),
-            };
+            let form = ProfileForm::new_for_provider(&provider_id);
+            view.mode = ProviderSettingsMode::CreateProfile { provider_id, form };
             view.status.clear();
             ProviderSettingsEvent::Consumed
         }
@@ -172,7 +183,9 @@ pub(super) fn delete_on_nav_item(view: &mut ProviderSettingsView) -> ProviderSet
             let name = bare_profile_name(profile_name);
             open_profile_delete_confirm(view, provider_id, name)
         }
-        NavItemKind::AddProfile | NavItemKind::OAuthLogin { .. } => ProviderSettingsEvent::Consumed,
+        NavItemKind::Settings | NavItemKind::AddProfile | NavItemKind::OAuthLogin { .. } => {
+            ProviderSettingsEvent::Consumed
+        }
     }
 }
 

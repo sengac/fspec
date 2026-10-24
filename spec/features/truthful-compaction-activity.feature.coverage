@@ -1,0 +1,53 @@
+{
+  "scenarios": [
+    {
+      "name": "A pending automatic builder reports activity rather than message-count progress",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/truthful_compaction_activity_bug213.rs",
+          "lines": "37-72",
+          "implMappings": [
+            {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [143, 144]},
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [64, 65, 109, 110, 111, 112, 113, 114]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Live activity remains attached to its original session",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/truthful_compaction_activity_bug213.rs",
+          "lines": "74-113",
+          "implMappings": [
+            {"file": "rust/sessions/src/background_session.rs", "lines": [1567, 1568, 1569, 1570, 1571, 1572, 1573, 1574, 1575, 1576, 1577, 1578, 1579, 1580, 1581]},
+            {"file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "lines": [52, 53, 54, 55, 56, 57, 58, 59]},
+            {"file": "rust/fspec-tui/src/views/agent/footer.rs", "lines": [64, 65, 109, 110, 111, 112, 113, 114]}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terminal cleanup removes activity without inventing success",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/truthful_compaction_activity_bug213.rs",
+          "lines": "115-199",
+          "implMappings": [
+            {"file": "rust/sessions/src/background_session.rs", "lines": [1567, 1568, 1569, 1570, 1571, 1572, 1573, 1574, 1575, 1576, 1577]},
+            {"file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "lines": [52, 53, 54, 55, 56, 57, 58, 59]},
+            {"file": "rust/fspec-tui/src/app/dispatch_committed_compaction.rs", "lines": [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]},
+            {"file": "rust/agent-loop/src/background_output.rs", "lines": [579, 580, 581, 582, 583, 584, 585, 586, 587, 588]},
+            {"file": "rust/agent-loop/src/terminal_overflow_recovery.rs", "lines": [66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79]}
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3, "coveredScenarios": 3, "coveragePercent": 100,
+    "testFiles": ["rust/fspec-tui/tests/truthful_compaction_activity_bug213.rs"],
+    "implFiles": ["rust/cli/src/compactor_sub_agent.rs", "rust/fspec-tui/src/views/agent/footer.rs", "rust/sessions/src/background_session.rs", "rust/fspec-tui/src/app/dispatch_stream_chunks.rs", "rust/fspec-tui/src/app/dispatch_committed_compaction.rs", "rust/agent-loop/src/background_output.rs", "rust/agent-loop/src/terminal_overflow_recovery.rs"],
+    "totalLinesCovered": 281
+  }
+}

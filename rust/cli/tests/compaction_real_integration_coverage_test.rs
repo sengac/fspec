@@ -47,23 +47,17 @@ use codelet_core::StreamingTokenDisplay;
 use rig::message::{AssistantContent, Message, Text, UserContent};
 use rig::OneOrMany;
 
+#[path = "support/gemini_continuation_source.rs"]
+mod gemini_source;
+
+use gemini_source::gemini_continuation_source;
+
 // ----------------------------------------------------------------------------
 // Shared fixtures
 // ----------------------------------------------------------------------------
 
 fn fresh_session() -> Session {
     Session::new(None).expect("failed to create test session")
-}
-
-fn gemini_continuation_source() -> String {
-    let path =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/gemini_continuation.rs");
-    std::fs::read_to_string(&path).unwrap_or_else(|e| {
-        panic!(
-            "gemini_continuation.rs must be readable at {}: {e}",
-            path.display()
-        )
-    })
 }
 
 fn user_text(text: &str) -> Message {

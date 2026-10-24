@@ -447,7 +447,7 @@ async fn test_regression_tokens_loaded_from_disk_force_immediate_refresh() {
     // @step Given claude_auth.json contains week-old tokens with expired access_token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // Write simulated "week-old" tokens to claude_auth.json
     let old_auth = claude_auth::ClaudeAuthJson {
@@ -537,7 +537,7 @@ async fn test_regression_concurrent_requests_during_expired_token_only_refresh_o
     // @step Given I am authenticated with Claude via OAuth
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_fspec_home();
+    let (_temp_dir, _guard) = setup_fspec_home().expect("isolated OAuth home directory");
 
     // @step And the access token is expired
     let client = build_expired_oauth_client("concurrent_refresh_tok", &mock_server.uri());

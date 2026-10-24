@@ -67,6 +67,11 @@ impl AgentViewStore {
     /// arm AND the `Action::SessionStatusChanged` arm so push-driven
     /// updates from either channel land in the same slot.
     pub fn set_session_status(&mut self, session: SessionId, status: SessionStatus) {
+        if status != SessionStatus::Running {
+            if let Some(context) = self.session_context_mut_for(&session) {
+                context.provider_waiting = None;
+            }
+        }
         self.session_status_by_session.insert(session, status);
     }
 
@@ -104,19 +109,15 @@ impl AgentViewStore {
         self.compaction_progress_by_session.get(session)
     }
 
-    /// Persist a [`CompactionProgress`] snapshot for `session`. Called
-    /// by the `/compact` slash handler at request time AND by any future
-    /// chunk-driven progress update (e.g. a `CompactionProgressUpdate`
-    /// StreamChunk variant — not in scope for RPC-047 but the slot is
-    /// already shaped to accept it).
+    /// Persist the session-scoped [`CompactionProgress`] snapshot received
+    /// through `StreamChunk::CompactionProgressUpdate`.
     pub fn set_compaction_progress(&mut self, session: SessionId, progress: CompactionProgress) {
         self.compaction_progress_by_session
             .insert(session, progress);
     }
 
-    /// Drop the per-session compaction progress entry — called when
-    /// `StreamChunk::CompactionComplete` arrives so the SessionFooter
-    /// stops painting the bar on the next frame.
+    /// Drop the per-session progress on completion or an explicit streamed
+    /// clear, including failure and cancellation cleanup.
     pub fn clear_compaction_progress(&mut self, session: &SessionId) {
         self.compaction_progress_by_session.remove(session);
     }

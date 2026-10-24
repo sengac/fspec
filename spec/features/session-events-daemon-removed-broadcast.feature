@@ -5,7 +5,6 @@
 @in-memory
 @RPC-433
 Feature: Daemon-side session removal broadcast + in-memory live-session snapshot
-
   """
   SessionManager-level support for RPC-433's wire fan-out (rules R2/R3 of
   the wire-side feature session-events-daemon-fanout.feature):
@@ -30,7 +29,6 @@ Feature: Daemon-side session removal broadcast + in-memory live-session snapshot
   #   2. destroy_session is called twice for the same id (or once for an unknown id): only the live destroy emits a removal event
   #
   # ========================================
-
   Background: User Story
     As a daemon operator
     I want session removals to be observable as an in-process broadcast, and the live-session snapshot to reflect only in-memory sessions
@@ -40,7 +38,6 @@ Feature: Daemon-side session removal broadcast + in-memory live-session snapshot
     Given a session manager with a subscriber on the removed session broadcast
     When destroy_session is called for a session id that is not in the manager's live map
     Then no removal event is observed on the removed broadcast
-
 
   Scenario: The in-memory live-session snapshot excludes destroyed sessions
     Given the daemon's session manager holds two live sessions

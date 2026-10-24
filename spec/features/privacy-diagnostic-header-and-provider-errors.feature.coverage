@@ -1,0 +1,245 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded credential headers redact complete values in every privacy mode",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_review_privacy.rs",
+          "lines": "37-64",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                83,
+                106,
+                107,
+                110,
+                119,
+                131,
+                136,
+                155,
+                165,
+                210,
+                222,
+                226,
+                257
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy_json.rs",
+              "lines": [
+                3,
+                21,
+                32,
+                77,
+                81,
+                82,
+                107
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Application provider failures do not expose serialized conversation bodies",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_review_privacy.rs",
+          "lines": "66-118",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                83,
+                106,
+                107,
+                110,
+                119,
+                131,
+                136,
+                155,
+                165,
+                210,
+                222,
+                226,
+                257
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy_json.rs",
+              "lines": [
+                3,
+                15,
+                21,
+                22,
+                24,
+                26,
+                32,
+                77,
+                83,
+                84,
+                86,
+                107
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming provider HTTP failures do not expose debug wrapped conversation bodies",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_review_privacy.rs",
+          "lines": "120-178",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/privacy_json.rs",
+              "lines": [
+                3,
+                7,
+                10,
+                15,
+                17,
+                21,
+                22,
+                24,
+                26,
+                27,
+                29,
+                32,
+                36,
+                46,
+                50,
+                59,
+                63,
+                65,
+                67,
+                107
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                83,
+                106,
+                107,
+                110,
+                119,
+                131,
+                136,
+                155,
+                165,
+                210,
+                222,
+                226,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Known provider instruction fields follow payload authorization and bounds",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_review_privacy.rs",
+          "lines": "180-228",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/privacy_json.rs",
+              "lines": [
+                77,
+                83,
+                84,
+                86,
+                87,
+                89,
+                92,
+                93,
+                95,
+                107
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                83,
+                106,
+                107,
+                110,
+                119,
+                131,
+                136,
+                155,
+                165,
+                210,
+                222,
+                226,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Credential headers inside JSON preserve trailing error metadata",
+      "testMappings": [
+        {
+          "file": "rust/fspec/tests/bug239_review_privacy.rs",
+          "lines": "230-259",
+          "implMappings": [
+            {
+              "file": "rust/common/src/logging/privacy_json.rs",
+              "lines": [
+                3,
+                21,
+                22,
+                24,
+                32,
+                77,
+                81,
+                82,
+                107
+              ]
+            },
+            {
+              "file": "rust/common/src/logging/privacy.rs",
+              "lines": [
+                83,
+                106,
+                107,
+                110,
+                119,
+                131,
+                136,
+                155,
+                165,
+                210,
+                222,
+                226,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec/tests/bug239_review_privacy.rs"
+    ],
+    "implFiles": [
+      "rust/common/src/logging/privacy.rs",
+      "rust/common/src/logging/privacy_json.rs"
+    ],
+    "totalLinesCovered": 342
+  }
+}

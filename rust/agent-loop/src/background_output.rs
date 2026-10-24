@@ -25,12 +25,18 @@ use codelet_rpc_types::{
     ContextFillInfo, NotificationSeverity, SessionState, SessionStatus, StreamChunk, TokenTracker,
     ToolCallInfo, ToolProgressInfo, ToolResultInfo,
 };
+
+#[path = "background_compaction.rs"]
+mod background_compaction;
+#[path = "background_recovery.rs"]
+mod background_recovery;
+#[path = "response_attempt_checkpoint.rs"]
+mod response_attempt_checkpoint;
 use codelet_sessions::background_session::BackgroundSession;
+use response_attempt_checkpoint::ResponseAttemptCheckpoint;
 
 use crate::inject_summary_handler::should_idle_on_done;
-use crate::persist::{
-    persist_assistant_message_internal, persist_token_state, persist_tool_result_internal,
-};
+use crate::persist::persist_tool_result_identified;
 use crate::stream_loop_detector::{
     build_loop_abort_marker_note, build_loop_abort_recovery_message, LoopDetectorConfig,
     LoopEscalationOutcome, LoopEscalationPolicy, StreamLoopDetector,
@@ -95,8 +101,10 @@ impl LoopDetectionWiring {
 /// corrective note is staged for the next turn.
 pub struct BackgroundOutput {
     pub(crate) session: Arc<BackgroundSession>,
+    journal: std::sync::Mutex<crate::stream_journal::StreamJournal>,
     /// REFAC-007: Accumulated assistant content blocks for current turn
     assistant_content: std::sync::Mutex<Vec<AssistantContent>>,
+    response_attempt: std::sync::Mutex<Option<ResponseAttemptCheckpoint>>,
     /// REFAC-007: Current provider name for message envelope
     provider: String,
     /// HOOK-013: Track last tool call name+args for post_tool_use hooks
@@ -129,8 +137,10 @@ impl BackgroundOutput {
         let loop_wiring = loop_wiring.unwrap_or_default();
         let detector = StreamLoopDetector::with_config(loop_wiring.detector_config());
         Self {
+            journal: std::sync::Mutex::new(crate::stream_journal::StreamJournal::new(session.id)),
             session,
             assistant_content: std::sync::Mutex::new(Vec::new()),
+            response_attempt: std::sync::Mutex::new(None),
             provider,
             last_tool_call: std::sync::Mutex::new(None),
             thinking_loop_detector: std::sync::Mutex::new(detector.clone()),
@@ -225,6 +235,9 @@ impl BackgroundOutput {
 
         match outcome {
             LoopEscalationOutcome::Warn => {
+                if let Ok(mut detector) = det.lock() {
+                    detector.reset();
+                }
                 tracing::warn!(
                     session = %self.session.id,
                     channel,
@@ -254,11 +267,10 @@ impl BackgroundOutput {
                 // so it survives the per-turn BackgroundOutput instance and
                 // is consumed by the agent loop at the top of the next turn).
                 let note = build_loop_abort_recovery_message(&signal, None);
-                self.session.set_pending_loop_abort_note(note);
                 // Drive the existing interrupt machinery to cancel the
                 // in-flight provider stream. The stream loop checks
                 // is_interrupted each iteration and stops.
-                self.session.interrupt();
+                self.session.interrupt_loop_detector(note);
                 true
             }
         }
@@ -284,18 +296,49 @@ impl BackgroundOutput {
 
     /// PROV-039: Persist the accumulated assistant message with optional stop_reason
     fn persist_assistant_message_with_stop_reason(&self, stop_reason: Option<String>) {
+        self.persist_assistant_outcome(stop_reason, None);
+    }
+
+    fn persist_assistant_outcome(
+        &self,
+        stop_reason: Option<String>,
+        reason: Option<codelet_rpc_types::InterruptionReason>,
+    ) {
         let content = self.take_assistant_content();
+        self.response_attempt
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .take();
         if content.is_empty() {
+            if let Err(error) = crate::persist::retry_pending_persistence(&self.session.id) {
+                self.report_persistence_failure(&error);
+            }
             return;
         }
 
-        if let Err(e) = persist_assistant_message_internal(
+        let mut journal = self
+            .journal
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Err(e) = crate::persist::persist_assistant_message_identified(
             &self.session.id,
             &self.provider,
-            content,
+            journal.message_id(),
+            content.clone(),
             stop_reason,
+            reason,
         ) {
-            tracing::error!("REFAC-007: Failed to persist assistant message: {}", e);
+            if e.contains("original remains with caller") {
+                self.assistant_content
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner())
+                    .splice(0..0, content);
+            } else {
+                journal.message_promoted();
+            }
+            self.report_persistence_failure(&e);
+        } else {
+            journal.message_promoted();
         }
     }
 
@@ -303,13 +346,84 @@ impl BackgroundOutput {
     fn persist_assistant_message(&self) {
         self.persist_assistant_message_with_stop_reason(None);
     }
+
+    fn report_persistence_failure(&self, error: &str) {
+        tracing::error!(session_id = %self.session.id, error, "conversation persistence requires recovery");
+        self.session.handle_output(StreamChunk::error(format!(
+            "Conversation persistence requires recovery: {error}"
+        )));
+        self.session
+            .is_interrupted
+            .store(true, std::sync::atomic::Ordering::Release);
+        self.session.interrupt_notify.notify_one();
+    }
 }
 
 impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
+    fn emit_tool_cancellation(&self, result: codelet_cli::interactive::ToolResultEvent) {
+        let admission = self
+            .journal
+            .lock()
+            .map_err(|_| "transcript owner unavailable".to_owned())
+            .and_then(|mut journal| journal.admit_cancellation(&result.id));
+        if let Err(error) = admission {
+            self.report_persistence_failure(&error);
+            return;
+        }
+        self.emit(codelet_cli::interactive::StreamEvent::ToolResult(result));
+    }
+
+    fn prepare_tool_dispatch(&self, id: &str) -> Result<(), String> {
+        self.journal
+            .lock()
+            .map_err(|_| "transcript owner unavailable")?
+            .prepare_dispatch(id)
+    }
+
+    fn interruption_reason(&self) -> Option<codelet_rpc_types::InterruptionReason> {
+        self.session.interruption_reason()
+    }
+
+    fn publish_committed_context(
+        &self,
+        identity: &codelet_core::persistence::compaction_boundary::CompactionIdentity,
+        snapshot: codelet_rpc_types::CommittedContextSnapshot,
+        context: codelet_rpc_types::RequestContextSnapshot,
+    ) -> Result<(), String> {
+        self.publish_compaction_context(identity, snapshot, context)
+    }
+
+    fn emit_committed_compaction_complete(&self, result: codelet_rpc_types::CompactionResult) {
+        self.complete_committed_compaction(result);
+    }
+
     fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
         use codelet_cli::interactive::StreamEvent;
 
+        let admission = self
+            .journal
+            .lock()
+            .map_err(|_| "transcript owner unavailable".to_owned())
+            .and_then(|mut journal| journal.admit(&event, self.session.interruption_reason()));
+        match admission {
+            Ok(true) => {}
+            Ok(false) => return,
+            Err(error) => {
+                self.report_persistence_failure(&error);
+                self.retain_unpublished_original(&event);
+                return;
+            }
+        }
+
         let chunk = match event {
+            StreamEvent::ResponseAttemptStarted => {
+                self.start_response_attempt();
+                StreamChunk::ResponseAttemptStarted
+            }
+            StreamEvent::ResponseAttemptAborted => {
+                self.abort_response_attempt();
+                StreamChunk::ResponseAttemptAborted
+            }
             StreamEvent::Text(ref text) => {
                 // RIG-014: Feed the text delta into the text-channel loop
                 // detector. On abort the degenerate delta is NOT
@@ -338,17 +452,16 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             }
             StreamEvent::ToolCall(ref tc) => {
                 // REFAC-007: Accumulate tool call for later persistence
-                let input_value = serde_json::from_str(&tc.args.to_string())
-                    .unwrap_or_else(|_| serde_json::Value::String(tc.args.to_string()));
                 self.add_assistant_content(AssistantContent::ToolUse {
                     id: tc.id.clone(),
+                    call_id: tc.call_id.clone(),
                     name: tc.name.clone(),
-                    input: input_value.clone(),
+                    input: tc.args.clone(),
                 });
 
                 // HOOK-013: Capture tool call info for post_tool_use hooks
                 if let Ok(mut last) = self.last_tool_call.lock() {
-                    *last = Some((tc.name.clone(), input_value));
+                    *last = Some((tc.name.clone(), tc.args.clone()));
                 }
 
                 StreamChunk::tool_call(ToolCallInfo {
@@ -363,10 +476,23 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.persist_assistant_message();
 
                 // REFAC-007: Persist tool result immediately
-                if let Err(e) =
-                    persist_tool_result_internal(&self.session.id, &tr.id, &tr.content, tr.is_error)
-                {
-                    tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
+                let result_id = self
+                    .journal
+                    .lock()
+                    .map_err(|_| "transcript owner unavailable".to_owned())
+                    .and_then(|journal| journal.result_id(&tr.id));
+                let persistence = result_id.and_then(|id| {
+                    persist_tool_result_identified(
+                        &self.session.id,
+                        id,
+                        &tr.id,
+                        tr.call_id.as_deref(),
+                        &tr.content,
+                        tr.is_error,
+                    )
+                });
+                if let Err(e) = persistence {
+                    self.report_persistence_failure(&e);
                 }
 
                 // HOOK-013: Run post_tool_use hooks (fire-and-forget with context injection)
@@ -420,8 +546,6 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     }
                 }
 
-                // (Old KGRAPH entity pipeline was here — removed in KGRAPH-024 dual-graph migration)
-                // CODE-009: FspecTool now uses fspec_handler (like pause_handler).
                 StreamChunk::tool_result(ToolResultInfo {
                     tool_call_id: tr.id.clone(),
                     content: tr.content.clone(),
@@ -462,6 +586,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 threshold: info.threshold as f64,
                 context_window: info.context_window as f64,
             }),
+            StreamEvent::ContextSnapshot(snapshot) => StreamChunk::ContextSnapshot { snapshot },
             StreamEvent::Error(error) => {
                 // REFAC-007: Persist any accumulated content before error
                 self.persist_assistant_message();
@@ -469,26 +594,19 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             }
             StreamEvent::Interrupted(queued) => {
                 // REFAC-007: Persist any accumulated content on interrupt
-                self.persist_assistant_message();
-                StreamChunk::interrupted(queued)
+                let reason = self.session.interruption_reason();
+                self.persist_assistant_outcome(None, reason);
+                match reason {
+                    Some(reason) => StreamChunk::InterruptedWithReason {
+                        queued_inputs: queued,
+                        reason,
+                    },
+                    None => StreamChunk::interrupted(queued),
+                }
             }
             StreamEvent::Done(stop_reason) => {
                 // PROV-039: Persist accumulated assistant message with real stop_reason from provider
                 self.persist_assistant_message_with_stop_reason(stop_reason);
-
-                // REFAC-007 Rule [31]: Persist token state on Done chunk
-                // TOKEN-003: carry the session-cumulative reasoning value
-                let (input_tokens, output_tokens, reasoning_tokens) = self.session.get_tokens();
-                if let Err(e) = persist_token_state(
-                    &self.session.id,
-                    input_tokens,
-                    output_tokens,
-                    reasoning_tokens.unwrap_or(0),
-                ) {
-                    tracing::error!("REFAC-007: Failed to persist token state: {}", e);
-                }
-
-                // (Old KGRAPH entity pipeline flush was here — removed in KGRAPH-024 dual-graph migration)
 
                 // Do NOT set Idle when compaction or pending DAG is active.
                 if should_idle_on_done(
@@ -532,29 +650,22 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 StreamChunk::session_state_change(SessionState::Compacting)
             }
             StreamEvent::CompactionProgress(progress) => {
-                // UX-002: Update session's compaction progress for TypeScript to poll
                 self.session.update_compaction_progress(
                     progress.phase.clone(),
                     progress.current,
                     progress.total,
                 );
-                return; // Progress is polled via sessionGetCompactionProgress, not streamed
+                return;
             }
             StreamEvent::CompactionComplete(info) => {
-                // Fallback handler — in the DAG flow, CompactionComplete is emitted
-                // directly by agent_loop via handle_output, not through StreamOutput.
-                self.session.set_status(SessionStatus::Idle);
-                self.session.set_compaction_progress(None);
-                self.session
-                    .handle_output(StreamChunk::session_state_change(SessionState::Idle));
-                // UX-002: Send STRUCTURED CompactionComplete - no string parsing needed!
-                StreamChunk::compaction_complete(codelet_rpc_types::CompactionResult {
+                self.complete_compaction(codelet_rpc_types::CompactionResult {
                     original_tokens: info.original_tokens,
                     compacted_tokens: info.compacted_tokens,
                     compression_ratio: info.compression_ratio * 100.0,
                     turns_summarized: 0,
                     turns_kept: 0,
-                })
+                });
+                return;
             }
             StreamEvent::CompactionFailed { reason } => {
                 self.session.set_status(SessionStatus::Idle);

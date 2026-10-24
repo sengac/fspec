@@ -3,128 +3,26 @@
 //! This test file validates the acceptance criteria defined in the feature file.
 //! Scenarios map directly to Gherkin scenarios.
 //!
-//! Tests verify that the OpenAI Responses API streaming implementation yields
-//! RawStreamingChoice::Usage events when response.completed contains usage data.
+//! Tests verify that Responses API streams normalize inclusive terminal usage
+//! and reject missing terminal usage without publishing successful completion.
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use rig::completion::GetTokenUsage;
+use rig::completion::{CompletionError, GetTokenUsage};
 use rig::providers::openai::responses_api::streaming::StreamingCompletionResponse as ResponsesStreamingCompletionResponse;
-use rig::providers::openai::responses_api::{
-    InputTokensDetails, OutputTokensDetails, ResponsesUsage,
+
+#[path = "prov_038_responses_api_usage_events/support.rs"]
+mod support;
+use support::{
+    MockHttpClient, make_usage_with_details, make_usage_without_details, mock_http_client,
 };
 
 // =============================================================================
-// Shared mock HTTP client for integration tests
-// =============================================================================
-
-#[derive(Clone, Debug, Default)]
-struct MockHttpClient {
-    sse_bytes: bytes::Bytes,
-}
-
-fn mock_http_client(sse_bytes: bytes::Bytes) -> MockHttpClient {
-    MockHttpClient { sse_bytes }
-}
-
-impl rig::http_client::HttpClientExt for MockHttpClient {
-    fn send<T, U>(
-        &self,
-        _req: http::Request<T>,
-    ) -> impl std::future::Future<
-        Output = rig::http_client::Result<http::Response<rig::http_client::LazyBody<U>>>,
-    > + Send
-    + 'static
-    where
-        T: Into<bytes::Bytes> + Send,
-        U: From<bytes::Bytes> + Send + 'static,
-    {
-        std::future::ready(Err(rig::http_client::Error::InvalidStatusCode(
-            http::StatusCode::NOT_IMPLEMENTED,
-        )))
-    }
-
-    fn send_multipart<U>(
-        &self,
-        _req: http::Request<rig::http_client::MultipartForm>,
-    ) -> impl std::future::Future<
-        Output = rig::http_client::Result<http::Response<rig::http_client::LazyBody<U>>>,
-    > + Send
-    + 'static
-    where
-        U: From<bytes::Bytes> + Send + 'static,
-    {
-        std::future::ready(Err(rig::http_client::Error::InvalidStatusCode(
-            http::StatusCode::NOT_IMPLEMENTED,
-        )))
-    }
-
-    fn send_streaming<T>(
-        &self,
-        _req: http::Request<T>,
-    ) -> impl std::future::Future<
-        Output = rig::http_client::Result<rig::http_client::StreamingResponse>,
-    > + Send
-    where
-        T: Into<bytes::Bytes>,
-    {
-        let sse_bytes = self.sse_bytes.clone();
-        async move {
-            let byte_stream = futures::stream::iter(vec![Ok::<
-                bytes::Bytes,
-                rig::http_client::Error,
-            >(sse_bytes)]);
-            let boxed_stream: rig::http_client::sse::BoxedStream = Box::pin(byte_stream);
-
-            http::Response::builder()
-                .status(http::StatusCode::OK)
-                .header(reqwest::header::CONTENT_TYPE, "text/event-stream")
-                .body(boxed_stream)
-                .map_err(rig::http_client::Error::Protocol)
-        }
-    }
-}
-
-/// Helper: build a ResponsesUsage with full details
-fn make_usage_with_details(
-    input: u64,
-    output: u64,
-    total: u64,
-    cached: u64,
-    reasoning: u64,
-) -> ResponsesUsage {
-    ResponsesUsage {
-        input_tokens: input,
-        input_tokens_details: Some(InputTokensDetails {
-            cached_tokens: cached,
-        }),
-        output_tokens: output,
-        output_tokens_details: OutputTokensDetails {
-            reasoning_tokens: reasoning,
-        },
-        total_tokens: total,
-    }
-}
-
-/// Helper: build a ResponsesUsage with no input_tokens_details
-fn make_usage_without_details(input: u64, output: u64, total: u64) -> ResponsesUsage {
-    ResponsesUsage {
-        input_tokens: input,
-        input_tokens_details: None,
-        output_tokens: output,
-        output_tokens_details: OutputTokensDetails {
-            reasoning_tokens: 0,
-        },
-        total_tokens: total,
-    }
-}
-
-// =============================================================================
-// Scenario: Streaming with usage in response.completed emits Usage event
+// Scenario: Streaming with inclusive usage emits normalized Usage before FinalResponse
 // =============================================================================
 
 #[test]
-fn test_streaming_response_completed_with_usage_emits_usage_event() {
+fn test_streaming_response_completed_with_usage_normalizes_inclusive_counts() {
     // @step Given a Responses API streaming session receives text deltas
 
     // @step And the response.completed event contains usage with input_tokens 1000, output_tokens 500, total_tokens 1500, cached_tokens 200, and reasoning_tokens 300
@@ -133,39 +31,37 @@ fn test_streaming_response_completed_with_usage_emits_usage_event() {
     // @step When the streaming response is processed
     let streaming_resp = ResponsesStreamingCompletionResponse {
         usage: usage.clone(),
+        request_context: None,
+        request_usage: Vec::new(),
     };
     let crate_usage = streaming_resp.token_usage().expect("should return usage");
 
-    // @step Then a RawStreamingChoice::Usage event should be yielded with input_tokens 1000
-    assert_eq!(crate_usage.input_tokens, 1000);
+    // @step Then a RawStreamingChoice::Usage event should be yielded with input_tokens 800
+    assert_eq!(crate_usage.input_tokens, 800);
 
-    // @step And the Usage event should have output_tokens 500 and total_tokens 1500
-    assert_eq!(crate_usage.output_tokens, 500);
+    // @step And the Usage event should have output_tokens 200 and total_tokens 1500
+    assert_eq!(crate_usage.output_tokens, 200);
     assert_eq!(crate_usage.total_tokens, 1500);
 
     // @step And the Usage event should have cache_read_input_tokens 200 and reasoning_tokens 300
     assert_eq!(crate_usage.cache_read_input_tokens, Some(200));
     assert_eq!(crate_usage.reasoning_tokens, Some(300));
-
-    // @step And the Usage event should be yielded before the FinalResponse
-    // Verified by the streaming implementation: yield Usage then yield FinalResponse
 }
 
 // =============================================================================
-// Scenario: Streaming without usage in response.completed skips Usage event
+// Scenario: Streaming without terminal usage reports an error without terminal success
 // =============================================================================
 
 #[tokio::test]
-async fn test_streaming_response_completed_without_usage_skips_usage_event() {
+async fn test_streaming_response_completed_without_usage_rejects_terminal_success() {
     use bytes::Bytes;
     use futures::StreamExt;
-    use rig::completion::CompletionModel;
     use rig::client::CompletionClient;
+    use rig::completion::CompletionModel;
 
     // @step Given a Responses API streaming session receives text deltas
 
     // @step And the response.completed event contains no usage data
-    // SSE events: response.completed has "usage": null
     let sse = concat!(
         "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp-002\",\"object\":\"response\",\"created_at\":1234567890,\"status\":\"in_progress\",\"error\":null,\"incomplete_details\":null,\"instructions\":null,\"max_output_tokens\":null,\"model\":\"gpt-5.3-codex\",\"usage\":null,\"output\":[],\"tools\":[]},\"sequence_number\":0}\n\n",
         "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"item-001\",\"output_index\":0,\"content_index\":0,\"sequence_number\":1,\"delta\":\"Hello\"}\n\n",
@@ -201,6 +97,7 @@ async fn test_streaming_response_completed_without_usage_skips_usage_event() {
 
     let mut saw_usage = false;
     let mut saw_final_response = false;
+    let mut errors = Vec::new();
 
     while let Some(chunk) = stream.next().await {
         match chunk {
@@ -210,20 +107,31 @@ async fn test_streaming_response_completed_without_usage_skips_usage_event() {
             Ok(rig::streaming::StreamedAssistantContent::Final(_)) => {
                 saw_final_response = true;
             }
+            Err(error) => errors.push(error),
             _ => {}
         }
     }
 
-    // @step Then no RawStreamingChoice::Usage event should be yielded
+    // @step Then a ResponseError with message "missing Responses usage" should be returned
+    assert_eq!(
+        errors.len(),
+        1,
+        "Missing usage must return exactly one error"
+    );
+    assert!(matches!(
+        &errors[0],
+        CompletionError::ResponseError(message) if message == "missing Responses usage"
+    ));
+    // @step And no RawStreamingChoice::Usage event should be yielded
     assert!(
         !saw_usage,
         "Stream should NOT emit a Usage event when response.completed has no usage data"
     );
 
-    // @step And only the FinalResponse should be yielded with zero usage values
+    // @step And no FinalResponse should be yielded
     assert!(
-        saw_final_response,
-        "Stream should still emit FinalResponse even without usage data"
+        !saw_final_response,
+        "Stream must not emit FinalResponse without terminal usage evidence"
     );
 }
 
@@ -239,7 +147,11 @@ fn test_streaming_response_completed_with_usage_no_details_handles_optionals() {
     let usage = make_usage_without_details(5000, 2000, 7000);
 
     // @step When the streaming response is processed
-    let streaming_resp = ResponsesStreamingCompletionResponse { usage };
+    let streaming_resp = ResponsesStreamingCompletionResponse {
+        usage,
+        request_context: None,
+        request_usage: Vec::new(),
+    };
     let crate_usage = streaming_resp.token_usage().expect("should return usage");
 
     // @step Then a RawStreamingChoice::Usage event should be yielded with input_tokens 5000
@@ -260,8 +172,8 @@ fn test_streaming_response_completed_with_usage_no_details_handles_optionals() {
 async fn test_responses_api_sse_stream_yields_usage_event() {
     use bytes::Bytes;
     use futures::StreamExt;
-    use rig::completion::CompletionModel;
     use rig::client::CompletionClient;
+    use rig::completion::CompletionModel;
 
     // SSE events in Responses API format:
     // 1. response.created
@@ -303,60 +215,35 @@ async fn test_responses_api_sse_stream_yields_usage_event() {
     > = model.stream(request).await.expect("stream should start");
 
     // Collect all events from the stream
-    let mut saw_usage = false;
-    let mut saw_final_response = false;
-    let mut usage_before_final = false;
-    let mut usage_input_tokens = 0u64;
-    let mut usage_output_tokens = 0u64;
-    let mut usage_total_tokens = 0u64;
-    let mut usage_cache_read: Option<u64> = None;
-    let mut usage_reasoning: Option<u64> = None;
+    let mut observed_usage = None;
+    let mut final_usage = None;
+    let mut terminal_events = Vec::new();
 
     while let Some(chunk) = stream.next().await {
-        match chunk {
-            Ok(rig::streaming::StreamedAssistantContent::Usage(usage)) => {
-                saw_usage = true;
-                if !saw_final_response {
-                    usage_before_final = true;
-                }
-                usage_input_tokens = usage.input_tokens;
-                usage_output_tokens = usage.output_tokens;
-                usage_total_tokens = usage.total_tokens;
-                usage_cache_read = usage.cache_read_input_tokens;
-                usage_reasoning = usage.reasoning_tokens;
+        match chunk.expect("valid terminal usage must not return a stream error") {
+            rig::streaming::StreamedAssistantContent::Usage(usage) => {
+                terminal_events.push("usage");
+                observed_usage = Some(usage);
             }
-            Ok(rig::streaming::StreamedAssistantContent::Final(_)) => {
-                saw_final_response = true;
+            rig::streaming::StreamedAssistantContent::Final(response) => {
+                terminal_events.push("final");
+                final_usage = response.token_usage();
             }
             _ => {}
         }
     }
 
-    // CRITICAL: This assertion will FAIL before the fix is applied.
-    // The current code never yields a Usage event from the Responses API streaming.
-    assert!(
-        saw_usage,
-        "Stream should emit a Usage event from response.completed usage data"
-    );
+    // @step And the Usage event should be yielded before the FinalResponse
+    assert_eq!(terminal_events, vec!["usage", "final"]);
 
-    // Usage should be emitted BEFORE FinalResponse
-    assert!(
-        usage_before_final,
-        "Usage event should be emitted BEFORE FinalResponse"
-    );
+    // @step And exactly one FinalResponse should contain the same normalized usage
+    let usage = observed_usage.expect("response.completed must emit measured usage");
+    assert_eq!(final_usage, Some(usage));
 
-    // Verify the Usage values match response.completed data
-    assert_eq!(usage_input_tokens, 1000, "input_tokens should be 1000");
-    assert_eq!(usage_output_tokens, 500, "output_tokens should be 500");
-    assert_eq!(usage_total_tokens, 1500, "total_tokens should be 1500");
-    assert_eq!(
-        usage_cache_read,
-        Some(200),
-        "cache_read_input_tokens should be Some(200)"
-    );
-    assert_eq!(
-        usage_reasoning,
-        Some(300),
-        "reasoning_tokens should be Some(300)"
-    );
+    // Verify the Usage values normalize inclusive response.completed data
+    assert_eq!(usage.input_tokens, 800, "input excludes the cached subset");
+    assert_eq!(usage.output_tokens, 200, "output excludes reasoning tokens");
+    assert_eq!(usage.total_tokens, 1500, "inclusive total is preserved");
+    assert_eq!(usage.cache_read_input_tokens, Some(200));
+    assert_eq!(usage.reasoning_tokens, Some(300));
 }

@@ -59,6 +59,20 @@ pub struct McpToolDef {
     pub input_schema: serde_json::Value,
 }
 
+fn validate_mcp_tool_definitions(
+    server_name: &str,
+    tools: &[McpToolDef],
+) -> Result<(), crate::tool_attribution::AttributionSchemaError> {
+    for tool in tools {
+        crate::tool_attribution::decorate_definition(rig::completion::ToolDefinition {
+            name: qualified_mcp_tool_name(server_name, &tool.name),
+            description: tool.description.clone().unwrap_or_default(),
+            parameters: tool.input_schema.clone(),
+        })?;
+    }
+    Ok(())
+}
+
 /// Server information from the MCP initialize handshake.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct McpServerInfo {
@@ -433,6 +447,18 @@ pub async fn connect_stdio(
         })
         .collect();
 
+    if let Err(error) = validate_mcp_tool_definitions(name, &tool_defs) {
+        service.cancellation_token().cancel();
+        return McpConnectResult {
+            success: false,
+            message: format!(
+                "✗ Failed to connect: {name}\n  Tool schema registration rejected: {error}"
+            ),
+            tools: None,
+            connections: None,
+        };
+    }
+
     // Get server info
     let server_info = if let Some(info) = service.peer().peer_info() {
         McpServerInfo {
@@ -759,6 +785,18 @@ pub async fn connect_http(
         server_info.version,
         tool_defs.len(),
     );
+
+    if let Err(error) = validate_mcp_tool_definitions(name, &tool_defs) {
+        service.cancellation_token().cancel();
+        return McpConnectResult {
+            success: false,
+            message: format!(
+                "✗ Failed to connect: {name}\n  Tool schema registration rejected: {error}"
+            ),
+            tools: None,
+            connections: None,
+        };
+    }
 
     // Replace existing connection with same name
     {
@@ -1087,7 +1125,10 @@ impl ConnectMcpTool {
     ///
     /// Graceful degradation: if no handle is set yet (e.g. agent not fully initialized),
     /// tools simply appear on the next turn via gather_mcp_tool_wrappers().
-    async fn register_new_tools_with_handle(&self, server_name: &str) {
+    async fn register_new_tools_with_handle(
+        &self,
+        server_name: &str,
+    ) -> Result<(), rig::tool::server::ToolServerError> {
         let handle = match get_mcp_tool_server_handle(self.session_id) {
             Some(h) => h,
             None => {
@@ -1095,13 +1136,13 @@ impl ConnectMcpTool {
                     "[MCP-002] No ToolServerHandle for session {} — tools will appear next turn",
                     self.session_id,
                 );
-                return;
+                return Ok(());
             }
         };
 
         let connections = match get_mcp_connections(self.session_id) {
             Some(c) => c,
-            None => return,
+            None => return Ok(()),
         };
 
         // Read connection map to get the newly connected server's tools
@@ -1109,7 +1150,7 @@ impl ConnectMcpTool {
             let map = connections.read().await;
             let conn = match map.get(server_name) {
                 Some(c) => c,
-                None => return,
+                None => return Ok(()),
             };
             conn.tools
                 .iter()
@@ -1117,7 +1158,7 @@ impl ConnectMcpTool {
                 .collect::<Vec<_>>()
         };
 
-        add_wrappers_to_handle(&handle, wrappers, server_name, self.session_id).await;
+        add_wrappers_to_handle(&handle, wrappers, server_name, self.session_id).await
     }
 
     /// MCP-002: Remove a disconnected server's tools from the running agent's ToolServerHandle.
@@ -1144,11 +1185,12 @@ async fn add_wrappers_to_handle(
     wrappers: Vec<McpToolWrapper>,
     server_name: &str,
     session_id: uuid::Uuid,
-) {
+) -> Result<(), rig::tool::server::ToolServerError> {
     let count = wrappers.len();
     for wrapper in wrappers {
         if let Err(e) = handle.add_tool(wrapper).await {
             tracing::warn!("[MCP-002] Failed to add tool mid-turn: {}", e);
+            return Err(e);
         }
     }
     tracing::info!(
@@ -1157,6 +1199,7 @@ async fn add_wrappers_to_handle(
         server_name,
         session_id,
     );
+    Ok(())
 }
 
 /// MCP-002: Remove all tools from a server by name prefix from a ToolServerHandle.
@@ -1357,7 +1400,19 @@ impl rig::tool::Tool for ConnectMcpTool {
                             // Without this, reconnecting adds duplicate tools to the handle
                             // (old tools linger + new tools added = "Tool names must be unique" error).
                             tool.remove_tools_from_handle(&name).await;
-                            tool.register_new_tools_with_handle(&name).await;
+                            if let Err(error) = tool.register_new_tools_with_handle(&name).await {
+                                tool.remove_tools_from_handle(&name).await;
+                                if let Some((injection_tx, connections)) =
+                                    get_mcp_session_state(session_id)
+                                {
+                                    disconnect_mcp(&name, &connections).await;
+                                    let _ = injection_tx
+                                        .send(McpInjection::Notification(format!(
+                                            "MCP tool registration failed for '{name}': {error}"
+                                        )))
+                                        .await;
+                                }
+                            }
                         });
                     }
                 }
@@ -2172,7 +2227,9 @@ mod tests {
             .iter()
             .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
             .collect();
-        add_wrappers_to_handle(&handle, old_wrappers, "github", session_id).await;
+        add_wrappers_to_handle(&handle, old_wrappers, "github", session_id)
+            .await
+            .expect("initial MCP tools register successfully");
         let defs_before = handle.get_tool_defs(None).await.unwrap();
         assert_eq!(defs_before.len(), 1, "should have 1 old tool");
 
@@ -2183,7 +2240,9 @@ mod tests {
             .iter()
             .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
             .collect();
-        add_wrappers_to_handle(&handle, new_wrappers, "github", session_id).await;
+        add_wrappers_to_handle(&handle, new_wrappers, "github", session_id)
+            .await
+            .expect("replacement MCP tools register successfully");
 
         let defs_after = handle.get_tool_defs(None).await.unwrap();
         assert_eq!(
@@ -2807,7 +2866,9 @@ mod tests {
             // register_new_tools_with_handle reads handle from global state — should be None
             let tool = ConnectMcpTool::new(session_id);
             // This should return gracefully without error (debug log only)
-            tool.register_new_tools_with_handle("playwright").await;
+            tool.register_new_tools_with_handle("playwright")
+                .await
+                .expect("missing handle defers registration successfully");
 
             // @step Then the connection succeeds and tools are stored in the connection map
             // @step And no error occurs during the connect call
@@ -2841,7 +2902,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("playwright", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id)
+                .await
+                .expect("MCP tools register successfully");
 
             // @step Then the newly discovered tools are registered with the running agent's ToolServerHandle
             let defs = handle.get_tool_defs(None).await.unwrap();
@@ -2878,7 +2941,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("serverA", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id)
+                .await
+                .expect("first server MCP tools register successfully");
 
             // @step And ConnectMcpTool connects to server "serverB" with 3 tools
             let server_b_defs = make_tool_defs(&["toolX", "toolY", "toolZ"]);
@@ -2886,7 +2951,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("serverB", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id)
+                .await
+                .expect("second server MCP tools register successfully");
 
             // @step Then the ToolServerHandle contains tools from both "serverA" and "serverB"
             let defs = handle.get_tool_defs(None).await.unwrap();
@@ -2925,7 +2992,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("playwright", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id)
+                .await
+                .expect("disconnect fixture MCP tools register successfully");
 
             // Verify tools are registered
             let defs_before = handle.get_tool_defs(None).await.unwrap();
@@ -2980,7 +3049,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("new_server", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, new_wrappers, "new_server", session_id).await;
+            add_wrappers_to_handle(&handle, new_wrappers, "new_server", session_id)
+                .await
+                .expect("new server MCP tools register successfully");
 
             // @step Then tools from both "existing_server" and "new_server" are available
             let defs = handle.get_tool_defs(None).await.unwrap();
@@ -3051,8 +3122,12 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("serverB", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id).await;
-            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id)
+                .await
+                .expect("first server MCP tools register successfully");
+            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id)
+                .await
+                .expect("second server MCP tools register successfully");
 
             let defs_before = handle.get_tool_defs(None).await.unwrap();
             assert_eq!(defs_before.len(), 2);
@@ -3091,7 +3166,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id).await;
+            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id)
+                .await
+                .expect("original MCP tools register successfully");
 
             // Verify original tools are registered
             let defs_before = handle.get_tool_defs(None).await.unwrap();
@@ -3122,7 +3199,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, new_wrappers, "webmcp", session_id).await;
+            add_wrappers_to_handle(&handle, new_wrappers, "webmcp", session_id)
+                .await
+                .expect("replacement MCP tools register successfully");
 
             // @step Then the ToolServerHandle contains only the new tools (no duplicates)
             let defs_after = handle.get_tool_defs(None).await.unwrap();
@@ -3184,7 +3263,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id).await;
+            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id)
+                .await
+                .expect("reconnect fixture MCP tools register successfully");
 
             let defs_before = handle.get_tool_defs(None).await.unwrap();
             assert_eq!(defs_before.len(), 11, "should start with 11 tools");
@@ -3199,7 +3280,9 @@ mod tests {
                     .iter()
                     .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                     .collect();
-                add_wrappers_to_handle(&handle, reconnect_wrappers, "webmcp", session_id).await;
+                add_wrappers_to_handle(&handle, reconnect_wrappers, "webmcp", session_id)
+                    .await
+                    .expect("reconnected MCP tools register successfully");
 
                 // @step Then the tool count stays at 11 after each reconnect
                 let defs = handle.get_tool_defs(None).await.unwrap();
@@ -3231,7 +3314,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, webmcp_wrappers, "webmcp", session_id).await;
+            add_wrappers_to_handle(&handle, webmcp_wrappers, "webmcp", session_id)
+                .await
+                .expect("web MCP tools register successfully");
 
             // Server B: github with repo tools
             let github_defs = make_tool_defs(&["create_issue", "list_repos"]);
@@ -3239,7 +3324,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, github_wrappers, "github", session_id).await;
+            add_wrappers_to_handle(&handle, github_wrappers, "github", session_id)
+                .await
+                .expect("GitHub MCP tools register successfully");
 
             let defs_before = handle.get_tool_defs(None).await.unwrap();
             assert_eq!(defs_before.len(), 4, "should have 4 total tools");
@@ -3252,7 +3339,9 @@ mod tests {
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
                 .collect();
-            add_wrappers_to_handle(&handle, new_webmcp_wrappers, "webmcp", session_id).await;
+            add_wrappers_to_handle(&handle, new_webmcp_wrappers, "webmcp", session_id)
+                .await
+                .expect("replacement web MCP tools register successfully");
 
             // @step Then github tools are unaffected
             let defs_after = handle.get_tool_defs(None).await.unwrap();

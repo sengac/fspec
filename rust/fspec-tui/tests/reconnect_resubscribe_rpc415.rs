@@ -39,7 +39,7 @@ use common::MockBackend;
 /// (work_units + chunks + logs + status_changes + session_created
 /// + checkpoints_progress (TUI-109) + git_state (BUG-182)
 /// + session_removed (RPC-434) + session_cleared (RPC-437)).
-const SUBSCRIBER_STREAM_COUNT: usize = 9;
+const SUBSCRIBER_STREAM_COUNT: usize = 10;
 
 fn wu(id: &str, status: &str) -> WorkUnitInfo {
     WorkUnitInfo {
@@ -218,7 +218,7 @@ async fn each_broadcast_stream_delivers_a_post_reconnect_event_to_the_app() {
                 {
                     status_action = Some(action);
                 } else if created_action.is_none()
-                    && matches!(&action, Action::SessionCreated(id) if id.value == "s-live")
+                    && matches!(&action, Action::SessionObserved(info) if info.id == "s-live")
                 {
                     created_action = Some(action);
                 }

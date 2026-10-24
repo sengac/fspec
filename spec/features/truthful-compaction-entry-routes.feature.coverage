@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    {
+      "name": "Every compaction entry route reports unknown work honestly",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/truthful_compaction_routes_bug213.rs",
+          "lines": "12-113",
+          "implMappings": [
+            {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [143, 144]},
+            {"file": "rust/cli/src/interactive/stream_loop.rs", "lines": [323, 324, 325, 326, 327]},
+            {"file": "rust/cli/src/interactive/recovery_compaction.rs", "lines": [377, 378]}
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1, "coveredScenarios": 1, "coveragePercent": 100,
+    "testFiles": ["rust/cli/tests/truthful_compaction_routes_bug213.rs"],
+    "implFiles": ["rust/cli/src/compactor_sub_agent.rs", "rust/cli/src/interactive/stream_loop.rs", "rust/cli/src/interactive/recovery_compaction.rs"],
+    "totalLinesCovered": 111
+  }
+}

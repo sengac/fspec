@@ -35,11 +35,8 @@ use crate::transport::FspecBackend;
 use super::state::App;
 
 impl App {
-    /// Probe the focused session's exec-stdin request and fold the
-    /// result into the store: `Some` → dispatch
-    /// `Action::ExecStdinPromptFetched` (slot populated / refreshed);
-    /// `None` → clear the slot. No-op when no runtime is available
-    /// (sync unit-test fallback).
+    /// Probe the focused session and apply its result only if no newer
+    /// probe or overlay transition has superseded it for that session.
     pub(crate) fn probe_exec_stdin_for(&mut self, session_id: SessionId) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
@@ -47,16 +44,15 @@ impl App {
         let backend: Arc<dyn FspecBackend> = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let id = session_id;
+        let generation = self.agent_view_store.advance_exec_stdin_generation(&id);
         let handle = tokio::spawn(async move {
             match backend.get_exec_stdin_request(id.clone()).await {
-                Ok(Some(request)) => {
-                    let _ = action_tx.send(Action::ExecStdinPromptFetched {
+                Ok(request) => {
+                    let _ = action_tx.send(Action::ExecStdinProbeFetched {
                         agent_session: id,
+                        generation,
                         request,
                     });
-                }
-                Ok(None) => {
-                    let _ = action_tx.send(Action::ExecStdinDismissed { agent_session: id });
                 }
                 Err(err) => {
                     tracing::debug!(
@@ -150,6 +146,24 @@ impl App {
     /// Called from `dispatch.rs` capability fallbacks.
     pub(crate) fn try_dispatch_exec_stdin(&mut self, action: &Action) -> bool {
         match action {
+            Action::ExecStdinProbeFetched {
+                agent_session,
+                generation,
+                request,
+            } => {
+                if self
+                    .agent_view_store
+                    .exec_stdin_generation_is_current(agent_session, *generation)
+                {
+                    match request {
+                        Some(request) => self.handle_exec_stdin_prompt_fetched(
+                            agent_session.clone(),
+                            request.clone(),
+                        ),
+                        None => self.handle_exec_stdin_dismissed(agent_session),
+                    }
+                }
+            }
             Action::ExecStdinPromptFetched {
                 agent_session,
                 request,

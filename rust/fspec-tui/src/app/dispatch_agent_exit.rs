@@ -103,6 +103,9 @@ impl App {
                     // first_open_session_id drop the dead session
                     // BEFORE the user can navigate again.
                     self.agent_view_store.remove_session_if_open(&session);
+                    self.transcript_sync.remove(&session);
+                    self.agent_view_store.clear_work_unit_context(&session);
+                    self.rebuild_focus_occupancy();
                     // MUX-002: closing a session shrinks the open-session
                     // list — re-clamp the mux agent window (agent slots
                     // stay in the grid, no pane is removed from the layout).

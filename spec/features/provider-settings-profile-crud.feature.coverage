@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "102-141",
+          "lines": "125-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -43,7 +43,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "145-175",
+          "lines": "176-200",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -69,7 +69,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "178-223",
+          "lines": "208-256",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -124,7 +124,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "226-247",
+          "lines": "263-278",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -144,7 +144,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "250-279",
+          "lines": "286-310",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
@@ -243,7 +243,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "282-312",
+          "lines": "318-343",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
@@ -269,7 +269,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "315-339",
+          "lines": "351-372",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs",
@@ -296,7 +296,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/provider_settings_profile_crud_prov111.rs",
-          "lines": "342-371",
+          "lines": "380-417",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list_actions.rs",
@@ -337,6 +337,6 @@
       "rust/fspec-tui/src/views/provider_settings/profiles_config.rs",
       "rust/fspec-tui/src/views/provider_settings/nav_tree_ops.rs"
     ],
-    "totalLinesCovered": 451
+    "totalLinesCovered": 442
   }
 }
