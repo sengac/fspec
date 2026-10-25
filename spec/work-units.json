@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-25T07:30:03.499Z",
+    "lastUpdated": "2026-10-25T08:43:51.404Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 258,
+    "BUG": 269,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -34,7 +34,7 @@
     "CODE": 9,
     "CODEX": 1,
     "CONFIG": 9,
-    "CONT": 10,
+    "CONT": 11,
     "COPY": 11,
     "COV": 56,
     "CTX": 9,
@@ -67,7 +67,7 @@
     "PATCH": 2,
     "PAUSE": 1,
     "PERF": 2,
-    "PROV": 161,
+    "PROV": 162,
     "REFAC": 18,
     "REMIND": 17,
     "RES": 22,
@@ -235,7 +235,20 @@
       "VIZ-004",
       "WATCH-022",
       "AUDIT-001",
-      "CONT-010"
+      "CONT-010",
+      "BUG-259",
+      "CONT-011",
+      "BUG-260",
+      "BUG-261",
+      "BUG-262",
+      "BUG-263",
+      "BUG-264",
+      "BUG-265",
+      "BUG-266",
+      "BUG-267",
+      "BUG-268",
+      "BUG-269",
+      "PROV-162"
     ],
     "specifying": [
       "AGENT-001",
@@ -245462,12 +245475,25 @@
       "type": "task",
       "status": "backlog",
       "createdAt": "2026-10-21T05:19:26.083Z",
-      "updatedAt": "2026-10-21T05:23:48.894Z",
+      "updatedAt": "2026-10-25T08:41:49.958Z",
       "description": "Discovery task: current PROV-142 contract promises a creation-time profile seed, not reseeding on model switches or persistence of runtime overrides. Switching an existing cloud session to Strada can correctly retain disabled state under that contract. Decide desired switch, cold-resume, live-resume, fork and mid-stream behavior before treating it as a product regression. Attach research and explicit open questions; do not silently change override precedence.",
       "children": [],
       "attachments": [
-        "spec/attachments/CONT-010/research.md"
-      ]
+        "spec/attachments/CONT-010/research.md",
+        "spec/attachments/CONT-010/fspec-auto-continue-investigation.md"
+      ],
+      "relatesTo": [
+        "CONT-011"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "2026-10-25 audit at f0eb0759: PROV-161 now reloads inherited continuation defaults across creation, resume, switching and dispatched turns while preserving explicit session overrides. This supersedes older creation-only PROV-142 claims in this card and continue-cache-reconciliation.feature. Reconcile remaining lifecycle questions/specs against provider-runtime-settings-lifecycle.feature and provider-runtime-settings-reload.feature instead of silently reverting the current contract. Full audit attached; related integration work is CONT-011.",
+          "deleted": false,
+          "createdAt": "2026-10-25T08:41:49.958Z"
+        }
+      ],
+      "nextNoteId": 1
     },
     "BUG-229": {
       "id": "BUG-229",
@@ -249638,6 +249664,216 @@
       ],
       "nextNoteId": 3,
       "estimate": 8
+    },
+    "BUG-259": {
+      "id": "BUG-259",
+      "title": "Prevent transient recovery-lock contention from interrupting streaming during shell spawning",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:35:26.734Z",
+      "updatedAt": "2026-10-25T08:36:20.449Z",
+      "description": "On macOS, concurrent shell process spawning can temporarily retain inherited recovery-lock descriptors after the parent closes them. RecoveryLease::acquire uses immediate File::try_lock and relies on close for release; transient contention becomes a persistence error that interrupts a healthy stream. Confirmed at 2026-10-25 18:19:48 local for session 308a34d0-20a1-4209-b979-9e6d4331faa4 in ~/.fspec/logs/private/fspec-combined.log.2026-10-25:1149. Reproduced against compiled production libraries: 39/50574 and 29/51911 failed lease acquisitions during shell spawning; no-spawn and explicit-unlock controls passed. Commit f0eb0759 did not change this lease behavior. Add acceptance criteria and regression tests for spawn overlap and short-lived contention; implement explicit lock release and bounded contention handling while preserving deletion lock order, retained originals, and independent-session progress. Historical lock-holder PID was not logged; the mechanism is independently reproduced. Detailed research and reproduction evidence are attached.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-259/fspec-recovery-lock-investigation.md",
+        "spec/attachments/BUG-259/fspec-recovery-lock-investigation.rs",
+        "spec/attachments/BUG-259/fspec-recovery-lock-investigation-tests.log",
+        "spec/attachments/BUG-259/fspec-recovery-lock-investigation-repeat.log"
+      ]
+    },
+    "CONT-011": {
+      "id": "CONT-011",
+      "title": "Restore end-to-end auto-continue provider contracts and regression coverage",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:35:45.372Z",
+      "updatedAt": "2026-10-25T08:43:51.404Z",
+      "description": "Coordinate the October 25 auto-continue audit follow-ups without assuming one global root cause. The shared engine and armed Done registration remain intact, but a new Codex refusal-history follow-up failure was reproduced and provider terminal, ordering, recovery and routing defects were identified. Repair the two stale layout assertions and replace source-only confidence with real serialized provider-stream tests for armed stop -> nudge -> accepted Done, rejected goal completion, tool ordering, malformed terminal delivery and recovery accounting. Individual fixes are tracked separately with confidence and history labels. Preserve immediate Done termination, explicit cancellation, fail-closed terminal validation and real-user-turn budget semantics. Full Markdown audit and validation evidence will be attached. CONT-010 already owns profile lifecycle discovery; reconcile it against PROV-161 rather than duplicating that work. Do not mark all findings as newly introduced or claim the observed user-session root cause without a failing trace.",
+      "epic": "completion-contract",
+      "children": [
+        "BUG-260",
+        "BUG-261",
+        "BUG-262",
+        "BUG-263",
+        "BUG-264",
+        "BUG-265",
+        "BUG-266",
+        "BUG-267",
+        "BUG-268",
+        "BUG-269"
+      ],
+      "attachments": [
+        "spec/attachments/CONT-011/fspec-auto-continue-investigation.md",
+        "spec/attachments/CONT-011/follow-up-index.md",
+        "spec/attachments/CONT-011/validation-evidence.md",
+        "spec/attachments/CONT-011/card-registration-validation.md"
+      ],
+      "relatesTo": [
+        "PROV-162",
+        "CONT-010"
+      ]
+    },
+    "BUG-260": {
+      "id": "BUG-260",
+      "title": "Preserve Codex refusal history across follow-up requests",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:36:07.388Z",
+      "updatedAt": "2026-10-25T08:41:48.117Z",
+      "description": "Reproduced against the compiled production provider at f0eb0759: checkpoint a refusal answer, reconstruct the same visible assistant text, and prepare a follow-up request; CodexHistory rejects assistant/tool-result/DAG ancestry. An ordinary output_text control succeeds. answers.rs flattens refusal to visible text while history_projection.rs recognizes only output_text. New native history path introduced in 2699693b. Add a failing follow-up transport/history regression, reconcile the readable projection with preserved native refusal items, and cover nudge, tool-result and next-user-message paths without weakening lineage checks or changing refusal semantics. Research and reproduction evidence attached; PROV-148 refusal-display tests currently cover only one response.",
+      "epic": "completion-contract",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-260/codex-refusal-history.md"
+      ]
+    },
+    "BUG-261": {
+      "id": "BUG-261",
+      "title": "Preserve retryable network failures during Codex forced token refresh",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:36:18.880Z",
+      "updatedAt": "2026-10-25T08:41:48.256Z",
+      "description": "Source-confirmed in the new 2699693b Codex recovery path: after HTTP 401, recovery.rs converts refresh timeout and every refresh error into generic sign-in-again strings, erasing the NetworkFailure identity that reconnect.rs requires. An issuer outage can therefore terminate continuation rather than enter recovery. Add real 401 -> issuer offline/setup-timeout -> recovery tests; preserve typed retryable causes and distinguish credential rejection from network failure. Retain cancellation, refresh deadlines, stale-token race protection and retry bounds. Existing refresh tests cover successful/rejected post-401 refresh and proactive offline refresh, not their composition.",
+      "epic": "provider-resilience",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-261/codex-forced-refresh.md"
+      ]
+    },
+    "BUG-262": {
+      "id": "BUG-262",
+      "title": "Preserve streamed OpenAI tool-call order before accepted Done",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:36:31.077Z",
+      "updatedAt": "2026-10-25T08:41:48.384Z",
+      "description": "The native Chat Completions SSE decoder accumulates indexed calls in a HashMap and emits unsorted iteration order at both tool flush sites. A batch with earlier ordinary work and later Done can execute Done first; the shared immediate-completion branch drops the stream and leaves earlier work unexecuted. Native OpenAI, ZAI and native Copilot share this decoder. This is a longstanding defect, not established as a last-month introduction. Add real mixed-tool/Done transport regressions for fragmented arguments and both flush paths; execute calls in provider index order while retaining immediate accepted Done termination and cancellation of genuinely trailing tools. Compare with nonstreaming response-vector order.",
+      "epic": "completion-contract",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-262/chat-tool-order.md"
+      ]
+    },
+    "BUG-263": {
+      "id": "BUG-263",
+      "title": "Require honest OpenAI Chat terminal evidence before completion",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:36:45.102Z",
+      "updatedAt": "2026-10-25T08:41:48.517Z",
+      "description": "Chat SSE currently ignores [DONE], logs/skips schema-mismatching frames, and accepts EOF plus valid usage without any finish_reason. Tools are exposed before later terminal usage validation, so accepted Done can drop the stream before malformed/missing terminal evidence or a later provider failure is observed. The 2699693b usage hardening does not close these composition gaps. Specify and test valid terminal evidence, error-envelope preservation, usage-bearing premature EOF, and Done-bearing malformed streams across SSE and JSON-to-stream paths. Preserve normal low-latency tool execution where valid, fail-closed terminal validation, honest billing/context settlement and immediate accepted Done semantics; never drain trailing executable tools as a workaround. Shared decoder affects native OpenAI, ZAI and Copilot.",
+      "epic": "provider-resilience",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-263/chat-terminal-evidence.md"
+      ]
+    },
+    "BUG-264": {
+      "id": "BUG-264",
+      "title": "Preserve OpenAI Responses failed and incomplete terminal semantics",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:36:57.140Z",
+      "updatedAt": "2026-10-25T08:41:48.648Z",
+      "description": "The ordinary patched-rig Responses parser recognizes response.failed/incomplete variants but processes only ResponseCompleted. Failed-response details and incomplete/max-output-token reasons are discarded, generally yielding missing Responses usage; its streaming final type also lacks a stop_reason override. Buffered function calls are emitted before usage validation, allowing accepted Done to conceal later terminal rejection. Add real SSE regressions preserving typed backend errors, truncation recovery metadata and terminal validation before accepted completion; retain BUG-208 type:error handling and immediate Done behavior. Scope explicitly excludes the dedicated CodexResponsesModel: native fspec OpenAIProvider uses Chat, and this generic Responses path is a latent adapter defect rather than a proven live Codex cause.",
+      "epic": "provider-resilience",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-264/responses-terminal-semantics.md"
+      ]
+    },
+    "BUG-265": {
+      "id": "BUG-265",
+      "title": "Preserve continuation budgets and goal rejection counts across recovery dispatch",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:37:09.257Z",
+      "updatedAt": "2026-10-25T08:41:48.780Z",
+      "description": "The shared agent loop calls sync_completion_contract_for_user_turn for real inputs and synthetic outer recovery retries alike. The helper unconditionally resets continue_nudges_used and always calls set_session_goal, which resets registry rejections even for the same goal. This violates CONT-002 real-user-turn budget boundaries and CONT-003 goal-lifetime rejection counting. Separate state synchronization from genuine user-turn resets and goal-change resets. Cover automatic compaction, loop-abort corrective retries, repeated unchanged goals and genuine new tasks. Preserve CONT-008 generation/race guards and CONT-009 arming order; ordinary in-stream nudges already avoid this helper. Source-confirmed and pre-existing, not attributed solely to October changes.",
+      "epic": "completion-contract",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-265/recovery-contract-accounting.md"
+      ]
+    },
+    "BUG-266": {
+      "id": "BUG-266",
+      "title": "Settle custom provider stops without dropping trailing usage or waiting for EOF",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:37:20.793Z",
+      "updatedAt": "2026-10-25T08:41:48.911Z",
+      "description": "Rhai handle_stop marks the parser terminated, suppressing later usage-only frames, while stream_http continues polling until [DONE] or EOF. OpenAI-compatible scripts that map finish_reason to stop can lose trailing usage and delay FinalResponse/auto-continue into stall handling when the connection stays open. Define and test a coherent stop/usage/error lifecycle, including usage after finish_reason, stop followed by a pending connection, and stop followed by transport failure. Existing bug227 fixtures generally put usage before stop, and a post-stop transport-failure test deliberately expects failure; reconcile that contract before changing semantics. Preserve fail-closed terminal validation and accurate request settlement. Source-confirmed plumbing issue; user-installed scripts were not audited.",
+      "epic": "provider-resilience",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-266/custom-stream-settlement.md"
+      ]
+    },
+    "BUG-267": {
+      "id": "BUG-267",
+      "title": "Dispatch built-in-name scripted providers through their selected custom implementation",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:37:33.975Z",
+      "updatedAt": "2026-10-25T08:41:49.048Z",
+      "description": "Provider discovery intentionally supports scripted shadowing of built-in names, producing Custom(claude) and analogous selections. Shared turn routing reduces the selection to a name string and matches the native built-in branch; native getters reject the Custom enum before tool registration. Preserve implementation identity across routing, including explicit facade overrides and the script-shadowing escape hatch. Add real shared-agent-loop requests using a colliding script slug; existing shadowing tests stop at enum resolution and scripted-dispatch tests use noncolliding names or direct builders. Verify armed Done registration and completion on the selected script rather than merely checking a resolver. Source-confirmed routing composition defect; not proven to be introduced by the latest extraction.",
+      "epic": "custom-provider-tui-wiring",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-267/script-shadowing-dispatch.md"
+      ]
+    },
+    "BUG-268": {
+      "id": "BUG-268",
+      "title": "Connect Copilot endpoint selection to actual provider requests",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:37:45.161Z",
+      "updatedAt": "2026-10-25T08:41:49.183Z",
+      "description": "CopilotEndpointFacade selects Responses for certain GPT-5+ models, but native provider construction and agent return types always use Chat Completions. Middleware adds headers/cache state without rewriting endpoint or dialect. Existing routing tests invoke the helper and format a URL, not an actual provider request. Make the documented endpoint/model contract and production dispatch agree, preserving tools, history, reasoning and completion behavior for each chosen dialect. Add captured HTTP request and armed Done follow-up tests, plus Chat fallback/model exceptions. Longstanding source-confirmed integration gap from 483f50b4; not a confirmed October regression. Reuse shared adapters instead of duplicating provider logic.",
+      "epic": "provider-resilience",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-268/copilot-endpoint-routing.md"
+      ]
+    },
+    "BUG-269": {
+      "id": "BUG-269",
+      "title": "Wire scripted OAuth automatic refresh into real completion requests",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:37:57.964Z",
+      "updatedAt": "2026-10-25T08:41:49.318Z",
+      "description": "The documented ScriptedRefreshingClient ensure_fresh_if_needed helper has only test callers. The runtime custom provider path obtains script headers directly and sends through a plain HTTP client, so expired credentials are not automatically refreshed by this helper before long-running continuation requests. Trace and repair actual auth/HTTP composition for streaming and nonstreaming providers; preserve project-specific script resolution, redaction, cancellation and refresh synchronization, and do not double-refresh scripts that own refresh in their headers function. Test real provider requests using an expired synthetic token and fake refresh issuer rather than calling the helper directly. Source-confirmed integration gap; no live credential failure reproduced in this audit.",
+      "epic": "scriptable-subscription-providers",
+      "parent": "CONT-011",
+      "attachments": [
+        "spec/attachments/BUG-269/scripted-oauth-refresh.md"
+      ]
+    },
+    "PROV-162": {
+      "id": "PROV-162",
+      "title": "Reconcile Codex protocol continuation with typed response history",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-10-25T08:38:11.400Z",
+      "updatedAt": "2026-10-25T08:41:50.097Z",
+      "description": "Discovery/design follow-up to CONT-011, PROV-148 and PROV-149. Codex protocol continuation is separate from outer /continue: it follows selected end_turn:false or interrupted responses, but replay rejects non-text output (including reasoning, hosted search, refusal sections and empty output) and caps follow-ups at three. These are explicitly specified restrictions, so do not silently label them accidental bugs or weaken safety/refusal handling. Decide which typed items are replayable, how native encrypted reasoning/history validation participates, and how protocol bounds and /continue budgets are communicated and accounted. Then specify and test complete physical follow-up requests, cancellation, admission, usage and failure behavior for the approved policy. This is not the profile-default lifecycle work already tracked by CONT-010. Research attached.",
+      "epic": "completion-contract",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-162/codex-protocol-replay-policy.md"
+      ],
+      "relatesTo": [
+        "CONT-011"
+      ],
+      "userStory": {
+        "role": "Codex user",
+        "action": "continue unfinished tasks using an explicitly defined typed-response replay policy",
+        "benefit": "reasoning and native history are preserved without confusing provider retry bounds, task budgets or safety outcomes"
+      }
     }
   }
 }

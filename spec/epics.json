@@ -655,7 +655,12 @@
         "PROV-145",
         "BUG-185",
         "BUG-208",
-        "PROV-159"
+        "PROV-159",
+        "BUG-261",
+        "BUG-263",
+        "BUG-264",
+        "BUG-266",
+        "BUG-268"
       ]
     },
     "local-change-protocols": {
@@ -742,7 +747,8 @@
         "PROV-075",
         "PROV-076",
         "PROV-077",
-        "PROV-078"
+        "PROV-078",
+        "BUG-267"
       ]
     },
     "scriptable-subscription-providers": {
@@ -761,7 +767,8 @@
         "PROV-092",
         "PROV-093",
         "PROV-094",
-        "PROV-095"
+        "PROV-095",
+        "BUG-269"
       ]
     },
     "rust-frontend": {
@@ -1332,7 +1339,12 @@
         "CONT-006",
         "CONT-007",
         "CONT-008",
-        "CONT-009"
+        "CONT-009",
+        "CONT-011",
+        "BUG-260",
+        "BUG-262",
+        "BUG-265",
+        "PROV-162"
       ]
     },
     "tooling": {
