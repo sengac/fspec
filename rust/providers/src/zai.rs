@@ -20,6 +20,10 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use tracing::warn;
 
+#[cfg(feature = "test-support")]
+#[path = "test_support/zai_completion.rs"]
+mod completion_test_support;
+
 /// Z.AI normal API base URL (OpenAI-compatible)
 const ZAI_API_BASE_URL: &str = "https://api.z.ai/api/paas/v4";
 

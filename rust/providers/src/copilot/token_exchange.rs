@@ -130,6 +130,10 @@ pub async fn exchange_github_token_for_copilot_token(
     github_oauth_token: &str,
     enterprise_host: Option<&str>,
 ) -> Result<TokenExchangeResponse, ProviderError> {
+    #[cfg(feature = "test-support")]
+    if let Some(exchange) = super::test_support::exchange_if_active(github_oauth_token).await {
+        return exchange;
+    }
     let url = build_token_exchange_url(enterprise_host);
     exchange_github_token_for_copilot_token_at(&url, github_oauth_token).await
 }
@@ -158,6 +162,14 @@ pub async fn exchange_github_token_for_copilot_token_at(
             )
         })?;
 
+    exchange_with_client(url, github_oauth_token, client).await
+}
+
+pub(super) async fn exchange_with_client(
+    url: &str,
+    github_oauth_token: &str,
+    client: reqwest::Client,
+) -> Result<TokenExchangeResponse, ProviderError> {
     let response = client
         .get(url)
         .header("Authorization", format!("token {github_oauth_token}"))

@@ -6,13 +6,22 @@ use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io;
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 pub struct RecoveryLease {
     root: PathBuf,
     session_id: Uuid,
     directory: PathBuf,
-    _file: File,
+    file: File,
+}
+
+impl Drop for RecoveryLease {
+    fn drop(&mut self) {
+        if let Err(error) = self.file.unlock() {
+            tracing::warn!(session_id = %self.session_id, %error, "recovery lease unlock failed");
+        }
+    }
 }
 
 impl RecoveryLease {
@@ -33,12 +42,28 @@ impl RecoveryLease {
             options.mode(0o600);
         }
         let file = options.open(directory.with_extension("lock"))?;
-        file.try_lock().map_err(io::Error::other)?;
+        let deadline = Instant::now() + Duration::from_millis(250);
+        loop {
+            match file.try_lock() {
+                Ok(()) => break,
+                Err(std::fs::TryLockError::WouldBlock) => {
+                    let remaining = deadline.saturating_duration_since(Instant::now());
+                    if remaining.is_zero() {
+                        return Err(io::Error::new(
+                            io::ErrorKind::WouldBlock,
+                            "recovery lock contention deadline exceeded",
+                        ));
+                    }
+                    std::thread::sleep(remaining.min(Duration::from_millis(5)));
+                }
+                Err(std::fs::TryLockError::Error(error)) => return Err(error),
+            }
+        }
         Ok(Self {
             root: root.into(),
             session_id,
             directory,
-            _file: file,
+            file,
         })
     }
 

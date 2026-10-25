@@ -5,8 +5,77 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "15-78",
+          "lines": "20-81",
           "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/gemini_continuation/state.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            },
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
               "lines": [
@@ -208,81 +277,6 @@
               ]
             }
           ]
-        },
-        {
-          "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "15-78",
-          "implMappings": [
-            {
-              "file": "rust/cli/src/interactive/gemini_continuation/state.rs",
-              "lines": [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157
-              ]
-            }
-          ]
         }
       ]
     },
@@ -291,7 +285,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "80-124",
+          "lines": "85-132",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -352,7 +346,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "126-152",
+          "lines": "136-160",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -422,7 +416,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "154-176",
+          "lines": "164-184",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/stream_loop.rs",
@@ -505,7 +499,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "178-198",
+          "lines": "188-206",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
@@ -556,7 +550,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "200-223",
+          "lines": "210-231",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
@@ -586,7 +580,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "225-246",
+          "lines": "235-254",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
@@ -621,7 +615,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
-          "lines": "248-289",
+          "lines": "258-276",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation/state.rs",
@@ -690,10 +684,10 @@
       "rust/cli/tests/bug223_gemini_helper_settlement.rs"
     ],
     "implFiles": [
-      "rust/cli/src/interactive/stream_loop.rs",
       "rust/cli/src/interactive/gemini_continuation/state.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
       "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs"
     ],
-    "totalLinesCovered": 874
+    "totalLinesCovered": 778
   }
 }

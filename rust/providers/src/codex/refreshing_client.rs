@@ -15,6 +15,8 @@ pub(super) fn token_expiry(seconds: u64) -> Instant {
 
 #[path = "client_http.rs"]
 mod client_http;
+#[path = "client_test_endpoint.rs"]
+mod test_endpoint;
 
 #[derive(Debug, Clone)]
 pub struct TokenState {
@@ -40,6 +42,8 @@ pub struct RefreshingCodexClient {
     mode: TokenMode,
     idle_timeout: std::time::Duration,
     websocket: Option<super::websocket::CodexWebSocketHandle>,
+    #[cfg(feature = "test-support")]
+    test_endpoint: Option<test_endpoint::LocalEndpoint>,
 }
 
 impl Default for RefreshingCodexClient {
@@ -49,6 +53,8 @@ impl Default for RefreshingCodexClient {
             mode: TokenMode::ApiKey,
             idle_timeout: super::recovery::DEFAULT_IDLE_TIMEOUT,
             websocket: None,
+            #[cfg(feature = "test-support")]
+            test_endpoint: None,
         }
     }
 }
@@ -104,6 +110,8 @@ impl RefreshingCodexClient {
             },
             idle_timeout: super::recovery::DEFAULT_IDLE_TIMEOUT,
             websocket: None,
+            #[cfg(feature = "test-support")]
+            test_endpoint: None,
         }
     }
 
@@ -159,7 +167,7 @@ pub(super) fn prepare_oauth_request<T>(
 ) -> http::Request<T> {
     let (mut parts, body) = request.into_parts();
     let original_url = parts.uri.to_string();
-    let rewritten_url = rewrite_codex_url(&original_url);
+    let rewritten_url = test_endpoint::url_for_request(&original_url, &parts.extensions);
     if rewritten_url != original_url {
         if let Ok(uri) = rewritten_url.parse() {
             parts.uri = uri;

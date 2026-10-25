@@ -1,0 +1,86 @@
+{
+  "original_functions": {
+    "token_usage": 2,
+    "stop_reason": 1,
+    "stream": 1,
+    "handle_event": 1,
+    "test_thinking_delta_deserialization": 1,
+    "test_signature_delta_deserialization": 1,
+    "test_thinking_delta_streaming_event_deserialization": 1,
+    "test_signature_delta_streaming_event_deserialization": 1,
+    "test_handle_thinking_delta_event": 1,
+    "test_handle_signature_delta_event": 1,
+    "test_handle_text_delta_event": 1,
+    "test_thinking_delta_does_not_interfere_with_tool_calls": 1,
+    "test_handle_input_json_delta_event": 1,
+    "test_tool_call_accumulation_with_multiple_deltas": 1,
+    "test_message_delta_max_tokens_deserialization": 1,
+    "test_message_delta_end_turn_deserialization": 1,
+    "test_message_delta_tool_use_deserialization": 1,
+    "test_truncated_tool_call_json_produces_error": 1,
+    "main": 1
+  },
+  "final_functions": {
+    "token_usage": 2,
+    "stop_reason": 1,
+    "handle_event": 1,
+    "test_message_delta_max_tokens_deserialization": 1,
+    "test_message_delta_end_turn_deserialization": 1,
+    "test_message_delta_tool_use_deserialization": 1,
+    "test_truncated_tool_call_json_produces_error": 1,
+    "main": 1,
+    "test_thinking_delta_deserialization": 1,
+    "test_signature_delta_deserialization": 1,
+    "test_thinking_delta_streaming_event_deserialization": 1,
+    "test_signature_delta_streaming_event_deserialization": 1,
+    "test_handle_thinking_delta_event": 1,
+    "test_handle_signature_delta_event": 1,
+    "test_handle_text_delta_event": 1,
+    "test_thinking_delta_does_not_interfere_with_tool_calls": 1,
+    "test_handle_input_json_delta_event": 1,
+    "test_tool_call_accumulation_with_multiple_deltas": 1,
+    "stream": 1
+  },
+  "function_multiset_preserved": true,
+  "original_assertions": {
+    "assert_eq": 24,
+    "assert": 18
+  },
+  "final_assertions": {
+    "assert_eq": 24,
+    "assert": 18
+  },
+  "assertion_macro_counts_preserved": true,
+  "sources": [
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming.rs",
+      "lines": 147,
+      "sha256": "1b07691927af273ce094a968318208e3e9a862373d6d93f3e80f3da82470a6c0"
+    },
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming/events.rs",
+      "lines": 160,
+      "sha256": "cf874d4ddbfd295e9956beedd721bf275d50ca2fbcf8d782cb58055266f10b57"
+    },
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming/stop_tests.rs",
+      "lines": 101,
+      "sha256": "0836874b197360b581c81625309fe2122eb9ddcd3527764f31d32ac9528091cb"
+    },
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming/thinking_tests.rs",
+      "lines": 148,
+      "sha256": "a9a6660189a5be1dd6998416db308663ba73b38cb216168e2aed192834885224"
+    },
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming/tool_tests.rs",
+      "lines": 139,
+      "sha256": "2af7f532c423c42f1a87e00d717ae25a7ede6c17c0c593317c46e0f192087557"
+    },
+    {
+      "path": "rust/patches/rig-core/src/providers/anthropic/streaming/transport.rs",
+      "lines": 215,
+      "sha256": "0e364e87687ff9aa4b704d2a32ef5847b3567478264b5ac77871b0f71a319bce"
+    }
+  ]
+}

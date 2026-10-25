@@ -1,6 +1,5 @@
 //! `CopilotProvider` — top-level composition layer for GitHub Copilot
 //! (PROV-053/055).
-//!
 //! Per-concern logic is extracted into sibling modules:
 //!
 //! - [`base_url`](super::base_url) — `CopilotBaseUrl` + `base_url_for`
@@ -14,6 +13,7 @@
 
 use crate::copilot::auth::CopilotAuthJson;
 use crate::copilot::base_url::{base_url_for, CopilotBaseUrl};
+use crate::copilot::completion_model::{CopilotClient, CopilotCompletionModel};
 use crate::copilot::oauth_types::CopilotDeploymentType;
 use crate::copilot::refreshing_client::CopilotHttpClient;
 use crate::copilot::response::rig_response_to_completion;
@@ -25,10 +25,14 @@ use crate::{
 use async_trait::async_trait;
 use codelet_common::Message;
 use codelet_tools::ToolDefinition as OurToolDefinition;
+use rig::client::CompletionClient;
 use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+
+#[path = "binding.rs"]
+mod binding;
 
 /// Top-level Copilot provider façade.
 ///
@@ -44,8 +48,8 @@ pub struct CopilotProvider {
     deployment: CopilotDeploymentType,
     access_token: std::sync::Arc<str>,
     model_name: String,
-    rig_client: openai::CompletionsClient<CopilotHttpClient>,
-    completion_model: openai::completion::CompletionModel<CopilotHttpClient>,
+    rig_client: CopilotClient,
+    completion_model: CopilotCompletionModel,
     base_url: CopilotBaseUrl,
     auth: Arc<RwLock<CopilotAuthJson>>,
 }
@@ -122,7 +126,9 @@ impl CopilotProvider {
             .clone()
             .unwrap_or_else(|| auth.github_oauth_token.clone());
 
-        let http_client = CopilotHttpClient::new(initial_token.clone());
+        let auth = Arc::new(RwLock::new(auth));
+        let http_client = CopilotHttpClient::new(initial_token.clone())
+            .with_auth(auth.clone(), base_url.as_str().to_owned());
 
         let rig_client = openai::CompletionsClient::<CopilotHttpClient>::builder()
             .api_key(&initial_token)
@@ -138,7 +144,8 @@ impl CopilotProvider {
 
         // PROV-057 Layer 2: keep a cloneable handle for the NAPI DeepSearch
         // `build_and_run!` macro path.
-        let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
+        let rig_client = CopilotClient::new(rig_client, format!("{deployment:?}"));
+        let completion_model = rig_client.completion_model(model);
 
         Ok(Self {
             deployment,
@@ -147,7 +154,7 @@ impl CopilotProvider {
             rig_client,
             completion_model,
             base_url,
-            auth: Arc::new(RwLock::new(auth)),
+            auth,
         })
     }
 
@@ -175,7 +182,7 @@ impl CopilotProvider {
     /// `provider.client().agent(provider.model())` to construct agents that
     /// share the same HTTP middleware and Bearer-token refresh behaviour.
     #[must_use]
-    pub fn client(&self) -> &openai::CompletionsClient<CopilotHttpClient> {
+    pub fn client(&self) -> &CopilotClient {
         &self.rig_client
     }
 

@@ -1,0 +1,78 @@
+[
+  {
+    "log": "final-cli-credential-fixture-controls.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-cli",
+      "--no-fail-fast",
+      "--test",
+      "auto_continue_engine_test",
+      "--test",
+      "cont006_goal_immediate_termination",
+      "--test",
+      "goal_enforcement_test"
+    ]
+  },
+  {
+    "log": "final-core-batch-control.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-core",
+      "--test",
+      "bug259_recovery_contention"
+    ]
+  },
+  {
+    "log": "final-standalone-check.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "check",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-fspec",
+      "--bin",
+      "fspec"
+    ]
+  },
+  {
+    "log": "final-adapter-lib-clippy.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "--manifest-path",
+      "/tmp/cont011-rig-unit/Cargo.toml",
+      "--target-dir",
+      "/Users/rquast/projects/fspec/rust/target",
+      "-p",
+      "rig-core",
+      "--lib"
+    ]
+  }
+]

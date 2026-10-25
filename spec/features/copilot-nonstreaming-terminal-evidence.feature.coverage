@@ -1,0 +1,160 @@
+{
+  "scenarios": [
+    {
+      "name": "Nonstreaming Responses failures cannot authorize tools or completion",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_nonstream_terminal.rs",
+          "lines": "44-64",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/completion_terminal.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonstreaming Responses truncation preserves its terminal semantics",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_nonstream_terminal.rs",
+          "lines": "66-89",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/completion_terminal.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nonstreaming Responses safety stops cannot authorize tools",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_nonstream_terminal.rs",
+          "lines": "91-113",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/completion_terminal.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug268_copilot_nonstream_terminal.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/copilot/completion_terminal.rs"
+    ],
+    "totalLinesCovered": 164
+  }
+}

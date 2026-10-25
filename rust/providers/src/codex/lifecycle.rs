@@ -80,7 +80,7 @@ impl Terminal {
     }
 
     pub fn should_continue(&self, saw_tool: bool) -> bool {
-        if saw_tool {
+        if saw_tool || self.has_refusal() {
             return false;
         }
         match self.status.as_str() {
@@ -121,25 +121,15 @@ impl Terminal {
     }
 
     pub fn replay(&self, request: &mut Value) -> Result<(), CompletionError> {
-        if self.output.is_empty()
-            || self.output.iter().any(|item| {
-                item["type"] != "message"
-                    || item["role"] != "assistant"
-                    || item["content"].as_array().is_none_or(|content| {
-                        content
-                            .iter()
-                            .any(|part| part["type"] != "output_text" || !part["text"].is_string())
-                    })
-            })
-        {
-            return Err(CompletionError::ResponseError(
-                "Codex continuation requires replayable text-only output".to_string(),
-            ));
-        }
-        request["input"]
-            .as_array_mut()
-            .ok_or_else(|| invalid("missing request input"))?
-            .extend(self.output.clone());
-        Ok(())
+        crate::codex::protocol_replay::append(request, &self.output)
+    }
+
+    pub fn has_refusal(&self) -> bool {
+        self.output.iter().any(|item| {
+            item["type"] == "message"
+                && item["content"]
+                    .as_array()
+                    .is_some_and(|content| content.iter().any(|part| part["type"] == "refusal"))
+        })
     }
 }

@@ -36,6 +36,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::warn;
 
+#[cfg(feature = "test-support")]
+#[path = "test_support/claude_completion.rs"]
+mod completion_test_support;
+
 /// Claude default context window size
 /// NOTE: Some models support 1M context with Tier 4 API access, but we use 200k
 /// as the default until CONFIG-007 implements user opt-in for extended context.

@@ -1,5 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/goal-immediate-termination.feature
+//! Feature: spec/features/completion-goal-teardown-layout-guards.feature
 //!
 //! CONT-006: /goal immediate termination and atomic goal teardown on
 //! accepted done().
@@ -580,6 +581,12 @@ fn stream_loop_wiring_pins_goal_mode_early_exit_and_single_teardown_invariants()
     let session_source =
         std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/session/mod.rs"))
             .expect("session/mod.rs must exist");
+    assert!(session_source.contains("mod reminders;"));
+    let session_source = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/session/reminders.rs"
+    ))
+    .expect("session/reminders.rs must own the registered reminder implementation");
     let clear_goal = session_source
         .find("pub fn clear_goal")
         .expect("Session::clear_goal must exist");

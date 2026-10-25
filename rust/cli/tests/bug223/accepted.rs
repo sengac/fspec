@@ -37,7 +37,9 @@ async fn accepted_helper_done_settles_summary_and_goal_teardown_once() -> TestRe
                 .iter()
                 .filter(|status| status.contains("Task verified"))
                 .count(),
-            1
+            1,
+            "{:?}",
+            fixture.output.events()
         );
         assert_eq!(fixture.session.continue_nudges_used, 0);
         assert!(codelet_tools::take_done_acceptance(fixture.session_id).is_none());

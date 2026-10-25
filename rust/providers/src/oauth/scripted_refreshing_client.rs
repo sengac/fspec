@@ -16,9 +16,9 @@
 
 use anyhow::Result;
 
-use super::custom_oauth::{
-    read_stored_tokens, resolve_login_implementation, write_stored_tokens, LoginImplementation,
-};
+use super::credential_store::CredentialStore;
+use super::custom_oauth::{resolve_login_implementation, LoginImplementation};
+use super::json_convert::{dynamic_to_json_value, json_value_to_dynamic};
 use super::script_provider::ScriptedOAuthProvider;
 use super::script_provider_aliases::{auth_needs_refresh_or_legacy, auth_refresh_or_legacy};
 
@@ -56,8 +56,17 @@ impl<'a> ScriptedRefreshingClient<'a> {
     /// invoke `auth_refresh` and persist the result. Returns `true`
     /// when a refresh happened.
     pub async fn ensure_fresh_if_needed(&self) -> Result<bool> {
-        let tokens = match read_stored_tokens(&self.provider_name)? {
-            Some(t) => t,
+        let path = super::scripted_request_refresh::credential_path(&self.provider_name)?;
+        self.ensure_fresh_at(&path).await
+    }
+
+    pub(crate) async fn ensure_fresh_at(&self, path: &std::path::Path) -> Result<bool> {
+        super::scripted_request_refresh::check_root(&self.provider_name, path)?;
+        let store = CredentialStore::<serde_json::Value>::new(path.to_owned());
+        let tokens = match store.read_sync()? {
+            Some(value) => json_value_to_dynamic(&value)
+                .try_cast::<rhai::Map>()
+                .ok_or_else(|| anyhow::anyhow!("stored tokens must be a JSON object"))?,
             None => return Ok(false),
         };
         let needs = auth_needs_refresh_or_legacy(self.provider, tokens.clone()).await?;
@@ -65,7 +74,13 @@ impl<'a> ScriptedRefreshingClient<'a> {
             return Ok(false);
         }
         let refreshed = auth_refresh_or_legacy(self.provider, tokens).await?;
-        write_stored_tokens(&self.provider_name, &refreshed)?;
+        super::scripted_request_refresh::check_root(&self.provider_name, path)?;
+        store.write_sync(&dynamic_to_json_value(&rhai::Dynamic::from_map(refreshed)))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))?;
+        }
         Ok(true)
     }
 }

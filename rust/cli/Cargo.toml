@@ -10,6 +10,13 @@ description = "Shared streaming engine, session management, and compaction helpe
 name = "codelet_cli"
 path = "src/lib.rs"
 
+[features]
+test-support = ["codelet-providers/test-support"]
+
+[[test]]
+name = "cont011_native_completion_composition"
+required-features = ["test-support"]
+
 [dependencies]
 codelet-common.workspace = true
 codelet-tools.workspace = true
@@ -58,6 +65,7 @@ regex.workspace = true
 once_cell.workspace = true
 
 [dev-dependencies]
+keyring.workspace = true
 proptest.workspace = true
 codelet-test-helpers.workspace = true
 wiremock = "0.6.5"

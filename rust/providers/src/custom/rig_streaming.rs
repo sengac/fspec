@@ -74,6 +74,7 @@ impl RhaiCustomProviderModel {
             let mut chunk_stream = chunk_stream;
             let mut final_stop = StopReason::EndTurn;
             let mut aggregate = StreamUsage::default();
+            let mut pending_calls = Vec::new();
             while let Some(item) = chunk_stream.next().await {
                 match item {
                     Ok(StreamChunk::TextDelta(text)) => yield Ok(RawStreamingChoice::Message(text)),
@@ -88,8 +89,8 @@ impl RhaiCustomProviderModel {
                     Ok(StreamChunk::ToolCallComplete { id, name, input }) => {
                         tracing::warn!(provider = %provider_name, tool_id = %id, tool_name = %name,
                             "[rhai-dispatch] stream yielding ToolCallComplete tool_name={name} tool_id={id}");
-                        yield Ok(RawStreamingChoice::ToolCall(RawStreamingToolCall::new(id, name, input)
-                            .with_signature(None)));
+                        pending_calls.push(RawStreamingToolCall::new(id, name, input)
+                            .with_signature(None));
                     }
                     Ok(StreamChunk::UsageDelta(delta)) => {
                         aggregate.input_tokens = delta.input_tokens.or(aggregate.input_tokens);
@@ -106,6 +107,9 @@ impl RhaiCustomProviderModel {
                 }
             }
             yield Ok(RawStreamingChoice::FinalResponse(RhaiCustomCompletion::from_snapshot(final_stop, &aggregate)));
+            for call in pending_calls {
+                yield Ok(RawStreamingChoice::ToolCall(call));
+            }
         });
         Ok(StreamingCompletionResponse::stream(rig_stream))
     }

@@ -128,14 +128,16 @@ pub(super) fn stream(
                     Some(Ok(Event::Message(event))) if event.data.trim().is_empty() => {},
                     Some(Ok(Event::Message(event))) => {
                         let data: Value = serde_json::from_str(&event.data).map_err(invalid)?;
-                        super::memory_policy::validate_response(&data["response"])?;
+                        let kind = data["type"].as_str().ok_or_else(|| invalid("missing event type"))?;
+                        if !matches!(kind, "response.completed" | "response.failed" | "response.incomplete") {
+                            super::memory_policy::validate_response(&data["response"])?;
+                        }
                         metadata.apply_event(&data);
                         if let Some(routing) = &routing {
                             if let Some(value) = metadata.turn_state() {
                                 routing.observe_event_turn_state(&value);
                             }
                         }
-                        let kind = data["type"].as_str().ok_or_else(|| invalid("missing event type"))?;
                         if let Some(notice) = native.event(kind, &data)? {
                             yield Choice::Reasoning { id: None, reasoning: notice, signature: None };
                         }
@@ -176,16 +178,9 @@ pub(super) fn stream(
                 },
             }
             };
-            history.ensure_generation(generation)?;
             if terminal.status == "failed" && terminal.usage.is_none() {
                 let redactor = client.http_client().redact_diagnostics(client.headers()).await;
                 if let Some(error) = terminal.error(&redactor) { Err(error)?; }
-            }
-            for notice in native.terminal(&terminal.output)? {
-                yield Choice::Reasoning { id: None, reasoning: notice, signature: None };
-            }
-            for (index, item) in terminal.output.iter().enumerate() {
-                for choice in state.completed_item(item, Some(index as u64))? { yield choice; }
             }
             let usage = terminal.usage.take().ok_or_else(|| invalid("missing physical usage"))?.into_usage();
             let tokens = usage.token_usage().ok_or_else(|| invalid("invalid physical usage"))?;
@@ -196,10 +191,17 @@ pub(super) fn stream(
             rig::completion::report_request_usage(&request_id, &tokens)?;
             request_usage.push((request_id.clone(), tokens));
             yield Choice::Usage(tokens);
+            history.ensure_generation(generation)?;
+            for notice in native.terminal(&terminal.output)? {
+                yield Choice::Reasoning { id: None, reasoning: notice, signature: None };
+            }
+            for (index, item) in terminal.output.iter().enumerate() {
+                for choice in state.completed_item(item, Some(index as u64))? { yield choice; }
+            }
             state.saw_tool |= terminal.output.iter().any(|item| matches!(item["type"].as_str(), Some("function_call" | "custom_tool_call")));
             if terminal.should_continue(state.saw_tool) {
                 if continuation == MAX_CONTINUATIONS {
-                    Err(CompletionError::ProviderError("Codex continuation limit reached".to_string()))?;
+                    Err(CompletionError::ProviderError("Codex protocol continuation limit reached (3 follow-ups); separate from /continue and transport recovery".to_string()))?;
                 }
                 terminal.replay(&mut request)?;
                 total_usage = Some(aggregate_usage);
@@ -220,6 +222,7 @@ pub(super) fn stream(
             for tool in state.tools { yield Choice::ToolCall(tool); }
             yield Choice::FinalResponse(Final {
                 usage: aggregate_usage,
+                stop_reason: terminal.has_refusal().then(|| "refusal".to_owned()),
                 request_context: Some(rig::completion::RequestContext {
                     model: request["model"].as_str().ok_or_else(|| invalid("missing model"))?.to_owned(),
                     generation,

@@ -25,6 +25,8 @@ impl rig::http_client::HttpClientExt for RefreshingCodexClient {
         let mode = self.mode.clone();
         let timeout = self.idle_timeout;
         let req = req.map(Into::into);
+        #[cfg(feature = "test-support")]
+        let req = self.test_request(req);
 
         async move {
             let inner = client(inner)?;
@@ -112,6 +114,8 @@ impl rig::http_client::HttpClientExt for RefreshingCodexClient {
         let inner = self.inner.clone();
         let mode = self.mode.clone();
 
+        #[cfg(feature = "test-support")]
+        let req = self.test_request(req);
         async move {
             let reset = req
                 .extensions()
@@ -153,6 +157,8 @@ impl rig::http_client::HttpClientExt for RefreshingCodexClient {
         let timeout = self.idle_timeout;
         let websocket = self.websocket.clone();
         let req = req.map(Into::into);
+        #[cfg(feature = "test-support")]
+        let req = self.test_request(req);
         async move {
             let reset = req
                 .extensions()

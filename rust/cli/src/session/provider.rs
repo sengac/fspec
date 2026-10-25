@@ -84,6 +84,7 @@ impl Session {
     ) -> Result<(), ExtensionError> {
         self.provider_session
             .ensure_provider(self.provider_manager.current_provider_name());
+        self.provider_session.bind_live_session(session_id);
         migrate_provider_state(session_id)
             .map_err(|error| ExtensionError::Persistence(error.to_string()))?;
         self.provider_session.bind_writers(|provider| {

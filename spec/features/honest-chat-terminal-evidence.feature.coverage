@@ -1,0 +1,384 @@
+{
+  "scenarios": [
+    {
+      "name": "Usage without a finish reason cannot declare completion",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug263_chat_terminal.rs",
+          "lines": "17-37",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed and provider error frames retain actionable causes",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug263_chat_terminal.rs",
+          "lines": "39-60",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done cannot conceal invalid terminal evidence",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug263_chat_terminal.rs",
+          "lines": "62-89",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Valid native Done settles physical usage before immediate completion",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug263_chat_terminal.rs",
+          "lines": "91-106",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            },
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit terminal marker settles without waiting for EOF",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug263_chat_terminal.rs",
+          "lines": "108-128",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug263_chat_terminal.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/openai/completion/streaming/decoder.rs",
+      "rust/patches/rig-core/src/providers/openai/completion/nonstreaming.rs"
+    ],
+    "totalLinesCovered": 380
+  }
+}

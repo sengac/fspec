@@ -49,6 +49,7 @@ pub struct ScriptProviderConfig {
 }
 
 /// A scripted OAuth provider that executes Rhai scripts.
+#[derive(Clone)]
 pub struct ScriptedOAuthProvider {
     engine: Arc<Engine>,
     ast: AST,
@@ -56,6 +57,18 @@ pub struct ScriptedOAuthProvider {
 }
 
 impl ScriptedOAuthProvider {
+    pub(crate) fn from_compiled(
+        engine: Arc<Engine>,
+        ast: AST,
+        config: ScriptProviderConfig,
+    ) -> Self {
+        Self {
+            engine,
+            ast,
+            config,
+        }
+    }
+
     /// Load a scripted provider from a .rhai file.
     pub fn load(script_path: &Path, config: ScriptProviderConfig) -> Result<Self> {
         let engine = build_default_engine();

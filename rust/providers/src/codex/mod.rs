@@ -37,6 +37,7 @@ mod network_error;
 #[cfg(feature = "test-support")]
 pub mod oauth_test_support;
 pub mod presentation;
+mod protocol_replay;
 pub mod reconnect;
 mod recovery;
 mod recovery_auth;

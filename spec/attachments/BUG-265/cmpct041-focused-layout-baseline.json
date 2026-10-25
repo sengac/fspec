@@ -1,0 +1,11 @@
+{
+  "baseline": "b2475dcdb93c2ae3f42299ce6510a89a413c0147",
+  "path": "rust/napi/src/agent_loop.rs",
+  "baselineSha256": "18319cc069dd7f07529917252b721198cb4b8cab74cffb479c824acd68d80a67",
+  "currentSha256": "18319cc069dd7f07529917252b721198cb4b8cab74cffb479c824acd68d80a67",
+  "byteIdentical": true,
+  "predicate": "source contains StreamEvent::CompactionStarted =>",
+  "baselinePredicate": false,
+  "currentPredicate": false,
+  "scope": "Focused immutable source proof only; not a full baseline Cargo run. Current failing target is recorded in final-test-source-review.log."
+}

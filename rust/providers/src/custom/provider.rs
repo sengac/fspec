@@ -83,6 +83,8 @@ pub struct RhaiCustomProvider {
 
 #[path = "model_identity.rs"]
 mod model_identity;
+#[path = "request_auth.rs"]
+mod request_auth;
 
 impl RhaiCustomProvider {
     /// Construct a new provider from a config + a script loader + the

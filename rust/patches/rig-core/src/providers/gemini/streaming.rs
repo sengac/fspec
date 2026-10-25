@@ -113,6 +113,8 @@ where
 
         let stream = stream! {
             let mut final_usage = None;
+            let mut staged_calls = Vec::new();
+            let mut calls_have_safe_terminal = false;
             // PROV-039: Capture finish_reason from streaming for stop_reason propagation
             let mut captured_stop_reason: Option<String> = None;
             while let Some(event_result) = event_source.next().await {
@@ -131,7 +133,8 @@ where
                             Ok(d) => d,
                             Err(error) => {
                                 tracing::error!(?error, body_bytes = message.data.len(), body = %message.data, "Failed to parse SSE message");
-                                continue;
+                                yield Err(CompletionError::ResponseError(format!("Failed to parse Gemini SSE message: {error}")));
+                                return;
                             }
                         };
 
@@ -173,10 +176,10 @@ where
                                     thought_signature,
                                     ..
                                 } => {
-                                    yield Ok(streaming::RawStreamingChoice::ToolCall(
+                                    staged_calls.push(
                                         streaming::RawStreamingToolCall::new(uuid::Uuid::new_v4().to_string(), function_call.name.clone(), function_call.args.clone())
                                             .with_signature(thought_signature)
-                                    ));
+                                    );
                                 },
                                 part => {
                                     tracing::warn!(?part, "Unsupported response type with streaming");
@@ -186,6 +189,7 @@ where
 
                         // Check if this is the final response
                         if choice.finish_reason.is_some() {
+                            calls_have_safe_terminal = matches!(choice.finish_reason, Some(FinishReason::Stop));
                             // PROV-039: Map Gemini FinishReason to normalized stop_reason string
                             captured_stop_reason = Some(match &choice.finish_reason {
                                 Some(FinishReason::Stop) => "end_turn".to_string(),
@@ -235,6 +239,13 @@ where
                 // PROV-039: Propagate captured stop_reason through FinalResponse
                 stop_reason: captured_stop_reason,
             }));
+            if !staged_calls.is_empty() && !calls_have_safe_terminal {
+                yield Err(CompletionError::ResponseError("Gemini client calls require a complete successful terminal".into()));
+                return;
+            }
+            for call in staged_calls {
+                yield Ok(streaming::RawStreamingChoice::ToolCall(call));
+            }
         }.instrument(span);
 
         Ok(streaming::StreamingCompletionResponse::stream(Box::pin(

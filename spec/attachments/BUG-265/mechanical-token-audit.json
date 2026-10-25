@@ -1,0 +1,13 @@
+{
+  "baselineCommit": "b2475dcd",
+  "originalMethods": 89,
+  "extractedMethods": 89,
+  "missing": [],
+  "changed": [],
+  "added": [],
+  "fieldsIdentical": true,
+  "typesIdentical": true,
+  "normalization": "Remove line comments and whitespace; permit build_isolation_context visibility restoration to pub(super). Method bodies/signatures, declaration order and field visibility/types compare equal at the initial extraction audit. A subsequent compiler-discovered notify_status_change cross-child visibility restoration is also required and permitted by the approved ledger; re-audit it before behavior repair.",
+  "runtimeProof": false,
+  "behaviorRepairApplied": false
+}

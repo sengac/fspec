@@ -1,5 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/auto-continue-engine.feature
+//! Feature: spec/features/completion-registration-layout-guards.feature
 //!
 //! CONT-002: Auto-continue engine — session state, pure decision function
 //! (doc §5 table), budget/refund arithmetic, and stream-loop wiring shape.
@@ -383,12 +384,19 @@ const PROVIDER_CHAINS: &[&str] = &[
     "../providers/src/openai.rs",
     "../providers/src/gemini.rs",
     "../providers/src/zai.rs",
-    "../providers/src/codex/mod.rs",
+    "../providers/src/codex/agent.rs",
     "../providers/src/copilot/rig_agent.rs",
     "../providers/src/custom/custom_provider.rs",
 ];
 
 fn chain_source(rel: &str) -> String {
+    if rel == "../providers/src/codex/agent.rs" {
+        assert!(std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../providers/src/codex/mod.rs"
+        ))
+        .is_ok_and(|module| module.contains("mod agent;")));
+    }
     let path = format!("{}/{}", env!("CARGO_MANIFEST_DIR"), rel);
     std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"))
 }

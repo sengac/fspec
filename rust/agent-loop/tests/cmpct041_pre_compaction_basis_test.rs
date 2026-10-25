@@ -1,5 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/pre-compaction-snapshot-basis-unification.feature
+//! Feature: spec/features/completion-snapshot-delegation-guards.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
 //! Scenarios map directly to Gherkin scenarios.
@@ -17,6 +18,9 @@
 //! agree on an equivalent basis. Behavioral tests are gated behind the
 //! `test-support` feature (stub provider), mirroring
 //! `rpc086_token_tracking.rs`; wiring tests run unconditionally.
+
+#[path = "support/cont011_delegation.rs"]
+mod delegation;
 
 use std::fs;
 use std::path::PathBuf;
@@ -82,7 +86,9 @@ async fn create_background_session() -> (
     use uuid::Uuid;
 
     let data_dir = tempfile::tempdir().expect("data dir tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    codelet_common::set_data_directory(data_dir.path().to_path_buf())
+        .expect("isolated snapshot data directory must be installed");
+    codelet_core::persistence::reset_stores_for_tests();
 
     let manager = Arc::new(SessionManager::new());
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
@@ -120,6 +126,7 @@ async fn create_background_session() -> (
 
 #[cfg(feature = "test-support")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn overflow_recovery_snapshot_records_true_total_in_seed_window() {
     use codelet_cli::interactive::output::TokenInfo;
     use codelet_core::StreamingTokenDisplay;
@@ -161,6 +168,7 @@ async fn overflow_recovery_snapshot_records_true_total_in_seed_window() {
 
 #[cfg(feature = "test-support")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
 async fn auto_and_manual_snapshots_agree_on_the_same_basis() {
     use codelet_cli::interactive::output::TokenInfo;
     use codelet_core::{ApiTokenUsage, StreamingTokenDisplay};
@@ -216,12 +224,13 @@ async fn auto_and_manual_snapshots_agree_on_the_same_basis() {
         agent_loop_arm.contains("snapshot_pre_compaction_tokens()"),
         "agent-loop twin CompactionStarted arm must use the shared accessor; arm was:\n{agent_loop_arm}"
     );
-    let napi_src = read_workspace_source("rust/napi/src/agent_loop.rs");
-    let napi_arm = extract_brace_block_after(&napi_src, "StreamEvent::CompactionStarted =>");
+    let napi_arm = delegation::napi_compaction_arm();
     assert!(
         napi_arm.contains("snapshot_pre_compaction_tokens()"),
         "NAPI twin CompactionStarted arm must use the shared accessor; arm was:\n{napi_arm}"
     );
+    // @step And all four logical writers retain the shared snapshot and storage accessors
+    all_four_pre_compaction_writers_route_through_shared_accessors();
 }
 
 /// SUPPLEMENTARY STRUCTURAL GUARD — NOT a Gherkin scenario test.
@@ -237,7 +246,7 @@ async fn auto_and_manual_snapshots_agree_on_the_same_basis() {
 /// across the NAPI/agent-loop twins.
 #[test]
 fn all_four_pre_compaction_writers_route_through_shared_accessors() {
-    let sessions_src = read_workspace_source("rust/sessions/src/background_session.rs");
+    let sessions_src = read_workspace_source("rust/sessions/src/background_session/metrics.rs");
     assert!(
         sessions_src.contains("pub fn snapshot_pre_compaction_tokens"),
         "BackgroundSession must expose snapshot_pre_compaction_tokens (AUTO accessor)"
@@ -250,13 +259,12 @@ fn all_four_pre_compaction_writers_route_through_shared_accessors() {
     let agent_loop_src = read_workspace_source("rust/agent-loop/src/background_output.rs");
     let agent_loop_arm =
         extract_brace_block_after(&agent_loop_src, "StreamEvent::CompactionStarted =>");
-    let napi_src = read_workspace_source("rust/napi/src/agent_loop.rs");
-    let napi_arm = extract_brace_block_after(&napi_src, "StreamEvent::CompactionStarted =>");
+    let napi_arm = delegation::napi_compaction_arm();
 
     let handle_impl_src = read_workspace_source("rust/sessions/src/handle_impl.rs");
     let session_bindings_src = read_workspace_source("rust/napi/src/session_bindings.rs");
 
-    for (twin, arm) in [("agent-loop", agent_loop_arm), ("napi", napi_arm)] {
+    for (twin, arm) in [("agent-loop", agent_loop_arm), ("napi", napi_arm.as_str())] {
         assert!(
             arm.contains("snapshot_pre_compaction_tokens()"),
             "[{twin}] AUTO CompactionStarted arm must call the shared \

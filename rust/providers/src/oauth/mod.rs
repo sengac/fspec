@@ -24,6 +24,7 @@ pub mod script_invoke;
 pub mod script_provider;
 pub mod script_provider_aliases;
 pub mod scripted_refreshing_client;
+pub(crate) mod scripted_request_refresh;
 pub mod token_refresh;
 
 // Re-exports for ergonomic use

@@ -43,6 +43,10 @@ fn handle_one(processor: &mut RhaiStreamProcessor, value: Dynamic) -> Vec<Stream
         .and_then(|v| v.into_string().ok())
         .unwrap_or_default();
 
+    if processor.content_stopped && !matches!(kind.as_str(), "usage" | "token_delta") {
+        return Vec::new();
+    }
+
     match kind.as_str() {
         "text_delta" | "text" => handle_text(&map),
         "reasoning_delta" | "thinking_delta" => handle_reasoning(&map),
@@ -140,7 +144,7 @@ fn handle_stop(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChun
         _ => StopReason::EndTurn,
     };
     processor.record_stop(reason);
-    processor.mark_done()
+    processor.flush_pending()
 }
 
 fn handle_tool_call(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChunk> {

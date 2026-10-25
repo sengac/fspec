@@ -7,10 +7,6 @@
 //! /responses, or Anthropic-messages shapes. It performs **no IO and holds no
 //! state** — every decision is derived from the body alone.
 //!
-//! Downstream, [`CopilotHeaderFacade`](super::header_facade::CopilotHeaderFacade)
-//! consumes this classification to decide whether to set the
-//! `Copilot-Vision-Request` header and which value to use for `x-initiator`.
-
 use serde_json::Value;
 
 /// The per-request classification derived from a Copilot request body.
@@ -47,39 +43,32 @@ impl CopilotRequestClassifier {
     }
 }
 
-/// Walk the body in every supported shape and return `true` if any image
-/// content is present.
 fn detect_vision_content(body: &Value) -> bool {
-    // Shape 1: OpenAI chat/completions — `messages[].content[]` where a
-    // content item has `type == "image_url"` (vanilla OpenAI) or
-    // `type == "image"` (Anthropic messages).
-    if let Some(messages) = body.get("messages").and_then(Value::as_array) {
-        for msg in messages {
-            if let Some(content) = msg.get("content").and_then(Value::as_array) {
-                for item in content {
-                    if let Some(t) = item.get("type").and_then(Value::as_str) {
-                        if matches!(t, "image_url" | "image" | "input_image") {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    body.get("messages")
+        .and_then(Value::as_array)
+        .is_some_and(|messages| messages.iter().any(nested_image))
+        || body
+            .get("input")
+            .and_then(Value::as_array)
+            .is_some_and(|input| {
+                input
+                    .iter()
+                    .any(|item| item["type"] == "input_image" || nested_image(item))
+            })
+}
 
-    // Shape 2: OpenAI /responses — `input[]` where an input item has
-    // `type == "input_image"`.
-    if let Some(input) = body.get("input").and_then(Value::as_array) {
-        for item in input {
-            if let Some(t) = item.get("type").and_then(Value::as_str) {
-                if t == "input_image" {
-                    return true;
-                }
-            }
-        }
-    }
-
-    false
+fn nested_image(message: &Value) -> bool {
+    message
+        .get("content")
+        .and_then(Value::as_array)
+        .is_some_and(|content| {
+            content.iter().any(|item| {
+                matches!(
+                    item.get("type").and_then(Value::as_str),
+                    Some("image_url" | "image" | "input_image")
+                )
+            })
+        })
 }
 
 /// Detect whether the request should be classified as agent-initiated.

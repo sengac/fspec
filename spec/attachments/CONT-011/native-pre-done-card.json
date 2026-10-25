@@ -1,0 +1,146 @@
+{
+  "id": "CONT-011",
+  "title": "Restore end-to-end auto-continue provider contracts and regression coverage",
+  "type": "bug",
+  "status": "validating",
+  "description": "Coordinate the October 25 auto-continue audit follow-ups without assuming one global root cause. The shared engine and armed Done registration remain intact, but a new Codex refusal-history follow-up failure was reproduced and provider terminal, ordering, recovery and routing defects were identified. Repair the two stale layout assertions and replace source-only confidence with real serialized provider-stream tests for armed stop -> nudge -> accepted Done, rejected goal completion, tool ordering, malformed terminal delivery and recovery accounting. Individual fixes are tracked separately with confidence and history labels. Preserve immediate Done termination, explicit cancellation, fail-closed terminal validation and real-user-turn budget semantics. Full Markdown audit and validation evidence will be attached. CONT-010 already owns profile lifecycle discovery; reconcile it against PROV-161 rather than duplicating that work. Do not mark all findings as newly introduced or claim the observed user-session root cause without a failing trace.",
+  "estimate": 5,
+  "epic": "completion-contract",
+  "children": [
+    "BUG-260",
+    "BUG-261",
+    "BUG-262",
+    "BUG-263",
+    "BUG-264",
+    "BUG-265",
+    "BUG-266",
+    "BUG-267",
+    "BUG-268",
+    "BUG-269"
+  ],
+  "relatesTo": [
+    "PROV-162",
+    "CONT-010"
+  ],
+  "rules": [
+    "[0] Preserve the original thirteen-card inventory, all retained discovery follow-ups, BUG-254 specifying, and every child native Done; do not equate source guards with runtime provider proof.",
+    "[1] Retarget only stale Done registration, goal reminder removal and compaction snapshot readers to actual delegated implementations; retain all semantic, writer, accessor and original BUG-265 shape assertions.",
+    "[2] Complete only after final-source synthetic child and affected-control matrices, shipping consumers, quality, traceability and combined direct review; disclose exclusions, warnings, platform and global tag limits.",
+    "[3] Explicitly exercise native Claude API/OAuth, Chat, Codex, Gemini, ZAI, Copilot, custom/Rhai and generic Responses at serialized stream boundaries. Builder/settings checks are supplemental, not runtime proof.",
+    "[4] Native Anthropic completed client calls must remain unexecutable until the existing authoritative terminal delta and measured physical usage settle; missing or malformed terminal evidence cannot accept Done. The generic loop still owns tool execution and immediate accepted-Done termination."
+  ],
+  "examples": [
+    "[0] An armed session finds Done in each selected provider builder including delegated Codex agent.rs; unarmed and DeepSearch exclusions remain intact.",
+    "[1] Accepted goal completion uses one shared teardown and the moved clear_goal reminder owner, without trailing work or duplicate announcement.",
+    "[2] NAPI delegates to the same exported BackgroundOutput as standalone sessions; automatic and manual snapshots agree at 180000, never 330000, and all four logical writers retain shared accessors.",
+    "[3] Real native Claude API/OAuth, Gemini and ZAI builders receive local clean stop, one automatic nudge, native file work, native accepted Done and forbidden trailing work; verify physical requests, paired history, one terminal and measured billing.",
+    "[4] The same native protocols reject goal Done without evidence, then accept valid completion; malformed local delivery and explicit interruption cannot execute trailing effects or nudge toward a fabricated completion.",
+    "[5] Fixture-owned loopback RLCD allows only explicitly synthetic temporary native file work at unchanged default gates; a high-risk synthetic response still blocks the real native Write with zero file effect. Earlier live-local RLCD denials are fixture failures, not successful work or product file-writing RED.",
+    "[6] An accepted native Done from an isolated serialized Copilot request passes through real shared BackgroundOutput persistence; after resetting cached stores, reloaded disk message envelopes retain the exact invocation/result pair and done terminal once, without opaque transport state. This verifies shared disk persistence separately from native builder wire/memory histories and persisted usage."
+  ],
+  "architectureNotes": [
+    "[0] Bounded existing-reader correction only, no new completion engine. Three focused coordinator features reuse the existing acceptance tests; native provider/request behavior is proved by the complete linked child acceptance matrix and affected controls, not source text. Native AST confirms Session::clear_goal in reminders.rs. NAPI compatibility exports and shared BackgroundOutput are the real compaction path. No unbounded nested Cargo, live providers, external scripts, Windows or unrelated compaction repair.",
+    "[1] Additional real native-builder tests require numeric-loopback endpoint rebinding only behind existing providers test-support. Preserve original provider auth headers/HTTP clients and exact create_rig_agent builders; no shipping endpoint setting, remote/proxy/credential changes, script substitution or retry policy. Reuse existing CLI driver, native file tools and Done. Local synthetic OAuth tokens do not refresh externally. Keep new fixtures/modules under 300 lines. CONT-010 is read-only reconciliation against PROV-161.",
+    "[2] Native delegated approval cont011_native_terminal_settlement explicitly authorizes the observed Anthropic terminal-before-client-call repair and mechanical split of its 966-line streaming.rs into under-300-line modules. Preserve all schemas, public APIs, original tests/assertions, call ordering, existing truncation/safety/cancellation, no execution within adapter, and no trailing-tool drain after accepted Done. This supersedes only the earlier no-runtime-repair expectation after genuine new Claude native-loop failures; no outer budget/retry/compaction change.",
+    "[3] Native cont011_gemini_terminal_settlement request d8df6a1a-63c5-4252-b84b-8c67bcd680cb separately approves Gemini terminal-before-client-call settlement after independent billing and unsafe-terminal runtime failures; retain signatures, usage, ordering, cancellation and existing budgets. The supervisor's later explicit message authorizes only the verified missing Schema import inside Gemini's cfg(test) unit module. Final original-scope shared disk readback is separate from CLI wire/memory history and persisted billing; no new persistence implementation/policy or external service."
+  ],
+  "attachments": [
+    "spec/attachments/CONT-011/fspec-auto-continue-investigation.md",
+    "spec/attachments/CONT-011/follow-up-index.md",
+    "spec/attachments/CONT-011/validation-evidence.md",
+    "spec/attachments/CONT-011/card-registration-validation.md",
+    "spec/attachments/CONT-011/batch-inventory.md",
+    "spec/attachments/CONT-011/remaining-source-preparation.md",
+    "spec/attachments/CONT-011/replacement-progress-handoff.md",
+    "spec/attachments/CONT-011/streaming.rs",
+    "spec/attachments/CONT-011/cont011_effect.rs",
+    "spec/attachments/CONT-011/Cargo.toml",
+    "spec/attachments/CONT-011/validation-and-review.md",
+    "spec/attachments/CONT-011/final-test-inventory.json",
+    "spec/attachments/CONT-011/final-source-preservation-audit.json",
+    "spec/attachments/CONT-011/run-final-validation.py",
+    "spec/attachments/CONT-011/native-mechanical-and-isolated-causal-red.log",
+    "spec/attachments/CONT-011/final-post-format-cli.log",
+    "spec/attachments/CONT-011/anthropic-standalone-unit-import-green.log",
+    "spec/attachments/CONT-011/gemini-standalone-unit-import-green.log"
+  ],
+  "createdAt": "2026-10-25T08:35:45.372Z",
+  "updatedAt": "2026-10-25T20:04:47.037Z",
+  "linkedFeatures": [
+    {
+      "file": "spec/features/completion-goal-teardown-layout-guards.feature",
+      "scenarios": [
+        {
+          "name": "Goal teardown guards preserve a single reminder owner",
+          "line": 14,
+          "file": "spec/features/completion-goal-teardown-layout-guards.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/completion-persisted-history-composition.feature",
+      "scenarios": [
+        {
+          "name": "Accepted native completion persists a paired transcript",
+          "line": 19,
+          "file": "spec/features/completion-persisted-history-composition.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/completion-registration-layout-guards.feature",
+      "scenarios": [
+        {
+          "name": "Armed Done registration stays guarded across provider builders",
+          "line": 14,
+          "file": "spec/features/completion-registration-layout-guards.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/completion-snapshot-delegation-guards.feature",
+      "scenarios": [
+        {
+          "name": "Shared snapshot delegation retains semantic and writer guards",
+          "line": 15,
+          "file": "spec/features/completion-snapshot-delegation-guards.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/native-completion-loopback-composition.feature",
+      "scenarios": [
+        {
+          "name": "Native clean stops compose nudge work and accepted Done",
+          "line": 19,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        },
+        {
+          "name": "Native rejected goal completion remains a rejection",
+          "line": 25,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        },
+        {
+          "name": "Native malformed delivery and cancellation do not complete work",
+          "line": 31,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        },
+        {
+          "name": "Anthropic client calls require authoritative terminal settlement",
+          "line": 37,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        },
+        {
+          "name": "Gemini client calls require safe authoritative terminal settlement",
+          "line": 43,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        },
+        {
+          "name": "Isolated security still blocks high risk native file work",
+          "line": 49,
+          "file": "spec/features/native-completion-loopback-composition.feature"
+        }
+      ]
+    }
+  ]
+}

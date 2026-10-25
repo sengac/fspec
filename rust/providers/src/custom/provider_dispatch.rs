@@ -82,6 +82,7 @@ impl RhaiCustomProvider {
 
     /// Invoke `build_headers(config)` and return a `HeaderMap`.
     pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {
+        self.ensure_request_auth().await?;
         tracing::warn!(
             provider = %self.config_name(),
             "[rhai-dispatch] invoke_build_headers: calling Rhai build_headers(config)"

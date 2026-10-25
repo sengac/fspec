@@ -27,9 +27,8 @@
 //!   but is currently unused — Copilot's chat/completions endpoint does
 //!   not expose a thinking budget primitive.
 
+use crate::copilot::completion_model::CopilotCompletionModel;
 use crate::copilot::provider::CopilotProvider;
-use crate::copilot::refreshing_client::CopilotHttpClient;
-use rig::providers::openai;
 
 impl CopilotProvider {
     /// Create a rig `Agent` wired with the full fspec tool set for use by
@@ -58,15 +57,15 @@ impl CopilotProvider {
         session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
-    ) -> rig::agent::Agent<openai::completion::CompletionModel<CopilotHttpClient>> {
+    ) -> rig::agent::Agent<CopilotCompletionModel> {
         use codelet_tools::facade::{
             openai_bridge_tool, openai_fspec_tool, prepend_fspec_guidance,
         };
         use codelet_tools::{
             AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
             DecisionTool, DeepSearchTool, EditTool, GenerateCompactionTool, GlobTool,
-            GraphSearchTool, GrepTool, InjectSummaryTool, LsTool, ReadTool,
-            RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool, WriteTool,
+            GraphSearchTool, GrepTool, InjectSummaryTool, LsTool, ReadTool, RequestUserInputTool,
+            ScheduleTool, SessionSearchTool, WebSearchTool, WriteTool,
         };
         use rig::client::CompletionClient;
 

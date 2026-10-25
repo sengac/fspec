@@ -13,8 +13,30 @@ pub(super) async fn run_selected_provider(
     current_model: Option<String>,
     builder_retry: Result<bool, codelet_cli::compaction_operation::CompactionFailure>,
 ) -> anyhow::Result<()> {
+    builder_retry.map_err(anyhow::Error::new)?;
+    match (
+        inner_session.provider_manager().facade_override(),
+        inner_session.provider_manager().current_provider_type(),
+    ) {
+        (None, codelet_providers::ProviderType::Custom(name))
+            if current_provider != "stub" || !cfg!(feature = "test-support") =>
+        {
+            let name = name.clone();
+            return super::provider_custom::run_custom_turn(
+                inner_session,
+                input,
+                bridge_images,
+                session,
+                output,
+                thinking_config_value,
+                &name,
+                current_model,
+            )
+            .await;
+        }
+        _ => {}
+    }
     match current_provider {
-        _ if builder_retry.is_err() => builder_retry.map(|_| ()).map_err(anyhow::Error::new),
         "claude" => run_with_provider!(
             inner_session,
             get_claude,

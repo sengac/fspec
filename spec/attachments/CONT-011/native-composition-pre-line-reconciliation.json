@@ -1,0 +1,52 @@
+{
+  "scenarios": [
+    {
+      "name": "Native clean stops compose nudge work and accepted Done",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+          "lines": "16-47",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Native rejected goal completion remains a rejection",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+          "lines": "49-71",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Native malformed delivery and cancellation do not complete work",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+          "lines": "73-105",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Anthropic client calls require authoritative terminal settlement",
+      "testMappings": []
+    },
+    {
+      "name": "Gemini client calls require safe authoritative terminal settlement",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 3,
+    "coveragePercent": 60,
+    "testFiles": [
+      "rust/cli/tests/cont011_native_completion_composition.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 88
+  }
+}

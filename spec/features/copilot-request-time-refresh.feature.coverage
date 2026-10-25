@@ -1,0 +1,151 @@
+{
+  "scenarios": [
+    {
+      "name": "Concurrent independent requests share existing token refresh coordination",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_request_refresh.rs",
+          "lines": "76-119",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/http_auth.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refreshed effective endpoints reach the actual nonstreaming request",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_request_refresh.rs",
+          "lines": "121-145",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/http_auth.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejected or cancelled exchange cannot send expired authorization",
+      "testMappings": [
+        {
+          "file": "rust/providers/tests/bug268_copilot_request_refresh.rs",
+          "lines": "147-219",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/http_auth.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/tests/bug268_copilot_request_refresh.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/copilot/http_auth.rs"
+    ],
+    "totalLinesCovered": 229
+  }
+}

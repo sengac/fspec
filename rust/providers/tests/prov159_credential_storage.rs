@@ -21,7 +21,7 @@ fn scenario_a2_login_replaces_the_preferred_account_consistently() -> TestResult
     fixture.seed("A")?;
     #[cfg(target_os = "macos")]
     fixture
-        .keychain()
+        .keychain()?
         .set_password(&serde_json::to_string(&auth("A"))?)?;
 
     let path = fixture.directory.path().join("auth.json");
@@ -36,7 +36,7 @@ fn scenario_a2_login_replaces_the_preferred_account_consistently() -> TestResult
     let stored = read_codex_auth()?.ok_or("login must persist credentials")?;
     assert_eq!(stored.tokens.ok_or("login tokens missing")?.account_id, "B");
     #[cfg(target_os = "macos")]
-    match fixture.keychain().get_password() {
+    match fixture.keychain()?.get_password() {
         Ok(document) => assert!(!document.contains("access-A")),
         Err(keyring::Error::NoEntry) => (),
         Err(error) => return Err(error.into()),
@@ -54,7 +54,7 @@ fn scenario_a2_login_replaces_the_preferred_account_consistently() -> TestResult
     #[cfg(target_os = "macos")]
     {
         fixture
-            .keychain()
+            .keychain()?
             .set_password(&serde_json::to_string(&auth("B"))?)?;
         let before = std::fs::read(&path)?;
         let _client = codelet_providers::codex::refreshing_client::RefreshingCodexClient::new_oauth(
@@ -73,7 +73,7 @@ fn scenario_a2_login_replaces_the_preferred_account_consistently() -> TestResult
     #[cfg(target_os = "macos")]
     for fallback in ["{", "[]", r#"{"tokens":true,"OPENAI_API_KEY":false}"#] {
         fixture
-            .keychain()
+            .keychain()?
             .set_password(&serde_json::to_string(&auth("preferred"))?)?;
         std::fs::write(&path, fallback)?;
         let stored = read_codex_auth()?.ok_or("preferred credentials must remain readable")?;
@@ -93,7 +93,7 @@ fn scenario_a3_provider_deletion_clears_all_oauth_sources() -> TestResult {
     fixture.seed("A")?;
     #[cfg(target_os = "macos")]
     fixture
-        .keychain()
+        .keychain()?
         .set_password(&serde_json::to_string(&auth("A"))?)?;
 
     // @step When the user deletes the Codex provider and credentials are detected again after restarting
@@ -178,7 +178,7 @@ fn scenario_a16_keyring_failures_are_not_hidden_account_fallback() -> TestResult
     // @step Given the preferred Codex keyring contains account A and the fallback file contains account B
     let fixture = Fixture::new()?;
     fixture.seed("B")?;
-    let keychain = fixture.keychain();
+    let keychain = fixture.keychain()?;
     keychain.set_password(&serde_json::to_string(&auth("A"))?)?;
 
     // @step When a keyring read, login save, OAuth clear or provider deletion fails

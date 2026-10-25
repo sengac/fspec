@@ -37,7 +37,11 @@ impl CredentialBuilderApi for Keyring {
         service: &str,
         user: &str,
     ) -> keyring::Result<Box<Credential>> {
-        let mut entries = self.0.lock().expect("isolated keyring lock is available");
+        let mut entries = self.0.lock().map_err(|_| {
+            keyring::Error::NoStorageAccess(Box::new(std::io::Error::other(
+                "isolated keyring lock poisoned",
+            )))
+        })?;
         let entry = entries.entry(format!("{service}:{user}")).or_default();
         Ok(Box::new(Entry(entry.clone())))
     }
@@ -67,22 +71,19 @@ impl Fixture {
         })
     }
 
-    pub fn keychain(&self) -> Arc<MockCredential> {
+    pub fn keychain(&self) -> std::io::Result<Arc<MockCredential>> {
         use sha2::{Digest, Sha256};
-        let home = self
-            .directory
-            .path()
-            .canonicalize()
-            .expect("temporary home exists");
+        let home = self.directory.path().canonicalize()?;
         let hash = format!("{:x}", Sha256::digest(home.to_string_lossy().as_bytes()));
         let key = format!("Codex Auth:cli|{}", &hash[..16]);
-        self.keyring
+        Ok(self
+            .keyring
             .0
             .lock()
-            .expect("isolated keyring lock is available")
+            .map_err(|_| std::io::Error::other("isolated keyring lock poisoned"))?
             .entry(key)
             .or_default()
-            .clone()
+            .clone())
     }
 
     pub fn seed(&self, account: &str) -> TestResult {

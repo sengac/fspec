@@ -215,6 +215,7 @@ async fn duplicate_completion_does_not_duplicate_usage_or_tools() -> TestResult 
 
 #[tokio::test]
 async fn ordinary_responses_retains_its_existing_eof_behavior() -> TestResult {
+    // @step Given identical partial streams for Codex and ordinary Responses models
     let codex_server = Server::start(
         vec![
             text(),
@@ -224,18 +225,20 @@ async fn ordinary_responses_retains_its_existing_eof_behavior() -> TestResult {
     )
     .await?;
     let ordinary_server = Server::start(vec![text()], false).await?;
+    // @step When both callers consume independently scripted streams within bounded deadlines
     let codex =
         tokio::time::timeout(Duration::from_secs(3), collect(codex_server.models()?.0)).await??;
     let ordinary =
         tokio::time::timeout(Duration::from_secs(2), collect(ordinary_server.models()?.1))
             .await??;
+    // @step Then Codex recovers with replacement text while ordinary Responses rejects missing terminal evidence without retrying
     assert!(codex.errors.is_empty(), "{codex:?}");
     assert_eq!(codex.text, "Replacement");
     assert_eq!(codex.attempts, ["started", "aborted", "started"]);
     assert_eq!(codex.finals.len(), 1);
     assert_eq!(ordinary.errors.len(), 1, "{ordinary:?}");
     assert!(
-        ordinary.errors[0].contains("missing Responses usage"),
+        ordinary.errors[0].contains("missing Responses terminal evidence"),
         "{ordinary:?}"
     );
     assert_eq!(ordinary.text, "Hello");

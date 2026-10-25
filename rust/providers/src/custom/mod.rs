@@ -42,6 +42,7 @@ pub mod script_loader;
 pub mod stream;
 mod stream_convert;
 mod stream_http;
+mod stream_types;
 pub mod system_prompt;
 pub mod tool_dispatch;
 mod tool_dispatch_extras;

@@ -31,6 +31,7 @@ fn test_streaming_response_completed_with_usage_normalizes_inclusive_counts() {
     // @step When the streaming response is processed
     let streaming_resp = ResponsesStreamingCompletionResponse {
         usage: usage.clone(),
+        stop_reason: None,
         request_context: None,
         request_usage: Vec::new(),
     };
@@ -149,6 +150,7 @@ fn test_streaming_response_completed_with_usage_no_details_handles_optionals() {
     // @step When the streaming response is processed
     let streaming_resp = ResponsesStreamingCompletionResponse {
         usage,
+        stop_reason: None,
         request_context: None,
         request_usage: Vec::new(),
     };

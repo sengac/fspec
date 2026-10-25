@@ -78,7 +78,7 @@ impl Drop for HomePermissions {
 
 pub fn verify_failure_safety(fixture: &Fixture) -> TestResult {
     let path = fixture.directory.path().join("auth.json");
-    let keychain = fixture.keychain();
+    let keychain = fixture.keychain()?;
     let mut outcomes = Vec::new();
     for fallback in [true, false] {
         for operation in ["save", "clear", "delete"] {

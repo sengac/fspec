@@ -32,6 +32,7 @@ pub trait ProviderSessionExtension: Any + Send + Sync {
     fn validate_restore(&self, _envelopes: &[String]) -> Result<(), ExtensionError> {
         Ok(())
     }
+
     fn restore_for_provider(
         &self,
         _provider: &str,
@@ -107,6 +108,16 @@ impl ProviderSession {
     }
 
     pub fn ensure_provider(&mut self, provider: &str) {
+        if provider == "github-copilot" && !self.extensions.contains_key(provider) {
+            self.register(
+                provider,
+                Arc::new(crate::copilot::session::CopilotSession::default()),
+            );
+        } else if provider != "github-copilot" {
+            if let Some(extension) = self.extensions.get("github-copilot") {
+                let _ = extension.reset();
+            }
+        }
         if provider == "codex" && !self.extensions.contains_key(provider) {
             self.register(
                 provider,
@@ -145,6 +156,10 @@ impl ProviderSession {
 
     pub fn register(&mut self, provider: &str, extension: Arc<dyn ProviderSessionExtension>) {
         self.extensions.insert(provider.into(), extension);
+    }
+
+    pub fn bind_live_session(&mut self, owner: uuid::Uuid) {
+        crate::copilot::session::bind_live_session(self, owner);
     }
 
     pub fn extension<T: ProviderSessionExtension>(&self, provider: &str) -> Option<&T> {

@@ -6,9 +6,12 @@ mod support;
 #[path = "bug223/accepted.rs"]
 mod accepted;
 
+#[path = "../../agent-loop/tests/support/bug268_environment.rs"]
+mod environment;
+
 use codelet_cli::interactive::{output::ContinueStateReason, StreamEvent};
 use serde_json::json;
-use std::sync::{atomic::Ordering, Arc};
+use std::sync::atomic::Ordering;
 use support::{enter_helper, measured_response, response, text, tool, Fixture, TestResult};
 use wiremock::ResponseTemplate;
 
@@ -95,7 +98,12 @@ async fn helper_tool_activity_refunds_a_pending_nudge() -> TestResult {
     fixture.run().await?;
     // @step Then the common owner refunds the pending nudge before deciding the next nudge
     assert_eq!(fixture.requests().await?.len(), 8);
-    assert_eq!(fixture.calls.load(Ordering::SeqCst), 3);
+    assert_eq!(
+        fixture.calls.load(Ordering::SeqCst),
+        3,
+        "{:?}",
+        fixture.output.events()
+    );
     let events = fixture.output.events();
     assert!(events
         .iter()
@@ -249,32 +257,11 @@ async fn helper_interruption_does_not_settle_a_clean_completion() -> TestResult 
 #[serial_test::serial]
 async fn helper_compaction_hands_off_without_a_completion_nudge() -> TestResult {
     // @step Given an armed Gemini helper executes a tool whose result exceeds the context threshold
-    let mut script = enter_helper();
-    script.push(tool("inspect"));
-    let mut fixture = Fixture::new(script).await?;
-    fixture.large_tool_result = true;
-    fixture
-        .session
-        .provider_manager_mut()
-        .override_model_limits(Some(6000), Some(1000));
-    let compactions = Arc::new(std::sync::atomic::AtomicUsize::new(0));
-    let observed = compactions.clone();
-    codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(
-        fixture.session_id,
-        Some(Arc::new(move |_, _| {
-            observed.fetch_add(1, Ordering::SeqCst);
-            Box::pin(async { Err("offline compaction handoff observed".into()) })
-        })),
-    );
+    let (mut fixture, compactions) = support::compaction_fixture().await?;
     // @step When the next helper request is cancelled for compaction
     let result = fixture.run().await;
     // @step Then the compaction owner receives the handoff without a nudge or premature terminal success
-    assert!(result.is_err());
-    assert!(result
-        .err()
-        .ok_or("compaction error missing")?
-        .to_string()
-        .contains("offline compaction handoff observed"));
+    support::assert_compaction_error(result)?;
     assert_eq!(compactions.load(Ordering::SeqCst), 1);
     assert_eq!(fixture.calls.load(Ordering::SeqCst), 2);
     assert_eq!(fixture.requests().await?.len(), 3);

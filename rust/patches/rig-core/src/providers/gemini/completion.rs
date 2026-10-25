@@ -1744,6 +1744,7 @@ pub mod gemini_api_types {
 mod tests {
     use crate::{message, providers::gemini::completion::gemini_api_types::flatten_schema};
 
+    use super::gemini_api_types::Schema;
     use super::*;
     use serde_json::json;
 

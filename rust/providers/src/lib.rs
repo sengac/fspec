@@ -26,6 +26,8 @@ pub mod gemini;
 mod manager;
 pub mod model_limits;
 pub mod models;
+#[cfg(feature = "test-support")]
+mod native_test_endpoint;
 pub mod oauth;
 pub mod oauth_crypto;
 pub mod oauth_http_utils;

@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/bug223/accepted.rs",
-          "lines": "6-80",
+          "lines": "8-82",
           "implMappings": [
             {
               "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",

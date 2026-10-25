@@ -9,10 +9,12 @@ Feature: Codex terminal lifecycle
   """
   The Codex model owns its SSE source and drops it at the first terminal event.
   Missing end_turn retains the ordinary fallback: return text or hand tools to the generic loop.
-  Explicit false permits three text-only continuations. Interrupted incomplete text may continue;
+  Explicit false permits three bounded continuations. PROV-162 supersedes the text-only
+  restriction with its explicitly reviewed typed allowlist. Interrupted incomplete text may continue;
   content filtering, budget exhaustion and incomplete tools never retry.
   PROV-160 supersedes the original transport interruption policy: premature EOF retracts
-  abandoned output and retries on the same transport, without changing ordinary Responses EOF behavior.
+  abandoned output and retries on the same transport. BUG-264 requires authoritative
+  terminal evidence for ordinary Responses; it still rejects premature EOF without retrying.
   Tools are buffered until successful completion. No shared Responses defaults change.
   Completed answer sections fill missing deltas without duplicating streamed text.
   """
@@ -65,7 +67,7 @@ Feature: Codex terminal lifecycle
   Scenario: Ordinary Responses retains its existing EOF behavior
     Given identical partial streams for Codex and ordinary Responses models
     When both callers consume independently scripted streams within bounded deadlines
-    Then Codex recovers with replacement text while ordinary Responses rejects missing usage without retrying
+    Then Codex recovers with replacement text while ordinary Responses rejects missing terminal evidence without retrying
 
   Scenario: Completed answers fill missing stream delivery
     Given completed answer and refusal sections with absent or partial deltas

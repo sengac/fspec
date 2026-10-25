@@ -20,11 +20,8 @@
 //! Both of those scenarios call through to these methods, so this file
 //! pins down the single-responsibility contract each method must satisfy.
 
-use codelet_providers::copilot::{
-    CopilotAuthJson, CopilotDeploymentType, CopilotHttpClient, CopilotProvider,
-};
+use codelet_providers::copilot::{CopilotAuthJson, CopilotDeploymentType, CopilotProvider};
 use codelet_providers::LlmProvider;
-use rig::providers::openai;
 use uuid::Uuid;
 
 /// Build a `CopilotProvider` with an already-cached (non-expiring) Copilot
@@ -55,7 +52,7 @@ fn client_accessor_returns_rig_completions_client_parameterised_by_copilot_http_
     // `&openai::CompletionsClient<CopilotHttpClient>` so the
     // `build_and_run!` macro's `.agent(...)` call dispatches through the
     // Copilot HTTP middleware.
-    let _client: &openai::CompletionsClient<CopilotHttpClient> = provider.client();
+    let _client: &codelet_providers::copilot::CopilotClient = provider.client();
 
     // @step Then the accessor is callable without side effects
     // (Type-check above is the primary assertion — if this compiles, the
@@ -93,7 +90,7 @@ async fn create_rig_agent_returns_an_agent_specialised_to_copilot_http_client() 
     // Type-level assertion: the returned agent must be specialised to
     // `CompletionModel<CopilotHttpClient>` so the `run_with_provider!`
     // macro can dispatch it without an "Unsupported provider" error.
-    let _agent: rig::agent::Agent<openai::completion::CompletionModel<CopilotHttpClient>> =
+    let _agent: rig::agent::Agent<codelet_providers::copilot::CopilotCompletionModel> =
         provider.create_rig_agent(session_id, None, None);
 
     // @step Then the method is callable without panicking

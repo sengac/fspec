@@ -1,35 +1,13 @@
-//! The streaming module for the OpenAI Responses API.
-//! Please see the `openai_streaming` or `openai_streaming_with_tools` example for more practical usage.
-use crate::completion::{CompletionError, GetTokenUsage};
-use crate::http_client::HttpClientExt;
-use crate::http_client::sse::{Event, GenericEventSource};
-use crate::providers::openai::responses_api::{
-    ReasoningSummary, ResponsesCompletionModel, ResponsesUsage,
-};
-use crate::streaming;
-use crate::streaming::RawStreamingChoice;
-use crate::wasm_compat::WasmCompatSend;
-use async_stream::stream;
-use futures::StreamExt;
+use super::{CompletionResponse, Output, ResponsesUsage};
+use crate::completion::GetTokenUsage;
 use serde::{Deserialize, Serialize};
-use tracing::{Level, debug, enabled, info_span};
-use tracing_futures::Instrument as _;
 
-use super::{CompletionResponse, Output};
+mod terminal;
+mod transport;
+pub use terminal::{
+    ResponsesTerminalFailure, Terminal as ResponsesTerminal, finish as validate_response_terminal,
+};
 
-// ================================================================
-// OpenAI Responses Streaming API
-// ================================================================
-
-/// A streaming completion chunk.
-/// Streaming chunks can come in one of three forms:
-/// - A response chunk (where the completed response will have the total token usage)
-/// - An item chunk commonly referred to as a delta. In the completions API this would be referred to as the message delta.
-/// - An error chunk: the Codex backend reports request-level failures (e.g. rejected tool
-///   schemas) as a single SSE `{"type":"error",...}` event over HTTP 200. Without this
-///   variant the untagged enum cannot deserialize it and the event is silently skipped,
-///   terminating the conversation with an empty response (BUG-208).
-///   Mirrors codex-api/src/sse/responses.rs:349 (`Error` event => `ApiError`).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum StreamingCompletionChunk {
@@ -38,44 +16,33 @@ pub enum StreamingCompletionChunk {
     Delta(ItemChunk),
 }
 
-/// An error event from the Responses API backend (BUG-208).
-/// Shape: `{"type":"error","error":{"message":"...","code":"..."}}` — the `code` field
-/// is optional (the OpenAI API sometimes omits it; the Codex backend includes it, e.g.
-/// `invalid_function_parameters`).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ErrorChunk {
-    /// Always "error" — the discriminator that makes the untagged match precise.
     #[serde(rename = "type")]
     pub kind: ErrorChunkKind,
-    /// The backend error payload.
     pub error: BackendError,
 }
 
-/// Discriminator for [`ErrorChunk`].
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum ErrorChunkKind {
     #[serde(rename = "error")]
     Error,
 }
 
-/// The error payload of an [`ErrorChunk`].
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BackendError {
-    /// Human-readable message from the backend (e.g. "Invalid schema for function 'X'…").
     pub message: String,
-    /// Machine-readable error code (e.g. "invalid_function_parameters"), when provided.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
-    /// Parameter the error refers to, when provided.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub param: Option<String>,
 }
 
-/// The final streaming response from the OpenAI Responses API.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StreamingCompletionResponse {
-    /// Token usage
     pub usage: ResponsesUsage,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_reason: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub request_context: Option<crate::completion::RequestContext>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -83,40 +50,34 @@ pub struct StreamingCompletionResponse {
 }
 
 impl GetTokenUsage for StreamingCompletionResponse {
+    fn stop_reason(&self) -> Option<&str> {
+        self.stop_reason.as_deref()
+    }
     fn token_usage(&self) -> Option<crate::completion::Usage> {
         self.usage.token_usage()
     }
-
     fn context_usage(&self) -> Option<crate::completion::Usage> {
         match &self.request_context {
             Some(context) => context.usage,
             None => self.token_usage(),
         }
     }
-
     fn request_context(&self) -> Option<&crate::completion::RequestContext> {
         self.request_context.as_ref()
     }
-
     fn request_usage_records(&self) -> Vec<(String, crate::completion::Usage)> {
         self.request_usage.clone()
     }
 }
 
-/// A response chunk from OpenAI's response API.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ResponseChunk {
-    /// The response chunk type
     #[serde(rename = "type")]
     pub kind: ResponseChunkKind,
-    /// The response itself
     pub response: CompletionResponse,
-    /// The item sequence
     pub sequence_number: u64,
 }
 
-/// Response chunk type.
-/// Renames are used to ensure that this type gets (de)serialized properly.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ResponseChunkKind {
     #[serde(rename = "response.created")]
@@ -131,20 +92,14 @@ pub enum ResponseChunkKind {
     ResponseIncomplete,
 }
 
-/// An item message chunk from OpenAI's Responses API.
-/// See
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ItemChunk {
-    /// Item ID. Optional.
     pub item_id: Option<String>,
-    /// The output index of the item from a given streamed response.
     pub output_index: u64,
-    /// The item type chunk, as well as the inner data.
     #[serde(flatten)]
     pub data: ItemChunkKind,
 }
 
-/// The item chunk type from OpenAI's Responses API.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
 pub enum ItemChunkKind {
@@ -252,230 +207,4 @@ pub struct SummaryTextChunk {
 #[serde(tag = "type")]
 pub enum SummaryPartChunkPart {
     SummaryText { text: String },
-}
-
-impl<T> ResponsesCompletionModel<T>
-where
-    T: HttpClientExt + Clone + Default + std::fmt::Debug + WasmCompatSend + 'static,
-{
-    pub(crate) async fn stream(
-        &self,
-        completion_request: crate::completion::CompletionRequest,
-    ) -> Result<streaming::StreamingCompletionResponse<StreamingCompletionResponse>, CompletionError>
-    {
-        let body = self.streaming_request_bytes(completion_request)?;
-
-        if enabled!(Level::TRACE) {
-            tracing::trace!(
-                target: "rig::completions",
-                "OpenAI Responses streaming completion request: {}",
-                String::from_utf8_lossy(&body)
-            );
-        }
-
-        let req = self
-            .client
-            .post("/responses")?
-            .body(body)
-            .map_err(|e| CompletionError::HttpError(e.into()))?;
-
-        // let request_builder = self.client.post_reqwest("/responses").json(&request);
-
-        let span = if tracing::Span::current().is_disabled() {
-            info_span!(
-                target: "rig::completions",
-                "chat_streaming",
-                gen_ai.operation.name = "chat_streaming",
-                gen_ai.provider.name = tracing::field::Empty,
-                gen_ai.request.model = tracing::field::Empty,
-                gen_ai.response.id = tracing::field::Empty,
-                gen_ai.response.model = tracing::field::Empty,
-                gen_ai.usage.output_tokens = tracing::field::Empty,
-                gen_ai.usage.input_tokens = tracing::field::Empty,
-            )
-        } else {
-            tracing::Span::current()
-        };
-        span.record("gen_ai.provider.name", "openai");
-        span.record("gen_ai.request.model", &self.model);
-        // Build the request with proper headers for SSE
-        let client = self.client.clone();
-
-        let mut event_source = GenericEventSource::new(client, req);
-
-        let stream = stream! {
-            let mut final_usage = None;
-            // BUG-208: set when a backend error event terminated the stream; in that
-            // case no (silent, empty) FinalResponse may be emitted afterwards.
-            let mut stream_errored = false;
-
-            let mut tool_calls: Vec<RawStreamingChoice<StreamingCompletionResponse>> = Vec::new();
-            let mut combined_text = String::new();
-            let span = tracing::Span::current();
-
-            while let Some(event_result) = event_source.next().await {
-                match event_result {
-                    Ok(Event::Open) => {
-                        tracing::trace!("SSE connection opened");
-                        tracing::info!("OpenAI stream started");
-                        continue;
-                    }
-                    Ok(Event::Message(evt)) => {
-                        // Skip heartbeat messages or empty data
-                        if evt.data.trim().is_empty() {
-                            continue;
-                        }
-
-                        let data = serde_json::from_str::<StreamingCompletionChunk>(&evt.data);
-
-                        let Ok(data) = data else {
-                            let err = data.unwrap_err();
-                            debug!("Couldn't serialize data as StreamingCompletionResponse: {err:?}\nRAW SSE DATA: {}", &evt.data);
-                            continue;
-                        };
-
-                        // BUG-208: a backend error event must surface as a stream error,
-                        // never be silently skipped (mirrors codex-api sse/responses.rs
-                        // stream loop sending Err(error) on an Error event).
-                        if let StreamingCompletionChunk::Error(err_chunk) = data {
-                            let code = err_chunk
-                                .error
-                                .code
-                                .as_deref()
-                                .map(|c| format!(" (code: {c})"))
-                                .unwrap_or_default();
-                            yield Err(CompletionError::ProviderError(format!(
-                                "Responses API backend error: {}{code}",
-                                err_chunk.error.message
-                            )));
-                            stream_errored = true;
-                            break;
-                        }
-
-                        if let StreamingCompletionChunk::Delta(chunk) = &data {
-                            match &chunk.data {
-                                ItemChunkKind::OutputItemAdded(message) => {
-                                    if let StreamingItemDoneOutput { item: Output::FunctionCall(func), .. } = message {
-                                        yield Ok(streaming::RawStreamingChoice::ToolCallDelta {
-                                            id: func.id.clone(),
-                                            content: streaming::ToolCallDeltaContent::Name(func.name.clone()),
-                                        });
-                                    }
-                                }
-                                ItemChunkKind::OutputItemDone(message) => {
-                                    match message {
-                                        StreamingItemDoneOutput {  item: Output::FunctionCall(func), .. } => {
-                                            tool_calls.push(streaming::RawStreamingChoice::ToolCall(
-                                                streaming::RawStreamingToolCall::new(
-                                                    func.id.clone(),
-                                                    func.name.clone(),
-                                                    func.arguments.clone(),
-                                                )
-                                                .with_call_id(func.call_id.clone())
-                                            ));
-                                        }
-
-                                        StreamingItemDoneOutput {  item: Output::Reasoning {  summary, id }, .. } => {
-                                            let reasoning = summary
-                                                .iter()
-                                                .map(|x| {
-                                                    let ReasoningSummary::SummaryText { text } = x;
-                                                    text.to_owned()
-                                                })
-                                                .collect::<Vec<String>>()
-                                                .join("\n");
-                                            yield Ok(streaming::RawStreamingChoice::Reasoning {
-                                                id: Some(id.to_string()),
-                                                reasoning,
-                                                signature: None,
-                                            })
-                                        }
-                                        _ => continue
-                                    }
-                                }
-                                ItemChunkKind::OutputTextDelta(delta) => {
-                                    combined_text.push_str(&delta.delta);
-                                    yield Ok(streaming::RawStreamingChoice::Message(delta.delta.clone()))
-                                }
-                                ItemChunkKind::ReasoningSummaryTextDelta(delta) => {
-                                    yield Ok(streaming::RawStreamingChoice::ReasoningDelta { id: None, reasoning: delta.delta.clone() })
-                                }
-                                ItemChunkKind::RefusalDelta(delta) => {
-                                    combined_text.push_str(&delta.delta);
-                                    yield Ok(streaming::RawStreamingChoice::Message(delta.delta.clone()))
-                                }
-                                ItemChunkKind::FunctionCallArgsDelta(delta) => {
-                                    yield Ok(streaming::RawStreamingChoice::ToolCallDelta { id: delta.item_id.clone(), content: streaming::ToolCallDeltaContent::Delta(delta.delta.clone()) })
-                                }
-
-                                _ => { continue }
-                            }
-                        }
-
-                        if let StreamingCompletionChunk::Response(chunk) = data {
-                            if let ResponseChunk { kind: ResponseChunkKind::ResponseCompleted, response, .. } = *chunk {
-                                span.record("gen_ai.response.id", response.id);
-                                span.record("gen_ai.response.model", response.model);
-                                if let Some(usage) = response.usage {
-                                    final_usage = Some(usage.clone());
-                                    // Emit Usage event so stream_loop gets real-time token data
-                                    // (mirrors what Chat Completions API already does)
-                                    if let Some(normalized) = usage.token_usage() {
-                                        yield Ok(RawStreamingChoice::Usage(normalized));
-                                    }
-                                }
-                            } else {
-                                continue;
-                            }
-                        }
-                    }
-                    Err(crate::http_client::Error::StreamEnded) => {
-                        event_source.close();
-                    }
-                    Err(error) => {
-                        tracing::error!(?error, "SSE error");
-                        event_source.close();
-                        yield Err(CompletionError::HttpError(error));
-                        return;
-                    }
-                }
-            }
-
-            // Ensure event source is closed when stream ends
-            event_source.close();
-
-            // BUG-208: after a backend error event the stream must end with the Err
-            // only — emitting an empty FinalResponse afterwards is exactly the
-            // silent-termination symptom (the agent treats it as a completed turn).
-            if stream_errored {
-                return;
-            }
-
-            for tool_call in &tool_calls {
-                yield Ok(tool_call.to_owned())
-            }
-
-            let Some(final_usage) = final_usage else {
-                yield Err(CompletionError::ResponseError("missing Responses usage".into()));
-                return;
-            };
-            if final_usage.token_usage().is_none() {
-                yield Err(CompletionError::ResponseError("inconsistent Responses usage".into()));
-                return;
-            }
-            span.record("gen_ai.usage.input_tokens", final_usage.input_tokens);
-            span.record("gen_ai.usage.output_tokens", final_usage.output_tokens);
-            tracing::info!("OpenAI stream finished");
-
-            yield Ok(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-                usage: final_usage,
-                request_context: None,
-                request_usage: Vec::new(),
-            }));
-        }.instrument(span);
-
-        Ok(streaming::StreamingCompletionResponse::stream(Box::pin(
-            stream,
-        )))
-    }
 }

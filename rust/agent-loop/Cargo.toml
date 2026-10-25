@@ -57,6 +57,7 @@ codelet-cli.workspace = true
 test-support = ["codelet-providers/test-support"]
 
 [dev-dependencies]
+keyring.workspace = true
 tracing-subscriber.workspace = true
 proptest.workspace = true
 tempfile.workspace = true

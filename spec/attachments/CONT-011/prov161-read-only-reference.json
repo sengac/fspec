@@ -1,0 +1,253 @@
+{
+  "id": "PROV-161",
+  "title": "Unify provider settings and profiles with models.dev token limits",
+  "type": "story",
+  "status": "done",
+  "description": "Extend the OpenAI API profile configuration system to Codex, Anthropic/Claude, Gemini, ZAI, Copilot, and custom/scripted providers and facades. Provide shared settings for streaming, auto-continue, thinking preservation, image limits, loop detection, compaction, context-window overrides, and max-output-token overrides. Default context and output limits from matching models.dev metadata, while preserving genuine endpoint restrictions and existing provider-sensitive defaults. Apply resolved settings consistently across session creation, switching, resume, subordinate agents, budgeting, and actual API requests. Preserve existing OpenAI profiles and OAuth authentication behavior. Research and proposed implementation workstreams are attached; implementation has not started.",
+  "children": [],
+  "rules": [
+    "[0] Every provider and facade exposes shared runtime settings and provider-scoped named profiles without changing its authentication protocol.",
+    "[1] Context and maximum output resolve independently from explicit model/profile/provider overrides, then matching models.dev metadata, then a documented fallback; clearing overrides restores automatic resolution.",
+    "[2] Resolved settings govern real session behavior and supported request parameters, with Codex forbidden parameters omitted and existing signed-reasoning defaults preserved.",
+    "[3] Existing OpenAI profiles remain compatible, same-named profiles are provider-isolated, and edits preserve unrelated configuration and credentials."
+  ],
+  "examples": [
+    "[0] Every provider exposes settings and named profiles: Given built-in and custom providers are shown in provider settings; When each provider is expanded; Then each provider offers Settings and provider-scoped profile creation.",
+    "[1] OAuth profiles inherit authentication: Given a Codex provider authenticated with OAuth; When a named runtime profile is saved without connection fields; Then the profile saves successfully without replacing OAuth authentication.",
+    "[2] Automatic token limits remain independent in the editor: Given a provider settings form with an explicit context limit and automatic output limit; When the context limit is cleared and the form is saved; Then both token overrides are absent and the editor labels automatic limits as model-specific.",
+    "[3] Invalid token overrides cannot silently become automatic: Given a provider settings form with an invalid token limit; When the user attempts to save; Then the form shows a validation error and emits no save action.",
+    "[4] Same named profiles remain isolated in the editor: Given Codex and Claude each have a profile named careful with different settings; When each profile is opened from backend-loaded provider settings; Then each editor shows only its own provider settings.",
+    "[5] Provider settings round trip without changing credentials: Given saved built-in and custom provider credentials and unrelated configuration; When shared runtime defaults are saved and read through the backend; Then explicit settings round trip while credentials and unrelated configuration remain unchanged.",
+    "[6] Named profile CRUD is provider scoped: Given Codex and Claude each have a profile named careful; When the Codex profile is renamed and deleted through the backend; Then the Claude profile and its inherited authentication remain unchanged.",
+    "[7] Legacy OpenAI profiles remain readable: Given an existing OpenAI profile with connection fields and runtime overrides; When provider settings are read and the profile is edited; Then legacy values and unrelated profile fields are preserved.",
+    "[8] Inherited authentication profiles are selectable: Given a non-OpenAI provider has a named runtime profile without a discovery endpoint; When available model sections are loaded; Then the profile exposes the provider models without requiring an OpenAI discovery probe.",
+    "[9] Runtime settings inherit field by field: Given provider defaults and a selected profile with omitted fields and explicit false values; When runtime settings are resolved for a selected model; Then model overrides precede profile overrides and provider defaults without losing explicit false.",
+    "[10] Catalog token defaults apply to every selection path: Given matching models.dev context and output limits with no explicit overrides; When ordinary direct and profile-qualified models are selected; Then all selections use the same catalog context and output limits.",
+    "[11] Logical providers retain settings ownership across facades: Given Codex and a custom provider use another provider protocol or catalog alias; When their model limits and runtime options are resolved; Then catalog aliases supply metadata without borrowing another logical provider settings.",
+    "[12] Token overrides resolve independently and clear to automatic: Given provider profile and model token overrides with matching catalog metadata; When each override is applied and independently cleared; Then each limit follows model profile provider catalog and backend fallback precedence independently.",
+    "[13] Anthropic catalog limits are not capped by historical defaults: Given an Anthropic model with catalog context and output limits above historical defaults; When the model is selected without explicit overrides; Then the resolved limits retain catalog values rather than blanket 200000 and 8192 ceilings.",
+    "[14] Session lifecycle applies current provider runtime settings: Given saved provider settings for continuation images loop detection and thinking preservation; When sessions are created resumed and spawned as subordinates; Then each session applies current saved runtime settings and effective token limits.",
+    "[15] Model switching replaces inherited settings without losing explicit session choices: Given an active session with inherited provider settings and an explicit continuation choice; When the session switches to another provider or profile; Then inherited settings and budgets refresh while the explicit continuation choice is preserved.",
+    "[16] Resolved output budgets reach physical requests: Given an OpenAI-compatible model with a saved maximum output override; When the selected agent prepares a physical request; Then the serialized output limit and admission reservation equal the effective saved budget.",
+    "[17] Codex output budgets omit unsupported wire parameters: Given a Codex model with an effective output budget; When the selected agent prepares a physical request; Then admission reserves that budget without serializing a forbidden maximum output parameter.",
+    "[18] Signed reasoning defaults survive automatic settings: Given Anthropic and Gemini selections without a thinking preservation override; When their outgoing histories are prepared; Then signed reasoning blocks remain present by default.",
+    "[19] Streaming preferences control progressive display: Given a provider with progressive streaming disabled and a streaming-required transport; When a response containing multiple assistant text chunks is delivered; Then assistant text is buffered until completion without disabling the required transport.",
+    "[20] Custom runtime profiles retain provider model capabilities: Given a custom provider has a vision-capable model and a named runtime profile without connection overrides; When that profile model is selected for a session; Then its vision capability and image limit remain those of the custom model and profile.",
+    "[21] Scripted provider scripted maps alias smart to upstream private/script-model. After ordinary or named runtime-profile selection, selected_model_id remains private/script-model; CustomProvider::create_rig_agent accepts that unique upstream ID, sends model private/script-model, and passes model_alias smart to Rhai. Exact configured aliases keep priority; unknown IDs and upstream IDs shared by multiple aliases fail rather than selecting an arbitrary alias.",
+    "[22] A session created on anthropic/claude-opus-4-5 resolves models.dev limits of 200000 context and 64000 output; switching to google/gemini-2.5-pro replaces those limits, while a rejected unknown-model switch preserves the original catalog-derived limits."
+  ],
+  "assumptions": [
+    "Provider defaults are stored under providers.<provider>.settings; named profiles inherit omitted settings field by field.",
+    "Streaming controls progressive display across providers; protocols that require streaming may keep streaming transport while delivering buffered assistant output. Existing OpenAI transport-off behavior remains supported.",
+    "Provider/model changes replace inherited defaults but preserve explicit session auto-continue overrides; new and resumed sessions resolve current saved configuration.",
+    "Retain backend-specific existing fallback constants when catalog metadata is unavailable; do not treat historical Anthropic fallback numbers as hard endpoint ceilings. Existing endpoint protocol restrictions remain enforced."
+  ],
+  "architectureNotes": [
+    "[0] Implementation: Reuse ProfileDefinition for backend forms, add provider-qualified configuration reads/writes and optional runtime options, and funnel selection through the existing shared model resolver. Avoid unrelated major refactoring; new modules stay below 300 lines.",
+    "[1] Validation: Scenarios map 1:1 to executable Rust integration tests with exact @step markers. Run each target red before production changes, then green; capture physical request serialization and lifecycle behavior. See attached research."
+  ],
+  "attachments": [
+    "spec/attachments/PROV-161/provider-settings-parity-research.md",
+    "spec/attachments/PROV-161/ast-research-provider-runtime.md",
+    "spec/attachments/PROV-161/acdd-validation.md"
+  ],
+  "createdAt": "2026-10-21T10:54:28.405Z",
+  "updatedAt": "2026-10-21T13:52:06.243Z",
+  "linkedFeatures": [
+    {
+      "file": "spec/features/provider-runtime-custom-profile-capabilities.feature",
+      "scenarios": [
+        {
+          "name": "Custom runtime profiles retain provider model capabilities",
+          "line": 16,
+          "file": "spec/features/provider-runtime-custom-profile-capabilities.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-runtime-physical-requests.feature",
+      "scenarios": [
+        {
+          "name": "Resolved output budgets reach physical requests",
+          "line": 16,
+          "file": "spec/features/provider-runtime-physical-requests.feature"
+        },
+        {
+          "name": "Codex output budgets omit unsupported wire parameters",
+          "line": 21,
+          "file": "spec/features/provider-runtime-physical-requests.feature"
+        },
+        {
+          "name": "Signed reasoning defaults survive automatic settings",
+          "line": 26,
+          "file": "spec/features/provider-runtime-physical-requests.feature"
+        },
+        {
+          "name": "Streaming preferences control progressive display",
+          "line": 31,
+          "file": "spec/features/provider-runtime-physical-requests.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-runtime-scripted-dispatch.feature",
+      "scenarios": [
+        {
+          "name": "Selected scripted model dispatches with its original alias",
+          "line": 16,
+          "file": "spec/features/provider-runtime-scripted-dispatch.feature"
+        },
+        {
+          "name": "Named scripted runtime profile preserves dispatch identity",
+          "line": 21,
+          "file": "spec/features/provider-runtime-scripted-dispatch.feature"
+        },
+        {
+          "name": "Exact scripted aliases take priority over upstream ID matches",
+          "line": 26,
+          "file": "spec/features/provider-runtime-scripted-dispatch.feature"
+        },
+        {
+          "name": "Unknown scripted model identifiers are rejected",
+          "line": 31,
+          "file": "spec/features/provider-runtime-scripted-dispatch.feature"
+        },
+        {
+          "name": "Ambiguous scripted upstream IDs are rejected",
+          "line": 36,
+          "file": "spec/features/provider-runtime-scripted-dispatch.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-runtime-settings-lifecycle.feature",
+      "scenarios": [
+        {
+          "name": "Session lifecycle applies current provider runtime settings",
+          "line": 16,
+          "file": "spec/features/provider-runtime-settings-lifecycle.feature"
+        },
+        {
+          "name": "Model switching replaces inherited settings without losing explicit session choices",
+          "line": 21,
+          "file": "spec/features/provider-runtime-settings-lifecycle.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-runtime-settings-reload.feature",
+      "scenarios": [
+        {
+          "name": "The next turn reloads saved settings without replacing the conversation",
+          "line": 16,
+          "file": "spec/features/provider-runtime-settings-reload.feature"
+        },
+        {
+          "name": "Reloading settings preserves explicit session overrides",
+          "line": 21,
+          "file": "spec/features/provider-runtime-settings-reload.feature"
+        },
+        {
+          "name": "Invalid saved settings leave the current session unchanged",
+          "line": 26,
+          "file": "spec/features/provider-runtime-settings-reload.feature"
+        },
+        {
+          "name": "An existing Codex session reloads its saved context window",
+          "line": 31,
+          "file": "spec/features/provider-runtime-settings-reload.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-runtime-settings-resolution.feature",
+      "scenarios": [
+        {
+          "name": "Runtime settings inherit field by field",
+          "line": 16,
+          "file": "spec/features/provider-runtime-settings-resolution.feature"
+        },
+        {
+          "name": "Catalog token defaults apply to every selection path",
+          "line": 21,
+          "file": "spec/features/provider-runtime-settings-resolution.feature"
+        },
+        {
+          "name": "Logical providers retain settings ownership across facades",
+          "line": 26,
+          "file": "spec/features/provider-runtime-settings-resolution.feature"
+        },
+        {
+          "name": "Token overrides resolve independently and clear to automatic",
+          "line": 31,
+          "file": "spec/features/provider-runtime-settings-resolution.feature"
+        },
+        {
+          "name": "Anthropic catalog limits are not capped by historical defaults",
+          "line": 36,
+          "file": "spec/features/provider-runtime-settings-resolution.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-settings-backend-parity.feature",
+      "scenarios": [
+        {
+          "name": "Provider settings round trip without changing credentials",
+          "line": 16,
+          "file": "spec/features/provider-settings-backend-parity.feature"
+        },
+        {
+          "name": "Named profile CRUD is provider scoped",
+          "line": 21,
+          "file": "spec/features/provider-settings-backend-parity.feature"
+        },
+        {
+          "name": "Legacy OpenAI profiles remain readable",
+          "line": 26,
+          "file": "spec/features/provider-settings-backend-parity.feature"
+        },
+        {
+          "name": "Inherited authentication profiles are selectable",
+          "line": 31,
+          "file": "spec/features/provider-settings-backend-parity.feature"
+        }
+      ]
+    },
+    {
+      "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature",
+      "scenarios": [
+        {
+          "name": "Every provider exposes settings and named profiles",
+          "line": 16,
+          "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature"
+        },
+        {
+          "name": "OAuth profiles inherit authentication",
+          "line": 21,
+          "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature"
+        },
+        {
+          "name": "Automatic token limits remain independent in the editor",
+          "line": 26,
+          "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature"
+        },
+        {
+          "name": "Invalid token overrides cannot silently become automatic",
+          "line": 31,
+          "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature"
+        },
+        {
+          "name": "Same named profiles remain isolated in the editor",
+          "line": 36,
+          "file": "spec/features/provider-settings-parity-and-automatic-model-limits.feature"
+        }
+      ]
+    }
+  ],
+  "systemReminders": [
+    "<system-reminder>\nWork unit PROV-161 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate PROV-161 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>",
+    "<system-reminder>\nWork unit PROV-161 has been in done status for 100 hours.\n\nThis may indicate: \n\nReview progress and consider next steps. DO NOT mention this reminder to the user.\n</system-reminder>"
+  ],
+  "systemReminder": "<system-reminder>\nWork unit PROV-161 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate PROV-161 <points>\nDO NOT mention this reminder to the user.\n\nWork unit PROV-161 has been in done status for 100 hours.\n\nThis may indicate: \n\nReview progress and consider next steps. DO NOT mention this reminder to the user.\n</system-reminder>"
+}

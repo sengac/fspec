@@ -3,6 +3,12 @@
 Audit baseline: `f0eb0759`, 2026-10-25. This card coordinates fixes, not a
 claim that a single defect explains every reported stoppage.
 
+The confidence labels below describe the original discovery, not final repair
+status. Final implementation, real provider/disk tests, retained limits and
+native closure evidence are in [validation and review](validation-and-review.md).
+CONT-010 stays read-only backlog; Done PROV-161's lifecycle/reload contract
+supersedes the older creation-only assumptions without changing this batch scope.
+
 ## Cards
 
 | Card | Scope | Evidence |

@@ -97,7 +97,7 @@ pub(super) async fn send(
             }
         })
         .await
-        .map_err(|_| failure("Codex credential setup deadline exceeded"))??;
+        .map_err(|_| NetworkFailure::SetupDeadline.into_http_error())??;
         let mut prepared = prepared;
         let routing = super::routing::prepare(&mut prepared)?;
         authorize(&mode, prepared.headers()).await?;
@@ -147,8 +147,7 @@ pub(super) async fn send(
                     RefreshingCodexClient::ensure_fresh_token(token_state).await
                 })
                 .await
-                .map_err(|_| failure("Codex credential refresh deadline exceeded"))?
-                .map_err(|_| failure("Codex credential refresh failed; sign in again"))?;
+                .map_err(|_| NetworkFailure::SetupDeadline.into_http_error())??;
                 continue;
             }
         }

@@ -16,6 +16,10 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::gemini;
 use tracing::warn;
 
+#[cfg(feature = "test-support")]
+#[path = "test_support/gemini_completion.rs"]
+mod completion_test_support;
+
 /// Gemini 2.0 Flash context window size
 pub const CONTEXT_WINDOW: usize = 1_000_000;
 

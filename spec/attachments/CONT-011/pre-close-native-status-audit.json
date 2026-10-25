@@ -1,0 +1,1357 @@
+[
+  {
+    "id": "BUG-259",
+    "title": "Prevent transient recovery-lock contention from interrupting streaming during shell spawning",
+    "type": "bug",
+    "status": "done",
+    "description": "On macOS, concurrent shell process spawning can temporarily retain inherited recovery-lock descriptors after the parent closes them. RecoveryLease::acquire uses immediate File::try_lock and relies on close for release; transient contention becomes a persistence error that interrupts a healthy stream. Confirmed at 2026-10-25 18:19:48 local for session 308a34d0-20a1-4209-b979-9e6d4331faa4 in ~/.fspec/logs/private/fspec-combined.log.2026-10-25:1149. Reproduced against compiled production libraries: 39/50574 and 29/51911 failed lease acquisitions during shell spawning; no-spawn and explicit-unlock controls passed. Commit f0eb0759 did not change this lease behavior. Add acceptance criteria and regression tests for spawn overlap and short-lived contention; implement explicit lock release and bounded contention handling while preserving deletion lock order, retained originals, and independent-session progress. Historical lock-holder PID was not logged; the mechanism is independently reproduced. Detailed research and reproduction evidence are attached.",
+    "children": [],
+    "rules": [
+      "[0] Recovery lease release explicitly unlocks the existing lock inode; transient contention retries for a finite deadline and persistent contention preserves WouldBlock without weakening mutual exclusion or session deletion lock order."
+    ],
+    "examples": [
+      "[0] A short-lived recovery lease holder releases after 40 ms; opening the persistence spool waits within a bounded deadline and retains authentic pending output instead of interrupting the stream.",
+      "[1] While a session recovery lock remains held beyond the retry budget, another session still progresses and the waiting session returns a typed contention error without stealing or deleting the lock.",
+      "[2] Concurrent shell spawning does not prolong a released recovery lock or interrupt authentic persisted output; dropping a lease explicitly unlocks its shared file description."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-259/fspec-recovery-lock-investigation.md",
+      "spec/attachments/BUG-259/fspec-recovery-lock-investigation.rs",
+      "spec/attachments/BUG-259/fspec-recovery-lock-investigation-tests.log",
+      "spec/attachments/BUG-259/fspec-recovery-lock-investigation-repeat.log",
+      "spec/attachments/BUG-259/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:35:26.734Z",
+    "updatedAt": "2026-10-25T09:19:00.161Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/bounded-recovery-lock-contention.feature",
+        "scenarios": [
+          {
+            "name": "Short recovery contention preserves authentic pending output",
+            "line": 21,
+            "file": "spec/features/bounded-recovery-lock-contention.feature"
+          },
+          {
+            "name": "Persistent contention is bounded and isolated",
+            "line": 26,
+            "file": "spec/features/bounded-recovery-lock-contention.feature"
+          },
+          {
+            "name": "Shell spawning does not extend released recovery ownership",
+            "line": 31,
+            "file": "spec/features/bounded-recovery-lock-contention.feature"
+          },
+          {
+            "name": "Non contention filesystem failures propagate immediately",
+            "line": 36,
+            "file": "spec/features/bounded-recovery-lock-contention.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-259 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-259 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-259 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-259 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-260",
+    "title": "Preserve Codex refusal history across follow-up requests",
+    "type": "bug",
+    "status": "done",
+    "description": "Reproduced against the compiled production provider at f0eb0759: checkpoint a refusal answer, reconstruct the same visible assistant text, and prepare a follow-up request; CodexHistory rejects assistant/tool-result/DAG ancestry. An ordinary output_text control succeeds. answers.rs flattens refusal to visible text while history_projection.rs recognizes only output_text. New native history path introduced in 2699693b. Add a failing follow-up transport/history regression, reconcile the readable projection with preserved native refusal items, and cover nudge, tool-result and next-user-message paths without weakening lineage checks or changing refusal semantics. Research and reproduction evidence attached; PROV-148 refusal-display tests currently cover only one response.",
+    "epic": "completion-contract",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Compare the readable assistant projection of refusal and output_text consistently while replaying the original typed refusal and opaque reasoning unchanged. Subsequent nudges, user messages and tool results must pass genuine ancestry validation; altered assistant text, mismatched calls and unknown content metadata must still fail closed. This does not authorize protocol-level refusal replay or change refusal semantics."
+    ],
+    "examples": [
+      "[0] After refusal-only or mixed text/refusal answers, a user message or ordinary continuation nudge reaches the provider with the original typed answer and encrypted reasoning intact, whether readable reasoning is enabled or disabled.",
+      "[1] After mixed refusal and tool-call output, submitting the genuine tool result reaches the provider once with its original call identity; changing the visible refusal text instead prevents any follow-up inference."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-260/codex-refusal-history.md",
+      "spec/attachments/BUG-260/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:36:07.388Z",
+    "updatedAt": "2026-10-25T09:29:53.250Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/codex-refusal-history-continuation.feature",
+        "scenarios": [
+          {
+            "name": "User messages and nudges retain native refusal history",
+            "line": 19,
+            "file": "spec/features/codex-refusal-history-continuation.feature"
+          },
+          {
+            "name": "Tool results retain refusal and call identity",
+            "line": 24,
+            "file": "spec/features/codex-refusal-history-continuation.feature"
+          },
+          {
+            "name": "Altered readable refusal ancestry remains rejected",
+            "line": 29,
+            "file": "spec/features/codex-refusal-history-continuation.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-260 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-260 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-260 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-260 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-261",
+    "title": "Preserve retryable network failures during Codex forced token refresh",
+    "type": "bug",
+    "status": "done",
+    "description": "Source-confirmed in the new 2699693b Codex recovery path: after HTTP 401, recovery.rs converts refresh timeout and every refresh error into generic sign-in-again strings, erasing the NetworkFailure identity that reconnect.rs requires. An issuer outage can therefore terminate continuation rather than enter recovery. Add real 401 -> issuer offline/setup-timeout -> recovery tests; preserve typed retryable causes and distinguish credential rejection from network failure. Retain cancellation, refresh deadlines, stale-token race protection and retry bounds. Existing refresh tests cover successful/rejected post-401 refresh and proactive offline refresh, not their composition.",
+    "epic": "provider-resilience",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] A forced refresh after HTTP 401 must preserve typed network failures and setup deadlines into the existing bounded recovery engine; actual rejected or malformed credentials remain terminal and actionable. Cancellation, stale-token race protection, refresh synchronization, retry limits and safe diagnostics remain unchanged."
+    ],
+    "examples": [
+      "[0] A real request gets HTTP 401, then the synthetic issuer is offline or stalls beyond setup timeout: the original request enters the appropriate recovery state, and cancellation stops it promptly without extra user input or credential leakage. A rejected refresh instead ends without network recovery."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-261/codex-forced-refresh.md",
+      "spec/attachments/BUG-261/validation-blocker.md",
+      "spec/attachments/BUG-261/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:36:18.880Z",
+    "updatedAt": "2026-10-25T10:15:29.329Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/codex-forced-refresh-recovery.feature",
+        "scenarios": [
+          {
+            "name": "Forced refresh network failures enter cancellable recovery",
+            "line": 19,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          },
+          {
+            "name": "Credential rejection remains terminal after unauthorized inference",
+            "line": 24,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          },
+          {
+            "name": "Repeated refresh deadlines retain bounded retry behavior",
+            "line": 29,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          },
+          {
+            "name": "Forced refresh retains typed failure causes at the HTTP boundary",
+            "line": 34,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          },
+          {
+            "name": "Approved test transport is restricted to numeric loopback HTTP",
+            "line": 39,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          },
+          {
+            "name": "Missing synthetic credential homes return controlled fixture errors",
+            "line": 44,
+            "file": "spec/features/codex-forced-refresh-recovery.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-261 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-261 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-261 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-261 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-262",
+    "title": "Preserve streamed OpenAI tool-call order before accepted Done",
+    "type": "bug",
+    "status": "done",
+    "description": "The native Chat Completions SSE decoder accumulates indexed calls in a HashMap and emits unsorted iteration order at both tool flush sites. A batch with earlier ordinary work and later Done can execute Done first; the shared immediate-completion branch drops the stream and leaves earlier work unexecuted. Native OpenAI, ZAI and native Copilot share this decoder. This is a longstanding defect, not established as a last-month introduction. Add real mixed-tool/Done transport regressions for fragmented arguments and both flush paths; execute calls in provider index order while retaining immediate accepted Done termination and cancellation of genuinely trailing tools. Compare with nonstreaming response-vector order.",
+    "epic": "completion-contract",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Chat streaming tool calls execute in provider index order at both terminal and EOF flush paths, preserving fragmented IDs and arguments and JSON vector-order parity. Accepted native Done still stops consumption immediately; later indexed tools must not execute. The oversized existing streaming file will be mechanically separated into decoder and unit-test modules without changing their behavior before the ordered-map repair."
+    ],
+    "examples": [
+      "[0] The provider delivers reverse-arriving fragmented ordinary calls at indexes 0 through 31, native Done at 32, and trailing work at 33. On tool_calls finish or EOF after a stop finish, all earlier side effects complete in index order, Done is genuinely accepted, and trailing work is cancelled; a nonstreaming JSON vector behaves identically."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-262/chat-tool-order.md",
+      "spec/attachments/BUG-262/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:36:31.077Z",
+    "updatedAt": "2026-10-25T10:34:02.614Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/ordered-chat-completion-tools.feature",
+        "scenarios": [
+          {
+            "name": "Tool finish flush preserves provider index order before Done",
+            "line": 19,
+            "file": "spec/features/ordered-chat-completion-tools.feature"
+          },
+          {
+            "name": "EOF flush preserves provider index order before Done",
+            "line": 24,
+            "file": "spec/features/ordered-chat-completion-tools.feature"
+          },
+          {
+            "name": "JSON response vector retains streaming ordering parity",
+            "line": 29,
+            "file": "spec/features/ordered-chat-completion-tools.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-262 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-262 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-262 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-262 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-263",
+    "title": "Require honest OpenAI Chat terminal evidence before completion",
+    "type": "bug",
+    "status": "done",
+    "description": "Chat SSE currently ignores [DONE], logs/skips schema-mismatching frames, and accepts EOF plus valid usage without any finish_reason. Tools are exposed before later terminal usage validation, so accepted Done can drop the stream before malformed/missing terminal evidence or a later provider failure is observed. The 2699693b usage hardening does not close these composition gaps. Specify and test valid terminal evidence, error-envelope preservation, usage-bearing premature EOF, and Done-bearing malformed streams across SSE and JSON-to-stream paths. Preserve normal low-latency tool execution where valid, fail-closed terminal validation, honest billing/context settlement and immediate accepted Done semantics; never drain trailing executable tools as a workaround. Shared decoder affects native OpenAI, ZAI and Copilot.",
+    "epic": "provider-resilience",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Chat success requires a nonempty finish reason and consistent usage, closed by explicit [DONE] or transport EOF. EOF alone, malformed frames and provider error envelopes fail closed with actionable causes. Keep progressive text and tool deltas, but do not expose executable calls until the terminal boundary validates; accepted Done still exits immediately without executing trailing calls. JSON adaptation obeys the same evidence checks."
+    ],
+    "examples": [
+      "[0] Usage-bearing EOF without finish reason and Done-bearing missing/inconsistent usage or a later provider failure must not accept Done. Valid finish plus trailing usage closed by [DONE] settles promptly even if TCP stays open, preserving usage and ordered earlier work; valid JSON remains equivalent."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-263/chat-terminal-evidence.md",
+      "spec/attachments/BUG-263/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:36:45.102Z",
+    "updatedAt": "2026-10-25T10:47:37.806Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/honest-chat-terminal-evidence.feature",
+        "scenarios": [
+          {
+            "name": "Usage without a finish reason cannot declare completion",
+            "line": 20,
+            "file": "spec/features/honest-chat-terminal-evidence.feature"
+          },
+          {
+            "name": "Malformed and provider error frames retain actionable causes",
+            "line": 25,
+            "file": "spec/features/honest-chat-terminal-evidence.feature"
+          },
+          {
+            "name": "Done cannot conceal invalid terminal evidence",
+            "line": 30,
+            "file": "spec/features/honest-chat-terminal-evidence.feature"
+          },
+          {
+            "name": "Valid native Done settles physical usage before immediate completion",
+            "line": 35,
+            "file": "spec/features/honest-chat-terminal-evidence.feature"
+          },
+          {
+            "name": "Explicit terminal marker settles without waiting for EOF",
+            "line": 40,
+            "file": "spec/features/honest-chat-terminal-evidence.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-263 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-263 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-263 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-263 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-264",
+    "title": "Preserve OpenAI Responses failed and incomplete terminal semantics",
+    "type": "bug",
+    "status": "done",
+    "description": "The ordinary patched-rig Responses parser recognizes response.failed/incomplete variants but processes only ResponseCompleted. Failed-response details and incomplete/max-output-token reasons are discarded, generally yielding missing Responses usage; its streaming final type also lacks a stop_reason override. Buffered function calls are emitted before usage validation, allowing accepted Done to conceal later terminal rejection. Add real SSE regressions preserving typed backend errors, truncation recovery metadata and terminal validation before accepted completion; retain BUG-208 type:error handling and immediate Done behavior. Scope explicitly excludes the dedicated CodexResponsesModel: native fspec OpenAIProvider uses Chat, and this generic Responses path is a latent adapter defect rather than a proven live Codex cause.",
+    "epic": "provider-resilience",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Ordinary Responses failed terminals preserve typed backend code/message; incomplete max_output_tokens and content_filter carry normalized stop metadata and never execute queued calls. Completed terminals require consistent usage before executable calls. Settle physical final before native Done, preserve call_id pairing, reject mismatched or missing terminal evidence, retain explicit type:error behavior. Dedicated Codex policy remains unchanged; only its shared-final initializer receives a compatibility default."
+    ],
+    "examples": [
+      "[0] A real local Responses stream fails after queuing Done: backend code/message survive without acceptance or trailing work. Incomplete max-output carries max_tokens and content-filter carries content_filter with billed usage and no tool execution. Valid completed native Done is billed exactly once before acceptance and keeps distinct item/call IDs. Explicit type:error still fails and metadata-only completed terminals are accepted when valid."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-264/responses-terminal-semantics.md",
+      "spec/attachments/BUG-264/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:36:57.140Z",
+    "updatedAt": "2026-10-25T11:02:05.833Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/responses-terminal-semantics.feature",
+        "scenarios": [
+          {
+            "name": "Failed Responses retain backend causes without tools",
+            "line": 21,
+            "file": "spec/features/responses-terminal-semantics.feature"
+          },
+          {
+            "name": "Incomplete Responses preserve normalized recovery metadata",
+            "line": 26,
+            "file": "spec/features/responses-terminal-semantics.feature"
+          },
+          {
+            "name": "Invalid terminal evidence cannot be hidden by native Done",
+            "line": 31,
+            "file": "spec/features/responses-terminal-semantics.feature"
+          },
+          {
+            "name": "Completed native Done settles once with paired invocation identities",
+            "line": 36,
+            "file": "spec/features/responses-terminal-semantics.feature"
+          },
+          {
+            "name": "Explicit backend errors and metadata completions retain their contracts",
+            "line": 41,
+            "file": "spec/features/responses-terminal-semantics.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-264 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-264 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-264 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-264 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-265",
+    "title": "Preserve continuation budgets and goal rejection counts across recovery dispatch",
+    "type": "bug",
+    "status": "done",
+    "description": "The shared agent loop calls sync_completion_contract_for_user_turn for real inputs and synthetic outer recovery retries alike. The helper unconditionally resets continue_nudges_used and always calls set_session_goal, which resets registry rejections even for the same goal. This violates CONT-002 real-user-turn budget boundaries and CONT-003 goal-lifetime rejection counting. Separate state synchronization from genuine user-turn resets and goal-change resets. Cover automatic compaction, loop-abort corrective retries, repeated unchanged goals and genuine new tasks. Preserve CONT-008 generation/race guards and CONT-009 arming order; ordinary in-stream nudges already avoid this helper. Source-confirmed and pre-existing, not attributed solely to October changes.",
+    "estimate": 5,
+    "epic": "completion-contract",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Only an admitted genuine user input resets the per-task zero-progress nudge budget. Automatic compaction and loop-abort corrective dispatch synchronize the completion contract without starting a new task.",
+      "[1] Done rejections belong to the active goal lifetime, not a dispatch or user-turn lifetime. Resynchronizing the same goal preserves registry and inner rejection accounting; replacing or clearing the goal resets it.",
+      "[2] Recovery and genuine dispatch retain CONT-008 goal generation/replacement guards and CONT-009 arming before output/provider construction; four rejected Done calls must still reach escalation across recovery."
+    ],
+    "examples": [
+      "[0] Automatic compaction after one real zero-progress nudge preserves the used nudge, so a budget of one allows no extra post-recovery nudge.",
+      "[1] A repetitive-output corrective retry after one real zero-progress nudge preserves that nudge; it cannot renew a budget of one.",
+      "[2] After a task exhausts its one-nudge budget, a genuine next user task receives exactly one fresh nudge.",
+      "[3] Two rejected Done calls before automatic compaction and two after it reach the four-rejection human-review threshold for the unchanged goal.",
+      "[4] Two rejected Done calls before a repetitive-output corrective retry and two after it reach the same four-rejection human-review threshold.",
+      "[5] A real next user message with an unchanged goal preserves earlier Done rejections, including when the user sets the same goal text and verification again.",
+      "[6] Replacing an active goal starts fresh rejection accounting for the replacement; clearing it removes the contract and resets both rejection counts without resurrecting the old goal."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-265/recovery-contract-accounting.md",
+      "spec/attachments/BUG-265/module-plan.md",
+      "spec/attachments/BUG-265/preparation-checkpoint.md",
+      "spec/attachments/BUG-265/runtime-red-checkpoint.md",
+      "spec/attachments/BUG-265/source-shape-reconciliation-approval.md",
+      "spec/attachments/BUG-265/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:37:09.257Z",
+    "updatedAt": "2026-10-25T13:35:57.367Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/recovery-completion-accounting.feature",
+        "scenarios": [
+          {
+            "name": "Automatic compaction preserves the consumed nudge budget",
+            "line": 23,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "Loop-abort recovery preserves the consumed nudge budget",
+            "line": 29,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "A genuine next user task receives a fresh nudge budget",
+            "line": 35,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "Rejections across automatic compaction reach goal escalation",
+            "line": 40,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "Rejections across loop-abort recovery reach goal escalation",
+            "line": 46,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "Genuine user dispatch and identical goal writes preserve rejections",
+            "line": 52,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          },
+          {
+            "name": "Replacing and clearing a goal reset its rejection accounting",
+            "line": 58,
+            "file": "spec/features/recovery-completion-accounting.feature"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "BUG-266",
+    "title": "Settle custom provider stops without dropping trailing usage or waiting for EOF",
+    "type": "bug",
+    "status": "done",
+    "description": "Rhai handle_stop marks the parser terminated, suppressing later usage-only frames, while stream_http continues polling until [DONE] or EOF. OpenAI-compatible scripts that map finish_reason to stop can lose trailing usage and delay FinalResponse/auto-continue into stall handling when the connection stays open. Define and test a coherent stop/usage/error lifecycle, including usage after finish_reason, stop followed by a pending connection, and stop followed by transport failure. Existing bug227 fixtures generally put usage before stop, and a post-stop transport-failure test deliberately expects failure; reconcile that contract before changing semantics. Preserve fail-closed terminal validation and accurate request settlement. Source-confirmed plumbing issue; user-installed scripts were not audited.",
+    "epic": "provider-resilience",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] A script stop ends content, not transport parsing: later usage remains observable until [DONE] or clean EOF; post-stop text/tools cannot extend the completed content.",
+      "[1] Explicit [DONE] settles immediately without reading EOF; clean EOF after stop succeeds, missing terminal evidence and pre-boundary transport errors remain typed failures. Stop alone on an open connection is not successful settlement.",
+      "[2] The actual rig adapter settles exact physical usage before releasing buffered executable calls, so native Done cannot conceal trailing usage or failure."
+    ],
+    "examples": [
+      "[0] A stop then usage then [DONE] on a connection still open produces exact final usage without waiting for EOF.",
+      "[1] A stop then usage then clean EOF preserves usage; a post-stop body failure stays an error with no successful final or executable tools.",
+      "[2] Missing terminal evidence fails; stop-only open transport remains pending and cancellation closes it.",
+      "[3] An attributed armed native Done queued before stop and trailing usage settles physical tokens once before accepting completion."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-266/custom-stream-settlement.md",
+      "spec/attachments/BUG-266/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:37:20.793Z",
+    "updatedAt": "2026-10-25T14:01:52.267Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/custom-done-settlement.feature",
+        "scenarios": [
+          {
+            "name": "Native Done cannot discard trailing physical usage",
+            "line": 17,
+            "file": "spec/features/custom-done-settlement.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/custom-stream-settlement.feature",
+        "scenarios": [
+          {
+            "name": "DONE settles trailing usage without waiting for EOF",
+            "line": 20,
+            "file": "spec/features/custom-stream-settlement.feature"
+          },
+          {
+            "name": "Clean EOF after stop retains trailing usage",
+            "line": 25,
+            "file": "spec/features/custom-stream-settlement.feature"
+          },
+          {
+            "name": "Post-stop failure cannot release executable tools",
+            "line": 30,
+            "file": "spec/features/custom-stream-settlement.feature"
+          },
+          {
+            "name": "Missing terminal evidence remains a failure",
+            "line": 35,
+            "file": "spec/features/custom-stream-settlement.feature"
+          },
+          {
+            "name": "Stop alone does not invent transport success",
+            "line": 40,
+            "file": "spec/features/custom-stream-settlement.feature"
+          },
+          {
+            "name": "Post-stop content cannot extend the completed response",
+            "line": 45,
+            "file": "spec/features/custom-stream-settlement.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-266 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-266 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-266 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-266 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-267",
+    "title": "Dispatch built-in-name scripted providers through their selected custom implementation",
+    "type": "bug",
+    "status": "done",
+    "description": "Provider discovery intentionally supports scripted shadowing of built-in names, producing Custom(claude) and analogous selections. Shared turn routing reduces the selection to a name string and matches the native built-in branch; native getters reject the Custom enum before tool registration. Preserve implementation identity across routing, including explicit facade overrides and the script-shadowing escape hatch. Add real shared-agent-loop requests using a colliding script slug; existing shadowing tests stop at enum resolution and scripted-dispatch tests use noncolliding names or direct builders. Verify armed Done registration and completion on the selected script rather than merely checking a resolver. Source-confirmed routing composition defect; not proven to be introduced by the latest extraction.",
+    "epic": "custom-provider-tui-wiring",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] Without an explicit facade override, the typed selected Custom implementation owns dispatch regardless of its slug, including built-in names and aliases. Do not rediscover selection from a name string.",
+      "[1] Keep existing explicit-facade routing and incompatible-native getter rejection unchanged. Preserve true native selection and FSPEC_DISABLE_SCRIPT_SHADOWING.",
+      "[2] Real shared-loop inference must preserve script-owned wire schema, selected model ID, native Done registration, normal attribution/admission and pre-request completion arming."
+    ],
+    "examples": [
+      "[0] Registered scripts named claude, openai, codex, gemini, zai and github-copilot receive actual shared-loop requests and accepted Done.",
+      "[1] Alias-named scripts anthropic, google, z-ai and copilot retain their selected implementation, as does a noncolliding script.",
+      "[2] A genuine native OpenAI selection and disabled shadowing send native dialect requests to loopback, not the colliding script.",
+      "[3] An explicit openai facade on Custom claude still rejects the incompatible native getter without falling back to a script or sending an external request."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-267/script-shadowing-dispatch.md",
+      "spec/attachments/BUG-267/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:37:33.975Z",
+    "updatedAt": "2026-10-25T14:15:45.094Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/scripted-provider-dispatch-identity.feature",
+        "scenarios": [
+          {
+            "name": "Built-in-name scripts receive real shared-loop requests",
+            "line": 20,
+            "file": "spec/features/scripted-provider-dispatch-identity.feature"
+          },
+          {
+            "name": "Alias-named scripts retain selected identity",
+            "line": 26,
+            "file": "spec/features/scripted-provider-dispatch-identity.feature"
+          },
+          {
+            "name": "Noncolliding custom dispatch remains compatible",
+            "line": 32,
+            "file": "spec/features/scripted-provider-dispatch-identity.feature"
+          },
+          {
+            "name": "Native selection and disabled shadowing retain native dispatch",
+            "line": 38,
+            "file": "spec/features/scripted-provider-dispatch-identity.feature"
+          },
+          {
+            "name": "Explicit incompatible facade remains fail closed",
+            "line": 44,
+            "file": "spec/features/scripted-provider-dispatch-identity.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-267 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-267 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-267 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-267 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-268",
+    "title": "Connect Copilot endpoint selection to actual provider requests",
+    "type": "bug",
+    "status": "done",
+    "description": "CopilotEndpointFacade selects Responses for certain GPT-5+ models, but native provider construction and agent return types always use Chat Completions. Middleware adds headers/cache state without rewriting endpoint or dialect. Existing routing tests invoke the helper and format a URL, not an actual provider request. Make the documented endpoint/model contract and production dispatch agree, preserving tools, history, reasoning and completion behavior for each chosen dialect. Add captured HTTP request and armed Done follow-up tests, plus Chat fallback/model exceptions. Longstanding source-confirmed integration gap from 483f50b4; not a confirmed October regression. Reuse shared adapters instead of duplicating provider logic.",
+    "epic": "provider-resilience",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] The unchanged repository selector owns actual outbound dialect for every Copilot client, native agent and nonstreaming completion front door: GPT-N >=5 Responses except exact gpt-5-mini, all other models Chat. Local tests are not live authenticated account/model support proof.",
+      "[1] Every request retains Copilot headers, zero-retention store false, native tool identities and completion settlement; short-lived token refresh must use the existing coordinator and fresh Authorization without new inference retries.",
+      "[2] Original PROV-055 and PROV-057 require the owned reasoning_opaque value unchanged on the next distinct genuine TUI user turn. Live session ownership MUST survive normal manager/provider/model reconstruction for the same logical account/deployment/model and compatible history; reconstruction alone cannot clear it.",
+      "[3] Opaque lineage is live session-owned and nonpersistent: exact compatible history ancestry and provider/account/deployment/model/generation provenance are required. Reset, compaction, model/account/deployment/history changes and failed/cancelled stale settlement fail closed. Ordinary same-account short-token refresh does not replace ownership. New/restored sessions cannot adopt caller-supplied or persisted opaque metadata; no Codex/global/durable replay changes."
+    ],
+    "examples": [
+      "[0] Captured client and nonstreaming GPT-5 requests use input on /responses; exact gpt-5-mini and GPT-4o requests use messages on /chat/completions with required headers.",
+      "[1] The actual native agent runs tool result then stop then nudge then attributed Done in each dialect, preserving physical billing and call-ID pairing.",
+      "[2] A validated numeric-loopback test issuer refreshes expired synthetic tokens before actual inference Authorization; failed refresh sends no inference request and all credentials remain in isolated storage.",
+      "[3] Two distinct real send_input user turns on one background session reconstruct Copilot providers normally; request two retains the exact owned encrypted opaque value while preserving ordinary history and tools.",
+      "[4] Same-account short-token renewal retains live lineage; model/account/deployment switch or incompatible/cleared/compacted history rejects it. A different or restored session cannot adopt opaque state."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-268/copilot-endpoint-routing.md",
+      "spec/attachments/BUG-268/composition-contract.md",
+      "spec/attachments/BUG-268/session-lineage-correction.md",
+      "spec/attachments/BUG-268/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:37:45.161Z",
+    "updatedAt": "2026-10-25T17:08:30.658Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/copilot-lineage-boundaries.feature",
+        "scenarios": [
+          {
+            "name": "Cancelled or failed requests invalidate prior owned lineage",
+            "line": 17,
+            "file": "spec/features/copilot-lineage-boundaries.feature"
+          },
+          {
+            "name": "Late superseded settlement cannot overwrite or clear newer lineage",
+            "line": 22,
+            "file": "spec/features/copilot-lineage-boundaries.feature"
+          },
+          {
+            "name": "Opaque remains private and caller supplied values are rejected",
+            "line": 27,
+            "file": "spec/features/copilot-lineage-boundaries.feature"
+          },
+          {
+            "name": "Actual provider selection invalidates Copilot without changing Codex state",
+            "line": 32,
+            "file": "spec/features/copilot-lineage-boundaries.feature"
+          },
+          {
+            "name": "Deployment identity remains distinct at the same effective API origin",
+            "line": 37,
+            "file": "spec/features/copilot-lineage-boundaries.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-live-session-opaque-lineage.feature",
+        "scenarios": [
+          {
+            "name": "Distinct genuine turns preserve owned opaque through reconstruction",
+            "line": 20,
+            "file": "spec/features/copilot-live-session-opaque-lineage.feature"
+          },
+          {
+            "name": "Same-account short-token refresh preserves live ownership",
+            "line": 26,
+            "file": "spec/features/copilot-live-session-opaque-lineage.feature"
+          },
+          {
+            "name": "Changed provenance or incompatible history invalidates opaque",
+            "line": 32,
+            "file": "spec/features/copilot-live-session-opaque-lineage.feature"
+          },
+          {
+            "name": "New and restored sessions cannot adopt opaque lineage",
+            "line": 37,
+            "file": "spec/features/copilot-live-session-opaque-lineage.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-nonstreaming-terminal-evidence.feature",
+        "scenarios": [
+          {
+            "name": "Nonstreaming Responses failures cannot authorize tools or completion",
+            "line": 17,
+            "file": "spec/features/copilot-nonstreaming-terminal-evidence.feature"
+          },
+          {
+            "name": "Nonstreaming Responses truncation preserves its terminal semantics",
+            "line": 22,
+            "file": "spec/features/copilot-nonstreaming-terminal-evidence.feature"
+          },
+          {
+            "name": "Nonstreaming Responses safety stops cannot authorize tools",
+            "line": 27,
+            "file": "spec/features/copilot-nonstreaming-terminal-evidence.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-opaque-sse-metadata.feature",
+        "scenarios": [
+          {
+            "name": "SSE metadata survives Copilot only opaque capture",
+            "line": 16,
+            "file": "spec/features/copilot-opaque-sse-metadata.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-outbound-dialect.feature",
+        "scenarios": [
+          {
+            "name": "Client model requests honor the endpoint table",
+            "line": 19,
+            "file": "spec/features/copilot-outbound-dialect.feature"
+          },
+          {
+            "name": "Nonstreaming provider requests honor both dialects",
+            "line": 24,
+            "file": "spec/features/copilot-outbound-dialect.feature"
+          },
+          {
+            "name": "Native agents retain tool nudge and Done continuation",
+            "line": 29,
+            "file": "spec/features/copilot-outbound-dialect.feature"
+          },
+          {
+            "name": "Public client agents execute in both dialects",
+            "line": 35,
+            "file": "spec/features/copilot-outbound-dialect.feature"
+          },
+          {
+            "name": "Nested Responses images retain real middleware classification",
+            "line": 40,
+            "file": "spec/features/copilot-outbound-dialect.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-request-time-refresh.feature",
+        "scenarios": [
+          {
+            "name": "Concurrent independent requests share existing token refresh coordination",
+            "line": 17,
+            "file": "spec/features/copilot-request-time-refresh.feature"
+          },
+          {
+            "name": "Refreshed effective endpoints reach the actual nonstreaming request",
+            "line": 22,
+            "file": "spec/features/copilot-request-time-refresh.feature"
+          },
+          {
+            "name": "Rejected or cancelled exchange cannot send expired authorization",
+            "line": 27,
+            "file": "spec/features/copilot-request-time-refresh.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-synthetic-issuer-isolation.feature",
+        "scenarios": [
+          {
+            "name": "Unsafe issuer destinations are rejected before requests",
+            "line": 18,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          },
+          {
+            "name": "Redirecting synthetic issuers cannot escape loopback fixtures",
+            "line": 23,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          },
+          {
+            "name": "A validated seam preserves isolated synthetic exchange behavior",
+            "line": 28,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          },
+          {
+            "name": "Changed credential roots fail closed while a fixture is active",
+            "line": 33,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          },
+          {
+            "name": "Synthetic issuer responses cannot select an external inference origin",
+            "line": 38,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          },
+          {
+            "name": "Synthetic issuer traffic cannot escape through inherited proxies",
+            "line": 43,
+            "file": "spec/features/copilot-synthetic-issuer-isolation.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/copilot-transmission-origin.feature",
+        "scenarios": [
+          {
+            "name": "Origin changes during actual transmission invalidate replay before sending",
+            "line": 16,
+            "file": "spec/features/copilot-transmission-origin.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-268 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-268 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-268 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-268 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-269",
+    "title": "Wire scripted OAuth automatic refresh into real completion requests",
+    "type": "bug",
+    "status": "done",
+    "description": "The documented ScriptedRefreshingClient ensure_fresh_if_needed helper has only test callers. The runtime custom provider path obtains script headers directly and sends through a plain HTTP client, so expired credentials are not automatically refreshed by this helper before long-running continuation requests. Trace and repair actual auth/HTTP composition for streaming and nonstreaming providers; preserve project-specific script resolution, redaction, cancellation and refresh synchronization, and do not double-refresh scripts that own refresh in their headers function. Test real provider requests using an expired synthetic token and fake refresh issuer rather than calling the helper directly. Source-confirmed integration gap; no live credential failure reproduced in this audit.",
+    "epic": "scriptable-subscription-providers",
+    "parent": "CONT-011",
+    "rules": [
+      "[0] All real custom completion front doors use the selected compiled OAuth script and existing stored-token helper before headers; never rediscover a global script or modify native provider refresh.",
+      "[1] Explicit OAuth preferred/legacy hook pairs automatically refresh; Custom headers-owned auth, bearer/API-key scripts, missing hooks and fresh/missing token controls retain existing behavior without duplicate refresh.",
+      "[2] Credential-path single-flight rechecks tokens under the lock; admitted synchronous refresh may settle/persist after caller cancellation, while cancellation/deadlines prevent inference and root changes fail closed. No new retry or deadline policy.",
+      "[3] Rejected and transient refresh failures send no inference, retain stored credentials, redact diagnostics and permit a later explicit request by existing refresh evaluation."
+    ],
+    "examples": [
+      "[0] All four actual streaming/nonstreaming front doors refresh expired synthetic tokens at a local issuer and send exactly one freshly authorized inference each, including legacy hook names.",
+      "[1] Independently reconstructed concurrent providers sharing a credential path exchange once; project-selected scripts beat unrelated global scripts and a changed credential root fails closed.",
+      "[2] A self-refreshing Custom headers function exchanges only once; fresh/missing tokens and absent hooks remain valid without middleware refresh.",
+      "[3] Issuer rejection/network failure/cancel/deadline sends zero inference; admitted callback settles before fixture teardown and later explicit requests remain possible."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-269/scripted-oauth-refresh.md",
+      "spec/attachments/BUG-269/request-refresh-design.md",
+      "spec/attachments/BUG-269/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:37:57.964Z",
+    "updatedAt": "2026-10-25T17:34:08.359Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/scripted-oauth-request-refresh.feature",
+        "scenarios": [
+          {
+            "name": "Every real completion front door refreshes before authorization",
+            "line": 22,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Independent concurrent providers coalesce one credential refresh",
+            "line": 28,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Existing script authentication ownership remains unchanged",
+            "line": 33,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Project selected scripts remain authoritative during refresh",
+            "line": 38,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Failed refreshes retain credentials and redact diagnostics",
+            "line": 43,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Caller cancellation and deadline prevent inference after admitted refresh",
+            "line": 49,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          },
+          {
+            "name": "Credential root changes fail closed across refresh waits",
+            "line": 55,
+            "file": "spec/features/scripted-oauth-request-refresh.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-269 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-269 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-269 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-269 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "PROV-162",
+    "title": "Reconcile Codex protocol continuation with typed response history",
+    "type": "story",
+    "status": "done",
+    "description": "Discovery/design follow-up to CONT-011, PROV-148 and PROV-149. Codex protocol continuation is separate from outer /continue: it follows selected end_turn:false or interrupted responses, but replay rejects non-text output (including reasoning, hosted search, refusal sections and empty output) and caps follow-ups at three. These are explicitly specified restrictions, so do not silently label them accidental bugs or weaken safety/refusal handling. Decide which typed items are replayable, how native encrypted reasoning/history validation participates, and how protocol bounds and /continue budgets are communicated and accounted. Then specify and test complete physical follow-up requests, cancellation, admission, usage and failure behavior for the approved policy. This is not the profile-default lifecycle work already tracked by CONT-010. Research attached.",
+    "estimate": 8,
+    "epic": "completion-contract",
+    "children": [],
+    "relatesTo": [
+      "CONT-011"
+    ],
+    "rules": [
+      "[0] Only eligible current-response assistant output_text, typed reasoning summaries/encrypted content and negotiated completed hosted search may replay, preserving exact validated items and order; no unknown native fields/families or empty output.",
+      "[1] Refusal suppresses protocol replay; filtering, budget limits, failed and incomplete client-tool outcomes cannot continue. Ordinary successful client tools retain generic handoff and exact paired IDs.",
+      "[2] Retain three internal follow-ups independently of transport recovery and outer nudge/genuine-user budgets; full serialized admission and account/model/generation/ancestry checks apply to every physical request, with once-only measured billing even on failure.",
+      "[3] Publish typed checkpoint only after successful chain settlement; cancellation, reset, changed account/model/history or admission/cap failure cannot install stale output. No new durable/delta store, retry system or safety bypass."
+    ],
+    "examples": [
+      "[0] A local completed or interrupted response with text, owned encrypted reasoning and negotiated hosted search sends one exact typed follow-up and settles physical usage once.",
+      "[1] Refusal with end_turn false settles visibly without another request; malformed/empty/unknown output fails and incomplete calls never execute.",
+      "[2] An endless typed chain stops after four physical responses despite a transport replacement, and admission growth/cancellation/generation/account changes prevent stale follow-ups.",
+      "[3] A real CLI tool-result and outer nudge flow preserves native call IDs, exact billing and independent protocol limits; genuine user/recovery budget controls remain unchanged."
+    ],
+    "architectureNotes": [
+      "[0] Native HITL approved typed-continuation-design.md. Extend only Codex Terminal replay with a narrow validator over existing CodexItem types; retain generation/AttemptAuthority, stored account/lifecycle, full-DAG model/ancestry, native capability and physical admission gates. Refusal and unsafe/empty/unknown output never trigger follow-ups; preserve three protocol follow-ups and independent transport/outer/genuine-user budgets. Settle trustworthy physical terminal usage before replay rejection, with one final publication only on chain success; no shared Responses/Copilot defaults, durable/delta store, new retry/settings policy or arbitrary native replay. Validate actual loopback model/CLI requests plus existing account/lineage/recovery controls."
+    ],
+    "attachments": [
+      "spec/attachments/PROV-162/codex-protocol-replay-policy.md",
+      "spec/attachments/PROV-162/ast-research-protocol-replay.md",
+      "spec/attachments/PROV-162/typed-continuation-design.md",
+      "spec/attachments/PROV-162/validation-and-review.md"
+    ],
+    "createdAt": "2026-10-25T08:38:11.400Z",
+    "updatedAt": "2026-10-25T18:28:36.630Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/codex-protocol-outer-loop-composition.feature",
+        "scenarios": [
+          {
+            "name": "Typed protocol tools and outer nudges retain separate accounting",
+            "line": 18,
+            "file": "spec/features/codex-protocol-outer-loop-composition.feature"
+          },
+          {
+            "name": "Refusal settles visibly without protocol or outer continuation",
+            "line": 24,
+            "file": "spec/features/codex-protocol-outer-loop-composition.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/codex-typed-protocol-continuation.feature",
+        "scenarios": [
+          {
+            "name": "Known typed output continues with exact owned items",
+            "line": 20,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Refusal and unsafe terminals never trigger protocol replay",
+            "line": 26,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Empty unknown and malformed continuation output fail closed",
+            "line": 32,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Protocol limits stay finite across transport replacement",
+            "line": 38,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Admission and cancellation cannot publish partial typed lineage",
+            "line": 44,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Generation and account changes invalidate protocol authority",
+            "line": 50,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          },
+          {
+            "name": "Genuine follow ups preserve typed ancestry and reject rewrites",
+            "line": 56,
+            "file": "spec/features/codex-typed-protocol-continuation.feature"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CONT-011",
+    "title": "Restore end-to-end auto-continue provider contracts and regression coverage",
+    "type": "bug",
+    "status": "implementing",
+    "description": "Coordinate the October 25 auto-continue audit follow-ups without assuming one global root cause. The shared engine and armed Done registration remain intact, but a new Codex refusal-history follow-up failure was reproduced and provider terminal, ordering, recovery and routing defects were identified. Repair the two stale layout assertions and replace source-only confidence with real serialized provider-stream tests for armed stop -> nudge -> accepted Done, rejected goal completion, tool ordering, malformed terminal delivery and recovery accounting. Individual fixes are tracked separately with confidence and history labels. Preserve immediate Done termination, explicit cancellation, fail-closed terminal validation and real-user-turn budget semantics. Full Markdown audit and validation evidence will be attached. CONT-010 already owns profile lifecycle discovery; reconcile it against PROV-161 rather than duplicating that work. Do not mark all findings as newly introduced or claim the observed user-session root cause without a failing trace.",
+    "estimate": 5,
+    "epic": "completion-contract",
+    "children": [
+      "BUG-260",
+      "BUG-261",
+      "BUG-262",
+      "BUG-263",
+      "BUG-264",
+      "BUG-265",
+      "BUG-266",
+      "BUG-267",
+      "BUG-268",
+      "BUG-269"
+    ],
+    "relatesTo": [
+      "PROV-162",
+      "CONT-010"
+    ],
+    "rules": [
+      "[0] Preserve the original thirteen-card inventory, all retained discovery follow-ups, BUG-254 specifying, and every child native Done; do not equate source guards with runtime provider proof.",
+      "[1] Retarget only stale Done registration, goal reminder removal and compaction snapshot readers to actual delegated implementations; retain all semantic, writer, accessor and original BUG-265 shape assertions.",
+      "[2] Complete only after final-source synthetic child and affected-control matrices, shipping consumers, quality, traceability and combined direct review; disclose exclusions, warnings, platform and global tag limits."
+    ],
+    "examples": [
+      "[0] An armed session finds Done in each selected provider builder including delegated Codex agent.rs; unarmed and DeepSearch exclusions remain intact.",
+      "[1] Accepted goal completion uses one shared teardown and the moved clear_goal reminder owner, without trailing work or duplicate announcement.",
+      "[2] NAPI delegates to the same exported BackgroundOutput as standalone sessions; automatic and manual snapshots agree at 180000, never 330000, and all four logical writers retain shared accessors."
+    ],
+    "architectureNotes": [
+      "[0] Bounded existing-reader correction only, no new completion engine. Three focused coordinator features reuse the existing acceptance tests; native provider/request behavior is proved by the complete linked child acceptance matrix and affected controls, not source text. Native AST confirms Session::clear_goal in reminders.rs. NAPI compatibility exports and shared BackgroundOutput are the real compaction path. No unbounded nested Cargo, live providers, external scripts, Windows or unrelated compaction repair."
+    ],
+    "attachments": [
+      "spec/attachments/CONT-011/fspec-auto-continue-investigation.md",
+      "spec/attachments/CONT-011/follow-up-index.md",
+      "spec/attachments/CONT-011/validation-evidence.md",
+      "spec/attachments/CONT-011/card-registration-validation.md",
+      "spec/attachments/CONT-011/batch-inventory.md",
+      "spec/attachments/CONT-011/remaining-source-preparation.md",
+      "spec/attachments/CONT-011/replacement-progress-handoff.md"
+    ],
+    "createdAt": "2026-10-25T08:35:45.372Z",
+    "updatedAt": "2026-10-25T18:33:03.927Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/completion-goal-teardown-layout-guards.feature",
+        "scenarios": [
+          {
+            "name": "Goal teardown guards preserve a single reminder owner",
+            "line": 14,
+            "file": "spec/features/completion-goal-teardown-layout-guards.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/completion-registration-layout-guards.feature",
+        "scenarios": [
+          {
+            "name": "Armed Done registration stays guarded across provider builders",
+            "line": 14,
+            "file": "spec/features/completion-registration-layout-guards.feature"
+          }
+        ]
+      },
+      {
+        "file": "spec/features/completion-snapshot-delegation-guards.feature",
+        "scenarios": [
+          {
+            "name": "Shared snapshot delegation retains semantic and writer guards",
+            "line": 15,
+            "file": "spec/features/completion-snapshot-delegation-guards.feature"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "BUG-253",
+    "title": "Allow repeated Gemini tool invocations without duplicate journal admission failures",
+    "type": "bug",
+    "status": "done",
+    "description": "P1 review finding in commit 144653b0: Gemini uses function names as tool IDs, but StreamJournal keeps requested, started, and result identities keyed by that ID across the turn. Calling the same tool twice can fail journal admission or dispatch and interrupt a valid agent turn. See the attached review finding for evidence, reproduction, and regression-test guidance.",
+    "children": [],
+    "rules": [
+      "[0] Each Gemini function invocation has a distinct internal identity across response attempts; provider function names and thought signatures remain unchanged, duplicate dispatch is refused, and cold replay never reexecutes tools."
+    ],
+    "examples": [
+      "[0] Given a Gemini provider that requests the same reading tool twice with different paths and signed calls, When a real background streaming turn consumes both requests and a subsequent response attempt repeats that tool, Then each invocation executes once with a distinct durable identity and authentic result while physical continuations preserve function names and signatures",
+      "[1] Given an acknowledged Gemini tool invocation, When its internal identity is dispatched twice and the process restores before capturing the genuine result, Then duplicate dispatch is refused and repeated cold replay retains outcome-unknown without repeating the side effect or merging another invocation result"
+    ],
+    "attachments": [
+      "spec/attachments/BUG-253/gemini-repeated-tool-invocations.md",
+      "spec/attachments/BUG-253/fspec-bug253-red-regression.log",
+      "spec/attachments/BUG-253/fspec-bug253-green.log",
+      "spec/attachments/BUG-253/fspec-bug253-integration-validation.log",
+      "spec/attachments/BUG-253/fspec-bug253-final-validation.log",
+      "spec/attachments/BUG-253/fspec-bug253-provider-clippy.log"
+    ],
+    "createdAt": "2026-10-23T21:33:06.078Z",
+    "updatedAt": "2026-10-25T03:56:12.626Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/gemini-invocation-identity.feature",
+        "scenarios": [
+          {
+            "name": "Repeated Gemini calls retain separate authentic results",
+            "line": 31,
+            "file": "spec/features/gemini-invocation-identity.feature"
+          },
+          {
+            "name": "Duplicate dispatch and cold recovery never repeat a side effect",
+            "line": 37,
+            "file": "spec/features/gemini-invocation-identity.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-253 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-253 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-253 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-253 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-254",
+    "title": "Support durable Windows persistence before enforcing the background inference gate",
+    "type": "bug",
+    "status": "specifying",
+    "description": "P1 review finding in commit 144653b0: recovery-directory synchronization always returns an error on non-Unix platforms. Every user-input persistence submission uses that path, and the new mandatory persistence gate skips inference on failure. Windows background sessions therefore cannot process prompts. Preserve durable-before-inference guarantees while implementing supported platform durability; see the attachment.",
+    "children": [],
+    "rules": [
+      "[0] Supported Windows storage must durably publish recovery records, messages, journal records, provider state and manifests before inference or visible acknowledgement; no ignored synchronization failures, unsafe workspace code, or weakened admission/integrity controls. Native Windows execution is required for platform validation."
+    ],
+    "examples": [
+      "[0] Given a writable supported Windows data root and an existing session, When a user submits a prompt and output is durably journaled then restored cold, Then the provider runs after successful admission and retry preserves each acknowledged item exactly once; genuine failures still block publication and dispatch"
+    ],
+    "questions": [
+      "[0] @human: Current host is macOS; an x86_64-pc-windows-msvc compilation target is installed but no native Windows execution path is provided. Which existing authorized native Windows runner and supported filesystem contract should be used to record the real platform red/green, and may a safe write-through atomic-publication dependency be reviewed if needed? Current manifest promotion and both directory barriers explicitly reject non-Unix; ignoring those errors is not an acceptable implementation."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-254/windows-durable-persistence-gate.md"
+    ],
+    "createdAt": "2026-10-23T21:33:15.283Z",
+    "updatedAt": "2026-10-25T03:58:04.728Z",
+    "linkedFeatures": [],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-254 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-254 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-254 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-254 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-255",
+    "title": "Avoid full transcript replay on every streamed journal append",
+    "type": "bug",
+    "status": "done",
+    "description": "P1 review finding in commit 144653b0: JournalStore::append enumerates, reads, deserializes, and projects the complete accumulated session journal for every text or thinking delta. The synchronous append runs while the process-global recovery-owner mutex is held, creating quadratic ingestion work and cross-session persistence stalls as sessions grow. See the attachment for evidence and scaling-validation guidance.",
+    "children": [],
+    "rules": [
+      "[0] After validated opening, fixed-size streamed deltas use incremental sequence, identity and lifecycle indexes instead of rereading or reprojecting accumulated immutable history; cold opens and explicit reads still validate corruption and completeness.",
+      "[1] Recovery ownership is serialized per session, never by a process-global mutex held across filesystem work. Admission remains durable before publication, idempotent on retry, and rejects deleted owners."
+    ],
+    "examples": [
+      "[0] Growing batches beyond 128 deltas after completed turns and a large authentic tool result perform bounded record reads and one lifecycle admission per new delta; a cold reopen reconstructs exact history and detects corruption or missing ordinals.",
+      "[1] While session A is blocked at a real filesystem publication boundary, session B durably admits and publishes its own event; retrying A preserves identity and deletion still retires its lane."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-255/transcript-append-scaling.md",
+      "spec/attachments/BUG-255/acdd-red-and-native-hold.md",
+      "spec/attachments/BUG-255/red-current.log",
+      "spec/attachments/BUG-255/authorization-and-transition-retry.md",
+      "spec/attachments/BUG-255/green.log",
+      "spec/attachments/BUG-255/acdd-validation.md",
+      "spec/attachments/BUG-255/review-findings.md",
+      "spec/attachments/BUG-255/red-extended.log",
+      "spec/attachments/BUG-255/final-green.log",
+      "spec/attachments/BUG-255/regression-integrity.log",
+      "spec/attachments/BUG-255/regression-recovery.log",
+      "spec/attachments/BUG-255/regression-streaming.log",
+      "spec/attachments/BUG-255/regression-cold.log",
+      "spec/attachments/BUG-255/regression-provider-history.log",
+      "spec/attachments/BUG-255/regression-cancellation-mcp.log",
+      "spec/attachments/BUG-255/check.log",
+      "spec/attachments/BUG-255/clippy.log",
+      "spec/attachments/BUG-255/clippy-test.log"
+    ],
+    "createdAt": "2026-10-23T21:33:28.037Z",
+    "updatedAt": "2026-10-25T07:30:03.499Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/transcript-admission-scaling.feature",
+        "scenarios": [
+          {
+            "name": "Long streaming sessions require bounded admission work",
+            "line": 33,
+            "file": "spec/features/transcript-admission-scaling.feature"
+          },
+          {
+            "name": "Cold opening validates immutable history before admission",
+            "line": 38,
+            "file": "spec/features/transcript-admission-scaling.feature"
+          },
+          {
+            "name": "An unrelated session progresses during a stalled journal append",
+            "line": 43,
+            "file": "spec/features/transcript-admission-scaling.feature"
+          },
+          {
+            "name": "Retried publication retains durable identity",
+            "line": 48,
+            "file": "spec/features/transcript-admission-scaling.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-255 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-255 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-255 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-255 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-256",
+    "title": "Recover TUI transcript hydration after a server generation change",
+    "type": "bug",
+    "status": "done",
+    "description": "P2 review finding in commit 144653b0: transcript page failures retain the assembler cursor and pinned snapshot, while /resume does not reset generation-bound state once a cursor exists. A missed session-clear event or concurrent archive installation can leave the tab polling an obsolete generation indefinitely, hiding subsequent content until the tab is reopened. See the attachment for reproduction and safe recovery requirements.",
+    "children": [],
+    "rules": [
+      "[0] Known generation mismatch atomically invalidates cursor, partial bytes, pinned snapshot and inflight identity; /resume can hydrate the new generation without reopening. Replace old generation rendering, never append a second full snapshot.",
+      "[1] Transport failures remain distinguishable and retain displayed content and deduplication. Late responses from an invalidated hydration attempt must not mutate current rendering, including an archive-install race."
+    ],
+    "examples": [
+      "[0] An open tab misses clear, then /resume displays new-generation content once in order and no old-generation text, without closing the tab.",
+      "[1] Archive installation changes generation after a partial page; recovery discards the old bytes and late page, then renders the authoritative transcript once. A normal reconnect retains existing content once."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-256/tui-transcript-generation-recovery.md",
+      "spec/attachments/BUG-256/acdd-validation.md"
+    ],
+    "createdAt": "2026-10-23T21:33:38.850Z",
+    "updatedAt": "2026-10-25T04:26:45.188Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/transcript-generation-recovery.feature",
+        "scenarios": [
+          {
+            "name": "Resume recovers a missed server clear without reopening",
+            "line": 35,
+            "file": "spec/features/transcript-generation-recovery.feature"
+          },
+          {
+            "name": "Archive installation during partial hydration recovers atomically",
+            "line": 40,
+            "file": "spec/features/transcript-generation-recovery.feature"
+          },
+          {
+            "name": "Unchanged generation reconnect preserves deduplication",
+            "line": 45,
+            "file": "spec/features/transcript-generation-recovery.feature"
+          },
+          {
+            "name": "Transient page failures preserve displayed history",
+            "line": 50,
+            "file": "spec/features/transcript-generation-recovery.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-256 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-256 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-256 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-256 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-257",
+    "title": "Preserve valid Codex continuation state when forking a session",
+    "type": "bug",
+    "status": "done",
+    "description": "P2 review finding in commit 144653b0: provider continuation checkpoints now live outside conversation message references, but SessionStore::fork copies only message references and leaves the new provider_state field empty. A fork of a completed Codex conversation consequently has dialogue without a continuation checkpoint and fails cold restoration with CheckpointError::Missing. See the attachment for lineage and prefix-safety requirements.",
+    "children": [],
+    "rules": [
+      "[0] A supported Codex fork reanchors verified provider continuation to the child's own session identity, revision and exact selected message prefix. The next physical request preserves native reasoning and tool identity without later parent content. Provider checkpoints remain outside originals.",
+      "[1] Reject missing, corrupt or unsupported checkpoint boundaries before publishing a child; do not relax lineage validation, synthesize a reset, copy a parent-bound state root or mutate the parent's manifest, state or originals. Retain legacy checkpoint and compaction-boundary behavior."
+    ],
+    "examples": [
+      "[0] Fork the final completed Codex tool turn, cold restore the child and send a captured physical next request. Its intended native prefix and tool IDs survive, later parent work is absent, and parent bytes remain unchanged.",
+      "[1] Fork an older boundary without a retained matching checkpoint, or with corrupted state: reject explicitly and publish no child. Legacy checkpoint forks still restore and pre-compaction boundaries remain rejected."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-257/fork-provider-continuation-state.md",
+      "spec/attachments/BUG-257/acdd-validation.md"
+    ],
+    "createdAt": "2026-10-23T21:33:48.292Z",
+    "updatedAt": "2026-10-25T04:53:03.801Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/fork-native-continuation.feature",
+        "scenarios": [
+          {
+            "name": "Final completed Codex fork cold continues its exact prefix",
+            "line": 34,
+            "file": "spec/features/fork-native-continuation.feature"
+          },
+          {
+            "name": "Retained exact boundary excludes later parent work",
+            "line": 39,
+            "file": "spec/features/fork-native-continuation.feature"
+          },
+          {
+            "name": "Unsupported older boundaries fail before publishing a child",
+            "line": 44,
+            "file": "spec/features/fork-native-continuation.feature"
+          },
+          {
+            "name": "Corrupt provider state prevents fork publication",
+            "line": 49,
+            "file": "spec/features/fork-native-continuation.feature"
+          },
+          {
+            "name": "Legacy checkpoints and compaction boundaries remain safe",
+            "line": 54,
+            "file": "spec/features/fork-native-continuation.feature"
+          },
+          {
+            "name": "Failed child checkpoint publication preserves parent ownership",
+            "line": 59,
+            "file": "spec/features/fork-native-continuation.feature"
+          }
+        ]
+      }
+    ],
+    "systemReminders": [
+      "<system-reminder>\nWork unit BUG-257 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-257 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+    ],
+    "systemReminder": "<system-reminder>\nWork unit BUG-257 has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate BUG-257 <points>\nDO NOT mention this reminder to the user.\n</system-reminder>"
+  },
+  {
+    "id": "BUG-258",
+    "title": "Journal terminal outcomes emitted by the outer agent error fallback",
+    "type": "bug",
+    "status": "done",
+    "description": "Retain exactly one safe durable failure per abandoned outer agent request, preserving actionable live diagnostics and model-history separation. Human approval 2026-10-25 supersedes the earlier hold conditional on native ACDD card/status/Markdown updates (completed before production edits). Approved bounded extraction keeps all touched Rust files below 300 lines, preserving locks, cancellation epochs/notify, handler/drop order, counters and Idle-before-Done. Seven real-path scenarios cover invalid preparation, failed/exhausted overflow recovery, applied-compaction budget exhaustion, inner-error deduplication, successful recovery and failed explicit-builder retry. Mechanical extraction preserved 4 behavioral reds/2 greens and all 5 unchanged MCP source contracts before repair. Final settlement calls finish_outer_failure on the original output; owned recovery borrows that same output instead of allocating another journal. Preserve immutable CompactionFailed while admitting one actionable live Error without another terminal. All seven acceptance cases green; broader validation caveats are explicit in acdd-validation.md. No global publication hook, synthetic identity, terminal rewrite, model-original prose, gate bypass, unrelated card/test/source-shape fix, commit or push.",
+    "estimate": 8,
+    "children": [],
+    "rules": [
+      "[0] Only an abandoned final outer fallback receives a safe durable terminal failure on the original request owner before publication; inner-stream terminal errors deduplicate and successful automatic recovery gains no spurious failure. Terminal prose never enters model originals.",
+      "[1] When successful in-turn compaction exhausts the automatic continuation budget, the final request must retain one safe failure rather than a prematurely finalized success. Preserve request identity, exactly-once terminals and Idle-before-Done; do not alter immutable completed journal records.",
+      "[2] If a failed explicit builder retry already has a durable CompactionFailed terminal, retain that immutable outcome and publish its actionable outer Error diagnostic once without appending another terminal or polluting model originals. Existing provider-error deduplication remains unchanged."
+    ],
+    "examples": [
+      "[0] Invalid request preparation and failed/exhausted outer overflow recovery survive repeated cold replay as one safe ordered terminal outcome. An already-journaled inner error remains single; successful recovery has no final failure.",
+      "[1] Four consecutive successful inference turns each apply compaction: three continue automatically, the fourth exhausts the budget. No fifth inference starts; the fourth request has exactly one durable safe provider failure on repeated cold replay, not an inner completed terminal.",
+      "[2] A user retries a failed compaction builder and it fails again with retry-later guidance. The live Error still contains that guidance, the session returns Idle, no ordinary inference restarts, and repeated cold replay retains exactly one safe failure per abandoned request."
+    ],
+    "architectureNotes": [
+      "[0] Human approval 2026-10-25: \"well you have to do it acdd via fspec.. either update the existing card and set the right work status, and attach new markdown documentation to that card then start it\". Supersedes prior extraction-review-plan approval hold only for the concrete dependency-preserving bounded extraction and minimal outer terminal fix. Baseline testing has 3 behavioral reds, 2 passing controls; add applied-compaction budget control before implementing. Preserve prior uncommitted BUG253/256/257 work and BUG254/255 holds.",
+      "[1] Validation refinement within BUG258 terminal routing: existing explicit-builder retry journals CompactionFailed as a warning; the outer Error was previously a separate live diagnostic. Canonical fallback admission now suppresses that diagnostic, failing the unchanged repeated-builder-failure regression. Add a real-path acceptance test first, then a bounded StreamJournal admission distinction: allow one live ProviderError diagnostic after acknowledged CompactionFailed without appending/replacing a terminal. Keep provider-error dedup, immutable outcomes, same request identity and existing emit path; no global publication hook or runtime redesign.",
+      "[2] Strengthened seventh-case safe-failure counting exposed an existing second BackgroundOutput allocation inside try_terminal_overflow_recovery_owned. Pass the original turn output into this owned helper (public locking wrapper may retain its independent owner) so recovery CompactionFailed and outer Error share one request/journal. This implements the approved same-owner invariant rather than concealing duplicates via another identity. Retain one immutable safe outcome, one actionable diagnostic and Idle-before-Done."
+    ],
+    "attachments": [
+      "spec/attachments/BUG-258/outer-error-terminal-journaling.md",
+      "spec/attachments/BUG-258/extraction-review-plan.md",
+      "spec/attachments/BUG-258/red.log",
+      "spec/attachments/BUG-258/applied-control-red.log",
+      "spec/attachments/BUG-258/acdd-validation.md",
+      "spec/attachments/BUG-258/extraction-reviewed-red.log",
+      "spec/attachments/BUG-258/green.log",
+      "spec/attachments/BUG-258/diagnostic-red.log",
+      "spec/attachments/BUG-258/final-green.log",
+      "spec/attachments/BUG-258/regression-lifecycle-final.log",
+      "spec/attachments/BUG-258/regression-recovery.log",
+      "spec/attachments/BUG-258/regression-diagnostic-final.log",
+      "spec/attachments/BUG-258/review-findings.md",
+      "spec/attachments/BUG-258/check.log",
+      "spec/attachments/BUG-258/clippy.log",
+      "spec/attachments/BUG-258/bug258-baseline-tests.log",
+      "spec/attachments/BUG-258/bug258-baseline-run.json",
+      "spec/attachments/BUG-258/baseline-manifest.json",
+      "spec/attachments/BUG-258/baseline-classification-current.log",
+      "spec/attachments/BUG-258/baseline-comparison.md"
+    ],
+    "createdAt": "2026-10-23T21:33:57.474Z",
+    "updatedAt": "2026-10-25T06:47:15.488Z",
+    "linkedFeatures": [
+      {
+        "file": "spec/features/outer-error-terminal-journaling.feature",
+        "scenarios": [
+          {
+            "name": "Invalid request preparation retains one cold terminal failure",
+            "line": 32,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Failed outer overflow recovery retains the original request outcome",
+            "line": 37,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Exhausted outer recovery retains the final abandoned outcome",
+            "line": 42,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Inner journaled errors are not duplicated by the fallback",
+            "line": 47,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Successful automatic recovery adds no spurious failure",
+            "line": 52,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Applied compaction budget exhaustion retains failure instead of premature completion",
+            "line": 57,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          },
+          {
+            "name": "Failed explicit builder retry preserves actionable failure without another terminal",
+            "line": 62,
+            "file": "spec/features/outer-error-terminal-journaling.feature"
+          }
+        ]
+      }
+    ]
+  }
+]

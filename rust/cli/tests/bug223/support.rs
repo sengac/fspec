@@ -15,6 +15,16 @@ use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
 pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+pub fn assert_compaction_error(result: TestResult) -> TestResult {
+    assert!(result.is_err());
+    assert!(result
+        .err()
+        .ok_or("compaction error missing")?
+        .to_string()
+        .contains("offline compaction handoff observed"));
+    Ok(())
+}
+
 pub fn response(parts: Value, reason: &str) -> ResponseTemplate {
     measured_response(
         parts,
@@ -39,10 +49,10 @@ pub fn text(text: &str) -> ResponseTemplate {
 
 pub fn tool(name: &str) -> ResponseTemplate {
     let args = if name == "done" {
-        json!({"summary":"Task verified","evidence":["local check passed"],
+        json!({"summary":"Task verified","work_unit_id":"NONE","evidence":["local check passed"],
             "goal_assessment":"The requested task is complete and the local check passed."})
     } else {
-        json!({})
+        json!({"work_unit_id":"NONE"})
     };
     let name = if name == "done" { "Done" } else { name };
     response(json!([{"functionCall":{"name":name,"args":args}}]), "STOP")
@@ -50,6 +60,28 @@ pub fn tool(name: &str) -> ResponseTemplate {
 
 pub fn enter_helper() -> Vec<ResponseTemplate> {
     vec![tool("inspect"), text("")]
+}
+
+pub async fn compaction_fixture() -> Result<(Fixture, Arc<AtomicUsize>), Box<dyn std::error::Error>>
+{
+    let mut script = enter_helper();
+    script.push(tool("inspect"));
+    let mut fixture = Fixture::new(script).await?;
+    fixture.large_tool_result = true;
+    fixture
+        .session
+        .provider_manager_mut()
+        .override_model_limits(Some(6000), Some(1000));
+    let compactions = Arc::new(AtomicUsize::new(0));
+    let observed = compactions.clone();
+    codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(
+        fixture.session_id,
+        Some(Arc::new(move |_, _| {
+            observed.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async { Err("offline compaction handoff observed".into()) })
+        })),
+    );
+    Ok((fixture, compactions))
 }
 
 pub struct Output {
@@ -138,6 +170,8 @@ pub struct Fixture {
     pub calls: Arc<AtomicUsize>,
     pub large_tool_result: bool,
     server: MockServer,
+    _admission: codelet_tools::tool_admission::AuxiliaryScope,
+    _environment: super::environment::Environment,
 }
 
 impl Drop for Fixture {
@@ -150,6 +184,7 @@ impl Drop for Fixture {
 
 impl Fixture {
     pub async fn new(responses: Vec<ResponseTemplate>) -> Result<Self, Box<dyn std::error::Error>> {
+        let environment = super::environment::Environment::new()?;
         let directory = codelet_test_helpers::setup_temp_directory()?;
         codelet_common::set_data_directory(directory.path().to_owned())?;
         codelet_core::persistence::reset_stores_for_tests();
@@ -157,6 +192,10 @@ impl Fixture {
             "Gemini helper settlement",
             directory.path(),
             "gemini",
+        )?;
+        let admission = codelet_tools::tool_admission::register_auxiliary(
+            manifest.id,
+            directory.path().to_owned(),
         )?;
         let server = MockServer::start().await;
         for (index, response) in responses.into_iter().enumerate() {
@@ -187,6 +226,8 @@ impl Fixture {
             calls: Arc::new(AtomicUsize::new(0)),
             large_tool_result: false,
             server,
+            _admission: admission,
+            _environment: environment,
         })
     }
 

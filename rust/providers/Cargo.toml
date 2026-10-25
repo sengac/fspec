@@ -96,3 +96,13 @@ integration-tests = []
 # by cross-transport integration tests. Behind the feature so production
 # builds never compile a stub provider into release artifacts.
 test-support = ["dep:codelet-rpc-types"]
+
+[[test]]
+name = "bug261_forced_refresh_recovery"
+path = "tests/bug261_forced_refresh_recovery.rs"
+required-features = ["test-support"]
+
+[[test]]
+name = "prov162_typed_protocol_continuation"
+path = "tests/prov162_typed_protocol_continuation.rs"
+required-features = ["test-support"]

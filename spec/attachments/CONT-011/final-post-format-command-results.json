@@ -1,0 +1,120 @@
+[
+  {
+    "log": "final-post-format-cli.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-cli",
+      "--features",
+      "test-support",
+      "--no-fail-fast",
+      "--test",
+      "cont011_native_completion_composition",
+      "--test",
+      "auto_continue_engine_test",
+      "--test",
+      "cont006_goal_immediate_termination",
+      "--test",
+      "bug223_gemini_helper_settlement"
+    ]
+  },
+  {
+    "log": "final-post-format-shared.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-agent-loop",
+      "--features",
+      "test-support",
+      "--no-fail-fast",
+      "--test",
+      "cmpct041_pre_compaction_basis_test",
+      "--test",
+      "cont011_persisted_completion"
+    ]
+  },
+  {
+    "log": "final-post-format-cli-clippy.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-cli",
+      "--features",
+      "test-support",
+      "--test",
+      "cont011_native_completion_composition",
+      "--test",
+      "auto_continue_engine_test",
+      "--test",
+      "cont006_goal_immediate_termination",
+      "--test",
+      "bug223_gemini_helper_settlement"
+    ]
+  },
+  {
+    "log": "final-post-format-shared-clippy.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-agent-loop",
+      "--features",
+      "test-support",
+      "--test",
+      "cmpct041_pre_compaction_basis_test",
+      "--test",
+      "cont011_persisted_completion"
+    ]
+  },
+  {
+    "log": "final-post-format-shipping-check.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "check",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-providers",
+      "-p",
+      "codelet-cli",
+      "-p",
+      "codelet-agent-loop",
+      "-p",
+      "codelet-sessions",
+      "-p",
+      "codelet-napi",
+      "--lib"
+    ]
+  }
+]

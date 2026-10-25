@@ -1,0 +1,11 @@
+{
+  "baselineCommit": "b2475dcd",
+  "originalTests": 14,
+  "extractedTests": 14,
+  "originalAssertions": 67,
+  "allPredicatesPreserved": true,
+  "allStepsPreserved": true,
+  "differences": [],
+  "scope": "background_session_shape; compare ordered assert! first arguments and ordered @step comments per original scenario, preserving quoted literal whitespace. Diagnostic messages are not predicates.",
+  "subprocessScenariosExecuted": false
+}

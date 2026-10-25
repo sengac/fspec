@@ -1,0 +1,21 @@
+{
+  "id": "CONT-010",
+  "title": "Define profile auto-continue defaults across model switches and session restoration",
+  "type": "task",
+  "status": "backlog",
+  "description": "Discovery task: current PROV-142 contract promises a creation-time profile seed, not reseeding on model switches or persistence of runtime overrides. Switching an existing cloud session to Strada can correctly retain disabled state under that contract. Decide desired switch, cold-resume, live-resume, fork and mid-stream behavior before treating it as a product regression. Attach research and explicit open questions; do not silently change override precedence.",
+  "children": [],
+  "relatesTo": [
+    "CONT-011"
+  ],
+  "architectureNotes": [
+    "[0] 2026-10-25 audit at f0eb0759: PROV-161 now reloads inherited continuation defaults across creation, resume, switching and dispatched turns while preserving explicit session overrides. This supersedes older creation-only PROV-142 claims in this card and continue-cache-reconciliation.feature. Reconcile remaining lifecycle questions/specs against provider-runtime-settings-lifecycle.feature and provider-runtime-settings-reload.feature instead of silently reverting the current contract. Full audit attached; related integration work is CONT-011."
+  ],
+  "attachments": [
+    "spec/attachments/CONT-010/research.md",
+    "spec/attachments/CONT-010/fspec-auto-continue-investigation.md"
+  ],
+  "createdAt": "2026-10-21T05:19:26.083Z",
+  "updatedAt": "2026-10-25T08:41:49.958Z",
+  "linkedFeatures": []
+}

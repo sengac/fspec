@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-25T08:43:51.404Z",
+    "lastUpdated": "2026-10-25T20:05:02.938Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -235,20 +235,7 @@
       "VIZ-004",
       "WATCH-022",
       "AUDIT-001",
-      "CONT-010",
-      "BUG-259",
-      "CONT-011",
-      "BUG-260",
-      "BUG-261",
-      "BUG-262",
-      "BUG-263",
-      "BUG-264",
-      "BUG-265",
-      "BUG-266",
-      "BUG-267",
-      "BUG-268",
-      "BUG-269",
-      "PROV-162"
+      "CONT-010"
     ],
     "specifying": [
       "AGENT-001",
@@ -1888,7 +1875,20 @@
       "BUG-256",
       "BUG-257",
       "BUG-258",
-      "BUG-255"
+      "BUG-255",
+      "BUG-259",
+      "BUG-260",
+      "BUG-261",
+      "BUG-262",
+      "BUG-263",
+      "BUG-264",
+      "BUG-265",
+      "BUG-266",
+      "BUG-267",
+      "BUG-268",
+      "BUG-269",
+      "PROV-162",
+      "CONT-011"
     ],
     "blocked": [
       "QUERY-001",
@@ -249669,25 +249669,83 @@
       "id": "BUG-259",
       "title": "Prevent transient recovery-lock contention from interrupting streaming during shell spawning",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:35:26.734Z",
-      "updatedAt": "2026-10-25T08:36:20.449Z",
+      "updatedAt": "2026-10-25T09:19:00.161Z",
       "description": "On macOS, concurrent shell process spawning can temporarily retain inherited recovery-lock descriptors after the parent closes them. RecoveryLease::acquire uses immediate File::try_lock and relies on close for release; transient contention becomes a persistence error that interrupts a healthy stream. Confirmed at 2026-10-25 18:19:48 local for session 308a34d0-20a1-4209-b979-9e6d4331faa4 in ~/.fspec/logs/private/fspec-combined.log.2026-10-25:1149. Reproduced against compiled production libraries: 39/50574 and 29/51911 failed lease acquisitions during shell spawning; no-spawn and explicit-unlock controls passed. Commit f0eb0759 did not change this lease behavior. Add acceptance criteria and regression tests for spawn overlap and short-lived contention; implement explicit lock release and bounded contention handling while preserving deletion lock order, retained originals, and independent-session progress. Historical lock-holder PID was not logged; the mechanism is independently reproduced. Detailed research and reproduction evidence are attached.",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-259/fspec-recovery-lock-investigation.md",
         "spec/attachments/BUG-259/fspec-recovery-lock-investigation.rs",
         "spec/attachments/BUG-259/fspec-recovery-lock-investigation-tests.log",
-        "spec/attachments/BUG-259/fspec-recovery-lock-investigation-repeat.log"
-      ]
+        "spec/attachments/BUG-259/fspec-recovery-lock-investigation-repeat.log",
+        "spec/attachments/BUG-259/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T08:56:01.748Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T08:59:36.856Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T09:08:29.367Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T09:09:52.004Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T09:19:00.161Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Recovery lease release explicitly unlocks the existing lock inode; transient contention retries for a finite deadline and persistent contention preserves WouldBlock without weakening mutual exclusion or session deletion lock order.",
+          "deleted": false,
+          "createdAt": "2026-10-25T08:56:12.507Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A short-lived recovery lease holder releases after 40 ms; opening the persistence spool waits within a bounded deadline and retains authentic pending output instead of interrupting the stream.",
+          "deleted": false,
+          "createdAt": "2026-10-25T08:56:57.983Z"
+        },
+        {
+          "id": 1,
+          "text": "While a session recovery lock remains held beyond the retry budget, another session still progresses and the waiting session returns a typed contention error without stealing or deleting the lock.",
+          "deleted": false,
+          "createdAt": "2026-10-25T08:57:18.884Z"
+        },
+        {
+          "id": 2,
+          "text": "Concurrent shell spawning does not prolong a released recovery lock or interrupt authentic persisted output; dropping a lease explicitly unlocks its shared file description.",
+          "deleted": false,
+          "createdAt": "2026-10-25T08:57:21.667Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "session user",
+        "action": "continue streaming during unrelated shell spawning and short recovery contention",
+        "benefit": "authentic output remains durable without false interruptions"
+      }
     },
     "CONT-011": {
       "id": "CONT-011",
       "title": "Restore end-to-end auto-continue provider contracts and regression coverage",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:35:45.372Z",
-      "updatedAt": "2026-10-25T08:43:51.404Z",
+      "updatedAt": "2026-10-25T20:05:02.938Z",
       "description": "Coordinate the October 25 auto-continue audit follow-ups without assuming one global root cause. The shared engine and armed Done registration remain intact, but a new Codex refusal-history follow-up failure was reproduced and provider terminal, ordering, recovery and routing defects were identified. Repair the two stale layout assertions and replace source-only confidence with real serialized provider-stream tests for armed stop -> nudge -> accepted Done, rejected goal completion, tool ordering, malformed terminal delivery and recovery accounting. Individual fixes are tracked separately with confidence and history labels. Preserve immediate Done termination, explicit cancellation, fail-closed terminal validation and real-user-turn budget semantics. Full Markdown audit and validation evidence will be attached. CONT-010 already owns profile lifecycle discovery; reconcile it against PROV-161 rather than duplicating that work. Do not mark all findings as newly introduced or claim the observed user-session root cause without a failing trace.",
       "epic": "completion-contract",
       "children": [
@@ -249706,174 +249764,1281 @@
         "spec/attachments/CONT-011/fspec-auto-continue-investigation.md",
         "spec/attachments/CONT-011/follow-up-index.md",
         "spec/attachments/CONT-011/validation-evidence.md",
-        "spec/attachments/CONT-011/card-registration-validation.md"
+        "spec/attachments/CONT-011/card-registration-validation.md",
+        "spec/attachments/CONT-011/batch-inventory.md",
+        "spec/attachments/CONT-011/remaining-source-preparation.md",
+        "spec/attachments/CONT-011/replacement-progress-handoff.md",
+        "spec/attachments/CONT-011/streaming.rs",
+        "spec/attachments/CONT-011/cont011_effect.rs",
+        "spec/attachments/CONT-011/Cargo.toml",
+        "spec/attachments/CONT-011/validation-and-review.md",
+        "spec/attachments/CONT-011/final-test-inventory.json",
+        "spec/attachments/CONT-011/final-source-preservation-audit.json",
+        "spec/attachments/CONT-011/run-final-validation.py",
+        "spec/attachments/CONT-011/native-mechanical-and-isolated-causal-red.log",
+        "spec/attachments/CONT-011/final-post-format-cli.log",
+        "spec/attachments/CONT-011/anthropic-standalone-unit-import-green.log",
+        "spec/attachments/CONT-011/gemini-standalone-unit-import-green.log"
       ],
       "relatesTo": [
         "PROV-162",
         "CONT-010"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T18:28:50.758Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T18:31:20.266Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T18:33:03.927Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T18:38:45.249Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T18:39:40.962Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T18:45:12.402Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T18:48:30.342Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T18:52:02.846Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T18:55:19.714Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T18:57:23.581Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T19:03:14.312Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T19:07:20.157Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T19:09:01.490Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T19:21:19.518Z",
+          "reason": "Verified native-mechanical-and-isolated-causal-red.log: six compiled real native tests, four genuine terminal/billing failures and two passing controls; exact Anthropic/Gemini bounded repair approvals retained."
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T19:45:37.182Z",
+          "reason": "Final original-scope audit adds an explicit disk-readback assertion for accepted native Done and paired transcript identity; native builder fixtures already cover wire/memory history and persisted billing, which are not by themselves persisted message proof. No production behavior or child status changes."
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T19:47:12.045Z",
+          "reason": "Added one original-scope persisted-history scenario after native specifying and example capture. No new production repair or policy; all earlier red/green/approvals remain preserved."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T19:51:43.476Z",
+          "reason": "Original-scope persistence coverage now passes against existing production: real serialized native Done, shared output owner, cache reset, disk readback and exact invocation/result identity. No new persistence production fix was necessary; do not claim a causal persistence RED. Original four terminal/billing reds remain the causal basis for approved production repairs."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T20:00:16.927Z",
+          "reason": "Final-source matrices establish 196 distinct integration passes plus 35 actual SDK unit passes, with failed setup/compiler attempts retained and classified. All five post-format commands succeed: 37 repeated focused tests, test Clippy and default shipping checks. Scoped Gherkin/tags, exact ten-scenario native coverage spans, original assertion preservation and combined review are recorded in validation-and-review.md. No outside status or policy changed."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T20:05:02.938Z",
+          "reason": "Verified complete original-scope native provider and shared disk contracts, not source-only confidence. 236 distinct selected tests pass (201 integration, 35 SDK units; filtered/repeated/nested cases excluded). Four genuine native terminal/billing REDs precede reviewed bounded repairs; original 14 moved Anthropic tests and 21 Gemini units now execute after the exactly authorized cfg(test) Schema import. Post-format checks/Clippy, default public consumers and standalone binary check, ten exact scenario mappings across five validated @done features, scoped tags, original assertion preservation and combined review all pass. Earlier setup/compiler failures, security denial/rejected alternative, warnings, global tag and nested/platform/live exclusions remain explicit. Twelve other selected native Done cards, BUG-254 specifying and earlier Done cards remain preserved; perform final revision-bound native batch audit next."
+        }
+      ],
+      "userStory": {
+        "role": "Fspec maintainer",
+        "action": "verify the repaired completion contracts at real provider boundaries and keep layout guards attached to delegated implementations",
+        "benefit": "automatic continuation remains bounded, attributable and honestly settled across providers"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Preserve the original thirteen-card inventory, all retained discovery follow-ups, BUG-254 specifying, and every child native Done; do not equate source guards with runtime provider proof.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:40.855Z"
+        },
+        {
+          "id": 1,
+          "text": "Retarget only stale Done registration, goal reminder removal and compaction snapshot readers to actual delegated implementations; retain all semantic, writer, accessor and original BUG-265 shape assertions.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:40.981Z"
+        },
+        {
+          "id": 2,
+          "text": "Complete only after final-source synthetic child and affected-control matrices, shipping consumers, quality, traceability and combined direct review; disclose exclusions, warnings, platform and global tag limits.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:41.108Z"
+        },
+        {
+          "id": 3,
+          "text": "Explicitly exercise native Claude API/OAuth, Chat, Codex, Gemini, ZAI, Copilot, custom/Rhai and generic Responses at serialized stream boundaries. Builder/settings checks are supplemental, not runtime proof.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:39:03.015Z"
+        },
+        {
+          "id": 4,
+          "text": "Native Anthropic completed client calls must remain unexecutable until the existing authoritative terminal delta and measured physical usage settle; missing or malformed terminal evidence cannot accept Done. The generic loop still owns tool execution and immediate accepted-Done termination.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:49:47.816Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "An armed session finds Done in each selected provider builder including delegated Codex agent.rs; unarmed and DeepSearch exclusions remain intact.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:41.233Z"
+        },
+        {
+          "id": 1,
+          "text": "Accepted goal completion uses one shared teardown and the moved clear_goal reminder owner, without trailing work or duplicate announcement.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:41.355Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI delegates to the same exported BackgroundOutput as standalone sessions; automatic and manual snapshots agree at 180000, never 330000, and all four logical writers retain shared accessors.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:41.476Z"
+        },
+        {
+          "id": 3,
+          "text": "Real native Claude API/OAuth, Gemini and ZAI builders receive local clean stop, one automatic nudge, native file work, native accepted Done and forbidden trailing work; verify physical requests, paired history, one terminal and measured billing.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:39:03.145Z"
+        },
+        {
+          "id": 4,
+          "text": "The same native protocols reject goal Done without evidence, then accept valid completion; malformed local delivery and explicit interruption cannot execute trailing effects or nudge toward a fabricated completion.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:39:03.269Z"
+        },
+        {
+          "id": 5,
+          "text": "Fixture-owned loopback RLCD allows only explicitly synthetic temporary native file work at unchanged default gates; a high-risk synthetic response still blocks the real native Write with zero file effect. Earlier live-local RLCD denials are fixture failures, not successful work or product file-writing RED.",
+          "deleted": false,
+          "createdAt": "2026-10-25T19:07:20.285Z"
+        },
+        {
+          "id": 6,
+          "text": "An accepted native Done from an isolated serialized Copilot request passes through real shared BackgroundOutput persistence; after resetting cached stores, reloaded disk message envelopes retain the exact invocation/result pair and done terminal once, without opaque transport state. This verifies shared disk persistence separately from native builder wire/memory histories and persisted usage.",
+          "deleted": false,
+          "createdAt": "2026-10-25T19:45:47.494Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Bounded existing-reader correction only, no new completion engine. Three focused coordinator features reuse the existing acceptance tests; native provider/request behavior is proved by the complete linked child acceptance matrix and affected controls, not source text. Native AST confirms Session::clear_goal in reminders.rs. NAPI compatibility exports and shared BackgroundOutput are the real compaction path. No unbounded nested Cargo, live providers, external scripts, Windows or unrelated compaction repair.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:29:41.601Z"
+        },
+        {
+          "id": 1,
+          "text": "Additional real native-builder tests require numeric-loopback endpoint rebinding only behind existing providers test-support. Preserve original provider auth headers/HTTP clients and exact create_rig_agent builders; no shipping endpoint setting, remote/proxy/credential changes, script substitution or retry policy. Reuse existing CLI driver, native file tools and Done. Local synthetic OAuth tokens do not refresh externally. Keep new fixtures/modules under 300 lines. CONT-010 is read-only reconciliation against PROV-161.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:39:03.394Z"
+        },
+        {
+          "id": 2,
+          "text": "Native delegated approval cont011_native_terminal_settlement explicitly authorizes the observed Anthropic terminal-before-client-call repair and mechanical split of its 966-line streaming.rs into under-300-line modules. Preserve all schemas, public APIs, original tests/assertions, call ordering, existing truncation/safety/cancellation, no execution within adapter, and no trailing-tool drain after accepted Done. This supersedes only the earlier no-runtime-repair expectation after genuine new Claude native-loop failures; no outer budget/retry/compaction change.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:49:47.933Z"
+        },
+        {
+          "id": 3,
+          "text": "Native cont011_gemini_terminal_settlement request d8df6a1a-63c5-4252-b84b-8c67bcd680cb separately approves Gemini terminal-before-client-call settlement after independent billing and unsafe-terminal runtime failures; retain signatures, usage, ordering, cancellation and existing budgets. The supervisor's later explicit message authorizes only the verified missing Schema import inside Gemini's cfg(test) unit module. Final original-scope shared disk readback is separate from CLI wire/memory history and persisted billing; no new persistence implementation/policy or external service.",
+          "deleted": false,
+          "createdAt": "2026-10-25T19:56:52.111Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "estimate": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Actual native-builder runtime tests reproduce lost Claude terminal billing when accepted Done executes before terminal message_delta (clean chain bills 24 input instead of 36; rejected-goal chain 12 instead of 24). Approve a bounded Anthropic streaming repair: buffer completed client calls until the existing terminal delta and measured usage settle, then hand calls to the unchanged generic loop in original order; never execute internally or drain trailing calls after accepted Done. First add causal malformed-tool-before-terminal proof. Existing streaming.rs is 966 lines: approve a mechanical split into under-300-line schema/transport/event/test modules preserving every existing test/assertion and public API before the small repair. No new retry/refusal/outer-budget policy, runtime, live provider call, SDK or settings subsystem.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:48:39.032Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Native request cont011_native_terminal_settlement selected Approve bounded repair. Supervisor approval under explicit user delegation: real native CLI runtime reproduces lost terminal billing; Anthropic-only client-call staging behind existing authoritative terminal/usage validation and mechanical under-300-line split are approved. Preserve public APIs, every existing test/assertion, original call order, immediate accepted-Done termination, cancellation, refusal/safety, admission and billing. Require causal malformed-tool-before-terminal proof and final affected regressions. No live credentials/services, new retry/budget policy, security settings or unrelated work."
+        },
+        {
+          "id": 1,
+          "text": "@human: The expanded final-source native goal matrix now independently reports Gemini terminal billing (12,3) instead of (24,6), alongside Claude API/OAuth; ZAI passes this billing control. Approve extending only the existing terminal-before-client-call settlement invariant to Gemini: retain completed calls until an authoritative successful terminal and validated physical usage, report that existing usage once before generic handoff, preserve IDs/signatures/order and immediate Done cancellation, reject missing/malformed/safety/budget call outcomes without an outer retry. Add real missing/malformed-terminal and unsafe-call causal proof first. No Gemini helper/outer-budget rewrite, new retry, settings, registry, live call or unrelated compaction change. Inspect and repair any separate native fixture defect honestly without weakening file-effect assertions.",
+          "deleted": false,
+          "createdAt": "2026-10-25T18:55:31.336Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Native request cont011_gemini_terminal_settlement selected Approve bounded repair. Supervisor approval under explicit user delegation: independently reproduced Gemini physical billing gap authorizes only terminal-before-client-call settlement with exact usage, signatures, order, cancellation and existing helper/outer/admission budgets and safety. Require missing/malformed/unsafe terminal regressions and final native/helper checks. No assertion weakening, live credentials/provider calls, new retry/completion subsystem or unrelated work."
+        }
+      ],
+      "nextQuestionId": 2
     },
     "BUG-260": {
       "id": "BUG-260",
       "title": "Preserve Codex refusal history across follow-up requests",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:36:07.388Z",
-      "updatedAt": "2026-10-25T08:41:48.117Z",
+      "updatedAt": "2026-10-25T09:29:53.250Z",
       "description": "Reproduced against the compiled production provider at f0eb0759: checkpoint a refusal answer, reconstruct the same visible assistant text, and prepare a follow-up request; CodexHistory rejects assistant/tool-result/DAG ancestry. An ordinary output_text control succeeds. answers.rs flattens refusal to visible text while history_projection.rs recognizes only output_text. New native history path introduced in 2699693b. Add a failing follow-up transport/history regression, reconcile the readable projection with preserved native refusal items, and cover nudge, tool-result and next-user-message paths without weakening lineage checks or changing refusal semantics. Research and reproduction evidence attached; PROV-148 refusal-display tests currently cover only one response.",
       "epic": "completion-contract",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-260/codex-refusal-history.md"
-      ]
+        "spec/attachments/BUG-260/codex-refusal-history.md",
+        "spec/attachments/BUG-260/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T09:19:15.270Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T09:20:30.767Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T09:24:18.623Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T09:25:47.221Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T09:29:53.250Z"
+        }
+      ],
+      "userStory": {
+        "role": "Codex session user",
+        "action": "send another message or continue tools after a refusal answer",
+        "benefit": "native refusal and encrypted history survive without false ancestry errors"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Compare the readable assistant projection of refusal and output_text consistently while replaying the original typed refusal and opaque reasoning unchanged. Subsequent nudges, user messages and tool results must pass genuine ancestry validation; altered assistant text, mismatched calls and unknown content metadata must still fail closed. This does not authorize protocol-level refusal replay or change refusal semantics.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:19:30.395Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "After refusal-only or mixed text/refusal answers, a user message or ordinary continuation nudge reaches the provider with the original typed answer and encrypted reasoning intact, whether readable reasoning is enabled or disabled.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:19:39.734Z"
+        },
+        {
+          "id": 1,
+          "text": "After mixed refusal and tool-call output, submitting the genuine tool result reaches the provider once with its original call identity; changing the visible refusal text instead prevents any follow-up inference.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:19:46.623Z"
+        }
+      ],
+      "nextExampleId": 2
     },
     "BUG-261": {
       "id": "BUG-261",
       "title": "Preserve retryable network failures during Codex forced token refresh",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:36:18.880Z",
-      "updatedAt": "2026-10-25T08:41:48.256Z",
+      "updatedAt": "2026-10-25T10:15:29.329Z",
       "description": "Source-confirmed in the new 2699693b Codex recovery path: after HTTP 401, recovery.rs converts refresh timeout and every refresh error into generic sign-in-again strings, erasing the NetworkFailure identity that reconnect.rs requires. An issuer outage can therefore terminate continuation rather than enter recovery. Add real 401 -> issuer offline/setup-timeout -> recovery tests; preserve typed retryable causes and distinguish credential rejection from network failure. Retain cancellation, refresh deadlines, stale-token race protection and retry bounds. Existing refresh tests cover successful/rejected post-401 refresh and proactive offline refresh, not their composition.",
       "epic": "provider-resilience",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-261/codex-forced-refresh.md"
-      ]
+        "spec/attachments/BUG-261/codex-forced-refresh.md",
+        "spec/attachments/BUG-261/validation-blocker.md",
+        "spec/attachments/BUG-261/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T09:30:25.785Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T09:31:57.242Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T09:35:28.165Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T09:42:46.445Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T09:47:50.900Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T09:56:03.741Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T09:59:32.950Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T10:14:03.478Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T10:15:29.329Z"
+        }
+      ],
+      "userStory": {
+        "role": "Codex OAuth user",
+        "action": "recover from an issuer outage during forced credential refresh",
+        "benefit": "temporary network failures do not falsely demand signing in again"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A forced refresh after HTTP 401 must preserve typed network failures and setup deadlines into the existing bounded recovery engine; actual rejected or malformed credentials remain terminal and actionable. Cancellation, stale-token race protection, refresh synchronization, retry limits and safe diagnostics remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:30:40.096Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A real request gets HTTP 401, then the synthetic issuer is offline or stalls beyond setup timeout: the original request enters the appropriate recovery state, and cancellation stops it promptly without extra user input or credential leakage. A rejected refresh instead ends without network recovery.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:30:48.284Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve a narrow test-support-only injectable local transport or endpoint seam for the full OAuth Codex model, preserving shipping rewrite and credential-binding policy? The hardcoded /responses rewrite redirects localhost fixtures to production; helper-only /recovery tests cannot prove end-to-end model recovery. See validation-blocker.md. Independent selected cards continue meanwhile.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:35:35.396Z",
+          "selected": true,
+          "answered": true,
+          "answer": "User selected Approve Test Seam in structured input: add a test-support-only local Codex transport seam and first prove localhost cannot be rewritten externally; shipping OAuth routing and credential binding must remain unchanged."
+        }
+      ],
+      "nextQuestionId": 1
     },
     "BUG-262": {
       "id": "BUG-262",
       "title": "Preserve streamed OpenAI tool-call order before accepted Done",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:36:31.077Z",
-      "updatedAt": "2026-10-25T08:41:48.384Z",
+      "updatedAt": "2026-10-25T10:34:02.614Z",
       "description": "The native Chat Completions SSE decoder accumulates indexed calls in a HashMap and emits unsorted iteration order at both tool flush sites. A batch with earlier ordinary work and later Done can execute Done first; the shared immediate-completion branch drops the stream and leaves earlier work unexecuted. Native OpenAI, ZAI and native Copilot share this decoder. This is a longstanding defect, not established as a last-month introduction. Add real mixed-tool/Done transport regressions for fragmented arguments and both flush paths; execute calls in provider index order while retaining immediate accepted Done termination and cancellation of genuinely trailing tools. Compare with nonstreaming response-vector order.",
       "epic": "completion-contract",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-262/chat-tool-order.md"
-      ]
+        "spec/attachments/BUG-262/chat-tool-order.md",
+        "spec/attachments/BUG-262/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T09:37:14.283Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T10:18:39.454Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T10:29:10.527Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T10:33:21.219Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T10:34:02.614Z"
+        }
+      ],
+      "userStory": {
+        "role": "agent session user",
+        "action": "execute earlier indexed work before accepted completion",
+        "benefit": "Done terminates immediately without dropping earlier work or executing genuinely trailing tools"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Chat streaming tool calls execute in provider index order at both terminal and EOF flush paths, preserving fragmented IDs and arguments and JSON vector-order parity. Accepted native Done still stops consumption immediately; later indexed tools must not execute. The oversized existing streaming file will be mechanically separated into decoder and unit-test modules without changing their behavior before the ordered-map repair.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:38:11.318Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "The provider delivers reverse-arriving fragmented ordinary calls at indexes 0 through 31, native Done at 32, and trailing work at 33. On tool_calls finish or EOF after a stop finish, all earlier side effects complete in index order, Done is genuinely accepted, and trailing work is cancelled; a nonstreaming JSON vector behaves identically.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:38:19.536Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve mechanically splitting the existing 676-line Chat streaming module into decoder, protocol types, and unit-test modules below 300 lines before the ordered-map fix? This is newly required by the file-size rule; request/terminal behavior and existing tests would be preserved, with any unavoidable cleanup reviewed separately. No production edit has been made for BUG-262.",
+          "deleted": false,
+          "createdAt": "2026-10-25T09:39:28.076Z",
+          "selected": true,
+          "answered": true,
+          "answer": "User selected Approve Module Split in structured input: mechanically split the 676-line Chat streaming module into submodules below 300 lines before the ordering repair, preserving request/terminal behavior and existing tests."
+        }
+      ],
+      "nextQuestionId": 1
     },
     "BUG-263": {
       "id": "BUG-263",
       "title": "Require honest OpenAI Chat terminal evidence before completion",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:36:45.102Z",
-      "updatedAt": "2026-10-25T08:41:48.517Z",
+      "updatedAt": "2026-10-25T10:47:37.806Z",
       "description": "Chat SSE currently ignores [DONE], logs/skips schema-mismatching frames, and accepts EOF plus valid usage without any finish_reason. Tools are exposed before later terminal usage validation, so accepted Done can drop the stream before malformed/missing terminal evidence or a later provider failure is observed. The 2699693b usage hardening does not close these composition gaps. Specify and test valid terminal evidence, error-envelope preservation, usage-bearing premature EOF, and Done-bearing malformed streams across SSE and JSON-to-stream paths. Preserve normal low-latency tool execution where valid, fail-closed terminal validation, honest billing/context settlement and immediate accepted Done semantics; never drain trailing executable tools as a workaround. Shared decoder affects native OpenAI, ZAI and Copilot.",
       "epic": "provider-resilience",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-263/chat-terminal-evidence.md"
-      ]
+        "spec/attachments/BUG-263/chat-terminal-evidence.md",
+        "spec/attachments/BUG-263/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T10:34:15.044Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T10:37:23.216Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T10:41:29.693Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T10:46:59.525Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T10:47:37.806Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Chat success requires a nonempty finish reason and consistent usage, closed by explicit [DONE] or transport EOF. EOF alone, malformed frames and provider error envelopes fail closed with actionable causes. Keep progressive text and tool deltas, but do not expose executable calls until the terminal boundary validates; accepted Done still exits immediately without executing trailing calls. JSON adaptation obeys the same evidence checks.",
+          "deleted": false,
+          "createdAt": "2026-10-25T10:34:42.253Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Usage-bearing EOF without finish reason and Done-bearing missing/inconsistent usage or a later provider failure must not accept Done. Valid finish plus trailing usage closed by [DONE] settles promptly even if TCP stays open, preserving usage and ordered earlier work; valid JSON remains equivalent.",
+          "deleted": false,
+          "createdAt": "2026-10-25T10:34:45.025Z"
+        }
+      ],
+      "nextExampleId": 1
     },
     "BUG-264": {
       "id": "BUG-264",
       "title": "Preserve OpenAI Responses failed and incomplete terminal semantics",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:36:57.140Z",
-      "updatedAt": "2026-10-25T08:41:48.648Z",
+      "updatedAt": "2026-10-25T11:02:05.833Z",
       "description": "The ordinary patched-rig Responses parser recognizes response.failed/incomplete variants but processes only ResponseCompleted. Failed-response details and incomplete/max-output-token reasons are discarded, generally yielding missing Responses usage; its streaming final type also lacks a stop_reason override. Buffered function calls are emitted before usage validation, allowing accepted Done to conceal later terminal rejection. Add real SSE regressions preserving typed backend errors, truncation recovery metadata and terminal validation before accepted completion; retain BUG-208 type:error handling and immediate Done behavior. Scope explicitly excludes the dedicated CodexResponsesModel: native fspec OpenAIProvider uses Chat, and this generic Responses path is a latent adapter defect rather than a proven live Codex cause.",
       "epic": "provider-resilience",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-264/responses-terminal-semantics.md"
-      ]
+        "spec/attachments/BUG-264/responses-terminal-semantics.md",
+        "spec/attachments/BUG-264/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T10:47:55.739Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T10:50:23.980Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T10:53:54.211Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T11:01:22.557Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T11:02:05.833Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Ordinary Responses failed terminals preserve typed backend code/message; incomplete max_output_tokens and content_filter carry normalized stop metadata and never execute queued calls. Completed terminals require consistent usage before executable calls. Settle physical final before native Done, preserve call_id pairing, reject mismatched or missing terminal evidence, retain explicit type:error behavior. Dedicated Codex policy remains unchanged; only its shared-final initializer receives a compatibility default.",
+          "deleted": false,
+          "createdAt": "2026-10-25T10:49:31.651Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A real local Responses stream fails after queuing Done: backend code/message survive without acceptance or trailing work. Incomplete max-output carries max_tokens and content-filter carries content_filter with billed usage and no tool execution. Valid completed native Done is billed exactly once before acceptance and keeps distinct item/call IDs. Explicit type:error still fails and metadata-only completed terminals are accepted when valid.",
+          "deleted": false,
+          "createdAt": "2026-10-25T10:49:34.471Z"
+        }
+      ],
+      "nextExampleId": 1
     },
     "BUG-265": {
       "id": "BUG-265",
       "title": "Preserve continuation budgets and goal rejection counts across recovery dispatch",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:37:09.257Z",
-      "updatedAt": "2026-10-25T08:41:48.780Z",
+      "updatedAt": "2026-10-25T13:35:57.367Z",
       "description": "The shared agent loop calls sync_completion_contract_for_user_turn for real inputs and synthetic outer recovery retries alike. The helper unconditionally resets continue_nudges_used and always calls set_session_goal, which resets registry rejections even for the same goal. This violates CONT-002 real-user-turn budget boundaries and CONT-003 goal-lifetime rejection counting. Separate state synchronization from genuine user-turn resets and goal-change resets. Cover automatic compaction, loop-abort corrective retries, repeated unchanged goals and genuine new tasks. Preserve CONT-008 generation/race guards and CONT-009 arming order; ordinary in-stream nudges already avoid this helper. Source-confirmed and pre-existing, not attributed solely to October changes.",
       "epic": "completion-contract",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-265/recovery-contract-accounting.md"
-      ]
+        "spec/attachments/BUG-265/recovery-contract-accounting.md",
+        "spec/attachments/BUG-265/module-plan.md",
+        "spec/attachments/BUG-265/preparation-checkpoint.md",
+        "spec/attachments/BUG-265/runtime-red-checkpoint.md",
+        "spec/attachments/BUG-265/source-shape-reconciliation-approval.md",
+        "spec/attachments/BUG-265/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T11:03:21.113Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T12:28:41.356Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T12:41:18.464Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T13:34:23.769Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T13:35:57.367Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: BUG-265's single source of truth is inside the existing 2,059-line BackgroundSession module. Meeting the strict under-300-line rule requires a substantially larger mechanical split than the approved Chat decoder split: preserve struct field visibility, public re-exports, goal-generation atomics, admission/pause/interrupt behavior, then move cohesive impl blocks to child modules and isolate completion-contract synchronization. Approve this full mechanical module split (no behavior change before controls), followed by the separately tested budget/goal repair? I will not evade the size rule with a duplicate helper or weaken attribution/goal gates.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:03:39.150Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Approved via actual request_user_input response, selected Approve Split. Supervising caller explicitly acts under the user's reasonable in-scope approval grant, not fabricated human speech. Mechanical BackgroundSession extraction only before separately tested behavior repair; preserve public paths/effective field visibility, atomics/orderings, defaults/channel ownership, request-ID gates and admission/cancellation/drop/security/completion semantics. Named module plan/invariant ledger precedes moves. Capture baseline/runtime controls and genuine BUG-265 red; update moved-source shape tests without weakening assertions. Scoped controls include CONT-009, CONT-008 races, background session/channel/admission/output and genuine-user versus recovery/unchanged-goal behavior. No architecture/API redesign, new dependencies or visibility widening. Stop on material expansion; strict disk floor remains 6 GiB."
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Only an admitted genuine user input resets the per-task zero-progress nudge budget. Automatic compaction and loop-abort corrective dispatch synchronize the completion contract without starting a new task.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:26:02.676Z"
+        },
+        {
+          "id": 1,
+          "text": "Done rejections belong to the active goal lifetime, not a dispatch or user-turn lifetime. Resynchronizing the same goal preserves registry and inner rejection accounting; replacing or clearing the goal resets it.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:26:11.126Z"
+        },
+        {
+          "id": 2,
+          "text": "Recovery and genuine dispatch retain CONT-008 goal generation/replacement guards and CONT-009 arming before output/provider construction; four rejected Done calls must still reach escalation across recovery.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:26:18.890Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Automatic compaction after one real zero-progress nudge preserves the used nudge, so a budget of one allows no extra post-recovery nudge.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:27:45.283Z"
+        },
+        {
+          "id": 1,
+          "text": "A repetitive-output corrective retry after one real zero-progress nudge preserves that nudge; it cannot renew a budget of one.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:27:54.162Z"
+        },
+        {
+          "id": 2,
+          "text": "After a task exhausts its one-nudge budget, a genuine next user task receives exactly one fresh nudge.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:28:01.955Z"
+        },
+        {
+          "id": 3,
+          "text": "Two rejected Done calls before automatic compaction and two after it reach the four-rejection human-review threshold for the unchanged goal.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:28:10.013Z"
+        },
+        {
+          "id": 4,
+          "text": "Two rejected Done calls before a repetitive-output corrective retry and two after it reach the same four-rejection human-review threshold.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:28:17.381Z"
+        },
+        {
+          "id": 5,
+          "text": "A real next user message with an unchanged goal preserves earlier Done rejections, including when the user sets the same goal text and verification again.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:28:25.573Z"
+        },
+        {
+          "id": 6,
+          "text": "Replacing an active goal starts fresh rejection accounting for the replacement; clearing it removes the contract and resets both rejection counts without resurrecting the old goal.",
+          "deleted": false,
+          "createdAt": "2026-10-25T11:28:35.865Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "estimate": 5
     },
     "BUG-266": {
       "id": "BUG-266",
       "title": "Settle custom provider stops without dropping trailing usage or waiting for EOF",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:37:20.793Z",
-      "updatedAt": "2026-10-25T08:41:48.911Z",
+      "updatedAt": "2026-10-25T14:01:52.267Z",
       "description": "Rhai handle_stop marks the parser terminated, suppressing later usage-only frames, while stream_http continues polling until [DONE] or EOF. OpenAI-compatible scripts that map finish_reason to stop can lose trailing usage and delay FinalResponse/auto-continue into stall handling when the connection stays open. Define and test a coherent stop/usage/error lifecycle, including usage after finish_reason, stop followed by a pending connection, and stop followed by transport failure. Existing bug227 fixtures generally put usage before stop, and a post-stop transport-failure test deliberately expects failure; reconcile that contract before changing semantics. Preserve fail-closed terminal validation and accurate request settlement. Source-confirmed plumbing issue; user-installed scripts were not audited.",
       "epic": "provider-resilience",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-266/custom-stream-settlement.md"
-      ]
+        "spec/attachments/BUG-266/custom-stream-settlement.md",
+        "spec/attachments/BUG-266/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T13:36:11.156Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T13:41:34.551Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T13:51:12.554Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T14:00:22.452Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T14:01:52.267Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve BUG-266 settlement at authoritative [DONE] or clean EOF after stop, with stop alone remaining nonfinal so late usage and pre-boundary typed transport errors are preserved; add no timeout or heuristic early success. Also approve mechanical extraction of stream.rs public chunk/usage types into stream_types.rs with unchanged re-exports, keeping all files under 300 lines?",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:36:32.250Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Approved by the supervising caller under the explicit in-scope grant, not fabricated human speech: stop is nonfinal; [DONE] settles without EOF; clean EOF after stop may settle; retain late usage and typed post-stop failures, with no timeout or early-success heuristic. Mechanical extraction of only public chunk/usage types into stream_types.rs preserves re-exports and behavior before repair."
+        }
+      ],
+      "nextQuestionId": 1,
+      "userStory": {
+        "role": "user of a scripted streaming provider",
+        "action": "settle only on authoritative completion while retaining trailing usage",
+        "benefit": "continuation and native Done cannot hide usage or transport errors"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A script stop ends content, not transport parsing: later usage remains observable until [DONE] or clean EOF; post-stop text/tools cannot extend the completed content.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:09.983Z"
+        },
+        {
+          "id": 1,
+          "text": "Explicit [DONE] settles immediately without reading EOF; clean EOF after stop succeeds, missing terminal evidence and pre-boundary transport errors remain typed failures. Stop alone on an open connection is not successful settlement.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.107Z"
+        },
+        {
+          "id": 2,
+          "text": "The actual rig adapter settles exact physical usage before releasing buffered executable calls, so native Done cannot conceal trailing usage or failure.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.230Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A stop then usage then [DONE] on a connection still open produces exact final usage without waiting for EOF.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.351Z"
+        },
+        {
+          "id": 1,
+          "text": "A stop then usage then clean EOF preserves usage; a post-stop body failure stays an error with no successful final or executable tools.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.473Z"
+        },
+        {
+          "id": 2,
+          "text": "Missing terminal evidence fails; stop-only open transport remains pending and cancellation closes it.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.592Z"
+        },
+        {
+          "id": 3,
+          "text": "An attributed armed native Done queued before stop and trailing usage settles physical tokens once before accepting completion.",
+          "deleted": false,
+          "createdAt": "2026-10-25T13:41:10.713Z"
+        }
+      ],
+      "nextExampleId": 4
     },
     "BUG-267": {
       "id": "BUG-267",
       "title": "Dispatch built-in-name scripted providers through their selected custom implementation",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:37:33.975Z",
-      "updatedAt": "2026-10-25T08:41:49.048Z",
+      "updatedAt": "2026-10-25T14:15:45.094Z",
       "description": "Provider discovery intentionally supports scripted shadowing of built-in names, producing Custom(claude) and analogous selections. Shared turn routing reduces the selection to a name string and matches the native built-in branch; native getters reject the Custom enum before tool registration. Preserve implementation identity across routing, including explicit facade overrides and the script-shadowing escape hatch. Add real shared-agent-loop requests using a colliding script slug; existing shadowing tests stop at enum resolution and scripted-dispatch tests use noncolliding names or direct builders. Verify armed Done registration and completion on the selected script rather than merely checking a resolver. Source-confirmed routing composition defect; not proven to be introduced by the latest extraction.",
       "epic": "custom-provider-tui-wiring",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-267/script-shadowing-dispatch.md"
-      ]
+        "spec/attachments/BUG-267/script-shadowing-dispatch.md",
+        "spec/attachments/BUG-267/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T14:02:05.991Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T14:07:44.166Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T14:11:03.321Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T14:14:42.939Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T14:15:45.094Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Confirm the BUG-267 repair is limited to selected Custom identity with no explicit facade override; retain the existing explicit-facade route unchanged (including typed native getter rejection for an incompatible Custom/native override), rather than expanding MODEL-004 transport/facade policy in this bug?",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:03:39.913Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller approved bounded implicit no-override Custom identity repair, not fabricated human speech. Preserve explicit facade routing including incompatible Custom/native fail-closed rejection, true built-in routes, the shadowing escape hatch, credentials and admission. Only isolated numeric-loopback synthetic fixtures are authorized."
+        }
+      ],
+      "nextQuestionId": 1,
+      "userStory": {
+        "role": "user selecting a scripted provider",
+        "action": "dispatch the selected implementation even when its name collides",
+        "benefit": "my script receives the actual request and native Done can finish the task"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Without an explicit facade override, the typed selected Custom implementation owns dispatch regardless of its slug, including built-in names and aliases. Do not rediscover selection from a name string.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.292Z"
+        },
+        {
+          "id": 1,
+          "text": "Keep existing explicit-facade routing and incompatible-native getter rejection unchanged. Preserve true native selection and FSPEC_DISABLE_SCRIPT_SHADOWING.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.422Z"
+        },
+        {
+          "id": 2,
+          "text": "Real shared-loop inference must preserve script-owned wire schema, selected model ID, native Done registration, normal attribution/admission and pre-request completion arming.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.551Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Registered scripts named claude, openai, codex, gemini, zai and github-copilot receive actual shared-loop requests and accepted Done.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.672Z"
+        },
+        {
+          "id": 1,
+          "text": "Alias-named scripts anthropic, google, z-ai and copilot retain their selected implementation, as does a noncolliding script.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.791Z"
+        },
+        {
+          "id": 2,
+          "text": "A genuine native OpenAI selection and disabled shadowing send native dialect requests to loopback, not the colliding script.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:13.909Z"
+        },
+        {
+          "id": 3,
+          "text": "An explicit openai facade on Custom claude still rejects the incompatible native getter without falling back to a script or sending an external request.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:07:14.028Z"
+        }
+      ],
+      "nextExampleId": 4
     },
     "BUG-268": {
       "id": "BUG-268",
       "title": "Connect Copilot endpoint selection to actual provider requests",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:37:45.161Z",
-      "updatedAt": "2026-10-25T08:41:49.183Z",
+      "updatedAt": "2026-10-25T17:08:30.658Z",
       "description": "CopilotEndpointFacade selects Responses for certain GPT-5+ models, but native provider construction and agent return types always use Chat Completions. Middleware adds headers/cache state without rewriting endpoint or dialect. Existing routing tests invoke the helper and format a URL, not an actual provider request. Make the documented endpoint/model contract and production dispatch agree, preserving tools, history, reasoning and completion behavior for each chosen dialect. Add captured HTTP request and armed Done follow-up tests, plus Chat fallback/model exceptions. Longstanding source-confirmed integration gap from 483f50b4; not a confirmed October regression. Reuse shared adapters instead of duplicating provider logic.",
       "epic": "provider-resilience",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-268/copilot-endpoint-routing.md"
-      ]
+        "spec/attachments/BUG-268/copilot-endpoint-routing.md",
+        "spec/attachments/BUG-268/composition-contract.md",
+        "spec/attachments/BUG-268/session-lineage-correction.md",
+        "spec/attachments/BUG-268/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T14:19:11.384Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T14:36:02.866Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T14:40:55.823Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T14:45:48.050Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T14:51:27.801Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T15:26:05.699Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T17:03:11.397Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T17:08:30.658Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve retaining the documented pure selector (GPT-N >=5 uses Responses except exact gpt-5-mini; all other models Chat), tested locally not asserted as live-provider support; use a small typed Copilot client/model composition over the existing Chat/Responses adapters so client().agent(), create_rig_agent and nonstreaming completion all honor it. This necessarily changes the two old Chat-only static return-type assertions to the routed types while preserving actual middleware guards; approve mechanical extraction of from_auth construction if needed to keep provider.rs under 300 lines, no business-logic duplication or endpoint/security/refresh-policy expansion?",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:21:12.307Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller approved bounded typed composition over existing adapters and exact repository selector, two necessary Chat-only static type updates, and construction-only extraction if needed; no claim that local tests prove live Copilot model/account support. Official supported-model/BYOK pages do not establish authenticated proxy routing. Preserve all middleware and security semantics."
+        },
+        {
+          "id": 1,
+          "text": "@human: Additional source review finds two adjacent gaps required by BUG-268 criteria: CopilotHttpClient freezes the constructor token while ensure_fresh updates only auth, and generic Responses drops Copilot top-level reasoning_opaque (distinct from Codex encrypted ancestry). Approve request-time reuse of the existing refresh coordinator with a test-support-only numeric-loopback issuer seam, and Copilot-scoped opaque response/history forwarding without interpreting it, or specify a narrower contract? No Codex replay/lineage policy or real issuer requests will change.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:24:47.837Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller approved existing request-time refresh coordination without inference replay, nondefault test-support numeric-loopback issuer seam with redirect isolation, and uninterpreted Copilot-only encrypted reasoning_opaque forwarding; no real credentials, external issuer, general native-field forwarding or Codex policy change."
+        },
+        {
+          "id": 2,
+          "text": "@human: Approve a narrowly scoped nonpersistent Copilot ProviderSession Arc extension for live next-genuine-turn opaque retention across manager/provider/model reconstruction, with exact history/provenance and generation guards, no checkpoint/writer/restore adoption, existing reset lifecycle and no global/durable registry or Codex change? Exact bounded design is in session-lineage-correction.md.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:45:49.066Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller approved session-lineage-correction.md restoring original next-genuine-turn acceptance: existing ProviderSession Arc lifecycle only, same-live-session sharing, independent/fork/new/restored exclusion, exact logical account/deployment/model/history/preamble/tool IDs and generation, stale/cancelled/reset invalidation without harming newer lineage, no opaque diagnostics/checkpoint/writer/serialization persistence. Real two-send_input causal red mandatory before owner integration; all refresh-seam and no-Codex/global/durable-policy restrictions remain."
+        }
+      ],
+      "nextQuestionId": 3,
+      "rules": [
+        {
+          "id": 0,
+          "text": "The unchanged repository selector owns actual outbound dialect for every Copilot client, native agent and nonstreaming completion front door: GPT-N >=5 Responses except exact gpt-5-mini, all other models Chat. Local tests are not live authenticated account/model support proof.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:33:46.257Z"
+        },
+        {
+          "id": 1,
+          "text": "Every request retains Copilot headers, zero-retention store false, native tool identities and completion settlement; short-lived token refresh must use the existing coordinator and fresh Authorization without new inference retries.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:33:46.384Z"
+        },
+        {
+          "id": 2,
+          "text": "Original PROV-055 and PROV-057 require the owned reasoning_opaque value unchanged on the next distinct genuine TUI user turn. Live session ownership MUST survive normal manager/provider/model reconstruction for the same logical account/deployment/model and compatible history; reconstruction alone cannot clear it.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:45:48.556Z"
+        },
+        {
+          "id": 3,
+          "text": "Opaque lineage is live session-owned and nonpersistent: exact compatible history ancestry and provider/account/deployment/model/generation provenance are required. Reset, compaction, model/account/deployment/history changes and failed/cancelled stale settlement fail closed. Ordinary same-account short-token refresh does not replace ownership. New/restored sessions cannot adopt caller-supplied or persisted opaque metadata; no Codex/global/durable replay changes.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:45:48.683Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Captured client and nonstreaming GPT-5 requests use input on /responses; exact gpt-5-mini and GPT-4o requests use messages on /chat/completions with required headers.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:33:46.756Z"
+        },
+        {
+          "id": 1,
+          "text": "The actual native agent runs tool result then stop then nudge then attributed Done in each dialect, preserving physical billing and call-ID pairing.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:33:46.872Z"
+        },
+        {
+          "id": 2,
+          "text": "A validated numeric-loopback test issuer refreshes expired synthetic tokens before actual inference Authorization; failed refresh sends no inference request and all credentials remain in isolated storage.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:33:47.113Z"
+        },
+        {
+          "id": 3,
+          "text": "Two distinct real send_input user turns on one background session reconstruct Copilot providers normally; request two retains the exact owned encrypted opaque value while preserving ordinary history and tools.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:45:48.814Z"
+        },
+        {
+          "id": 4,
+          "text": "Same-account short-token renewal retains live lineage; model/account/deployment switch or incompatible/cleared/compacted history rejects it. A different or restored session cannot adopt opaque state.",
+          "deleted": false,
+          "createdAt": "2026-10-25T14:45:48.941Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "userStory": {
+        "role": "Copilot user",
+        "action": "send the selected request dialect through actual provider entry points",
+        "benefit": "tools reasoning credentials and completion remain coherent"
+      }
     },
     "BUG-269": {
       "id": "BUG-269",
       "title": "Wire scripted OAuth automatic refresh into real completion requests",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:37:57.964Z",
-      "updatedAt": "2026-10-25T08:41:49.318Z",
+      "updatedAt": "2026-10-25T17:34:08.359Z",
       "description": "The documented ScriptedRefreshingClient ensure_fresh_if_needed helper has only test callers. The runtime custom provider path obtains script headers directly and sends through a plain HTTP client, so expired credentials are not automatically refreshed by this helper before long-running continuation requests. Trace and repair actual auth/HTTP composition for streaming and nonstreaming providers; preserve project-specific script resolution, redaction, cancellation and refresh synchronization, and do not double-refresh scripts that own refresh in their headers function. Test real provider requests using an expired synthetic token and fake refresh issuer rather than calling the helper directly. Source-confirmed integration gap; no live credential failure reproduced in this audit.",
       "epic": "scriptable-subscription-providers",
       "parent": "CONT-011",
       "attachments": [
-        "spec/attachments/BUG-269/scripted-oauth-refresh.md"
-      ]
+        "spec/attachments/BUG-269/scripted-oauth-refresh.md",
+        "spec/attachments/BUG-269/request-refresh-design.md",
+        "spec/attachments/BUG-269/validation-and-review.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T17:08:49.860Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T17:17:08.710Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T17:23:44.469Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T17:30:32.962Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T17:34:08.359Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve the concrete bounded request-refresh-design.md: exact selected engine/AST/config at the single invoke_build_headers integration, automatic explicit OAuth hook pairs only while Custom/Bearer/API-key headers ownership stays unchanged; existing helper and a credential-path weak single-flight lock, admitted refresh may finish/persist after caller cancellation but no inference can follow, root-change fails closed and diagnostics redact script/token bodies, no new retry/deadline/security policy?",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:12:03.832Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller selected Approve bounded integration for request-refresh-design.md under the explicit batch grant: exact selected engine/AST/config, Custom headers ownership and native providers unchanged; credential-path locks only, fence access/persistence against root changes after waits; admitted synchronous refresh may persist rotated credentials but cancellation/deadline never sends inference; synthetic local fixtures must settle before temporary roots restore; no retry/deadline/issuer policy expansion."
+        }
+      ],
+      "nextQuestionId": 1,
+      "userStory": {
+        "role": "scripted OAuth user",
+        "action": "refresh expired credentials before actual completions",
+        "benefit": "long-running requests use fresh authorization without overriding script ownership"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "All real custom completion front doors use the selected compiled OAuth script and existing stored-token helper before headers; never rediscover a global script or modify native provider refresh.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:21.634Z"
+        },
+        {
+          "id": 1,
+          "text": "Explicit OAuth preferred/legacy hook pairs automatically refresh; Custom headers-owned auth, bearer/API-key scripts, missing hooks and fresh/missing token controls retain existing behavior without duplicate refresh.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:21.753Z"
+        },
+        {
+          "id": 2,
+          "text": "Credential-path single-flight rechecks tokens under the lock; admitted synchronous refresh may settle/persist after caller cancellation, while cancellation/deadlines prevent inference and root changes fail closed. No new retry or deadline policy.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:21.877Z"
+        },
+        {
+          "id": 3,
+          "text": "Rejected and transient refresh failures send no inference, retain stored credentials, redact diagnostics and permit a later explicit request by existing refresh evaluation.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:21.997Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "All four actual streaming/nonstreaming front doors refresh expired synthetic tokens at a local issuer and send exactly one freshly authorized inference each, including legacy hook names.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:22.114Z"
+        },
+        {
+          "id": 1,
+          "text": "Independently reconstructed concurrent providers sharing a credential path exchange once; project-selected scripts beat unrelated global scripts and a changed credential root fails closed.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:22.232Z"
+        },
+        {
+          "id": 2,
+          "text": "A self-refreshing Custom headers function exchanges only once; fresh/missing tokens and absent hooks remain valid without middleware refresh.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:22.349Z"
+        },
+        {
+          "id": 3,
+          "text": "Issuer rejection/network failure/cancel/deadline sends zero inference; admitted callback settles before fixture teardown and later explicit requests remain possible.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:16:22.477Z"
+        }
+      ],
+      "nextExampleId": 4
     },
     "PROV-162": {
       "id": "PROV-162",
       "title": "Reconcile Codex protocol continuation with typed response history",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-25T08:38:11.400Z",
-      "updatedAt": "2026-10-25T08:41:50.097Z",
+      "updatedAt": "2026-10-25T18:28:36.630Z",
       "description": "Discovery/design follow-up to CONT-011, PROV-148 and PROV-149. Codex protocol continuation is separate from outer /continue: it follows selected end_turn:false or interrupted responses, but replay rejects non-text output (including reasoning, hosted search, refusal sections and empty output) and caps follow-ups at three. These are explicitly specified restrictions, so do not silently label them accidental bugs or weaken safety/refusal handling. Decide which typed items are replayable, how native encrypted reasoning/history validation participates, and how protocol bounds and /continue budgets are communicated and accounted. Then specify and test complete physical follow-up requests, cancellation, admission, usage and failure behavior for the approved policy. This is not the profile-default lifecycle work already tracked by CONT-010. Research attached.",
       "epic": "completion-contract",
       "children": [],
       "attachments": [
-        "spec/attachments/PROV-162/codex-protocol-replay-policy.md"
+        "spec/attachments/PROV-162/codex-protocol-replay-policy.md",
+        "spec/attachments/PROV-162/ast-research-protocol-replay.md",
+        "spec/attachments/PROV-162/typed-continuation-design.md",
+        "spec/attachments/PROV-162/validation-and-review.md"
       ],
       "relatesTo": [
         "CONT-011"
       ],
       "userStory": {
         "role": "Codex user",
-        "action": "continue unfinished tasks using an explicitly defined typed-response replay policy",
-        "benefit": "reasoning and native history are preserved without confusing provider retry bounds, task budgets or safety outcomes"
-      }
+        "action": "continue safe typed protocol output within explicit finite limits",
+        "benefit": "reasoning rich responses finish without weakening safety lineage or completion accounting"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T17:37:22.871Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T17:45:38.520Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T17:56:15.057Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T18:26:14.944Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T18:28:36.630Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve typed-continuation-design.md reconciling PROV-148 with PROV-149: only validated assistant output_text, known reasoning summary/encrypted content and negotiated completed hosted-search actions may replay exactly; empty/unknown/malformed output fails, refusal suppresses protocol replay and unsafe terminals never continue. Preserve three protocol follow-ups, independent transport/outer/genuine-input budgets, existing account/model/generation/ancestry and physical admission/billing, native tool-result pairing, no durable/delta/general native replay or new retry policy; add bounded Codex-only validator/diagnostics and causal actual-request tests?",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:38:59.840Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Supervising caller selected Approve bounded policy after reviewing typed-continuation-design.md: only current-response validated assistant text, known owned reasoning and negotiated completed hosted search; exact typed ordering and opaque bytes, existing account/model/generation/ancestry on every request; empty/unknown/malformed output fails, refusal/unsafe terminals never continue, immediate paired tool handoff, unchanged three-follow-up cap and independent transport/outer/genuine-input budgets, complete physical admission and once-only billing even on failure; no arbitrary replay, durable/delta store, new retry/settings/safety bypass; material deviations require review."
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Only eligible current-response assistant output_text, typed reasoning summaries/encrypted content and negotiated completed hosted search may replay, preserving exact validated items and order; no unknown native fields/families or empty output.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.228Z"
+        },
+        {
+          "id": 1,
+          "text": "Refusal suppresses protocol replay; filtering, budget limits, failed and incomplete client-tool outcomes cannot continue. Ordinary successful client tools retain generic handoff and exact paired IDs.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.349Z"
+        },
+        {
+          "id": 2,
+          "text": "Retain three internal follow-ups independently of transport recovery and outer nudge/genuine-user budgets; full serialized admission and account/model/generation/ancestry checks apply to every physical request, with once-only measured billing even on failure.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.472Z"
+        },
+        {
+          "id": 3,
+          "text": "Publish typed checkpoint only after successful chain settlement; cancellation, reset, changed account/model/history or admission/cap failure cannot install stale output. No new durable/delta store, retry system or safety bypass.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.591Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A local completed or interrupted response with text, owned encrypted reasoning and negotiated hosted search sends one exact typed follow-up and settles physical usage once.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.711Z"
+        },
+        {
+          "id": 1,
+          "text": "Refusal with end_turn false settles visibly without another request; malformed/empty/unknown output fails and incomplete calls never execute.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.831Z"
+        },
+        {
+          "id": 2,
+          "text": "An endless typed chain stops after four physical responses despite a transport replacement, and admission growth/cancellation/generation/account changes prevent stale follow-ups.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:16.949Z"
+        },
+        {
+          "id": 3,
+          "text": "A real CLI tool-result and outer nudge flow preserves native call IDs, exact billing and independent protocol limits; genuine user/recovery budget controls remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:43:17.069Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Native HITL approved typed-continuation-design.md. Extend only Codex Terminal replay with a narrow validator over existing CodexItem types; retain generation/AttemptAuthority, stored account/lifecycle, full-DAG model/ancestry, native capability and physical admission gates. Refusal and unsafe/empty/unknown output never trigger follow-ups; preserve three protocol follow-ups and independent transport/outer/genuine-user budgets. Settle trustworthy physical terminal usage before replay rejection, with one final publication only on chain success; no shared Responses/Copilot defaults, durable/delta store, new retry/settings policy or arbitrary native replay. Validate actual loopback model/CLI requests plus existing account/lineage/recovery controls.",
+          "deleted": false,
+          "createdAt": "2026-10-25T17:44:33.843Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8
     }
   }
 }

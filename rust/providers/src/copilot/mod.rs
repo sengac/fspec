@@ -30,7 +30,9 @@
 pub mod auth;
 pub mod base_url;
 pub mod behavior_facade;
+mod capture;
 pub mod classifier;
+pub mod completion_model;
 pub mod constants;
 pub mod endpoint;
 pub mod header_facade;
@@ -44,6 +46,9 @@ pub mod prompt_cache;
 pub mod provider;
 
 impl crate::ProviderAdapter for provider::CopilotProvider {
+    fn with_session(self, state: &crate::session::ProviderSession) -> Self {
+        self.bind_session(state)
+    }
     fn provider_name(&self) -> &'static str {
         "github-copilot"
     }
@@ -52,7 +57,10 @@ pub mod provider_options;
 pub mod refreshing_client;
 pub mod response;
 pub mod rig_agent;
+pub mod session;
 pub mod system_prompt_facade;
+#[cfg(feature = "test-support")]
+pub mod test_support;
 pub mod token_exchange;
 pub mod token_refresh;
 
@@ -87,6 +95,7 @@ pub use behavior_facade::{
     CopilotClaudeBehaviorFacade, CopilotGeminiBehaviorFacade, CopilotGptBehaviorFacade,
 };
 pub use classifier::{CopilotRequestClassifier, RequestClassification};
+pub use completion_model::{CopilotClient, CopilotCompletionModel};
 pub use endpoint::{CopilotEndpoint, CopilotEndpointFacade};
 pub use header_facade::CopilotHeaderFacade;
 pub use model_family::{is_claude_model, is_gemini_model, is_gpt_model};

@@ -1,0 +1,1739 @@
+{
+  "distinct_pass_count": 236,
+  "by_package": {
+    "codelet-cli": 91,
+    "codelet-providers": 83,
+    "codelet-agent-loop": 23,
+    "codelet-core": 4,
+    "rig-core": 35
+  },
+  "tests": [
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "a_genuine_next_user_task_receives_a_fresh_nudge_budget",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "automatic_compaction_preserves_the_consumed_nudge_budget",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "genuine_user_dispatch_and_identical_goal_writes_preserve_rejections",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "loop_abort_recovery_preserves_the_consumed_nudge_budget",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "rejections_across_automatic_compaction_reach_goal_escalation",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "rejections_across_loop_abort_recovery_reach_goal_escalation",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "test": "replacing_and_clearing_a_goal_reset_its_rejection_accounting",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "test": "alias_named_scripts_retain_selected_identity",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "test": "built_in_name_scripts_receive_real_shared_loop_requests",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "test": "explicit_incompatible_facade_remains_fail_closed",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "test": "native_selection_and_disabled_shadowing_retain_native_dispatch",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "test": "noncolliding_custom_dispatch_remains_compatible",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug268_live_session_opaque",
+      "test": "changed_provenance_or_incompatible_history_invalidates_opaque",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug268_live_session_opaque",
+      "test": "distinct_genuine_turns_preserve_owned_opaque_through_reconstruction",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug268_live_session_opaque",
+      "test": "new_and_restored_sessions_cannot_adopt_opaque_lineage",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug268_live_session_opaque",
+      "test": "same_account_short_token_refresh_preserves_live_ownership",
+      "successful_log": "final-shared-matrix.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cmpct041_pre_compaction_basis_test",
+      "test": "all_four_pre_compaction_writers_route_through_shared_accessors",
+      "successful_log": "final-post-format-shared.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cmpct041_pre_compaction_basis_test",
+      "test": "auto_and_manual_snapshots_agree_on_the_same_basis",
+      "successful_log": "final-post-format-shared.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cmpct041_pre_compaction_basis_test",
+      "test": "overflow_recovery_snapshot_records_true_total_in_seed_window",
+      "successful_log": "final-post-format-shared.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cont011_persisted_completion",
+      "test": "accepted_native_completion_persists_a_paired_transcript",
+      "successful_log": "final-post-format-shared.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "prov149_codex_reload",
+      "test": "backend_checkpoint_survives_session_reload_and_new_user_turn",
+      "successful_log": "native-gate-codex-reload.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "prov149_codex_reload",
+      "test": "conversation_replacement_invalidates_typed_continuation",
+      "successful_log": "native-gate-codex-reload.log"
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "prov149_codex_reload",
+      "test": "legacy_and_non_codex_sessions_keep_ordinary_history_behavior",
+      "successful_log": "native-gate-codex-reload.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "a_nudge_followed_by_tool_activity_is_refunded",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "accepted_done_finishes_the_turn_and_surfaces_the_summary",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "armed_stop_without_done_produces_a_counted_nudge",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "budget_exhaustion_finishes_with_a_visible_warning",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "done_is_registered_only_while_auto_continue_is_armed",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "done_tool_records_a_session_scoped_tier0_acceptance",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "off_mode_finishes_exactly_as_today_when_the_model_stops",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "session_auto_continue_state_defaults_and_per_user_turn_reset",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "stream_loop_nudges_only_at_the_clean_final_response_settle_point",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "truncation_recovery_takes_precedence_over_auto_continue",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "test": "user_interrupt_always_wins_over_nudging",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "accepted::accepted_helper_done_settles_summary_and_goal_teardown_once",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "clean_helper_completion_consumes_a_counted_nudge",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "exhausted_goal_helper_completion_escalates_for_human_review",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "exhausted_helper_completion_emits_the_normal_budget_warning",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "helper_compaction_hands_off_without_a_completion_nudge",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "helper_errors_do_not_settle_a_clean_completion",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "helper_interruption_does_not_settle_a_clean_completion",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "helper_tool_activity_refunds_a_pending_nudge",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "test": "nonclean_helper_stops_never_consume_a_nudge",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug262_ordered_chat_tools",
+      "test": "eof_flush_preserves_provider_index_order_before_done",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug262_ordered_chat_tools",
+      "test": "json_response_vector_retains_streaming_ordering_parity",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug262_ordered_chat_tools",
+      "test": "tool_finish_flush_preserves_provider_index_order_before_done",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "test": "done_cannot_conceal_invalid_terminal_evidence",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "test": "explicit_terminal_marker_settles_without_waiting_for_eof",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "test": "malformed_and_provider_error_frames_retain_actionable_causes",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "test": "usage_without_a_finish_reason_cannot_declare_completion",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "test": "valid_native_done_settles_physical_usage_before_immediate_completion",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "test": "completed_native_done_settles_once_with_paired_invocation_identities",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "test": "explicit_backend_errors_and_metadata_completions_retain_their_contracts",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "test": "failed_responses_retain_backend_causes_without_tools",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "test": "incomplete_responses_preserve_normalized_recovery_metadata",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "test": "invalid_terminal_evidence_cannot_be_hidden_by_native_done",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug266_custom_done_settlement",
+      "test": "native_done_cannot_discard_trailing_physical_usage",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "test": "client_model_requests_honor_the_endpoint_table",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "test": "native_agents_retain_tool_nudge_and_done_continuation",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "test": "nested_responses_images_retain_real_middleware_classification",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "test": "nonstreaming_provider_requests_honor_both_dialects",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "test": "public_client_agents_execute_in_both_dialects",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "test": "compaction_hook_does_not_trigger_early_during_continuation",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "test": "compaction_hook_still_triggers_on_genuine_overflow",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "test": "continuation_seed_site_routes_through_audited_constructor",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "test": "continuation_token_state_reports_true_total_not_double_counted",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "test": "nested_continuation_display_basis_seed_is_unchanged",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "accepted_goal_mode_done_terminates_the_turn_at_the_tool_result_arm_with_atomic_teardown",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "failing_tier_2_verify_rejects_done_without_early_exit",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "immediate_termination_prevents_repeat_verify_runs_and_acceptance_overwrite",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "settle_point_escalation_semantics_are_unchanged",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "stream_loop_wiring_pins_goal_mode_early_exit_and_single_teardown_invariants",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "tier_1_rejected_done_records_a_rejection_and_never_exits_early",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "test": "verify_command_exceeding_the_timeout_rejects_done_without_early_exit",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "anthropic_client_calls_require_authoritative_terminal_settlement",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "gemini_client_calls_require_safe_authoritative_terminal_settlement",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "isolated_security_still_blocks_high_risk_native_file_work",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "native_clean_stops_compose_nudge_work_and_accepted_done",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "native_malformed_delivery_and_cancellation_do_not_complete_work",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "test": "native_rejected_goal_completion_remains_a_rejection",
+      "successful_log": "final-post-format-cli.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "budget_exhaustion_in_goal_mode_escalates_instead_of_the_auto_continue_warning_finish",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "clearing_the_goal_removes_the_completion_contract_system_reminder",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "done_tool_description_includes_the_goal_text_while_a_goal_is_active",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "done_with_a_trivial_goal_assessment_is_rejected_at_tier_1",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "done_with_evidence_and_assessment_is_accepted_when_no_verify_command_is_configured",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "done_without_evidence_or_goal_assessment_is_rejected_at_tier_1",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "escalation_in_plain_cli_repl_finishes_the_turn_with_a_prominent_blocked_message",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "escalation_pauses_the_session_when_a_pause_handler_is_registered",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "failing_verify_command_rejects_done_with_exit_code_and_output_tail",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "fourth_done_rejection_escalates_while_the_goal_stays_active",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "goal_default_budget_of_15_overrides_a_smaller_explicit_continue_budget",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "goal_presence_wins_the_derived_mode_over_the_continue_toggle",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "goal_text_survives_compaction_via_the_completion_contract_system_reminder",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "larger_explicit_continue_budget_overrides_the_goal_default_of_15",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "passing_verify_command_accepts_done_and_auto_clears_the_goal",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "two_consecutive_zero_activity_nudges_escalate_immediately",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "verify_command_exceeding_the_timeout_rejects_done_with_a_timeout_message",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "test": "verify_command_exit_code_is_surfaced_in_the_rejection",
+      "successful_log": "final-cli-credential-fixture-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "prov162_protocol_outer_loop",
+      "test": "refusal_settles_visibly_without_protocol_or_outer_continuation",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "prov162_protocol_outer_loop",
+      "test": "typed_protocol_tools_and_outer_nudges_retain_separate_accounting",
+      "successful_log": "final-cli-matrix.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_budget_exhausted_message_content",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_budget_exhausted_message_with_custom_count",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_detection_is_case_sensitive",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_empty_error_string_not_detected",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_normal_completion_unaffected",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_partial_match_not_detected",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_provider_agnostic_detection",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_recovery_message_for_bash_tool",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_recovery_message_handles_missing_partial_args",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_recovery_message_handles_missing_tool_name",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_recovery_message_warns_against_retry",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_retry_budget_prevents_infinite_loops",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_text_truncation_no_recovery",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "test": "test_truncated_tool_call_includes_structured_recovery",
+      "successful_log": "final-truncation-recovery-controls.log"
+    },
+    {
+      "package": "codelet-core",
+      "target": "bug259_recovery_contention",
+      "test": "non_contention_filesystem_failures_propagate_immediately",
+      "successful_log": "final-core-batch-control.log"
+    },
+    {
+      "package": "codelet-core",
+      "target": "bug259_recovery_contention",
+      "test": "persistent_contention_is_bounded_and_isolated",
+      "successful_log": "final-core-batch-control.log"
+    },
+    {
+      "package": "codelet-core",
+      "target": "bug259_recovery_contention",
+      "test": "shell_spawning_does_not_extend_released_recovery_ownership",
+      "successful_log": "final-core-batch-control.log"
+    },
+    {
+      "package": "codelet-core",
+      "target": "bug259_recovery_contention",
+      "test": "short_recovery_contention_preserves_authentic_pending_output",
+      "successful_log": "final-core-batch-control.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug260_refusal_history",
+      "test": "altered_readable_refusal_ancestry_remains_rejected",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug260_refusal_history",
+      "test": "tool_results_retain_refusal_and_call_identity",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug260_refusal_history",
+      "test": "user_messages_and_nudges_retain_native_refusal_history",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "approved_test_transport_is_restricted_to_numeric_loopback_http",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "credential_rejection_remains_terminal_after_unauthorized_inference",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "forced_refresh_network_failures_enter_cancellable_recovery",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "forced_refresh_retains_typed_failure_causes_at_the_http_boundary",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "missing_synthetic_credential_homes_return_controlled_fixture_errors",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "test": "repeated_refresh_deadlines_retain_bounded_retry_behavior",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "clean_eof_after_stop_retains_trailing_usage",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "done_settles_trailing_usage_without_waiting_for_eof",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "missing_terminal_evidence_remains_a_failure",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "post_stop_content_cannot_extend_the_completed_response",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "post_stop_failure_cannot_release_executable_tools",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "test": "stop_alone_does_not_invent_transport_success",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "a_validated_seam_preserves_isolated_synthetic_exchange_behavior",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "changed_credential_roots_fail_closed_while_a_fixture_is_active",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "redirecting_synthetic_issuers_cannot_escape_loopback_fixtures",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "synthetic_issuer_responses_cannot_select_an_external_inference_origin",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "synthetic_issuer_traffic_cannot_escape_through_inherited_proxies",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "test": "unsafe_issuer_destinations_are_rejected_before_requests",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "test": "actual_provider_selection_invalidates_copilot_without_changing_codex_state",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "test": "cancelled_or_failed_requests_invalidate_prior_owned_lineage",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "test": "deployment_identity_remains_distinct_at_the_same_effective_api_origin",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "test": "late_superseded_settlement_cannot_overwrite_or_clear_newer_lineage",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "test": "opaque_remains_private_and_caller_supplied_values_are_rejected",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_nonstream_terminal",
+      "test": "nonstreaming_responses_failures_cannot_authorize_tools_or_completion",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_nonstream_terminal",
+      "test": "nonstreaming_responses_safety_stops_cannot_authorize_tools",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_nonstream_terminal",
+      "test": "nonstreaming_responses_truncation_preserves_its_terminal_semantics",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_origin_boundary",
+      "test": "origin_changes_during_actual_transmission_invalidate_replay_before_sending",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_request_refresh",
+      "test": "concurrent_independent_requests_share_existing_token_refresh_coordination",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_request_refresh",
+      "test": "refreshed_effective_endpoints_reach_the_actual_nonstreaming_request",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_request_refresh",
+      "test": "rejected_or_cancelled_exchange_cannot_send_expired_authorization",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "caller_cancellation_and_deadline_prevent_inference_after_admitted_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "credential_root_changes_fail_closed_across_refresh_waits",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "every_real_completion_front_door_refreshes_before_authorization",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "existing_script_authentication_ownership_remains_unchanged",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "failed_refreshes_retain_credentials_and_redact_diagnostics",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "independent_concurrent_providers_coalesce_one_credential_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "test": "project_selected_scripts_remain_authoritative_during_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_credential_detection_with_claude_auth_json",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_credential_detection_without_any_claude_credentials",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_oauth_takes_precedence_over_api_key",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_read_claude_auth_sync_reads_valid_file",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_read_claude_auth_sync_returns_none_when_file_missing",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_session_creation_falls_back_to_env_var",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "test": "test_session_creation_routes_to_oauth_when_tokens_exist",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_api_key_mode_passes_requests_through_unchanged",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_claude_auth_persistence_writes_correct_json_structure",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_claude_provider_uses_refreshing_client_for_oauth_mode",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_existing_authorization_header_is_replaced",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_expired_token_is_automatically_refreshed_before_request",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_request_with_valid_token_injects_bearer_header_without_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_static_headers_are_preserved_and_not_modified",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_streaming_request_with_expired_token_refreshes_before_streaming",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_token_persistence_is_best_effort_and_does_not_fail_requests",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_token_refresh_failure_propagates_error",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_token_refresh_within_expiry_buffer_triggers_proactive_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "test": "test_tokens_loaded_from_disk_trigger_immediate_refresh",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "adjacent_requests_do_not_share_cache_evidence",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "measured_zero_cache_remains_distinct_from_absent_cache",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "nonstreaming_cache_usage_agrees_with_terminal_measurements",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "overflowing_cache_occupancy_rejects_successful_terminal_response",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "terminal_cache_measurements_survive_the_stream",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "test": "terminal_usage_without_a_request_start_is_rejected",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct071_builtin_gemini_tool_pairing",
+      "test": "direct_gemini_pairs_tool_results_by_original_function",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct071_builtin_gemini_tool_pairing",
+      "test": "streaming_gemini_pairs_tool_results_by_original_function",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov149_codex_history",
+      "test": "opaque_reasoning_round_trips_without_disclosure",
+      "successful_log": "native-gate-codex-history.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov149_codex_history",
+      "test": "tool_continuation_preserves_typed_output_independently_of_readable_thinking",
+      "successful_log": "native-gate-codex-history.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "admission_and_cancellation_cannot_publish_partial_typed_lineage",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "empty_unknown_and_malformed_continuation_output_fail_closed",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "generation_and_account_changes_invalidate_protocol_authority",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "genuine_follow_ups_preserve_typed_ancestry_and_reject_rewrites",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "known_typed_output_continues_with_exact_owned_items",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "protocol_limits_stay_finite_across_transport_replacement",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "test": "refusal_and_unsafe_terminals_never_trigger_protocol_replay",
+      "successful_log": "final-provider-matrix.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_normal_end_turn_not_detected_as_truncation",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_openai_finish_reason_string_mapping",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_provider_manager_openai_max_output_tokens_default",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_provider_manager_openai_max_output_tokens_env_var",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_provider_manager_openai_max_output_tokens_invalid_env_var",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_stop_reason_variants_map_to_correct_persistence_strings",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "test": "test_truncation_detection_predicate",
+      "successful_log": "final-stop-reason-controls.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::stop_tests::test_message_delta_end_turn_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::stop_tests::test_message_delta_max_tokens_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::stop_tests::test_message_delta_tool_use_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::stop_tests::test_truncated_tool_call_json_produces_error",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_handle_signature_delta_event",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_handle_text_delta_event",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_handle_thinking_delta_event",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_signature_delta_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_signature_delta_streaming_event_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_thinking_delta_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::thinking_tests::test_thinking_delta_streaming_event_deserialization",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::tool_tests::test_handle_input_json_delta_event",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::tool_tests::test_thinking_delta_does_not_interfere_with_tool_calls",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::anthropic::streaming::tool_tests::test_tool_call_accumulation_with_multiple_deltas",
+      "successful_log": "anthropic-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_array_with_inline_items",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_deserialize_message_model",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_deserialize_message_user",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_flattened_schema",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_message_conversion_model",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_message_conversion_tool_call",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_message_conversion_user",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_object_schema",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::completion::tests::test_vec_schema_conversion",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::deserialization_tests::test_deserialize_stream_response_with_empty_parts",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::deserialization_tests::test_deserialize_stream_response_with_mixed_parts",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::deserialization_tests::test_deserialize_stream_response_with_multiple_text_parts",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::deserialization_tests::test_deserialize_stream_response_with_multiple_tool_calls",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::deserialization_tests::test_deserialize_stream_response_with_single_text_part",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_finish_reason_to_stop_reason_mapping",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_partial_usage_token_calculation",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_partial_usage_with_missing_counts",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_streaming_completion_response_stop_reason_end_turn",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_streaming_completion_response_stop_reason_max_tokens",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_streaming_completion_response_stop_reason_none",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "test": "providers::gemini::streaming::usage_tests::test_streaming_completion_response_token_usage",
+      "successful_log": "gemini-standalone-unit-import-green.log"
+    }
+  ],
+  "successful_complete_runs": [
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "log": "final-cli-matrix.log",
+      "passed": 9,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug262_ordered_chat_tools",
+      "log": "final-cli-matrix.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug263_chat_terminal",
+      "log": "final-cli-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug264_responses_terminal",
+      "log": "final-cli-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug266_custom_done_settlement",
+      "log": "final-cli-matrix.log",
+      "passed": 1,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug268_copilot_outbound_dialect",
+      "log": "final-cli-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cmpct042_gemini_continuation_token_state_test",
+      "log": "final-cli-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "log": "final-cli-matrix.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "prov162_protocol_outer_loop",
+      "log": "final-cli-matrix.log",
+      "passed": 2,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "log": "final-cli-credential-fixture-controls.log",
+      "passed": 11,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "log": "final-cli-credential-fixture-controls.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "goal_enforcement_test",
+      "log": "final-cli-credential-fixture-controls.log",
+      "passed": 18,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "auto_continue_engine_test",
+      "log": "final-post-format-cli.log",
+      "passed": 11,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "bug223_gemini_helper_settlement",
+      "log": "final-post-format-cli.log",
+      "passed": 9,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont006_goal_immediate_termination",
+      "log": "final-post-format-cli.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "cont011_native_completion_composition",
+      "log": "final-post-format-cli.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-cli",
+      "target": "truncation_recovery_test",
+      "log": "final-truncation-recovery-controls.log",
+      "passed": 14,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug260_refusal_history",
+      "log": "final-provider-matrix.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug261_forced_refresh_recovery",
+      "log": "final-provider-matrix.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug266_custom_stream_settlement",
+      "log": "final-provider-matrix.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_issuer_isolation",
+      "log": "final-provider-matrix.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_lineage_boundaries",
+      "log": "final-provider-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_nonstream_terminal",
+      "log": "final-provider-matrix.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_origin_boundary",
+      "log": "final-provider-matrix.log",
+      "passed": 1,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug268_copilot_request_refresh",
+      "log": "final-provider-matrix.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "bug269_scripted_request_refresh",
+      "log": "final-provider-matrix.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_oauth_routing_test",
+      "log": "final-provider-matrix.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "claude_refreshing_client_test",
+      "log": "final-provider-matrix.log",
+      "passed": 12,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct066_anthropic_terminal_usage",
+      "log": "final-provider-matrix.log",
+      "passed": 6,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "cmpct071_builtin_gemini_tool_pairing",
+      "log": "final-provider-matrix.log",
+      "passed": 2,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov162_typed_protocol_continuation",
+      "log": "final-provider-matrix.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "stop_reason_propagation_test",
+      "log": "final-stop-reason-controls.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-providers",
+      "target": "prov149_codex_history",
+      "log": "native-gate-codex-history.log",
+      "passed": 2,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug265_recovery_completion_accounting",
+      "log": "final-shared-matrix.log",
+      "passed": 7,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug267_scripted_dispatch_identity",
+      "log": "final-shared-matrix.log",
+      "passed": 5,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "bug268_live_session_opaque",
+      "log": "final-shared-matrix.log",
+      "passed": 4,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cmpct041_pre_compaction_basis_test",
+      "log": "final-shared-matrix.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cont011_persisted_completion",
+      "log": "persisted-history-runtime.log",
+      "passed": 1,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cmpct041_pre_compaction_basis_test",
+      "log": "final-post-format-shared.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "cont011_persisted_completion",
+      "log": "final-post-format-shared.log",
+      "passed": 1,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-agent-loop",
+      "target": "prov149_codex_reload",
+      "log": "native-gate-codex-reload.log",
+      "passed": 3,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "codelet-core",
+      "target": "bug259_recovery_contention",
+      "log": "final-core-batch-control.log",
+      "passed": 4,
+      "filtered_not_counted": 0
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "log": "anthropic-standalone-unit-import-green.log",
+      "passed": 14,
+      "filtered_not_counted": 220
+    },
+    {
+      "package": "rig-core",
+      "target": "lib",
+      "log": "gemini-standalone-unit-import-green.log",
+      "passed": 21,
+      "filtered_not_counted": 213
+    }
+  ],
+  "policy": "Failed complete targets are not counted from their partial pass lines. Repeats and nested cases are not additional test identities. Filtered SDK tests are not passes."
+}

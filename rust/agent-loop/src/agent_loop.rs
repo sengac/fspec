@@ -122,7 +122,11 @@ pub async fn agent_loop(
             session.handle_output(StreamChunk::done());
             continue;
         }
-        session.sync_completion_contract_for_user_turn(&mut inner_session);
+        if pending.is_fresh_user_input {
+            session.sync_completion_contract_for_user_turn(&mut inner_session);
+        } else {
+            session.sync_completion_contract_for_recovery(&mut inner_session);
+        }
         let session_for_output = session.clone();
         let loop_wiring = {
             let resolved = codelet_sessions::model_resolution::resolve_profile_loop_detection(

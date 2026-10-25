@@ -75,7 +75,9 @@ fn adapt_response(
     let stop_reason = response
         .choices
         .first()
-        .map(|choice| map_finish_reason(&choice.finish_reason));
+        .filter(|choice| !choice.finish_reason.trim().is_empty())
+        .map(|choice| map_finish_reason(&choice.finish_reason))
+        .ok_or_else(|| CompletionError::ResponseError("missing OpenAI finish reason".into()))?;
 
     if let Some(choice) = response.choices.first() {
         if let Message::Assistant {
@@ -117,13 +119,18 @@ fn adapt_response(
         .ok_or_else(|| CompletionError::ResponseError("missing OpenAI usage".into()))?;
     let usage = super::GetTokenUsage::token_usage(&openai_usage)
         .ok_or_else(|| CompletionError::ResponseError("inconsistent OpenAI usage".into()))?;
-    items.push(RawStreamingChoice::Usage(usage));
-    items.push(RawStreamingChoice::FinalResponse(
-        StreamingCompletionResponse {
+    let terminal_index = items
+        .iter()
+        .position(|item| matches!(item, RawStreamingChoice::ToolCall(_)))
+        .unwrap_or(items.len());
+    items.insert(terminal_index, RawStreamingChoice::Usage(usage));
+    items.insert(
+        terminal_index + 1,
+        RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
             usage: openai_usage,
-            stop_reason,
-        },
-    ));
+            stop_reason: Some(stop_reason),
+        }),
+    );
 
     Ok(items)
 }

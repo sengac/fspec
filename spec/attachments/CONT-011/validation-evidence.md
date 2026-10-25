@@ -1,5 +1,9 @@
 # Auto-continue audit validation evidence
 
+This is the historical discovery baseline, not final repair validation. See
+[final validation and review](validation-and-review.md) for retained causal
+failures, actual final-source outcomes, fixture corrections and closure limits.
+
 Baseline: `f0eb0759`, 2026-10-25. Production code was not changed during the audit.
 The commands below were executed, not merely suggested.
 

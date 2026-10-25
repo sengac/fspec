@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "SSE metadata survives Copilot only opaque capture",
+      "testMappings": [
+        {
+          "file": "rust/providers/src/copilot/capture.rs",
+          "lines": "167-188",
+          "implMappings": [
+            {
+              "file": "rust/providers/src/copilot/capture.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/providers/src/copilot/capture.rs"
+    ],
+    "implFiles": [
+      "rust/providers/src/copilot/capture.rs"
+    ],
+    "totalLinesCovered": 54
+  }
+}

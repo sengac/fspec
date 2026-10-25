@@ -24,7 +24,7 @@ fn scenario_null_preferred_api_keys_preserve_fallback_keys() -> TestResult {
         fixture.seed("A")?;
         let mut preferred = serde_json::to_value(auth("A"))?;
         preferred["OPENAI_API_KEY"] = serde_json::Value::Null;
-        fixture.keychain().set_password(&preferred.to_string())?;
+        fixture.keychain()?.set_password(&preferred.to_string())?;
         // @step When OAuth logout or a replacement login is persisted
         if operation == "logout" {
             clear_codex_oauth()?;

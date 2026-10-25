@@ -5,22 +5,9 @@
 //! as a middleware layer that wraps every outgoing request, mirroring the
 //! `RefreshingClaudeClient` / `RefreshingCodexClient` pattern."
 //!
-//! Unlike the Claude/Codex variants, the Copilot OAuth access token never
-//! expires on its own (`expires: 0` in `copilot_auth.json`), so this client
-//! does **not** need a refresh loop, a write-lock state machine, or a token
-//! endpoint. Its single responsibility is:
-//!
-//! 1. Classify the outgoing request body with [`CopilotRequestClassifier`]
-//!    (pure function, no IO).
-//! 2. Build the full Copilot header set with
-//!    [`CopilotHeaderFacade::build_headers`] (pure function, no IO).
-//! 3. Strip any stale `Authorization` header that rig might have set and
-//!    forward the request to the inner `reqwest::Client` with the fresh
-//!    header set applied.
-//!
-//! The middleware is deliberately thin and composable — all decision logic
-//! lives in the facades from PROV-055, so this file contains no business
-//! rules about headers, vision detection, agent-mode, or endpoints.
+//! Provider-bound requests reuse the existing short-token refresh coordinator.
+//! Opaque protocol metadata is injected only at the transport boundary, after
+//! generic request tracing, and removed before generic response handling.
 
 use http::Request;
 use tracing::debug;
@@ -29,16 +16,30 @@ use crate::copilot::classifier::{CopilotRequestClassifier, RequestClassification
 use crate::copilot::header_facade::CopilotHeaderFacade;
 use crate::copilot::prompt_cache;
 
+#[path = "http_auth.rs"]
+mod http_auth;
+
 /// HTTP middleware that injects Copilot headers on every outgoing request.
 ///
 /// Implements `rig::http_client::HttpClientExt`. The middleware is cloneable
 /// so rig can clone it per-request; the inner `reqwest::Client` is already
 /// cheap to clone and the access token is stored behind an `Arc` so the
 /// clone cost is a single pointer copy.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CopilotHttpClient {
     inner: reqwest::Client,
     access_token: std::sync::Arc<str>,
+    auth: Option<std::sync::Arc<tokio::sync::RwLock<super::CopilotAuthJson>>>,
+    initial_base: Option<String>,
+    capture: Option<super::capture::Capture>,
+}
+
+impl std::fmt::Debug for CopilotHttpClient {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("CopilotHttpClient")
+            .finish_non_exhaustive()
+    }
 }
 
 impl CopilotHttpClient {
@@ -48,7 +49,15 @@ impl CopilotHttpClient {
         Self {
             inner: reqwest::Client::new(),
             access_token: std::sync::Arc::from(access_token),
+            auth: None,
+            initial_base: None,
+            capture: None,
         }
+    }
+
+    pub(crate) fn with_capture(mut self, capture: Option<super::capture::Capture>) -> Self {
+        self.capture = capture;
+        self
     }
 
     /// Access the bound access token (for tests and diagnostics).
@@ -70,10 +79,7 @@ impl Default for CopilotHttpClient {
         // The default client carries no token — attempting to use it for a
         // real request will fail at the API layer with an authentication
         // error, which is the same behaviour as the other providers.
-        Self {
-            inner: reqwest::Client::default(),
-            access_token: std::sync::Arc::from(""),
-        }
+        Self::new(String::new())
     }
 }
 
@@ -149,18 +155,36 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
         U: From<bytes::Bytes> + Send + 'static,
     {
         let inner = self.inner.clone();
-        let access_token = self.access_token.clone();
+        let client = self.clone();
         // Convert T → Bytes *before* the async block so we don't need `T: 'static`.
         let req = req.map(Into::into);
 
         async move {
+            let (req, access_token) = client.fresh_request(req).await?;
             let (classification, new_body) = classify_and_cache_body(req.body().clone());
             let req = {
                 let (parts, _) = req.into_parts();
                 Request::from_parts(parts, new_body)
             };
             let req = inject_copilot_headers(req, classification, &access_token);
-            inner.send(req).await
+            let Some(capture) = client.capture else {
+                return inner.send(req).await;
+            };
+            let (parts, body) = req.into_parts();
+            let req = Request::from_parts(parts, capture.request(body)?);
+            let response: http::Response<rig::http_client::LazyBody<bytes::Bytes>> =
+                inner.send(req).await?;
+            let (parts, body) = response.into_parts();
+            let body: rig::http_client::LazyBody<U> = Box::pin(async move {
+                let bytes = body.await?;
+                let value = serde_json::from_slice(&bytes)
+                    .map_err(|error| rig::http_client::Error::Instance(Box::new(error)))?;
+                let value = capture.response(value, true)?;
+                let bytes = serde_json::to_vec(&value)
+                    .map_err(|error| rig::http_client::Error::Instance(Box::new(error)))?;
+                Ok(U::from(bytes::Bytes::from(bytes)))
+            });
+            Ok(http::Response::from_parts(parts, body))
         }
     }
 
@@ -175,9 +199,10 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
         U: From<bytes::Bytes> + Send + 'static,
     {
         let inner = self.inner.clone();
-        let access_token = self.access_token.clone();
+        let client = self.clone();
 
         async move {
+            let (req, access_token) = client.fresh_request(req).await?;
             // Multipart requests (rare for Copilot) cannot be JSON-classified
             // without consuming the body. Fall back to the default
             // classification (no vision, no agent) and inject the headers.
@@ -203,16 +228,25 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
         T: Into<bytes::Bytes>,
     {
         let inner = self.inner.clone();
-        let access_token = self.access_token.clone();
+        let client = self.clone();
         let req = req.map(Into::into);
 
         async move {
+            let (req, access_token) = client.fresh_request(req).await?;
             let (classification, new_body) = classify_and_cache_body(req.body().clone());
             let req = {
                 let (parts, _) = req.into_parts();
                 Request::from_parts(parts, new_body)
             };
             let req = inject_copilot_headers(req, classification, &access_token);
+            if let Some(capture) = client.capture {
+                let (parts, body) = req.into_parts();
+                let req = Request::from_parts(parts, capture.request(body)?);
+                return inner
+                    .send_streaming(req)
+                    .await
+                    .map(|response| capture.stream(response));
+            }
             inner.send_streaming(req).await
         }
     }

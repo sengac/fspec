@@ -84,9 +84,9 @@ Feature: Move BackgroundSession from codelet-napi into codelet-sessions, replace
     When I inspect the `handle_output` method in the moved file
     Then it still pushes the chunk into output_buffer
     And it still calls `supervisor_broadcast.send(chunk.clone())`
-    And it additionally calls the new chunks_tx broadcast (`if let Some(tx) = &self.chunks_tx { let _ = tx.send((<session-id>, chunk.clone())); }`)
+    And it unconditionally calls the new chunks_tx broadcast (`let _ = self.chunks_tx.send((<session-id>, chunk.clone()));`) — RPC-041 removed the `if let Some(tx)` wrapper
     And there is zero reference to GLOBAL_CHUNK_CALLBACK in the moved file
-    And the GLOBAL_CHUNK_CALLBACK global itself still lives in rust/napi/src/session_manager.rs (deletion is explicitly deferred to RPC-041)
+    And the GLOBAL_CHUNK_CALLBACK global has been deleted from rust/napi/src/session_manager.rs (RPC-041 inverted the prior RPC-039 assertion)
 
   Scenario: codelet-sessions has no transitive dependency on codelet-napi
     Given the BackgroundSession code has been moved into rust/sessions/src/background_session.rs

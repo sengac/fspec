@@ -40,6 +40,7 @@ fn comparable(item: &CodexItem, tools: &CustomToolRegistry) -> Result<Value, Che
     if matches!(item, CodexItem::CustomToolCallOutput { .. }) {
         value["type"] = json!("function_call_output");
     }
+    let assistant = value["role"] == "assistant";
     if let Some(object) = value.as_object_mut() {
         object.remove("id");
         object.remove("phase");
@@ -56,6 +57,14 @@ fn comparable(item: &CodexItem, tools: &CustomToolRegistry) -> Result<Value, Che
                 if let Some(object) = part.as_object_mut() {
                     object.remove("annotations");
                     object.remove("logprobs");
+                }
+                if assistant
+                    && part["type"] == "refusal"
+                    && part.as_object().is_some_and(|object| object.len() == 2)
+                {
+                    if let Some(text) = part["refusal"].as_str() {
+                        part = json!({"type":"output_text", "text":text});
+                    }
                 }
                 if let Some(previous) = normalized.last_mut() {
                     if let (Some(prefix), Some(suffix)) = (text_part(previous), text_part(&part)) {

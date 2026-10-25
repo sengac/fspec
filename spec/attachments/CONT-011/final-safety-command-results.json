@@ -1,0 +1,36 @@
+[
+  {
+    "log": "final-truncation-recovery-controls.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-cli",
+      "--test",
+      "truncation_recovery_test"
+    ]
+  },
+  {
+    "log": "final-stop-reason-controls.log",
+    "exit_code": 0,
+    "argv": [
+      "cargo",
+      "test",
+      "--offline",
+      "--profile",
+      "ci-test",
+      "-j",
+      "2",
+      "-p",
+      "codelet-providers",
+      "--test",
+      "stop_reason_propagation_test"
+    ]
+  }
+]

@@ -1,0 +1,900 @@
+{
+  "completion-registration-layout-guards": {
+    "scenarios": [
+      {
+        "name": "Armed Done registration stays guarded across provider builders",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/auto_continue_engine_test.rs",
+            "lines": "397-443",
+            "implMappings": []
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "totalScenarios": 1,
+      "coveredScenarios": 1,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/cli/tests/auto_continue_engine_test.rs"
+      ],
+      "implFiles": [],
+      "totalLinesCovered": 47
+    }
+  },
+  "completion-goal-teardown-layout-guards": {
+    "scenarios": [
+      {
+        "name": "Goal teardown guards preserve a single reminder owner",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont006_goal_immediate_termination.rs",
+            "lines": "509-595",
+            "implMappings": []
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "totalScenarios": 1,
+      "coveredScenarios": 1,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/cli/tests/cont006_goal_immediate_termination.rs"
+      ],
+      "implFiles": [],
+      "totalLinesCovered": 87
+    }
+  },
+  "completion-snapshot-delegation-guards": {
+    "scenarios": [
+      {
+        "name": "Shared snapshot delegation retains semantic and writer guards",
+        "testMappings": [
+          {
+            "file": "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+            "lines": "164-228",
+            "implMappings": []
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "totalScenarios": 1,
+      "coveredScenarios": 1,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs"
+      ],
+      "implFiles": [],
+      "totalLinesCovered": 65
+    }
+  },
+  "native-completion-loopback-composition": {
+    "scenarios": [
+      {
+        "name": "Native clean stops compose nudge work and accepted Done",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+            "lines": "20-64",
+            "implMappings": []
+          }
+        ]
+      },
+      {
+        "name": "Native rejected goal completion remains a rejection",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+            "lines": "93-123",
+            "implMappings": []
+          }
+        ]
+      },
+      {
+        "name": "Native malformed delivery and cancellation do not complete work",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+            "lines": "151-204",
+            "implMappings": []
+          }
+        ]
+      },
+      {
+        "name": "Anthropic client calls require authoritative terminal settlement",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+            "lines": "66-91",
+            "implMappings": []
+          }
+        ]
+      },
+      {
+        "name": "Gemini client calls require safe authoritative terminal settlement",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/cont011_native_completion_composition.rs",
+            "lines": "125-149",
+            "implMappings": []
+          }
+        ]
+      },
+      {
+        "name": "Isolated security still blocks high risk native file work",
+        "testMappings": []
+      }
+    ],
+    "stats": {
+      "totalScenarios": 6,
+      "coveredScenarios": 5,
+      "coveragePercent": 83,
+      "testFiles": [
+        "rust/cli/tests/cont011_native_completion_composition.rs"
+      ],
+      "implFiles": [],
+      "totalLinesCovered": 181
+    }
+  },
+  "gemini-helper-completion-settlement": {
+    "scenarios": [
+      {
+        "name": "Clean helper completion consumes a counted nudge",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "15-78",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/stream_loop.rs",
+                "lines": [
+                  1278,
+                  1279,
+                  1280,
+                  1281,
+                  1282,
+                  1283,
+                  1284,
+                  1285,
+                  1286,
+                  1287,
+                  1288,
+                  1289,
+                  1290,
+                  1291,
+                  1292,
+                  1293,
+                  1294,
+                  1295,
+                  1296,
+                  1297,
+                  1298,
+                  1299,
+                  1300,
+                  1301,
+                  1302,
+                  1303,
+                  1304,
+                  1305,
+                  1306,
+                  1307,
+                  1308,
+                  1309,
+                  1310,
+                  1311,
+                  1312,
+                  1313,
+                  1314,
+                  1315,
+                  1316,
+                  1317,
+                  1318,
+                  1319,
+                  1320,
+                  1595,
+                  1596,
+                  1597,
+                  1598,
+                  1599,
+                  1600,
+                  1601,
+                  1602,
+                  1603,
+                  1604,
+                  1605,
+                  1606,
+                  1607,
+                  1608,
+                  1609,
+                  1610,
+                  1611,
+                  1612,
+                  1613,
+                  1614,
+                  1615,
+                  1616,
+                  1617,
+                  1618,
+                  1619,
+                  1620,
+                  1621,
+                  1622,
+                  1623,
+                  1624,
+                  1625,
+                  1626,
+                  1627,
+                  1628,
+                  1629,
+                  1630,
+                  1631,
+                  1632,
+                  1633,
+                  1634,
+                  1635,
+                  1636,
+                  1637,
+                  1638,
+                  1639,
+                  1640,
+                  1641,
+                  1642,
+                  1643,
+                  1644,
+                  1645,
+                  1646,
+                  1647,
+                  1648,
+                  1649,
+                  1650,
+                  1651,
+                  1652,
+                  1653,
+                  1654,
+                  1655,
+                  1656,
+                  1657,
+                  1658,
+                  1659,
+                  1660,
+                  1661,
+                  1662,
+                  1663,
+                  1664,
+                  1665,
+                  1666,
+                  1710,
+                  1711,
+                  1712,
+                  1713,
+                  1714,
+                  1715,
+                  1716,
+                  1717,
+                  1718,
+                  1719,
+                  1720,
+                  1721,
+                  1722,
+                  1723,
+                  1724,
+                  1725,
+                  1726,
+                  1727,
+                  1728,
+                  1729,
+                  1730,
+                  1731,
+                  1732,
+                  1733,
+                  1734,
+                  1735,
+                  1736,
+                  1737,
+                  1738,
+                  1739,
+                  1740,
+                  1741,
+                  1742,
+                  1743,
+                  1744,
+                  1745,
+                  1746,
+                  1747,
+                  1748,
+                  1749,
+                  1750,
+                  1751,
+                  1752,
+                  1753,
+                  1754,
+                  1755,
+                  1756,
+                  1757,
+                  1758,
+                  1759,
+                  1760,
+                  1761,
+                  1762,
+                  1763,
+                  1764,
+                  1765,
+                  1766,
+                  1767,
+                  1768,
+                  1769,
+                  1770,
+                  1771,
+                  1772,
+                  1773,
+                  1774,
+                  1775,
+                  1776,
+                  1777,
+                  1778,
+                  1779,
+                  1780,
+                  1781,
+                  1782,
+                  1783,
+                  1784,
+                  1785,
+                  1786,
+                  1787,
+                  1788,
+                  1789
+                ]
+              }
+            ]
+          },
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "15-78",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/state.rs",
+                "lines": [
+                  23,
+                  24,
+                  25,
+                  26,
+                  27,
+                  28,
+                  29,
+                  30,
+                  31,
+                  32,
+                  33,
+                  34,
+                  35,
+                  36,
+                  37,
+                  38,
+                  39,
+                  40,
+                  41,
+                  42,
+                  43,
+                  44,
+                  45,
+                  46,
+                  47,
+                  48,
+                  49,
+                  50,
+                  51,
+                  52,
+                  53,
+                  54,
+                  55,
+                  56,
+                  57,
+                  58,
+                  59,
+                  60,
+                  61,
+                  62,
+                  63,
+                  64,
+                  65,
+                  66,
+                  138,
+                  139,
+                  140,
+                  141,
+                  142,
+                  143,
+                  144,
+                  145,
+                  146,
+                  147,
+                  148,
+                  149,
+                  150,
+                  151,
+                  152,
+                  153,
+                  154,
+                  155,
+                  156,
+                  157
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Helper tool activity refunds a pending nudge",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "80-124",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/stream_loop.rs",
+                "lines": [
+                  1304,
+                  1305,
+                  1306,
+                  1307,
+                  1308,
+                  1309,
+                  1310,
+                  1311,
+                  1312,
+                  1313,
+                  1314,
+                  1315,
+                  1316,
+                  1317,
+                  1318,
+                  1319,
+                  1320,
+                  1610,
+                  1611,
+                  1612,
+                  1613,
+                  1614,
+                  1615,
+                  1616,
+                  1617,
+                  1618,
+                  1619,
+                  1620,
+                  1621,
+                  1622,
+                  1623,
+                  1624,
+                  1625,
+                  1626,
+                  1627,
+                  1628,
+                  1629,
+                  1630,
+                  1631,
+                  1632,
+                  1633,
+                  1634,
+                  1635,
+                  1636,
+                  1637
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Exhausted helper completion emits the normal budget warning",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "126-152",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/stream_loop.rs",
+                "lines": [
+                  1643,
+                  1644,
+                  1645,
+                  1646,
+                  1647,
+                  1648,
+                  1649,
+                  1650,
+                  1651,
+                  1652,
+                  1653,
+                  1654,
+                  1655,
+                  1656,
+                  1657,
+                  1658,
+                  1659,
+                  1660,
+                  1661,
+                  1662,
+                  1663,
+                  1664,
+                  1665,
+                  1666,
+                  1667,
+                  1668,
+                  1669,
+                  1670,
+                  1671,
+                  1672,
+                  1673,
+                  1674,
+                  1675,
+                  1676,
+                  1677,
+                  1678,
+                  1679,
+                  1680,
+                  1681,
+                  1682,
+                  1683,
+                  1684,
+                  1685,
+                  1686,
+                  1687,
+                  1688,
+                  1689,
+                  1690,
+                  1691,
+                  1692,
+                  1693,
+                  1694,
+                  1695,
+                  1696
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Exhausted goal helper completion escalates for human review",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "154-176",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/stream_loop.rs",
+                "lines": [
+                  1643,
+                  1644,
+                  1645,
+                  1646,
+                  1647,
+                  1648,
+                  1649,
+                  1650,
+                  1651,
+                  1652,
+                  1653,
+                  1654,
+                  1655,
+                  1656,
+                  1657,
+                  1658,
+                  1659,
+                  1660,
+                  1661,
+                  1662,
+                  1663,
+                  1664,
+                  1665,
+                  1666,
+                  1667,
+                  1668,
+                  1669,
+                  1670,
+                  1671,
+                  1672,
+                  1673,
+                  1674,
+                  1675,
+                  1676,
+                  1677,
+                  1678,
+                  1679,
+                  1680,
+                  1681,
+                  1682,
+                  1683,
+                  1684,
+                  1685,
+                  1686,
+                  1687,
+                  1688,
+                  1689,
+                  1690,
+                  1691,
+                  1692,
+                  1693,
+                  1694,
+                  1695,
+                  1696,
+                  1697,
+                  1698,
+                  1699,
+                  1700,
+                  1701,
+                  1702,
+                  1703,
+                  1704,
+                  1705,
+                  1706,
+                  1707,
+                  1708,
+                  1709
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Nonclean helper stops never consume a nudge",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "178-198",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
+                "lines": [
+                  148,
+                  149,
+                  150,
+                  151,
+                  152,
+                  153,
+                  154,
+                  155,
+                  156,
+                  157,
+                  158,
+                  159,
+                  160,
+                  161,
+                  162,
+                  163,
+                  164,
+                  165,
+                  166,
+                  167,
+                  168,
+                  169,
+                  170,
+                  171,
+                  172,
+                  173,
+                  174,
+                  175,
+                  176,
+                  177,
+                  178,
+                  179,
+                  180,
+                  181,
+                  182
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Helper errors do not settle a clean completion",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "200-223",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
+                "lines": [
+                  183,
+                  184,
+                  185,
+                  186,
+                  187,
+                  188,
+                  189,
+                  190,
+                  191,
+                  192,
+                  193,
+                  194,
+                  195,
+                  196
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Helper interruption does not settle a clean completion",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "225-246",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
+                "lines": [
+                  54,
+                  55,
+                  56,
+                  57,
+                  58,
+                  59,
+                  60,
+                  61,
+                  62,
+                  63,
+                  64,
+                  65,
+                  66,
+                  67,
+                  68,
+                  69,
+                  70,
+                  71,
+                  72
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Helper compaction hands off without a completion nudge",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223_gemini_helper_settlement.rs",
+            "lines": "248-289",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/state.rs",
+                "lines": [
+                  68,
+                  69,
+                  70,
+                  71,
+                  72,
+                  73,
+                  74,
+                  75,
+                  76,
+                  77,
+                  78,
+                  79,
+                  80,
+                  81,
+                  82,
+                  83,
+                  84,
+                  85,
+                  86,
+                  87,
+                  88,
+                  89,
+                  90,
+                  91,
+                  92,
+                  93,
+                  94,
+                  95,
+                  96,
+                  97,
+                  98,
+                  99,
+                  100,
+                  101,
+                  102,
+                  103,
+                  104,
+                  105,
+                  106,
+                  107,
+                  108,
+                  109,
+                  110,
+                  111,
+                  112,
+                  113,
+                  114,
+                  115,
+                  116
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "totalScenarios": 8,
+      "coveredScenarios": 8,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/cli/tests/bug223_gemini_helper_settlement.rs"
+      ],
+      "implFiles": [
+        "rust/cli/src/interactive/stream_loop.rs",
+        "rust/cli/src/interactive/gemini_continuation/state.rs",
+        "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs"
+      ],
+      "totalLinesCovered": 874
+    }
+  },
+  "gemini-helper-accepted-completion": {
+    "scenarios": [
+      {
+        "name": "Accepted helper done settles summary and goal teardown once",
+        "testMappings": [
+          {
+            "file": "rust/cli/tests/bug223/accepted.rs",
+            "lines": "6-80",
+            "implMappings": [
+              {
+                "file": "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs",
+                "lines": [
+                  114,
+                  115,
+                  116,
+                  117,
+                  118,
+                  119,
+                  120,
+                  121,
+                  122,
+                  123,
+                  124,
+                  125,
+                  126,
+                  127,
+                  128,
+                  129,
+                  130,
+                  131,
+                  132,
+                  133,
+                  134,
+                  135,
+                  136,
+                  137,
+                  138,
+                  139,
+                  140
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "totalScenarios": 1,
+      "coveredScenarios": 1,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/cli/tests/bug223/accepted.rs"
+      ],
+      "implFiles": [
+        "rust/cli/src/interactive/gemini_continuation/continuation_loop.rs"
+      ],
+      "totalLinesCovered": 102
+    }
+  }
+}

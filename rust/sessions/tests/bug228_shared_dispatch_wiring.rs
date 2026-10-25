@@ -1,6 +1,7 @@
 //! Feature: spec/features/completion-contract-dispatch-arming.feature
 
 const HELPER: &str = "sync_completion_contract_for_user_turn";
+const RECOVERY_HELPER: &str = "sync_completion_contract_for_recovery";
 const LOCK: &str = "let mut inner_session = session.inner.lock().await";
 const OUTPUT: &str = "BackgroundOutput::with_provider";
 
@@ -30,6 +31,7 @@ fn delegated_and_armed(frontend: &str, engine: &str) -> bool {
         && !frontend.contains("fn agent_loop(")
         && !frontend.contains(OUTPUT)
         && engine[lock..output].contains(&format!("session.{HELPER}("))
+        && engine[lock..output].contains(&format!("session.{RECOVERY_HELPER}("))
         && [frontend, engine].iter().all(|source| {
             !source.contains("set_continue_armed(") && !source.contains("set_session_goal(")
         })
@@ -41,10 +43,18 @@ fn frontends_delegate_to_one_armed_dispatch_implementation() {
     let frontend = code(include_str!("../../napi/src/agent_loop.rs"));
     let engine = code(include_str!("../../agent-loop/src/agent_loop.rs"));
     // @step When the shared dispatch site and frontend delegation are inspected
-    let helper_home = code(include_str!("../src/background_session.rs"));
+    let helper_home = code(include_str!(
+        "../src/background_session/completion_contract.rs"
+    ));
     // @step Then NAPI delegates to the shared engine that syncs completion before creating output
     assert!(delegated_and_armed(&frontend, &engine));
     assert_eq!(helper_home.matches(&format!("pub fn {HELPER}(")).count(), 1);
+    assert_eq!(
+        helper_home
+            .matches(&format!("pub fn {RECOVERY_HELPER}("))
+            .count(),
+        1
+    );
     // @step And neither frontend duplicates the arming block
     for source in [&frontend, &engine] {
         assert!(!source.contains("set_continue_armed("));
@@ -58,6 +68,13 @@ fn frontends_delegate_to_one_armed_dispatch_implementation() {
     assert!(!delegated_and_armed(
         &frontend,
         &engine.replace(&format!("session.{HELPER}("), "session.missing_sync("),
+    ));
+    assert!(!delegated_and_armed(
+        &frontend,
+        &engine.replace(
+            &format!("session.{RECOVERY_HELPER}("),
+            "session.missing_sync(",
+        ),
     ));
     assert!(!delegated_and_armed(
         &format!("{frontend}\nfn agent_loop() {{}}"),
