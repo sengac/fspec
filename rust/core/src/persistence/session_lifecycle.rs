@@ -118,6 +118,7 @@ pub(super) fn append_owned(
     root: &Path,
     session_id: Uuid,
     record: &JournalRecord,
+    store: &JournalStore,
 ) -> Result<(), JournalError> {
     let mut sessions = SessionStore {
         sessions_dir: root.join("sessions"),
@@ -127,8 +128,8 @@ pub(super) fn append_owned(
     };
     sessions
         .with_committed_session(session_id, || {
-            JournalStore::new(root, session_id)
-                .append(record)
+            store
+                .append_unowned(record)
                 .map_err(ManifestCommitError::Transcript)
         })
         .map_err(|error| JournalError::SessionOwnership(Box::new(error)))

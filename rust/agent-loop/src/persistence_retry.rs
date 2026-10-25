@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{LazyLock, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 use uuid::Uuid;
 
 #[path = "persistence_retry_commit.rs"]
@@ -28,25 +28,28 @@ pub struct RecoveryRecord {
 struct RecoveryOwner {
     admitted: Vec<RecoveryRecord>,
     retained: Vec<RecoveryRecord>,
+    journal: Option<codelet_core::persistence::transcript::JournalStore>,
 }
 
-static OWNERS: LazyLock<Mutex<HashMap<PathBuf, RecoveryOwner>>> =
+static OWNERS: LazyLock<Mutex<HashMap<PathBuf, Arc<Mutex<RecoveryOwner>>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
 pub struct PersistenceSpool {
     session_id: Uuid,
     directory: PathBuf,
+    owner: Arc<Mutex<RecoveryOwner>>,
 }
 
 impl PersistenceSpool {
     pub fn open(session_id: Uuid) -> Result<Self, String> {
         let spool = Self::configured(session_id)?;
-        let mut owners = OWNERS.lock().map_err(|_| "recovery owner poisoned")?;
-        if let Some(_lease) = spool.lease(&mut owners)? {
+        let mut owner = spool.owner.lock().map_err(|_| "recovery owner poisoned")?;
+        if let Some(_lease) = spool.lease(&mut owner)? {
             io::private_directory(&spool.directory).map_err(|_| {
                 "persistence recovery required; shutdown unsafe until journal repair"
             })?;
         }
+        drop(owner);
         Ok(spool)
     }
 
@@ -56,6 +59,7 @@ impl PersistenceSpool {
             .join(session_id.to_string());
         Ok(Self {
             session_id,
+            owner: ownership::owner(&directory)?,
             directory,
         })
     }
@@ -68,11 +72,10 @@ impl PersistenceSpool {
         if record.version != 1 {
             return Err("incompatible recovery admission version".into());
         }
-        let mut owners = OWNERS.lock().map_err(|_| "recovery owner poisoned")?;
+        let mut owner = self.owner.lock().map_err(|_| "recovery owner poisoned")?;
         let _lease = self
-            .lease(&mut owners)?
+            .lease(&mut owner)?
             .ok_or("recovery admission refused for deleted session")?;
-        let owner = owners.entry(self.directory.clone()).or_default();
         let disk = io::read(&self.directory)?;
         if !owner.retained.is_empty() {
             return Err(
@@ -105,11 +108,10 @@ impl PersistenceSpool {
     }
 
     fn retain(&self, record: &RecoveryRecord) -> Result<(), String> {
-        let mut owners = OWNERS.lock().map_err(|_| "recovery owner poisoned")?;
+        let mut owner = self.owner.lock().map_err(|_| "recovery owner poisoned")?;
         let _lease = self
-            .lease(&mut owners)?
+            .lease(&mut owner)?
             .ok_or("recovery admission refused for deleted session")?;
-        let owner = owners.entry(self.directory.clone()).or_default();
         if let Some(existing) = owner
             .admitted
             .iter()
@@ -136,18 +138,16 @@ impl PersistenceSpool {
     }
 
     pub fn pending_count(&self) -> Result<usize, String> {
-        let mut owners = OWNERS.lock().map_err(|_| "recovery owner poisoned")?;
-        let Some(_lease) = self.lease(&mut owners)? else {
+        let mut owner = self.owner.lock().map_err(|_| "recovery owner poisoned")?;
+        let Some(_lease) = self.lease(&mut owner)? else {
             return Ok(0);
         };
         let mut pending: Vec<_> = io::read(&self.directory)?
             .into_iter()
             .map(|item| item.record)
             .collect();
-        if let Some(owner) = owners.get(&self.directory) {
-            merge(&mut pending, &owner.admitted)?;
-            merge(&mut pending, &owner.retained)?;
-        }
+        merge(&mut pending, &owner.admitted)?;
+        merge(&mut pending, &owner.retained)?;
         Ok(pending.len())
     }
 
@@ -177,11 +177,10 @@ impl PersistenceSpool {
     }
 
     pub fn retry(&self) -> Result<(), String> {
-        let mut owners = OWNERS.lock().map_err(|_| "recovery owner poisoned")?;
-        let Some(_lease) = self.lease(&mut owners)? else {
+        let mut owner = self.owner.lock().map_err(|_| "recovery owner poisoned")?;
+        let Some(_lease) = self.lease(&mut owner)? else {
             return Ok(());
         };
-        let owner = owners.entry(self.directory.clone()).or_default();
         io::private_directory(&self.directory)
             .map_err(|_| "persistence recovery required; shutdown unsafe until journal repair")?;
         for _ in 0..2 {
@@ -190,7 +189,7 @@ impl PersistenceSpool {
                 "persistence recovery required; shutdown unsafe until journal repair"
             })?;
             for pending in io::read(&self.directory)? {
-                archive::commit(self.session_id, &pending.record)?;
+                archive::commit(self.session_id, &pending.record, &mut owner.journal)?;
                 std::fs::remove_file(&pending.path)
                     .map_err(|_| "persistence recovery acknowledgement failed")?;
                 io::sync(&self.directory)
@@ -199,9 +198,9 @@ impl PersistenceSpool {
                     .admitted
                     .retain(|record| record.id != pending.record.id);
             }
-            owner.admitted.append(&mut owner.retained);
+            let retained = std::mem::take(&mut owner.retained);
+            owner.admitted.extend(retained);
         }
-        owners.remove(&self.directory);
         Ok(())
     }
 }

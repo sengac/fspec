@@ -1,0 +1,23 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--profile",
+    "ci-test",
+    "-p",
+    "codelet-agent-loop",
+    "--test",
+    "cmpct054_terminal_dependencies",
+    "--test",
+    "bug211_compaction_budget_recovery",
+    "-j2",
+    "--no-fail-fast"
+  ],
+  "cwd": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/bug258-baseline/rust",
+  "target": "/Users/rquast/projects/fspec/rust/target",
+  "free_before": 15022686208,
+  "pid": 99681,
+  "exit_code": 101,
+  "free_after": 12940255232
+}

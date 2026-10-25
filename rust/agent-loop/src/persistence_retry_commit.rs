@@ -1,4 +1,5 @@
 use super::RecoveryRecord;
+use codelet_core::persistence::transcript::JournalStore;
 use codelet_core::persistence::{
     conversation_commit::append_message_idempotent, process_envelope_for_blob_storage,
     MessageEnvelope,
@@ -7,9 +8,13 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub(super) fn commit(session_id: Uuid, record: &RecoveryRecord) -> Result<(), String> {
+pub(super) fn commit(
+    session_id: Uuid,
+    record: &RecoveryRecord,
+    journal: &mut Option<JournalStore>,
+) -> Result<(), String> {
     if record.role == "transcript" {
-        use codelet_core::persistence::transcript::{JournalRecord, JournalStore};
+        use codelet_core::persistence::transcript::JournalRecord;
         let event: JournalRecord = serde_json::from_value(
             record
                 .metadata
@@ -24,8 +29,16 @@ pub(super) fn commit(session_id: Uuid, record: &RecoveryRecord) -> Result<(), St
         {
             return Err("transcript recovery identity conflict".into());
         }
-        return JournalStore::configured(session_id)
-            .and_then(|store| store.append(&event))
+        if journal.is_none() {
+            *journal = Some(
+                JournalStore::configured(session_id)
+                    .map_err(|_| "transcript persistence recovery required")?,
+            );
+        }
+        return journal
+            .as_ref()
+            .ok_or("transcript writer unavailable")?
+            .append(&event)
             .map_err(|_| "transcript persistence recovery required".into());
     }
     let mut metadata = record.metadata.clone();

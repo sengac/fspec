@@ -1,0 +1,22 @@
+{
+  "source": "/Users/rquast/projects/fspec",
+  "head": "2699693b74124cf12b323997fd68dd491adf7e8f",
+  "restored": {
+    "rust/agent-loop/src/agent_loop.rs": {
+      "baseline_sha256": "691e27d8dfe789e45c99d716f6d7e47bdae9e219ef30fc2a01b3cba5c7511d81",
+      "current_sha256": "b1db92a3f686aceea842d3f5b37af60d96017fedb2fea5a0d1ba74dd21b46942"
+    },
+    "rust/agent-loop/src/background_recovery.rs": {
+      "baseline_sha256": "cbeacb38cc592c120434784f25b8604fbb8fe72d9bdd15b5a621e623d9b98f6a",
+      "current_sha256": "6b29e782e3ab743dec2f7ba88d5efcb7ead1b974af4130efed9f25da6c5ae47c"
+    },
+    "rust/agent-loop/src/stream_journal.rs": {
+      "baseline_sha256": "7ba28d6f252002ed88889f3a0443b4dc7e6d9ec2f4ccd1ff2bfc0ca2279ed8c1",
+      "current_sha256": "aec29a6de45f2029483178dc8f7a6edae9bd2d09a944302dc0803aed3c841d89"
+    },
+    "rust/agent-loop/src/terminal_overflow_recovery.rs": {
+      "baseline_sha256": "e969cf865d7486fcd6f0d2436c094a1a61ec3728aa15818c76353861020d3dac",
+      "current_sha256": "5443187443ecf8b4bcb83b59a721e3e86a4569c0c55d3c47aa8e2be2e5db4767"
+    }
+  }
+}

@@ -10,6 +10,7 @@ pub(crate) struct StreamJournal {
     sequence: u64,
     blocked: bool,
     terminal: Option<TerminalOutcome>,
+    failure_diagnostic_published: bool,
     requested: HashSet<String>,
     started: HashSet<String>,
     result_ids: HashMap<String, Uuid>,
@@ -29,6 +30,7 @@ impl StreamJournal {
             sequence: 0,
             blocked: false,
             terminal: None,
+            failure_diagnostic_published: false,
             requested: HashSet::new(),
             started: HashSet::new(),
             result_ids: HashMap::new(),
@@ -185,7 +187,11 @@ impl StreamJournal {
 
     fn terminal(&mut self, outcome: TerminalOutcome) -> Result<bool, String> {
         if self.terminal.is_some() {
-            return Ok(false);
+            let publish = self.terminal == Some(TerminalOutcome::CompactionFailed)
+                && outcome == TerminalOutcome::ProviderError
+                && !self.failure_diagnostic_published;
+            self.failure_diagnostic_published |= publish;
+            return Ok(publish);
         }
         self.append(JournalEvent::Terminal { outcome }, None)?;
         self.terminal = Some(outcome);

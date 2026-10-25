@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+mod admission;
+mod lifecycle;
 mod projection;
 mod store;
 pub use projection::{JournalProjection, RecoveredTool, ToolState};

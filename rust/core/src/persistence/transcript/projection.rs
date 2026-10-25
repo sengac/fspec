@@ -46,19 +46,17 @@ impl JournalProjection {
             tools: Vec::new(),
         };
         let mut calls = HashMap::new();
+        let mut lifecycle = super::lifecycle::Lifecycle::default();
         for record in records {
-            if record.request_anchor.is_some() && record.sequence != 0 {
-                return Err(JournalError::Lifecycle);
-            }
+            let transition = lifecycle.check(&record)?;
+            lifecycle.commit(transition);
             let identity = &record.identity;
             match &record.event {
                 JournalEvent::ToolRequested {
                     id, call_id, name, ..
                 } => {
                     let key = (identity.request_id, identity.attempt_id, id.clone());
-                    if calls.insert(key, projection.tools.len()).is_some() {
-                        return Err(JournalError::Lifecycle);
-                    }
+                    calls.insert(key, projection.tools.len());
                     projection.tools.push(RecoveredTool {
                         request_id: identity.request_id,
                         attempt_id: identity.attempt_id,
@@ -79,25 +77,18 @@ impl JournalProjection {
                         .ok_or(JournalError::Lifecycle)?;
                     let tool = &mut projection.tools[*index];
                     match &record.event {
-                        JournalEvent::ToolStarted { .. } if tool.state == ToolState::NotStarted => {
+                        JournalEvent::ToolStarted { .. } => {
                             tool.state = ToolState::OutcomeUnknown;
                         }
-                        JournalEvent::ToolOutcomeUnknown { .. }
-                            if tool.state == ToolState::OutcomeUnknown => {}
+                        JournalEvent::ToolOutcomeUnknown { .. } => {}
                         JournalEvent::ToolCompleted {
                             content, is_error, ..
-                        } if matches!(
-                            tool.state,
-                            ToolState::NotStarted | ToolState::OutcomeUnknown
-                        ) =>
-                        {
+                        } => {
                             tool.state = ToolState::Completed;
                             tool.result = Some(content.clone());
                             tool.is_error = *is_error;
                         }
-                        JournalEvent::ToolCancelled { .. }
-                            if tool.state == ToolState::NotStarted =>
-                        {
+                        JournalEvent::ToolCancelled { .. } => {
                             tool.state = ToolState::Cancelled;
                         }
                         _ => return Err(JournalError::Lifecycle),

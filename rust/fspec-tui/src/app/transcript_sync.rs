@@ -3,6 +3,31 @@ use std::time::Instant;
 use codelet_rpc_types::{SessionId, TranscriptAssembler, TranscriptPage};
 use tokio::task::AbortHandle;
 
+#[derive(Debug, Clone, thiserror::Error)]
+pub enum TranscriptPageFailure {
+    #[error("transcript generation changed")]
+    GenerationChanged,
+    #[error("{0}")]
+    Unavailable(String),
+}
+
+impl From<crate::transport::BackendError> for TranscriptPageFailure {
+    fn from(error: crate::transport::BackendError) -> Self {
+        match error {
+            crate::transport::BackendError::Transcript(
+                codelet_rpc_types::TranscriptError::GenerationMismatch,
+            ) => Self::GenerationChanged,
+            error => Self::Unavailable(error.to_string()),
+        }
+    }
+}
+
+impl From<&str> for TranscriptPageFailure {
+    fn from(error: &str) -> Self {
+        Self::Unavailable(error.into())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum TranscriptAction {
     Poll,
@@ -13,7 +38,7 @@ pub enum TranscriptAction {
         session: SessionId,
         nonce: u64,
         request_id: u64,
-        result: Result<TranscriptPage, String>,
+        result: Result<TranscriptPage, TranscriptPageFailure>,
     },
     Resumed {
         session: SessionId,

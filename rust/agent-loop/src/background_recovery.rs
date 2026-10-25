@@ -1,8 +1,15 @@
 use super::BackgroundOutput;
-use codelet_cli::interactive::StreamEvent;
+use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use codelet_core::persistence::AssistantContent;
 
 impl BackgroundOutput {
+    pub(crate) fn finish_outer_failure(&self, error: String) {
+        self.emit(StreamEvent::Error(error));
+        self.session
+            .set_status(codelet_rpc_types::SessionStatus::Idle);
+        self.emit(StreamEvent::Done(None));
+    }
+
     pub(super) fn retain_unpublished_original(&self, event: &StreamEvent) {
         match event {
             StreamEvent::Text(text) => {

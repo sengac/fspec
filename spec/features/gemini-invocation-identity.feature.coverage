@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "Repeated Gemini calls retain separate authentic results",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug253_gemini_invocations.rs",
+          "lines": "73-166",
+          "implMappings": [
+            {
+              "file": "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate dispatch and cold recovery never repeat a side effect",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug253_gemini_invocations.rs",
+          "lines": "168-195",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_journal.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug253_gemini_invocations.rs"
+    ],
+    "implFiles": [
+      "rust/patches/rig-core/src/providers/gemini/streaming.rs",
+      "rust/agent-loop/src/stream_journal.rs"
+    ],
+    "totalLinesCovered": 138
+  }
+}

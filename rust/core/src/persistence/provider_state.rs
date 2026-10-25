@@ -1,3 +1,4 @@
+pub(crate) mod fork;
 pub(crate) mod legacy;
 pub(crate) mod replay;
 mod storage;

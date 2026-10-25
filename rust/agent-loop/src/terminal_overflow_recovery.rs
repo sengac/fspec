@@ -86,13 +86,21 @@ pub async fn try_terminal_overflow_recovery(
         return Ok(false);
     }
     let mut inner = session.inner.lock().await;
-    try_terminal_overflow_recovery_owned(&session, &mut inner, error).await
+    let output = crate::background_output::BackgroundOutput::with_provider(
+        session.clone(),
+        inner.current_provider_name().to_string(),
+        None,
+    );
+    try_terminal_overflow_recovery_owned(&session, &mut inner, error, &output).await
 }
 
-pub(crate) async fn try_terminal_overflow_recovery_owned(
+pub(crate) async fn try_terminal_overflow_recovery_owned<
+    O: codelet_cli::interactive::StreamOutput,
+>(
     session: &Arc<BackgroundSession>,
     inner: &mut Session,
     error: &anyhow::Error,
+    output: &O,
 ) -> Result<bool, TerminalRecoveryError> {
     if !codelet_cli::interactive::is_context_overflow_error(error) {
         return Ok(false);
@@ -117,17 +125,12 @@ pub(crate) async fn try_terminal_overflow_recovery_owned(
         output_tokens: 0,
         compaction_needed: true,
     }));
-    let output = crate::background_output::BackgroundOutput::with_provider(
-        session.clone(),
-        inner.current_provider_name().to_string(),
-        None,
-    );
     let recovery = codelet_cli::compactor_sub_agent::run_compactor_sub_agent_round_cancellable(
         inner,
         session.id,
         &token_state,
         &session.compaction_in_progress,
-        &output,
+        output,
         &cancellation,
     );
     let result = recovery.await.map(|()| true).map_err(|error| match error {

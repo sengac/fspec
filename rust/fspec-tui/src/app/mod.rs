@@ -87,6 +87,7 @@ pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
 mod dispatch_transcript;
 mod dispatch_transcript_live;
+mod dispatch_transcript_recovery;
 pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
 pub mod dispatch_work_unit_entry;

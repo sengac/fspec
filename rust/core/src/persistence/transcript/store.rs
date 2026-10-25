@@ -2,9 +2,12 @@ use super::{JournalProjection, JournalRecord};
 use crate::persistence::messages::durability::{perform, sync_parent};
 use std::collections::HashSet;
 use std::fs::{self, File, OpenOptions};
-use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use uuid::Uuid;
+
+#[path = "writer.rs"]
+mod writer;
 
 const MAX_RECORD_BYTES: u64 = 16 * 1024 * 1024;
 
@@ -34,6 +37,7 @@ pub struct JournalStore {
     session_id: Uuid,
     directory: PathBuf,
     session_owned: bool,
+    admission: Mutex<Option<super::admission::Admission>>,
 }
 
 impl JournalStore {
@@ -42,6 +46,7 @@ impl JournalStore {
             session_id,
             directory: data_root.join("transcripts").join(session_id.to_string()),
             session_owned: false,
+            admission: Mutex::new(None),
         }
     }
 
@@ -103,7 +108,9 @@ impl JournalStore {
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            fs::set_permissions(&self.directory, fs::Permissions::from_mode(0o700))?;
+            if fs::metadata(&self.directory)?.permissions().mode() & 0o777 != 0o700 {
+                fs::set_permissions(&self.directory, fs::Permissions::from_mode(0o700))?;
+            }
         }
         let mut options = OpenOptions::new();
         options.create(true).truncate(false).read(true).write(true);
@@ -129,76 +136,10 @@ impl JournalStore {
                 root,
                 self.session_id,
                 record,
+                self,
             );
         }
-        let encoded = serde_json::to_vec(record)?;
-        if encoded.len() as u64 > MAX_RECORD_BYTES {
-            return Err(JournalError::Capacity);
-        }
-        let _lease = self.lease()?;
-        let paths = self.paths()?;
-        let mut records = self.read_paths(&paths)?;
-        if records
-            .iter()
-            .any(|existing| existing.id == record.id && existing != record)
-        {
-            return Err(JournalError::Identity);
-        }
-        let suffix = format!(
-            "-{}-{:020}.json",
-            record.identity.request_id, record.sequence
-        );
-        let existing = paths.iter().find(|path| {
-            path.file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.ends_with(&suffix))
-        });
-        let destination = existing
-            .cloned()
-            .unwrap_or_else(|| self.destination(paths.len(), record));
-        if existing.is_none() {
-            let request = format!("-{}-", record.identity.request_id);
-            let count = paths
-                .iter()
-                .filter(|path| {
-                    path.file_name()
-                        .and_then(|name| name.to_str())
-                        .is_some_and(|name| name.contains(&request))
-                })
-                .count();
-            if record.sequence != count as u64 {
-                return Err(JournalError::Incomplete);
-            }
-            records.push(record.clone());
-        }
-        JournalProjection::from_records(records, &HashSet::new())?;
-        match fs::read(&destination) {
-            Ok(existing) => {
-                if existing != encoded {
-                    return Err(JournalError::Identity);
-                }
-                perform("transcript.record.sync", || {
-                    File::open(&destination)?.sync_all()
-                })?;
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                let mut stage = tempfile::Builder::new()
-                    .prefix("delta-")
-                    .suffix(".stage")
-                    .tempfile_in(&self.directory)?;
-                stage.write_all(&encoded)?;
-                perform("transcript.record.sync", || stage.as_file().sync_all())?;
-                stage
-                    .persist_noclobber(&destination)
-                    .map_err(|error| JournalError::Io(error.error))?;
-            }
-            Err(error) => return Err(error.into()),
-        }
-        perform("transcript.directory.sync", || sync_parent(&destination))?;
-        if let Some(parent) = self.directory.parent() {
-            perform("transcript.root.sync", || sync_parent(parent))?;
-        }
-        Ok(())
+        self.append_unowned(record)
     }
 
     pub fn read(&self) -> Result<Vec<JournalRecord>, JournalError> {
@@ -219,7 +160,8 @@ impl JournalStore {
             if fs::metadata(path)?.len() > MAX_RECORD_BYTES {
                 return Err(JournalError::Capacity);
             }
-            let record: JournalRecord = serde_json::from_slice(&fs::read(path)?)?;
+            let record: JournalRecord =
+                serde_json::from_slice(&perform("transcript.history.read", || fs::read(path))?)?;
             self.validate(&record)?;
             if self.destination(ordinal, &record) != *path || !identities.insert(record.id) {
                 return Err(JournalError::Identity);

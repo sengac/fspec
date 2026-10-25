@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-23T21:38:08.167Z",
+    "lastUpdated": "2026-10-25T07:30:03.499Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -235,13 +235,7 @@
       "VIZ-004",
       "WATCH-022",
       "AUDIT-001",
-      "CONT-010",
-      "BUG-253",
-      "BUG-254",
-      "BUG-255",
-      "BUG-256",
-      "BUG-257",
-      "BUG-258"
+      "CONT-010"
     ],
     "specifying": [
       "AGENT-001",
@@ -257,7 +251,8 @@
       "RIG-013",
       "SCHED-001",
       "TOOL-001",
-      "TUI-085"
+      "TUI-085",
+      "BUG-254"
     ],
     "testing": [
       "AGENT-014",
@@ -1875,7 +1870,12 @@
       "BUG-248",
       "BUG-249",
       "BUG-244",
-      "BUG-245"
+      "BUG-245",
+      "BUG-253",
+      "BUG-256",
+      "BUG-257",
+      "BUG-258",
+      "BUG-255"
     ],
     "blocked": [
       "QUERY-001",
@@ -249048,79 +249048,596 @@
       "id": "BUG-253",
       "title": "Allow repeated Gemini tool invocations without duplicate journal admission failures",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-23T21:33:06.078Z",
-      "updatedAt": "2026-10-23T21:37:21.088Z",
+      "updatedAt": "2026-10-25T03:56:12.626Z",
       "description": "P1 review finding in commit 144653b0: Gemini uses function names as tool IDs, but StreamJournal keeps requested, started, and result identities keyed by that ID across the turn. Calling the same tool twice can fail journal admission or dispatch and interrupt a valid agent turn. See the attached review finding for evidence, reproduction, and regression-test guidance.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-253/gemini-repeated-tool-invocations.md"
-      ]
+        "spec/attachments/BUG-253/gemini-repeated-tool-invocations.md",
+        "spec/attachments/BUG-253/fspec-bug253-red-regression.log",
+        "spec/attachments/BUG-253/fspec-bug253-green.log",
+        "spec/attachments/BUG-253/fspec-bug253-integration-validation.log",
+        "spec/attachments/BUG-253/fspec-bug253-final-validation.log",
+        "spec/attachments/BUG-253/fspec-bug253-provider-clippy.log"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T03:33:10.808Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T03:36:31.364Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T03:43:03.625Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T03:45:26.517Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T03:56:12.626Z",
+          "reason": "ACDD complete: feature first, actual Gemini/background duplicate dispatch behavioral red recorded, minimal opaque invocation ID fix after red, two new scenarios green plus twelve preserved compatibility tests; related pairing/admission/interruption/process-crash regressions, cargo check, scoped clippy, rustfmt, feature/tag validation and coverage audit passed. Changes intentionally uncommitted."
+        }
+      ],
+      "userStory": {
+        "role": "agent user",
+        "action": "invoke the same Gemini tool repeatedly",
+        "benefit": "each invocation executes once and recovers its own authentic result"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each Gemini function invocation has a distinct internal identity across response attempts; provider function names and thought signatures remain unchanged, duplicate dispatch is refused, and cold replay never reexecutes tools.",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:34:18.603Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given a Gemini provider that requests the same reading tool twice with different paths and signed calls, When a real background streaming turn consumes both requests and a subsequent response attempt repeats that tool, Then each invocation executes once with a distinct durable identity and authentic result while physical continuations preserve function names and signatures",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:34:25.605Z"
+        },
+        {
+          "id": 1,
+          "text": "Given an acknowledged Gemini tool invocation, When its internal identity is dispatched twice and the process restores before capturing the genuine result, Then duplicate dispatch is refused and repeated cold replay retains outcome-unknown without repeating the side effect or merging another invocation result",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:34:33.578Z"
+        }
+      ],
+      "nextExampleId": 2
     },
     "BUG-254": {
       "id": "BUG-254",
       "title": "Support durable Windows persistence before enforcing the background inference gate",
       "type": "bug",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2026-10-23T21:33:15.283Z",
-      "updatedAt": "2026-10-23T21:37:29.337Z",
+      "updatedAt": "2026-10-25T03:58:04.728Z",
       "description": "P1 review finding in commit 144653b0: recovery-directory synchronization always returns an error on non-Unix platforms. Every user-input persistence submission uses that path, and the new mandatory persistence gate skips inference on failure. Windows background sessions therefore cannot process prompts. Preserve durable-before-inference guarantees while implementing supported platform durability; see the attachment.",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-254/windows-durable-persistence-gate.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T03:56:57.415Z"
+        }
+      ],
+      "userStory": {
+        "role": "Windows agent user",
+        "action": "durably submit prompts and restore acknowledged output",
+        "benefit": "inference runs only after successful persistence and genuine failures remain fail-closed"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Supported Windows storage must durably publish recovery records, messages, journal records, provider state and manifests before inference or visible acknowledgement; no ignored synchronization failures, unsafe workspace code, or weakened admission/integrity controls. Native Windows execution is required for platform validation.",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:57:45.589Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given a writable supported Windows data root and an existing session, When a user submits a prompt and output is durably journaled then restored cold, Then the provider runs after successful admission and retry preserves each acknowledged item exactly once; genuine failures still block publication and dispatch",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:57:54.693Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Current host is macOS; an x86_64-pc-windows-msvc compilation target is installed but no native Windows execution path is provided. Which existing authorized native Windows runner and supported filesystem contract should be used to record the real platform red/green, and may a safe write-through atomic-publication dependency be reviewed if needed? Current manifest promotion and both directory barriers explicitly reject non-Unix; ignoring those errors is not an acceptable implementation.",
+          "deleted": false,
+          "createdAt": "2026-10-25T03:58:04.728Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 1
     },
     "BUG-255": {
       "id": "BUG-255",
       "title": "Avoid full transcript replay on every streamed journal append",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-23T21:33:28.037Z",
-      "updatedAt": "2026-10-23T21:37:39.074Z",
+      "updatedAt": "2026-10-25T07:30:03.499Z",
       "description": "P1 review finding in commit 144653b0: JournalStore::append enumerates, reads, deserializes, and projects the complete accumulated session journal for every text or thinking delta. The synchronous append runs while the process-global recovery-owner mutex is held, creating quadratic ingestion work and cross-session persistence stalls as sessions grow. See the attachment for evidence and scaling-validation guidance.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-255/transcript-append-scaling.md"
-      ]
+        "spec/attachments/BUG-255/transcript-append-scaling.md",
+        "spec/attachments/BUG-255/acdd-red-and-native-hold.md",
+        "spec/attachments/BUG-255/red-current.log",
+        "spec/attachments/BUG-255/authorization-and-transition-retry.md",
+        "spec/attachments/BUG-255/green.log",
+        "spec/attachments/BUG-255/acdd-validation.md",
+        "spec/attachments/BUG-255/review-findings.md",
+        "spec/attachments/BUG-255/red-extended.log",
+        "spec/attachments/BUG-255/final-green.log",
+        "spec/attachments/BUG-255/regression-integrity.log",
+        "spec/attachments/BUG-255/regression-recovery.log",
+        "spec/attachments/BUG-255/regression-streaming.log",
+        "spec/attachments/BUG-255/regression-cold.log",
+        "spec/attachments/BUG-255/regression-provider-history.log",
+        "spec/attachments/BUG-255/regression-cancellation-mcp.log",
+        "spec/attachments/BUG-255/check.log",
+        "spec/attachments/BUG-255/clippy.log",
+        "spec/attachments/BUG-255/clippy-test.log"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T04:04:41.383Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T04:07:40.016Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T07:03:53.307Z",
+          "reason": "ONE authorized native retry with materially new informed human direction, not a bypass or approval override. At 06:57 UTC 2026-10-25, after the assistant explained that Fspec's RLCD hold rejected the prior testing-to-implementing command before execution, named no specific missing prerequisite, and created no pending AskUser request, the human explicitly responded: \"no just approve it, get 255 done\". The new task expressly authorizes this single normal retry with that evidence in reason; stop implementation on Hold/Rejected and preserve any AskUser request for normal approval. Native show-work-unit and stateHistory confirm BUG-255 is testing and prior implementing transition never executed. Discovery question answered; no blocking dependencies/children; four existing feature scenarios mapped 1:1 to current Rust tests, intentionally no implementation mappings yet. Fresh current-code pre-repair execution: cargo test --offline --profile ci-test -p codelet-core --test bug255_append_scaling -j2, completed 2 PASS/2 genuine FAIL, exit 101, no ignored/filtered tests. Exact failures: long_streaming_sessions_require_bounded_admission_work: 256 deltas reread 33664 historical records; isolation::an_unrelated_session_progresses_during_a_stalled_journal_append: unrelated session blocked behind global recovery lock. Cold intact/corrupt/incomplete reconstruction and exact durable retry identity controls pass. Earlier 14 related integrity/admission/lifecycle controls passed. Native attachments red-current.log and authorization-and-transition-retry.md preserve fresh results, authorization and prerequisite review; original acdd-red-and-native-hold.md preserved. Inspected production still has only the two observation labels, no optimization. Implement only specified validated cold reconstruction, warm incremental sequence/identity/lifecycle indexes with changed-directory/tail invalidation, per-session recovery serialization without global mutex over filesystem waits, durable-before-publication, exact retries and deleted-owner rejection. AGENTS/current specs/tests/docs read, files under 300 lines required; seek review for any new major refactor. Remain same verified codex/gpt-6.1-sol session; preserve all uncommitted work and DONE253/256/257/258, leave254 specifying. Disk approx12.6GiB above6GiB floor; scoped offline ci-test -j2 only. No gate/security configuration changes, fabricated approval, AllowSession, alternate ungated path, new sessions, commits or pushes."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T07:15:46.099Z",
+          "reason": "All four existing acceptance scenarios now pass on repaired current code (green.log, exit0), including growing streaming batches, actual recovery-path scaling, cold/warm invalidation, independent-session filesystem-stall progress and exact retry identity. Native coverage refresh initially appended formatted-line mappings beside stale pre-format mappings; the completeness gate correctly refused validating. Those stale mappings were now removed and each scenario re-linked natively to exactly one current test range with nonempty implementation mapping. No bypass or production change was used to resolve that bookkeeping prerequisite. Start scoped integrity/recovery/archive/cold and prior-fix regressions plus check/Clippy and direct review. Preserve all other cards/source, same session/model, files below300lines, offline ci-test scoped -j2 and6GiB disk floor; no commits/push."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T07:30:03.499Z",
+          "reason": "BUG-255 complete through native ACDD. The ONE informed-human-authorized normal retry of the previously held testing-to-implementing command succeeded at07:03:53.307UTC; reason included the user's06:57UTC direction \"no just approve it, get 255 done\" and fresh exact2-red/2-green evidence. No gate/policy change, AllowSession, pending-approval fabrication, alternate session or bypass. Production repair began only after that valid transition. Current connected repair uses validated cold reconstruction, warm incremental identity/sequence/lifecycle indexes and directory/tail invalidation, shared lifecycle validation, cache installation only after durable barriers, and exact-byte idempotent retries. Configured session ownership now reuses the retained writer; per-session recovery Arc/Mutex lanes replace filesystem work under the global registry mutex, preserve pending originals and reject/retire deleted owners. Idle lane eviction preserves active/pending owners and is exercised under129 deleted-owner opens. All FOUR acceptance cases green on definitive final-green.log, including256/512/1024-delta scaling and256 actual recovery-path deltas plus active-lane pressure. Final executed scoped matrix:112 DISTINCT parent tests PASS, zero failures; child cold/crash helpers explicitly exercised and not double-counted. Includes14 core integrity controls,26 recovery/archive/deletion controls,37 streaming/Gemini253/fork257/outer-terminal258/reload controls,13 final core tests,2 sessions cold/replay,2 provider-history and18 cancellation/recovery/MCP controls. Offline ci-test scoped library check and library Clippy across core/providers/cli/sessions/agent-loop and BUG255 test Clippy pass without warnings. Native scoped syntax/tags pass, coverage8/8 references valid with four1:1 current test/implementation mappings; @wip removed and @done added natively; targeted rustfmt and git diff --check pass. Same-session direct review finds no outstanding BUG255 defect; all touched/new Rust files under300lines. Eighteen native attachments preserve original red/hold evidence, new informed authorization, exact red/green/regression/quality logs, full ledger and review. Unrelated known five BUG258 baseline-classified failures and global-spec warnings remain disclosed, not rerun or repaired here; no whole-workspace-all-green claim. DONE253/256/257/258 preserved,254 stays specifying; all existing uncommitted work preserved. No commit/push, daemon restart, credentials, security changes, new sessions/subagents/model substitution, downloads, cache deletion or unrelated edits. Disk remains about11GiB above strict6GiB floor."
+        }
+      ],
+      "userStory": {
+        "role": "session user",
+        "action": "stream long sessions without accumulated history replay or cross-session stalls",
+        "benefit": "durable output remains responsive while retaining integrity and ownership guarantees"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "Which observable guarantees must the warm admission optimization retain, including external corruption and independent sessions?",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:05:17.130Z",
+          "selected": true,
+          "answered": true,
+          "answer": "The attachment and existing integrity specs require validated cold reconstruction, corrupt/incomplete history rejection, exact retry identity, lifecycle checks, ownership and durable-before-publication. Warm private immutable history may reuse validation while directory/tail changes invalidate it; explicit reads and cold opens always validate history. Per-session ownership must isolate filesystem waits."
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "After validated opening, fixed-size streamed deltas use incremental sequence, identity and lifecycle indexes instead of rereading or reprojecting accumulated immutable history; cold opens and explicit reads still validate corruption and completeness.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:06:01.632Z"
+        },
+        {
+          "id": 1,
+          "text": "Recovery ownership is serialized per session, never by a process-global mutex held across filesystem work. Admission remains durable before publication, idempotent on retry, and rejects deleted owners.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:06:05.601Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Growing batches beyond 128 deltas after completed turns and a large authentic tool result perform bounded record reads and one lifecycle admission per new delta; a cold reopen reconstructs exact history and detects corruption or missing ordinals.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:06:09.686Z"
+        },
+        {
+          "id": 1,
+          "text": "While session A is blocked at a real filesystem publication boundary, session B durably admits and publishes its own event; retrying A preserves identity and deletion still retires its lane.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:06:13.641Z"
+        }
+      ],
+      "nextExampleId": 2
     },
     "BUG-256": {
       "id": "BUG-256",
       "title": "Recover TUI transcript hydration after a server generation change",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-23T21:33:38.850Z",
-      "updatedAt": "2026-10-23T21:37:49.369Z",
+      "updatedAt": "2026-10-25T04:26:45.188Z",
       "description": "P2 review finding in commit 144653b0: transcript page failures retain the assembler cursor and pinned snapshot, while /resume does not reset generation-bound state once a cursor exists. A missed session-clear event or concurrent archive installation can leave the tab polling an obsolete generation indefinitely, hiding subsequent content until the tab is reopened. See the attachment for reproduction and safe recovery requirements.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-256/tui-transcript-generation-recovery.md"
-      ]
+        "spec/attachments/BUG-256/tui-transcript-generation-recovery.md",
+        "spec/attachments/BUG-256/acdd-validation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T04:13:14.724Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T04:15:26.834Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T04:17:51.418Z",
+          "reason": "Real embedded RPC red: 4 tests compile, 2 controls pass; missed-clear /resume retains old-generation-only and mismatch notice; archive generation change during a real partial payload renders zero authoritative archive records. No sockets/provider calls."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T04:21:22.475Z",
+          "reason": "All 4 real embedded-RPC generation recovery tests pass after behavioral red, plus 5 slash-resume, 1 active-session runtime-preservation, and 6 transcript fragment integrity regressions. Coverage links all 4 scenarios to tests and production. Scoped check/clippy running; no sockets or provider calls."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T04:26:45.188Z",
+          "reason": "Attached acdd-validation.md: true behavioral red then 4 green integration tests and 17 green related/native-requested regressions; scoped check/clippy pass for TUI plus provider/CLI/sessions/agent-loop; feature/tag validation, 8-file coverage audit, targeted rustfmt and diff check pass. Reviewed atomic nonce/cursor/snapshot/partial/inflight/inspector reset and unchanged-generation dedup. All touched Rust files <300 lines; uncommitted, 8.1GiB free."
+        }
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "resume an open tab after its server transcript generation changes",
+        "benefit": "new content appears once without reopening or mixing old partial data"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "Should reconnect reset deduplication for all failures or only when generation invalidation is established?",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:13:36.112Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Only known generation invalidation resets hydration. As required by the attachment, transient transport failures and unchanged-generation reconnect retain cursor/dedup and displayed content. Typed generation mismatch must survive backend conversion. A reset replaces old display with authoritative new-generation content and invalidates partial/snapshot/inflight responses atomically."
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Known generation mismatch atomically invalidates cursor, partial bytes, pinned snapshot and inflight identity; /resume can hydrate the new generation without reopening. Replace old generation rendering, never append a second full snapshot.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:14:00.582Z"
+        },
+        {
+          "id": 1,
+          "text": "Transport failures remain distinguishable and retain displayed content and deduplication. Late responses from an invalidated hydration attempt must not mutate current rendering, including an archive-install race.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:14:03.346Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "An open tab misses clear, then /resume displays new-generation content once in order and no old-generation text, without closing the tab.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:14:06.169Z"
+        },
+        {
+          "id": 1,
+          "text": "Archive installation changes generation after a partial page; recovery discards the old bytes and late page, then renders the authoritative transcript once. A normal reconnect retains existing content once.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:14:08.954Z"
+        }
+      ],
+      "nextExampleId": 2
     },
     "BUG-257": {
       "id": "BUG-257",
       "title": "Preserve valid Codex continuation state when forking a session",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-23T21:33:48.292Z",
-      "updatedAt": "2026-10-23T21:37:59.527Z",
+      "updatedAt": "2026-10-25T04:53:03.801Z",
       "description": "P2 review finding in commit 144653b0: provider continuation checkpoints now live outside conversation message references, but SessionStore::fork copies only message references and leaves the new provider_state field empty. A fork of a completed Codex conversation consequently has dialogue without a continuation checkpoint and fails cold restoration with CheckpointError::Missing. See the attachment for lineage and prefix-safety requirements.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-257/fork-provider-continuation-state.md"
-      ]
+        "spec/attachments/BUG-257/fork-provider-continuation-state.md",
+        "spec/attachments/BUG-257/acdd-validation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T04:27:15.260Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T04:31:25.777Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T04:36:30.468Z",
+          "reason": "6 tests compile: legacy/compaction guard control passes; 5 genuine behavior reds: final and retained-prefix children cold restore Missing checkpoint, older boundary accepted, corrupt parent state ignored, child state sync bypassed. Physical-request tests use real SessionManager replay and offline loopback-only capture. Required 980-line manifest mechanical split documented before implementation."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T04:48:27.799Z",
+          "reason": "6 fork tests now pass after 5 true behavioral reds. Final and retained-prefix forks cold replay through real SessionManager and captured physical requests; older/corrupt/durability failures publish no child manifest. Parent manifest/root bytes unchanged. Required manifest split preserves all non-comment Rust tokens except the new child-state publication call; all touched Rust files <300 lines. Full scoped integrity regressions running; all 6 scenario mappings link implementation."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T04:53:03.801Z",
+          "reason": "Attached acdd-validation.md: 6 fork scenarios green with real cold SessionManager replay and captured physical requests; parent bytes unchanged; exact child roots and unsupported/corrupt/failure publication validated. 43 passing scoped tests; one unmodified baseline source-shape failure explicitly documented and proven byte-identical to HEAD (persist.rs hash 1d55f994297f934228b09d52c290807896f0038c). Scoped check/clippy, native feature/tag/12-file coverage audit, targeted fmt/diff checks pass. Manifest split verified token-identical except fork publication; all files <300 lines. Compacted native forks fail closed explicitly. Uncommitted, 8.2GiB free."
+        }
+      ],
+      "userStory": {
+        "role": "Codex session user",
+        "action": "fork a completed turn and continue its exact selected conversation prefix",
+        "benefit": "the child cold restores without importing later parent history or changing the parent"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "How should a fork handle older boundaries lacking an exact retained native checkpoint, or unsupported committed compaction lineage?",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:28:19.132Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Per the attachment, support exact retained checkpoint boundaries and reject unsupported earlier prefixes explicitly before publishing a child. Never truncate opaque native items or copy a parent-bound root. Preserve existing pre-compaction boundary rejection; committed compaction lineage requires its own valid child-bound transition and must fail closed rather than silently import later history."
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "A supported Codex fork reanchors verified provider continuation to the child's own session identity, revision and exact selected message prefix. The next physical request preserves native reasoning and tool identity without later parent content. Provider checkpoints remain outside originals.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:29:48.775Z"
+        },
+        {
+          "id": 1,
+          "text": "Reject missing, corrupt or unsupported checkpoint boundaries before publishing a child; do not relax lineage validation, synthesize a reset, copy a parent-bound state root or mutate the parent's manifest, state or originals. Retain legacy checkpoint and compaction-boundary behavior.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:29:52.779Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Fork the final completed Codex tool turn, cold restore the child and send a captured physical next request. Its intended native prefix and tool IDs survive, later parent work is absent, and parent bytes remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:29:56.825Z"
+        },
+        {
+          "id": 1,
+          "text": "Fork an older boundary without a retained matching checkpoint, or with corrupted state: reject explicitly and publish no child. Legacy checkpoint forks still restore and pre-compaction boundaries remain rejected.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:30:00.917Z"
+        }
+      ],
+      "nextExampleId": 2
     },
     "BUG-258": {
       "id": "BUG-258",
       "title": "Journal terminal outcomes emitted by the outer agent error fallback",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-10-23T21:33:57.474Z",
-      "updatedAt": "2026-10-23T21:38:08.167Z",
-      "description": "P2 review finding in commit 144653b0: some run_agent_stream failures return without emitting StreamEvent::Error, and the outer agent-loop fallback publishes Error and Done directly through BackgroundSession::handle_output. This bypasses the new durable terminal journal, so cold replay loses failures such as invalid request limits or exhausted outer overflow recovery. See the attachment for reproduction and deduplication requirements.",
+      "updatedAt": "2026-10-25T06:47:15.488Z",
+      "description": "Retain exactly one safe durable failure per abandoned outer agent request, preserving actionable live diagnostics and model-history separation. Human approval 2026-10-25 supersedes the earlier hold conditional on native ACDD card/status/Markdown updates (completed before production edits). Approved bounded extraction keeps all touched Rust files below 300 lines, preserving locks, cancellation epochs/notify, handler/drop order, counters and Idle-before-Done. Seven real-path scenarios cover invalid preparation, failed/exhausted overflow recovery, applied-compaction budget exhaustion, inner-error deduplication, successful recovery and failed explicit-builder retry. Mechanical extraction preserved 4 behavioral reds/2 greens and all 5 unchanged MCP source contracts before repair. Final settlement calls finish_outer_failure on the original output; owned recovery borrows that same output instead of allocating another journal. Preserve immutable CompactionFailed while admitting one actionable live Error without another terminal. All seven acceptance cases green; broader validation caveats are explicit in acdd-validation.md. No global publication hook, synthetic identity, terminal rewrite, model-original prose, gate bypass, unrelated card/test/source-shape fix, commit or push.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-258/outer-error-terminal-journaling.md"
-      ]
+        "spec/attachments/BUG-258/outer-error-terminal-journaling.md",
+        "spec/attachments/BUG-258/extraction-review-plan.md",
+        "spec/attachments/BUG-258/red.log",
+        "spec/attachments/BUG-258/applied-control-red.log",
+        "spec/attachments/BUG-258/acdd-validation.md",
+        "spec/attachments/BUG-258/extraction-reviewed-red.log",
+        "spec/attachments/BUG-258/green.log",
+        "spec/attachments/BUG-258/diagnostic-red.log",
+        "spec/attachments/BUG-258/final-green.log",
+        "spec/attachments/BUG-258/regression-lifecycle-final.log",
+        "spec/attachments/BUG-258/regression-recovery.log",
+        "spec/attachments/BUG-258/regression-diagnostic-final.log",
+        "spec/attachments/BUG-258/review-findings.md",
+        "spec/attachments/BUG-258/check.log",
+        "spec/attachments/BUG-258/clippy.log",
+        "spec/attachments/BUG-258/bug258-baseline-tests.log",
+        "spec/attachments/BUG-258/bug258-baseline-run.json",
+        "spec/attachments/BUG-258/baseline-manifest.json",
+        "spec/attachments/BUG-258/baseline-classification-current.log",
+        "spec/attachments/BUG-258/baseline-comparison.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T04:57:12.340Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T05:02:36.970Z",
+          "reason": "Explicit user review response authorizes independent scenarios and real failing tests plus extraction plan, but withholds production extraction/fix approval. Five scenarios now specified and validated; architecture records production hold. Entering testing only; will mark blocked after red evidence and reviewable plan."
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T05:21:03.195Z",
+          "reason": "Human approved bounded extraction conditional on native ACDD. Refine acceptance for applied-compaction budget control before returning to testing; original red evidence preserved."
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T05:23:10.358Z",
+          "reason": "Approved scope and applied-compaction exhaustion criterion specified; bounded extraction Markdown and original red log attached. Add the explicit real-path control before implementing."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T05:30:27.862Z",
+          "reason": "Human approval recorded; scope and six acceptance cases updated; plan Markdown and both red logs attached. Native testing proves original 3 reds/2 greens plus applied-budget missing-terminal red. Summary handoff exits before inner Done; preserve terminal immutability. Begin behavior-preserving bounded extraction before minimal fix."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T05:46:40.561Z",
+          "reason": "Completed offline post-clean extraction baseline: 4 behavioral reds/2 greens; smaller inline guarded select also passes all 5 unchanged RPC089 contracts. Minimal same-owner finish_outer_failure now yields all 6 acceptance greens with explicitly run fresh-process child helpers. All six scenarios have native test and implementation mappings. Begin scoped runtime regressions, check/Clippy and final review."
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-25T05:53:39.624Z",
+          "reason": "Validation found a related live compatibility regression: an explicit failed-builder retry already journals CompactionFailed, so the new outer Error admission suppresses its actionable Error chunk. Refine BUG258 acceptance before changing the bounded terminal admission policy; retain the existing durable outcome and permit one live diagnostic without another terminal identity."
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T05:55:34.383Z",
+          "reason": "Seventh acceptance criterion specified for related explicit-builder retry diagnostic compatibility. Existing durable CompactionFailed must remain immutable and single while the actionable outer Error remains visible once. Write real-path red before bounded admission distinction."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T05:57:13.603Z",
+          "reason": "Seventh real-path scenario now mapped and behaviorally red (0 actionable Error chunks after CompactionFailed warning). Preserve the acknowledged immutable terminal and allow one diagnostic publication through existing journal admission; no new identity or global hook."
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-25T06:01:03.224Z",
+          "reason": "The same-owner change removes duplicate durable failures and preserves the live diagnostic. Cold helper incorrectly assumes CompactionFailed renders as StreamChunk::Error; existing replay renders that immutable typed outcome as a safe warning notification. Correct test classification to count both documented safe renderings, without changing replay or outcome identities."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T06:01:58.753Z",
+          "reason": "All seven acceptance tests now green. Strengthened helpers count ProviderError errors and existing CompactionFailed warning notifications; each abandoned request has one immutable safe outcome. Owned recovery reuses original output, and one live diagnostic is admitted after CompactionFailed. Proceed to final implementation mapping/review before renewed validation."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T06:02:52.791Z",
+          "reason": "Seven real-path acceptance tests green, including actionable retry diagnostic and one durable failure per original request with typed cold warnings counted correctly. Existing public recovery API preserved; owned recovery now uses original output. All seven scenarios have native test/implementation mappings. Run final scoped regression and quality matrix; report unrelated fixture/global-spec failures honestly."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-25T06:08:56.394Z",
+          "reason": "Final extraction review removes redundant last-use clones introduced by helper ownership boundaries before quality checks. No behavior change; retain required Arc/cancellation/tool-handle clones and re-run acceptance plus regressions afterward."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T06:11:24.466Z",
+          "reason": "Final extraction cleanup reviewed; current-code acceptance rerun has 7 passing scenarios. Lifecycle matrix re-run preserves 15 other passing tests and reports one unmodified missing-invoking-context fixture failure explicitly. Proceed with remaining scoped regressions/check/Clippy, final coverage and review; no unrelated fixes."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T06:27:59.090Z",
+          "reason": "BUG258 accepted scope complete via native ACDD: approval/scope/Markdown attached before production edits; extraction preserved 4 reds/2 greens and unchanged MCP contracts; refined same-owner fix passes all 7 real acceptance scenarios with repeated fresh-process replay. Seven 1:1 test/implementation mappings and all 15 mapped references verified; scoped library check/Clippy, test Clippy, gated stub compile, rustfmt and diff checks pass; feature @done and scoped native validation pass. Direct review and full executed command ledger attached. Honest caveats: 80 distinct observed test passes, 5 untouched broader fixture failures (4 hardcoded token counts, 1 missing invoking context), and repository-wide legacy tag/format check failures remain; not an all-green workspace claim. Prior BUG253/256/257 changes and BUG254/255 holds preserved, no unrelated fixes, commits, pushes or manual stash operations."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-25T06:29:55.173Z",
+          "reason": "Supervising caller requires explicit baseline classification of four token-count fixture failures and one invoking-context failure before final completion. Reopen validation: unchanged source is not proof of preexisting failure. Rerun the affected complete retry/recovery suite after seventh-case fix; compare an isolated pre-BUG258 baseline where feasible, preserving current edits and disk floor."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-25T06:47:15.488Z",
+          "reason": "Authorized evidence-only finalization after the validation-only reopening. Existing completed evidence: all 7 acceptance cases green; 80 distinct scoped tests passed; scoped library check, library Clippy, BUG258 test Clippy and test-support compile passed; seven 1:1 test/implementation coverage mappings and direct review recorded. Executed isolated pre-BUG258 baseline restored only four parent source files from HEAD 2699693b74124cf12b323997fd68dd491adf7e8f while preserving earlier-card changes: full budget suite 4 pass/4 token-assertion failures (11371 vs 90336), dependency suite 2 pass/1 unknown-invoking-context failure. Completed full CURRENT-code comparison reproduces exactly those same five failure names/substantive diagnostics, budget 4 pass/4 fail, explicit-retry safety 2 pass, dependencies 2 pass/1 fail; expected exit 101. Repeated-builder-failure control passes on baseline and final current code, confirming its separate introduced diagnostic regression was repaired. Exact baseline logs/metadata/manifest and final-current log attached natively; copies byte-identical, comparison and ACDD/review Markdown updated. Five preexisting failures and unrelated global-spec tag/format warnings remain disclosed; no whole-workspace-all-green claim. No implementation, test/check/Clippy/build reruns, gate bypass, unrelated-card edits, compaction retry, session/model changes, commit or push in finalization. All changes uncommitted; prior work and old session/history preserved."
+        }
+      ],
+      "userStory": {
+        "role": "session user",
+        "action": "recover a final outer agent failure exactly once after restart",
+        "benefit": "terminal outcomes remain durable and safe without contaminating model history or successful recovery"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Only an abandoned final outer fallback receives a safe durable terminal failure on the original request owner before publication; inner-stream terminal errors deduplicate and successful automatic recovery gains no spurious failure. Terminal prose never enters model originals.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:57:35.101Z"
+        },
+        {
+          "id": 1,
+          "text": "When successful in-turn compaction exhausts the automatic continuation budget, the final request must retain one safe failure rather than a prematurely finalized success. Preserve request identity, exactly-once terminals and Idle-before-Done; do not alter immutable completed journal records.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:21:10.862Z"
+        },
+        {
+          "id": 2,
+          "text": "If a failed explicit builder retry already has a durable CompactionFailed terminal, retain that immutable outcome and publish its actionable outer Error diagnostic once without appending another terminal or polluting model originals. Existing provider-error deduplication remains unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:53:58.344Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Invalid request preparation and failed/exhausted outer overflow recovery survive repeated cold replay as one safe ordered terminal outcome. An already-journaled inner error remains single; successful recovery has no final failure.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:57:39.374Z"
+        },
+        {
+          "id": 1,
+          "text": "Four consecutive successful inference turns each apply compaction: three continue automatically, the fourth exhausts the budget. No fifth inference starts; the fourth request has exactly one durable safe provider failure on repeated cold replay, not an inner completed terminal.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:21:19.397Z"
+        },
+        {
+          "id": 2,
+          "text": "A user retries a failed compaction builder and it fails again with retry-later guidance. The live Error still contains that guidance, the session returns Idle, no ordinary inference restarts, and repeated cold replay retains exactly one safe failure per abandoned request.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:54:06.138Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: The affected agent_loop.rs is 1536 lines, almost entirely one async function, and BackgroundOutput is 739 lines. Unlike the BUG-257 mechanical item split, satisfying the mandatory 300-line rule requires phase extraction with explicit async state/control-flow boundaries. Approve that broader focused refactor after review, or keep BUG-258 specifying pending review? No production changes made for BUG-258.",
+          "deleted": false,
+          "createdAt": "2026-10-25T04:57:43.412Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Earlier approval was withheld pending a concrete extraction plan and real red evidence. Superseded by the human on 2026-10-25: \"well you have to do it acdd via fspec.. either update the existing card and set the right work status, and attach new markdown documentation to that card then start it\". The bounded dependency-preserving extraction and minimal request-owned terminal fix are approved conditional on those native ACDD steps (completed before production edits); no broader runtime redesign is authorized."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Human approval 2026-10-25: \"well you have to do it acdd via fspec.. either update the existing card and set the right work status, and attach new markdown documentation to that card then start it\". Supersedes prior extraction-review-plan approval hold only for the concrete dependency-preserving bounded extraction and minimal outer terminal fix. Baseline testing has 3 behavioral reds, 2 passing controls; add applied-compaction budget control before implementing. Preserve prior uncommitted BUG253/256/257 work and BUG254/255 holds.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:20:24.143Z"
+        },
+        {
+          "id": 1,
+          "text": "Validation refinement within BUG258 terminal routing: existing explicit-builder retry journals CompactionFailed as a warning; the outer Error was previously a separate live diagnostic. Canonical fallback admission now suppresses that diagnostic, failing the unchanged repeated-builder-failure regression. Add a real-path acceptance test first, then a bounded StreamJournal admission distinction: allow one live ProviderError diagnostic after acknowledged CompactionFailed without appending/replacing a terminal. Keep provider-error dedup, immutable outcomes, same request identity and existing emit path; no global publication hook or runtime redesign.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:54:55.208Z"
+        },
+        {
+          "id": 2,
+          "text": "Strengthened seventh-case safe-failure counting exposed an existing second BackgroundOutput allocation inside try_terminal_overflow_recovery_owned. Pass the original turn output into this owned helper (public locking wrapper may retain its independent owner) so recovery CompactionFailed and outer Error share one request/journal. This implements the approved same-owner invariant rather than concealing duplicates via another identity. Retain one immutable safe outcome, one actionable diagnostic and Idle-before-Done.",
+          "deleted": false,
+          "createdAt": "2026-10-25T05:59:06.942Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 8
     }
   }
 }

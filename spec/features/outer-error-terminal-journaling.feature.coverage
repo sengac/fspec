@@ -1,0 +1,407 @@
+{
+  "scenarios": [
+    {
+      "name": "Invalid request preparation retains one cold terminal failure",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "14-39",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed outer overflow recovery retains the original request outcome",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "41-68",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            },
+            {
+              "file": "rust/agent-loop/src/terminal_overflow_recovery.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exhausted outer recovery retains the final abandoned outcome",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "70-100",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inner journaled errors are not duplicated by the fallback",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "102-122",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/background_recovery.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful automatic recovery adds no spurious failure",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "124-141",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Applied compaction budget exhaustion retains failure instead of premature completion",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "143-201",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/agent_loop/finalization.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed explicit builder retry preserves actionable failure without another terminal",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug258_outer_terminal.rs",
+          "lines": "209-249",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_journal.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug258_outer_terminal.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/agent_loop/finalization.rs",
+      "rust/agent-loop/src/terminal_overflow_recovery.rs",
+      "rust/agent-loop/src/background_recovery.rs",
+      "rust/agent-loop/src/stream_journal.rs"
+    ],
+    "totalLinesCovered": 495
+  }
+}
