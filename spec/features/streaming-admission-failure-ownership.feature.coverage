@@ -1,0 +1,151 @@
+{
+  "scenarios": [
+    {
+      "name": "Directory and root barrier failures retain the provisional journal identity",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_failure_ownership.rs",
+          "lines": "15-60",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Combined journal and recovery staging failure retains caller ownership",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_failure_ownership.rs",
+          "lines": "62-114",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A warmed writer cannot resurrect a deleted session",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_failure_ownership.rs",
+          "lines": "116-143",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry_ownership.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug270_failure_ownership.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/persistence_retry.rs",
+      "rust/agent-loop/src/persistence_retry_ownership.rs"
+    ],
+    "totalLinesCovered": 213
+  }
+}

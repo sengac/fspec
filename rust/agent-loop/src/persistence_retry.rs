@@ -226,6 +226,26 @@ fn merge(pending: &mut Vec<RecoveryRecord>, memory: &[RecoveryRecord]) -> Result
 
 pub(crate) fn submit(session_id: Uuid, record: RecoveryRecord) -> Result<(), String> {
     let spool = PersistenceSpool::configured(session_id)?;
+    if record.role == "transcript"
+        && record.version == 1
+        && encoded_size(&record)? <= MAX_PENDING_BYTES
+    {
+        let mut owner = spool.owner.lock().map_err(|_| "recovery owner poisoned")?;
+        let _lease = spool
+            .lease(&mut owner)?
+            .ok_or("recovery admission refused for deleted session")?;
+        if owner.admitted.is_empty() && owner.retained.is_empty() {
+            if let Ok(disk) = io::read(&spool.directory) {
+                if disk.is_empty() {
+                    if archive::commit(session_id, &record, &mut owner.journal).is_ok() {
+                        return Ok(());
+                    }
+                    owner.admitted.push(record.clone());
+                    let _ = spool.promote_memory(&owner.admitted, &disk);
+                }
+            }
+        }
+    }
     if spool.enqueue(&record).is_err() {
         spool.retain(&record)?;
         return Err("persistence recovery required; shutdown unsafe until journal repair".into());

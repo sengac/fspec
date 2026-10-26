@@ -1,0 +1,296 @@
+{
+  "scenarios": [
+    {
+      "name": "Healthy stream admission does not require a writable recovery directory",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "20-65",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failed direct admission retains exact identity for recovery",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "67-106",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing recovery work is not bypassed by direct admission",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "108-137",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleted sessions cannot publish through direct admission",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "139-160",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool dispatch still requires durable journal admission",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "162-197",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/stream_journal.rs",
+              "lines": [
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Healthy admission leaves recovery lane permissions unchanged",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug270_admission_safety.rs",
+          "lines": "199-220",
+          "implMappings": [
+            {
+              "file": "rust/agent-loop/src/persistence_retry.rs",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug270_admission_safety.rs"
+    ],
+    "implFiles": [
+      "rust/agent-loop/src/persistence_retry.rs",
+      "rust/agent-loop/src/stream_journal.rs"
+    ],
+    "totalLinesCovered": 379
+  }
+}

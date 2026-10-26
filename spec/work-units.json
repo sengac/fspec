@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-25T20:05:02.938Z",
+    "lastUpdated": "2026-10-26T21:43:02.824Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 269,
+    "BUG": 270,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1888,7 +1888,8 @@
       "BUG-268",
       "BUG-269",
       "PROV-162",
-      "CONT-011"
+      "CONT-011",
+      "BUG-270"
     ],
     "blocked": [
       "QUERY-001",
@@ -251039,6 +251040,157 @@
       ],
       "nextNoteId": 1,
       "estimate": 8
+    },
+    "BUG-270": {
+      "id": "BUG-270",
+      "title": "Synchronous per-delta transcript durability throttles LLM streaming",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-26T09:03:58.993Z",
+      "updatedAt": "2026-10-26T21:43:02.824Z",
+      "description": "Diagnose and repair redundant per-delta persistence overhead. Healthy transcript records should commit directly to the durable journal under the existing session recovery lease when no older recovery work exists. Preserve durable-before-publication, exact retry identity, bounded recovery ownership, deletion exclusion and tool-dispatch admission. Retain the diagnostic fixtures and measured research; add failing regression acceptance tests before production changes. This focused repair reduces duplicate filesystem work, not all synchronous journal latency.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T09:12:10.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T10:30:09.678Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T10:35:14.242Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T10:35:55.213Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T10:41:26.126Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T10:41:26.768Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-26T10:48:02.220Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T11:22:23.512Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T11:22:50.084Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-26T11:26:58.282Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-26T11:42:33.520Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-26T21:43:02.824Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Diagnose local streaming overhead using real-filesystem fixtures without network delay; preserve durable-before-publication, exact retry identity and tool-side-effect admission guarantees in any eventual repair.",
+          "deleted": false,
+          "createdAt": "2026-10-26T09:12:28.572Z"
+        },
+        {
+          "id": 1,
+          "text": "Healthy transcript admission must avoid redundant recovery-file staging and acknowledgement when the journal itself has durably committed the record; pending recovery, failures, deletion and tool dispatch retain their existing safety guarantees.",
+          "deleted": false,
+          "createdAt": "2026-10-26T10:35:14.493Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A ready sibling Tokio task cannot progress while BackgroundOutput.emit waits synchronously for an OS-thread-held transcript writer lock; the same delta is published only after the lock is released and durable admission completes.",
+          "deleted": false,
+          "createdAt": "2026-10-26T09:12:36.524Z"
+        },
+        {
+          "id": 1,
+          "text": "With no LLM endpoint and identical prebuilt text/thinking streams, direct fanout handles256 deltas in less than a millisecond while current durable BackgroundOutput takes about12 seconds on the measured macOS machine; cold recovery preserves all256 identities and contents and warm history reads stay zero.",
+          "deleted": false,
+          "createdAt": "2026-10-26T09:54:15.093Z"
+        },
+        {
+          "id": 2,
+          "text": "A healthy stream with an unusable empty recovery-record directory still publishes only after the transcript journal is durable; failed journal barriers retain the exact event ID, older recovery drains first, deleted sessions cannot publish, and failed tool-start admission refuses dispatch.",
+          "deleted": false,
+          "createdAt": "2026-10-26T10:35:54.292Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Healthy per-delta path: BackgroundOutput.emit -> StreamJournal.admit -> submit -> enqueue -> retry -> JournalStore.append -> publication. Source audit counts 10 sync_all calls per text/thinking event: recovery promote 3, retry duplicate recovery sync 1, transcript publication 5 (two sync_parent calls each sync two directories plus record sync), recovery deletion acknowledgement 1. Existing durability observer reports only 3 transcript boundary labels, not all 10 actual calls. Three full manifest reads/deserializations also occur per delta. BUG-255 already repairs transcript replay/global recovery locking; do not misreport these as unfixed at HEAD.",
+          "deleted": false,
+          "createdAt": "2026-10-26T09:13:30.300Z"
+        },
+        {
+          "id": 1,
+          "text": "Measured serial fixture run at HEAD56cf5cc0: 256 deltas take 12.05/12.12 seconds (~21 deltas/sec), median emit46.99/47.04ms for 16/1024 payload labels; direct fanout0.190/0.431ms total. All3 diagnostic tests pass. Cold writer history reads2016/8128/32640 for64/128/256 versus zero warm. Real-lock single-thread fixture blocks224ms and starves ready sibling. Research/raw logs attached. These are characterization tests, not a production repair; leave BUG-270 open.",
+          "deleted": false,
+          "createdAt": "2026-10-26T09:54:12.501Z"
+        },
+        {
+          "id": 2,
+          "text": "ACDD recovery: the initial feature and diagnostic tests were written while the card remained in specifying, and fspec rejected the testing transition because the feature predates specifying entry. Review and clarify the diagnostic acceptance criteria in specifying, then enter testing through the normal gate. Preserve the original history: passing characterization tests do not establish a red regression test or a production fix. Keep this card in testing; any production repair requires failing acceptance tests first.",
+          "deleted": false,
+          "createdAt": "2026-10-26T10:28:21.783Z"
+        },
+        {
+          "id": 3,
+          "text": "Scope expanded by user request to a focused production repair. Reuse the existing per-session owner and recovery lease; commit directly to the durable journal only with no admitted, retained or on-disk recovery work. Otherwise use existing bounded spool submission. On journal failure retry through the existing spool with the original envelope. No batching, new runtime, unbounded queue or durability relaxation. Earlier diagnostic-only notes describe the prior phase, not the updated repair scope.",
+          "deleted": false,
+          "createdAt": "2026-10-26T10:35:54.413Z"
+        },
+        {
+          "id": 4,
+          "text": "Safety review: add combined transcript-record and recovery-staging failure coverage before finalization. Warm a stream before deletion to exercise cached admission, and cover both transcript directory and root barriers. Memory-only fallback under complete storage failure remains shutdown-unsafe as before; no unconditional cross-process recovery guarantee is claimed when storage cannot accept bytes.",
+          "deleted": false,
+          "createdAt": "2026-10-26T11:22:23.633Z"
+        },
+        {
+          "id": 5,
+          "text": "Completion validation: 12 BUG-270 acceptance/diagnostic tests and 35 surrounding persistence regression tests pass under ci-test (plus successful retirement subprocesses; two parent subprocess entry points intentionally ignored). Cargo fmt/check/clippy pass. All 12 scenarios have audited test/implementation mappings; duplicate empty mapping removed. All 2149 feature files validate. Global tag validation still reports 522 existing unrelated offenders, none in this card. Earlier cmpct052 failures reproduce at unmodified production source and use local scripted providers, not a live OpenAI endpoint. Final evidence and limitations are attached in bug270-completion-validation.md.",
+          "deleted": false,
+          "createdAt": "2026-10-26T21:42:37.418Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "userStory": {
+        "role": "session user",
+        "action": "receive model output without avoidable local persistence stalls",
+        "benefit": "fast providers remain responsive while crash recovery remains truthful"
+      },
+      "estimate": 5,
+      "attachments": [
+        "spec/attachments/BUG-270/bug270-streaming-speed-research.md",
+        "spec/attachments/BUG-270/bug270-speed-isolated.log",
+        "spec/attachments/BUG-270/bug270-speed.log",
+        "spec/attachments/BUG-270/bug270-clippy.log",
+        "spec/attachments/BUG-270/bug270-final-focused.log",
+        "spec/attachments/BUG-270/bug270-final-regressions.log",
+        "spec/attachments/BUG-270/bug270-cmpct-head.txt",
+        "spec/attachments/BUG-270/bug270-completion-validation.md"
+      ]
     }
   }
 }
