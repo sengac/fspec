@@ -314,10 +314,23 @@ impl FspecBackend for WebSocketFspecBackend {
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
-        Ok(client
+        client
             .client()
-            .create_session(context::current(), role)
-            .await?)
+            .create_session_checked(context::current(), role)
+            .await?
+            .map_err(anyhow::Error::msg)
+    }
+
+    async fn session_manifest_issues(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::SessionManifestIssue>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .session_manifest_issues(context::current())
+            .await?
+            .map_err(anyhow::Error::msg)
     }
 
     async fn send_input(&self, id: SessionId, text: String) -> Result<()> {

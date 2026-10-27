@@ -7,6 +7,10 @@
 @BUG-185
 Feature: Failed tool-call tail only stripped on prompt-too-long — must strip on ALL terminal API errors
   """
+  BUG-272 scope correction: this legacy deletion policy applies only to non-Codex
+  sessions. Codex terminal errors preserve accepted history and propagate the
+  provider error; see codex-terminal-error-history-preservation.feature.
+
   Wiring: in rust/cli/src/interactive/stream_loop.rs the terminal error arm (after the CLI-022 api.error capture, before the final emit_error/return Err) invokes strip_failed_tool_call_tail(&mut session.messages) UNCONDITIONALLY for any non-interrupted terminal API error — the is_prompt_too_long_error gate (BUG-170 rule [0]) is removed. On a successful ToolPair/ToolCallOnly strip: zero session.token_tracker cache fields, recalculate_token_tracker, reset the live TokenState (compaction_needed=false, cache fields 0, output_tokens 0), emit_error with the '[Removed the failed tool call from context]' annotation, and break (session stays interactive — no Err). When the strip yields None (tail is a plain user prompt or assistant text), fall through to the existing terminal behavior (emit_error + return Err) unchanged. The existing recovery cascade (AMGR-016 stall guard, CMPCT-023 prompt-too-long compaction, EXT-016 image sanitize, PROV-040 truncation retry, NET-001 network retry) runs BEFORE the terminal arm and is untouched. Supersedes BUG-170 rule [0]; BUG-170's 'Non-prompt-too-long terminal errors leave the stack untouched' scenario is reversed by this feature.
 
   Scope boundary: tool-execution failures are OUT OF SCOPE — the ToolResult arm (handle_tool_result in stream_handlers.rs) keeps pushing the result and the turn continues normally. detect_tool_error stays purely a display/debug-capture signal; it does not gate any removal. The strip primitive (strip_failed_tool_call_tail in recovery_unrecoverable.rs, unchanged) already handles all required tail shapes; only its call-site gating in stream_loop.rs changes, plus the corresponding tests in rust/cli/tests/bug170_strip_failed_tool_call_tail.rs (the 'non-prompt-too-long leaves stack untouched' classifier-gate test and the source-shape 'gated on is_prompt_too_long' assertion are inverted).
@@ -26,7 +30,7 @@ Feature: Failed tool-call tail only stripped on prompt-too-long — must strip o
   #
   # ========================================
   Background: User Story
-    As a CLI agent session
+    As a non-Codex CLI agent session
     I want to strip the failed tool-call tail from the context stack on ANY terminal API error
     So that no terminal error leaves a failed tool call in context to be replayed on the next message, and the session stays usable
 

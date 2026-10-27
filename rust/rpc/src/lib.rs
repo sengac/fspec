@@ -710,6 +710,9 @@ pub trait FspecService {
         request_id: String,
         arguments: String,
     ) -> Result<(), String>;
+    async fn create_session_checked(role: Option<String>) -> Result<SessionId, String>;
+    async fn session_manifest_issues(
+    ) -> Result<Vec<codelet_rpc_types::SessionManifestIssue>, String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -1305,6 +1308,24 @@ impl FspecService for FspecServiceImpl {
             Some(handle) => handle.create_session(role),
             None => SessionId::new("rpc-no-session-manager"),
         }
+    }
+
+    async fn create_session_checked(
+        self,
+        _ctx: Context,
+        role: Option<String>,
+    ) -> Result<SessionId, String> {
+        self.inner
+            .session_manager()
+            .ok_or("Session creation requires a session manager")?
+            .create_session_checked(role)
+    }
+
+    async fn session_manifest_issues(
+        self,
+        _ctx: Context,
+    ) -> Result<Vec<codelet_rpc_types::SessionManifestIssue>, String> {
+        codelet_core::persistence::session_manifest_issues()
     }
 
     async fn send_input(self, _ctx: Context, session_id: SessionId, text: String) {

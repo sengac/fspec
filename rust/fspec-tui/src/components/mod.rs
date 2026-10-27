@@ -39,6 +39,7 @@ pub mod mux_config_dialog_rows;
 pub mod notification_dialog;
 pub mod role_dialog;
 pub mod scroll_viewport;
+pub mod session_storage_dialog;
 pub mod spinner;
 pub mod status_dialog;
 pub mod thinking_level_dialog;
@@ -170,6 +171,12 @@ pub enum Action {
     /// surfaces it as a Priority::Critical ErrorDialog so the decline is
     /// explicit instead of being silently swallowed.
     SessionCreationDeclined,
+    SessionOperationFailed(String),
+    SessionManifestIssuesLoaded {
+        issues: Vec<codelet_rpc_types::SessionManifestIssue>,
+        replay: bool,
+    },
+    SessionStorageDismissed,
     /// RPC-009: a streaming chunk arrived for the (session_id, chunk)
     /// pair. The chunks_rx subscriber filters by the AgentReplView's
     /// active session id BEFORE emitting this variant.

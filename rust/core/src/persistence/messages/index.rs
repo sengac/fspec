@@ -5,7 +5,7 @@
 //! Format of `messages.idx`:
 //! ```text
 //! [magic:          4 bytes "MIDX"]
-//! [version:        4 bytes u32 LE = 2]
+//! [version:        4 bytes u32 LE = 1 (also accepts deployed version 2)]
 //! [data_file_size: 8 bytes u64 LE]  — for staleness detection
 //! [entry_count:    4 bytes u32 LE]
 //! [entries:        entry_count × 28 bytes each]
@@ -30,8 +30,10 @@ pub(super) use write::save_index;
 /// Magic bytes identifying a messages index file
 const INDEX_MAGIC: &[u8; 4] = b"MIDX";
 
-/// Current binary format version
-const INDEX_VERSION: u32 = 2;
+/// V1 and V2 have identical offset entries. Publish V1 so older clients can
+/// reuse the derived cache. Strict framing/hash checks are independent of this
+/// layout version and still run for scanned and retrieved originals.
+const INDEX_VERSION: u32 = 1;
 
 /// Size of the fixed header: magic(4) + version(4) + data_file_size(8) + entry_count(4)
 const HEADER_SIZE: usize = 20;
@@ -64,7 +66,7 @@ pub(super) fn load_index(index_path: &Path) -> Option<(HashMap<Uuid, IndexEntry>
 
     // Validate version
     let version = u32::from_le_bytes(header[4..8].try_into().ok()?);
-    if version != INDEX_VERSION {
+    if version != INDEX_VERSION && version != 2 {
         return None;
     }
 

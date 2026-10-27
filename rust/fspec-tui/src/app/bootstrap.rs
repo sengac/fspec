@@ -53,6 +53,7 @@ impl App {
             }
         }
         self.spawn_subscriber_tasks();
+        self.spawn_session_manifest_issues(true);
         self.initialize_startup_model().await;
         self.initialize_default_thinking_level();
         // MUX-001 R6: load the persisted mux config (shared

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-26T21:43:02.824Z",
+    "lastUpdated": "2026-10-27T08:07:32.096Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 270,
+    "BUG": 274,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -257,12 +257,16 @@
     "testing": [
       "AGENT-014",
       "AGENT-017",
-      "PROV-094"
+      "PROV-094",
+      "BUG-271",
+      "BUG-272"
     ],
     "implementing": [
       "AUDIT-002"
     ],
-    "validating": [],
+    "validating": [
+      "BUG-274"
+    ],
     "done": [
       "AGENT-018",
       "AGENT-020",
@@ -1889,7 +1893,8 @@
       "BUG-269",
       "PROV-162",
       "CONT-011",
-      "BUG-270"
+      "BUG-270",
+      "BUG-273"
     ],
     "blocked": [
       "QUERY-001",
@@ -108453,7 +108458,10 @@
         "action": "have every selection path fail loudly or surface an explicit empty state when no provider/model is explicitly resolvable",
         "benefit": "the system never silently substitutes anthropic/claude (the root cause of 'Enter on OpenAI profile shows Anthropic')",
         "role": "developer integrating provider/model/profile selection"
-      }
+      },
+      "relatesTo": [
+        "BUG-271"
+      ]
     },
     "PROV-102": {
       "architectureNotes": [
@@ -241689,7 +241697,8 @@
         "spec/attachments/CMPCT-064/00-shared-contract.md"
       ],
       "relatesTo": [
-        "CMPCT-051"
+        "CMPCT-051",
+        "BUG-271"
       ],
       "questions": [
         {
@@ -251191,6 +251200,467 @@
         "spec/attachments/BUG-270/bug270-cmpct-head.txt",
         "spec/attachments/BUG-270/bug270-completion-validation.md"
       ]
+    },
+    "BUG-271": {
+      "id": "BUG-271",
+      "title": "Isolate unreadable session manifests so legacy or corrupt history cannot block new sessions",
+      "type": "bug",
+      "status": "testing",
+      "createdAt": "2026-10-26T22:00:30.775Z",
+      "updatedAt": "2026-10-26T22:15:07.938Z",
+      "description": "P1: Historical unreadable session manifests globally block session store initialization, agent/model selection flow and new sessions. Remote log reports EOF at line 1 column 0 for b8c05474-d2ef-4bb9-83f6-899278219946.json on Linux. Source-confirmed global scan failure and misleading missing-model decline; remote file contents and old/new versions unknown. User authorized implementation after attaching research. Preserve source bytes and unknown-reference safety, isolate individual unreadable entries with visible diagnostics, keep healthy/new sessions usable and targeted restore errors strict. See attached bug271-manifest-research.md and recorded rules/examples.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T22:01:11.792Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T22:07:00.828Z"
+        }
+      ],
+      "relatesTo": [
+        "CMPCT-064",
+        "PROV-101"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "An unreadable individual session manifest must not prevent selecting an agent/model, creating a new session, listing healthy sessions, or resuming a healthy session, including when the bad file belongs to a different project.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:37.400Z"
+        },
+        {
+          "id": 1,
+          "text": "Surface each unreadable manifest explicitly with its path/session identity, failure category and actionable recovery guidance; do not silently omit it or report the condition as no default model selected. Notices must be visible even when no session is open.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:37.530Z"
+        },
+        {
+          "id": 2,
+          "text": "Preserve damaged or unsupported manifest bytes and associated originals, transcripts, provider state and recovery data. Do not auto-delete, overwrite with an empty manifest, fabricate successful restore or infer unreferenced data from an incomplete inventory.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:37.660Z"
+        },
+        {
+          "id": 3,
+          "text": "Distinguish valid supported older manifests with defaultable fields from empty/truncated/malformed JSON and unsupported schemas. Load supported legacy forms without destructive rewrites; reject unsupported or damaged target-session operations explicitly.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:37.788Z"
+        },
+        {
+          "id": 4,
+          "text": "Retain real store-wide I/O, permission, locking, revision and durable-promotion failures as actionable errors; isolation of one bad historical entry must not turn persistence failures into success or disable transaction safeguards.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:37.914Z"
+        },
+        {
+          "id": 5,
+          "text": "Repeated startup must remain usable while unresolved bad files are present. A repaired manifest must be discoverable on a subsequent cold load without losing healthy sessions or silently resurrecting stale cached state.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.037Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given one valid session and an empty b8c05474-d2ef-4bb9-83f6-899278219946.json in the user sessions directory, when a fresh store initializes and the user selects an explicit model and starts a session, then a nonempty new session ID is durably persisted, the healthy session remains accessible, and a visible warning identifies the empty file even with no existing open session.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.159Z"
+        },
+        {
+          "id": 1,
+          "text": "Given a malformed historical manifest associated with another project, when the current project lists/resumes a healthy session and starts a new one, then those operations succeed while the malformed entry is explicitly reported and all source bytes remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.278Z"
+        },
+        {
+          "id": 2,
+          "text": "Given truncated JSON or a valid JSON object incompatible with the supported manifest schema, when that exact session is loaded or resumed, then the operation fails with its path and cause, never as an absent session or successful empty transcript, while independent healthy sessions remain usable.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.399Z"
+        },
+        {
+          "id": 3,
+          "text": "Given a valid older manifest missing defaultable revision/provider/token fields, when a fresh store opens and reads it, then defaults are applied in memory and the legacy file is not rewritten simply because it was discovered.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.521Z"
+        },
+        {
+          "id": 4,
+          "text": "Given an unresolved malformed manifest and associated messages/provider/recovery data, when discovery and cleanup or tail-repair paths execute, then unknown references do not become unreferenced data and no associated bytes are deleted or destructively repaired.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.643Z"
+        },
+        {
+          "id": 5,
+          "text": "Given a genuinely unreadable sessions directory or a failed new-manifest write, when session creation is attempted, then a visible persistence-specific error is shown even with no open session, no success/empty-ID session is published, and the error does not claim no default model is set.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.761Z"
+        },
+        {
+          "id": 6,
+          "text": "Given unresolved damaged manifests across repeated restarts, when a fresh store opens each time, then healthy and new sessions remain usable with diagnostics; after the damaged file is safely repaired, the next cold open discovers it normally.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:38.882Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Can you provide the affected manifest file size and, if nonempty, a redacted structural sample plus the old/new fspec versions? EOF at line 1 column 0 suggests empty or whitespace-only content, so the log alone does not establish a schema-migration problem. Preserve a backup and avoid sharing conversation content or credentials.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:01:39.007Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Remote size/content and versions remain unavailable. User authorized starting BUG-271 on 2026-10-27. Proceed with deterministic empty/malformed and defaultable legacy fixtures; do not claim a specific remote schema migration or destructive repair."
+        }
+      ],
+      "nextQuestionId": 1,
+      "userStory": {
+        "role": "developer upgrading fspec with existing session history",
+        "action": "select an agent and start or resume healthy sessions despite an unreadable historical manifest",
+        "benefit": "a single damaged or incompatible session cannot lock me out or destroy my saved history"
+      },
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Investigation 2026-10-27, source-confirmed only; remote bytes/version unknown. Call chain: rust/sessions/src/handle_impl.rs:139 invokes SessionManager::create_session; rust/sessions/src/session_manager.rs:839 calls persistence::save_session; rust/core/src/persistence/manifest_registry.rs:103 calls init_session_store, whose line 18 constructs SessionStore::new; rust/core/src/persistence/manifest_store.rs:31 calls load_all and lines 47-50 propagate any sessions/*.json read/parse error. Since SESSION_STORE remains uninitialized, later attempts repeat the same failing global scan. The UUID in the error may be unrelated to the newly requested session.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.338Z"
+        },
+        {
+          "id": 1,
+          "text": "UI error propagation: rust/sessions/src/handle_impl.rs:142-149 collapses every creation failure to an empty SessionId; rust/fspec-tui/src/app/session_creation.rs:31 treats every empty ID as SessionCreationDeclined; rust/fspec-tui/src/app/dispatch_create_session_dialog.rs:217 displays no default model is set. A selected and valid model can therefore produce misleading model-selection guidance. Preserve genuine missing-model decline semantics while reporting persistence failures separately, including bootstrap/no-current-session paths. Design the narrowest compatible error propagation before changing RPC signatures; no major refactor is authorized by this card.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.452Z"
+        },
+        {
+          "id": 2,
+          "text": "Existing contract conflict: spec/features/durable-session-manifest-transactions.feature:51 and rust/core/tests/cmpct064_manifest_transactions.rs:248 explicitly require fresh SessionStore opening to fail on one incompatible manifest. Update that scenario/test deliberately to explicit per-session unreadable status plus healthy-session availability, rather than silently removing the assertion or weakening corruption detection. Preserve target-session replay, revision CAS, locks, interrupted promotion and lost acknowledgement coverage. PROV-101 decline tests currently cover empty-ID mapping, not persistence-specific failure causality. Coverage reports reviewed; stale pre-split implementation anchors must not be treated as runtime validation.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.571Z"
+        },
+        {
+          "id": 3,
+          "text": "Data safety: rust/core/src/persistence/message_cleanup.rs:50 and rust/core/src/persistence/messages/framing/references.rs:8 independently parse every manifest to prove committed references. They conservatively fail on malformed inventory. Keep this protection: tolerant discovery must never allow cleanup/tail repair to regard unreadable sessions as absent. Moving bad files outside sessions/*.json without retaining unknown-reference protection can accidentally authorize message deletion. Prefer non-destructive issue reporting; quarantine or migration needs an explicit preservation contract.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.686Z"
+        },
+        {
+          "id": 4,
+          "text": "Legacy classification: rust/core/src/persistence/manifest_types.rs supplies serde defaults for revision, provider, token usage and newer optional state. Therefore an old file is not automatically incompatible. Empty/whitespace JSON, truncated JSON, missing required fields and unsupported nested state are distinct cases; obtain remote structural evidence before claiming a specific migration. Strict loading of the damaged session must still fail, and inventory reporting must retain its identity/path and parse cause.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.801Z"
+        },
+        {
+          "id": 5,
+          "text": "Implementation handoff: follow feature first, executable failing integration tests second, minimal code last. Use real temp stores from rust/test-helpers, serial_test for persistence globals and 1:1 scenario mappings. Target codelet-core manifest-discovery tests plus existing cmpct064_manifest_transactions and codelet-fspec-tui session-creation tests; exercise real SessionManager/handle-to-TUI bootstrap behavior rather than only pure empty-ID mapping. Run cargo test -p <crate> --test <target>, never workspace tests. This task creates/researches the card only; no production edits, executable reproduction or tests run are claimed.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:07.917Z"
+        },
+        {
+          "id": 6,
+          "text": "History evidence: git show 2699693b -- rust/core/src/persistence/manifest.rs changes load_all from warning and continuing on incompatible JSON to read_manifest(...)? with Failed to open committed manifest. Commit f0eb0759 later moves that strict loader into manifest_store.rs. This confirms an availability behavior change in history, not the provenance/cause of the remote empty file; do not restore silent skipping as the fix.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:02:26.321Z"
+        },
+        {
+          "id": 7,
+          "text": "User approved structural refactoring for the complete UI/RPC fix on 2026-10-27. Research Markdown attached and implementation authorized. Core feature and seven filesystem integration tests written before production; scoped executable RED compiling from a clean target with debug information disabled and two jobs. Global tag validation currently reports 522 pre-existing file violations; do not fix unrelated specifications.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:11:04.348Z"
+        },
+        {
+          "id": 8,
+          "text": "Executable core RED captured in /tmp/bug271-core-red.log: seven real filesystem tests ran, three preservation/legacy/store-error controls passed and four isolation/strict-target/cold-repair scenarios failed at the existing global manifest scan. This is behavioral failure, not a compiler error. Beginning minimal core repair after updating test coverage mappings.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:15:07.938Z"
+        }
+      ],
+      "nextNoteId": 9,
+      "attachments": [
+        "spec/attachments/BUG-271/bug271-manifest-research.md"
+      ],
+      "estimate": 5
+    },
+    "BUG-272": {
+      "id": "BUG-272",
+      "title": "Terminal API error cleanup deletes accepted tool outcomes and breaks Codex replay",
+      "type": "bug",
+      "status": "testing",
+      "createdAt": "2026-10-26T22:19:01.671Z",
+      "updatedAt": "2026-10-27T08:07:32.091Z",
+      "description": "Report describes server_is_overloaded followed by 'Removed the failed tool call from context' and, on the next user message, 'Codex replay has no recorded outcome for call call_f4188cdf891546a4a81c9ad7c65a01c2'. Investigate generic terminal-error tail stripping versus Codex committed lineage and outcome replay; preserve valid completed calls and recover safely without repeating side effects. Research-only intake; no implementation requested.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-272/BUG-272-api-error-replay-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-26T22:47:44.127Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-26T22:50:28.709Z"
+        }
+      ],
+      "userStory": {
+        "role": "Codex session owner",
+        "action": "continue safely after a terminal provider error",
+        "benefit": "completed tool work and committed conversation history are never lost or replayed as side effects"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Terminal provider errors must preserve Codex conversation history, committed invocation identities and genuine tool outcomes, including genuine tool errors; never silently remove a call or result to recover.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:37.423Z"
+        },
+        {
+          "id": 1,
+          "text": "Preserve typed missing-outcome refusal and explicit API error propagation. A terminal failure must not publish successful completion, fabricate cancellation, reset ancestry or rotate affinity as a history repair.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:37.555Z"
+        },
+        {
+          "id": 2,
+          "text": "A later user turn and a cold resume must replay preserved real outcomes exactly once without executing completed tools again. Existing context-overflow recovery and non-Codex legacy behavior remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:37.692Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "After a filesystem-changing Codex tool completes, a server_is_overloaded rejection leaves its call and genuine result intact; a new prompt succeeds without repeating the side effect.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:37.828Z"
+        },
+        {
+          "id": 1,
+          "text": "Save and cold-reload the conversation and checkpoint after an overload; the next prompt includes the original tool result exactly once.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:37.953Z"
+        },
+        {
+          "id": 2,
+          "text": "A terminal provider rejection after multiple calls retains every original call/result identity and genuine tool error; terminal failures with no tool tail leave user messages intact.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:38.076Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Integration: protect the shared CLI/NAPI streaming terminal-error arm before legacy BUG-170/BUG-185 tail surgery when the active provider owns Codex checkpoint ancestry. Keep earlier recovery and explicit final error behavior. Exercise real streaming consumption against scripted HTTP transport and temp filesystem stores; retain replay guards.",
+          "deleted": false,
+          "createdAt": "2026-10-26T22:49:38.196Z"
+        }
+      ],
+      "nextNoteId": 1
+    },
+    "BUG-273": {
+      "id": "BUG-273",
+      "title": "Avoid history rescans and async worker stalls during shared message-store access",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-27T03:56:48.396Z",
+      "updatedAt": "2026-10-27T04:52:53.766Z",
+      "description": "Fix diagnosed same-version peer append full rescans, incompatible V1/V2 derived-index replacement, and synchronous search storage stalls. Preserve idempotent recovery, message integrity and cross-process coherence; use isolated synthetic fixtures only.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T03:56:55.041Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T04:00:31.333Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T04:04:50.302Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T04:15:11.600Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2026-10-27T04:23:54.533Z",
+          "reason": "Implementation and 78 scoped tests pass; configured reload and Clippy stopped at six-GiB disk reserve. Automatic approval review rejected scoped Rust cargo clean before execution, citing superseded historical cache restriction. No cleanup retry or workaround attempted; requires explicit approval resolving that conflict to finish validation."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T04:26:10.171Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T04:51:57.778Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running concurrent Fspec clients",
+        "action": "append and search message history without repeated full rescans or blocked async workers",
+        "benefit": "responsive agents with intact recoverable evidence"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A verified complete index is reusable across current peers and cold reopen only while both exact data and index generations still match; any corruption, replacement, failed publication or legacy write invalidates that proof.",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:48.838Z"
+        },
+        {
+          "id": 1,
+          "text": "Current readers accept byte-compatible V1 and V2 index layouts and publish a legacy-readable layout without trusting cached offsets as proof of message integrity.",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:48.972Z"
+        },
+        {
+          "id": 2,
+          "text": "Missing originals, identity conflicts, malformed records, cleanup safety and durable publication remain protected after optimization.",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.094Z"
+        },
+        {
+          "id": 3,
+          "text": "Blocking SessionSearch storage and serialization execute outside Tokio async workers, preserving per-session handlers and hook denials.",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.222Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given two current stores sharing verified history When they alternate fresh appends Then each append publishes its index only once",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.350Z"
+        },
+        {
+          "id": 1,
+          "text": "Given compatible legacy and current readers When they repeatedly reopen unchanged history Then neither reader repeatedly rebuilds the index",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.476Z"
+        },
+        {
+          "id": 2,
+          "text": "Given a current index with a verified generation When an original is omitted from that index Then lookup recovers the intact original and conflicting append is rejected",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.601Z"
+        },
+        {
+          "id": 3,
+          "text": "Given an index published by a legacy writer When a cached record contains an invalid content hash Then the current reader refuses the corrupt message",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.733Z"
+        },
+        {
+          "id": 4,
+          "text": "Given a SessionSearch handler waiting for storage When the tool runs on a single async worker Then unrelated async work continues and the search result is preserved",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:49.860Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use a derived completion certificate bound to exact data and index file generations. Only strict full scan can establish completeness; append and cleanup may carry it forward under the existing sidecar lease. Missing/stale certificates fall back to existing recovery. V1 and V2 entry layouts are identical; read both, publish V1 while retaining strict JSONL/hash validation. No live migration or daemon restart.",
+          "deleted": false,
+          "createdAt": "2026-10-27T03:59:50.006Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/BUG-273/bug273-validation.md",
+        "spec/attachments/BUG-273/bug273-cargo-clean.json",
+        "spec/attachments/BUG-273/bug273-final-validation.md",
+        "spec/attachments/BUG-273/bug273-final-results.json",
+        "spec/attachments/BUG-273/bug273-closure.json"
+      ]
+    },
+    "BUG-274": {
+      "id": "BUG-274",
+      "title": "Restore manifest diagnostics required by default RPC and Fspec builds",
+      "type": "bug",
+      "status": "validating",
+      "createdAt": "2026-10-27T07:23:43.907Z",
+      "updatedAt": "2026-10-27T07:44:59.191Z",
+      "description": "The staged RPC/UI diagnostics call a missing core session_manifest_issues API. Add real non-draining per-manifest diagnostics and isolate unreadable historical entries without weakening targeted reads or cleanup; validate actual default RPC/CLI/Fspec binary and supported fixture features. Correct BUG-273 validation scope documentation.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T07:24:36.102Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T07:26:59.056Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T07:31:31.732Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T07:44:59.191Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer building the default Fspec binary",
+        "action": "compile and retrieve complete manifest diagnostics",
+        "benefit": "unreadable history is visible without breaking healthy sessions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Export a real non-draining diagnostic snapshot from core that is available to default RPC and Fspec builds; never mask the missing API with an empty stub or feature-only declaration.",
+          "deleted": false,
+          "createdAt": "2026-10-27T07:26:24.868Z"
+        },
+        {
+          "id": 1,
+          "text": "Diagnose individual unreadable manifests without changing bytes or hiding store-wide failures; keep healthy sessions available and damaged target loads and cleanup strict.",
+          "deleted": false,
+          "createdAt": "2026-10-27T07:26:25.005Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given broken and healthy manifest fixtures When the exported diagnostic API is called twice Then stable issues include paths identities categories recovery guidance and files stay unchanged",
+          "deleted": false,
+          "createdAt": "2026-10-27T07:26:25.134Z"
+        },
+        {
+          "id": 1,
+          "text": "Given an invalid sessions root When the exported diagnostic API is called Then a store-wide error is returned instead of an empty success",
+          "deleted": false,
+          "createdAt": "2026-10-27T07:26:25.259Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Existing staged BUG-271 RPC/UI calls predate BUG-273 and reference an absent core API. Prior six-library check/Clippy omitted RPC and the final binary. Supply one shared read-only manifest discovery path for session loading and diagnostics; keep target errors and unknown-reference cleanup strict. Preserve user staging and existing UI/RPC edits. Validate default binary, RPC test-fixture and Fspec test-stub-provider features.",
+          "deleted": false,
+          "createdAt": "2026-10-27T07:26:25.386Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 3
     }
   }
 }

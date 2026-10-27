@@ -80,6 +80,7 @@ impl App {
             if let Ok(sessions) = backend.list_sessions(project_path).await {
                 let _ = sender.send(Action::SessionListLoaded(sessions));
             }
+            super::session_storage::publish_manifest_issues(backend.as_ref(), &sender, false).await;
         }));
     }
 }

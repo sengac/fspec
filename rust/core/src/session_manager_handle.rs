@@ -79,6 +79,10 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// freshly-minted [`SessionId`].
     fn create_session(&self, role: Option<String>) -> SessionId;
 
+    fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {
+        Ok(self.create_session(role))
+    }
+
     /// Send user input to a session. Returns immediately — the actual
     /// streaming response arrives on the chunks broadcast subscribed
     /// via [`SessionManagerHandle::chunks_rx`].

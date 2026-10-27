@@ -47,6 +47,7 @@ pub struct App {
     /// (e.g. lazy `create_session` on first `EnterWorkUnit`); tests use
     /// [`App::next_pending_task`] to await deterministically.
     pub(crate) pending_tasks: Vec<JoinHandle<()>>,
+    pub(crate) session_storage: crate::app::session_storage::SessionStorageState,
     pub(crate) model_sync:
         std::collections::HashMap<SessionId, crate::app::dispatch_model_sync::ModelSync>,
     pub(crate) continue_sync:
@@ -126,6 +127,7 @@ impl App {
             should_render: true,
             subscriber_tasks: Vec::new(),
             pending_tasks: Vec::new(),
+            session_storage: Default::default(),
             model_sync: std::collections::HashMap::new(),
             continue_sync: std::collections::HashMap::new(),
             transcript_sync: std::collections::HashMap::new(),

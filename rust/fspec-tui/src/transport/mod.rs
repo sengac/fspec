@@ -117,6 +117,12 @@ pub trait FspecBackend: Send + Sync {
     /// Create a new session with an optional role overlay.
     async fn create_session(&self, role: Option<String>) -> Result<SessionId>;
 
+    async fn session_manifest_issues(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::SessionManifestIssue>> {
+        Ok(Vec::new())
+    }
+
     /// Append user input to the session with the given id.
     async fn send_input(&self, id: SessionId, text: String) -> Result<()>;
 

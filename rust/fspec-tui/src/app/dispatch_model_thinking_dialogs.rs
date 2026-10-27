@@ -97,21 +97,21 @@ impl App {
         let handle = tokio::spawn(async move {
             if let Err(e) = backend.set_default_model(model_string.clone()).await {
                 tracing::error!(target: "model_select", error = %e, "[MODEL-SELECT] set_default_model FAILED");
+                let _ = action_tx.send(Action::SessionOperationFailed(format!(
+                    "Model selection failed: {e}"
+                )));
                 return;
             }
             tracing::info!(target: "model_select", model = %model_string, "[MODEL-SELECT] set_default_model OK");
-            // MODEL-006: the default was meant to UNBLOCK session creation;
-            // retry it now that the default is committed and route the result.
-            match backend.create_session(None).await {
-                Ok(session) => crate::app::session_creation::route_bootstrap_create_session(
-                    session,
-                    &active_session_tx,
-                    &action_tx,
-                ),
-                Err(e) => {
-                    tracing::error!(target: "model_select", error = %e, "[MODEL-SELECT] retried create_session FAILED")
-                }
-            }
+            super::session_creation_tasks::run_session_creation(
+                backend,
+                false,
+                None,
+                Some(active_session_tx),
+                None,
+                action_tx,
+            )
+            .await;
         });
         self.pending_tasks.push(handle);
     }

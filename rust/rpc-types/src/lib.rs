@@ -42,6 +42,8 @@ mod request_context;
 pub use request_context::{ContextProvenance, RequestContextSnapshot};
 mod work_unit_focus;
 pub use work_unit_focus::WorkUnitFocus;
+mod session_manifest_issue;
+pub use session_manifest_issue::SessionManifestIssue;
 
 /// Work unit information shared across all transports and the NAPI surface.
 ///

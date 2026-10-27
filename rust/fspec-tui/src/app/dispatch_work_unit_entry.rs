@@ -45,18 +45,14 @@ impl App {
             let backend = self.backend.clone();
             let action_tx = self.action_tx.clone();
             let work_unit_id = id.clone();
-            let handle = tokio::spawn(async move {
-                if let Ok(session) = backend.create_session(None).await {
-                    // PROV-101 FIX 1: empty id == decline; surface it
-                    // explicitly, never seed an empty active session.
-                    let _ = action_tx.send(
-                        crate::app::session_creation::post_create_session_with_work_unit(
-                            session,
-                            Some(work_unit_id),
-                        ),
-                    );
-                }
-            });
+            let handle = tokio::spawn(super::session_creation_tasks::run_session_creation(
+                backend,
+                false,
+                Some(work_unit_id),
+                None,
+                None,
+                action_tx,
+            ));
             self.pending_tasks.push(handle);
         }
     }

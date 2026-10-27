@@ -2,13 +2,9 @@
 //!
 //! Feature: spec/features/session-creation-decline-surfaced.feature
 //!
-//! `SessionManagerHandle::create_session` returns an empty [`SessionId`] when no
-//! default model is set (a decline — see PROV-101 rule [0]). Changing the
-//! handle / RPC wire return type to a typed `Result` has an unacceptable blast
-//! radius (dozens of call sites across rpc-server, rpc-embedded, fspec,
-//! fspec-tui and napi tests, plus the `FspecBackend` trait and three transport
-//! impls, with no git safety net). Per the authorized fallback, the TUI callers
-//! detect the empty id and surface it explicitly.
+//! Checked creation returns an empty [`SessionId`] only when no default model
+//! is set. Genuine creation failures travel through the backend error channel
+//! and the global session diagnostics dialog, independently of this decline.
 //!
 //! [`post_create_session_action`] is the single, pure mapping every spawned
 //! create-session task funnels its result through: a real id becomes

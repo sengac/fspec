@@ -17,6 +17,9 @@ impl MessageStore {
             state.index = entries;
             state.generation = Some(StoreGeneration::read(self)?);
             state.fully_scanned = true;
+            if let Some(generation) = &state.generation {
+                super::verified::publish(self, generation);
+            }
         }
         Ok(self.get_locked(id))
     }

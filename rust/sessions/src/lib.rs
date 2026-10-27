@@ -32,6 +32,7 @@ pub mod default_thinking_level_persistence;
 pub mod exec_stdin_mapping;
 mod focus_reconciliation;
 pub mod footer_poller;
+mod handle_creation;
 pub mod handle_impl;
 pub mod hitl_mapping;
 mod inherited_profile_sections;

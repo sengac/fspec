@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "A later prompt preserves completed work after a provider rejection",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "10-47",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cold resume preserves completed work after overload",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "49-71",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "A rejected continuation preserves every completed batch outcome",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "73-95",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "A rejected first request preserves the user message",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "97-128",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "An unresolved committed call still fails replay safely",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "130-175",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/cli/tests/bug272_terminal_error_history.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 162
+  }
+}

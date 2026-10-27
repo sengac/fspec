@@ -122,4 +122,6 @@ Method { name: "get_transcript_page", schema: group_39::get_transcript_page::sch
 Method { name: "read_work_units_bounded", schema: group_39::read_work_units_bounded::schema(), read_only: true, destructive: false, request_bound: false },
 Method { name: "get_interaction_snapshot", schema: group_39::get_interaction_snapshot::schema(), read_only: true, destructive: false, request_bound: false },
 Method { name: "reply_interaction_checked", schema: group_40::reply_interaction_checked::schema(), read_only: false, destructive: true, request_bound: false },
+Method { name: "create_session_checked", schema: group_40::create_session_checked::schema(), read_only: false, destructive: true, request_bound: false },
+Method { name: "session_manifest_issues", schema: group_40::session_manifest_issues::schema(), read_only: true, destructive: false, request_bound: false },
 ] }

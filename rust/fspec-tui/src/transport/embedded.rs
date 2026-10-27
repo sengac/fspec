@@ -110,7 +110,19 @@ impl FspecBackend for EmbeddedFspecBackend {
     }
 
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
-        Ok(self.client.create_session(context::current(), role).await?)
+        self.client
+            .create_session_checked(context::current(), role)
+            .await?
+            .map_err(anyhow::Error::msg)
+    }
+
+    async fn session_manifest_issues(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::SessionManifestIssue>> {
+        self.client
+            .session_manifest_issues(context::current())
+            .await?
+            .map_err(anyhow::Error::msg)
     }
 
     async fn send_input(&self, id: SessionId, text: String) -> Result<()> {

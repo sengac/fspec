@@ -73,7 +73,14 @@ fn scenario_concurrent_session_stores_rebuild_a_shared_message_index(
             assert!(reopened.get(*message_id).is_some());
         }
         assert_eq!(std::fs::metadata(&index_path)?.modified()?, modified);
-        assert_eq!(std::fs::read_dir(&messages_dir)?.count(), 2);
+        let mut files = std::fs::read_dir(&messages_dir)?
+            .map(|entry| entry.map(|entry| entry.file_name()))
+            .collect::<Result<Vec<_>, _>>()?;
+        files.sort();
+        assert_eq!(
+            files,
+            ["messages.idx", "messages.jsonl", "messages.verified"].map(std::ffi::OsString::from)
+        );
     }
     Ok(())
 }

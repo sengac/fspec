@@ -122,6 +122,8 @@ pub fn validate(name: &str, args: Value) -> Result<(), InvokeError> {
         "read_work_units_bounded" => group_39::read_work_units_bounded::validate(args),
         "get_interaction_snapshot" => group_39::get_interaction_snapshot::validate(args),
         "reply_interaction_checked" => group_40::reply_interaction_checked::validate(args),
+        "create_session_checked" => group_40::create_session_checked::validate(args),
+        "session_manifest_issues" => group_40::session_manifest_issues::validate(args),
         _ => Err(InvokeError::Unknown),
     }
 }

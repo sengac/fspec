@@ -142,6 +142,8 @@ pub async fn invoke(
         "reply_interaction_checked" => {
             group_40::reply_interaction_checked::call(client, args).await
         }
+        "create_session_checked" => group_40::create_session_checked::call(client, args).await,
+        "session_manifest_issues" => group_40::session_manifest_issues::call(client, args).await,
         _ => Err(InvokeError::Unknown),
     }
 }

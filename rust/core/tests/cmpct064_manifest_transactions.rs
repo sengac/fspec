@@ -258,11 +258,14 @@ fn unreadable_committed_manifests_are_not_absent_sessions() -> TestResult {
         "{broken",
     )?;
     // @step When a fresh store opens the sessions directory
-    let result = SessionStore::new();
-    // @step Then opening fails explicitly instead of silently omitting the session
+    let store = SessionStore::new()?;
+    // @step Then the unreadable session is reported explicitly and targeted loading fails without blocking healthy sessions
     assert!(
-        result.is_err(),
+        store.load(session.id).is_err(),
         "corruption must not become an absent session"
     );
+    assert!(session_manifest_issues()?
+        .iter()
+        .any(|issue| { issue.session_id.as_deref() == Some(session.id.to_string().as_str()) }));
     Ok(())
 }

@@ -40,6 +40,8 @@ pub mod history;
 pub mod manifest;
 pub mod manifest_commit;
 mod manifest_delete;
+mod manifest_discovery;
+pub use manifest_discovery::session_manifest_issues;
 mod manifest_updates;
 pub mod request_settlement;
 pub mod session_lifecycle;

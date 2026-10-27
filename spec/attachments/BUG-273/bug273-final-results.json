@@ -1,0 +1,269 @@
+{
+  "card": "BUG-273",
+  "timestamp_utc": "2026-10-27T04:51:23Z",
+  "tests_by_target": {
+    "bug247_message_durability": 5,
+    "bug247_stable_message_identity": 4,
+    "bug248_reference_evidence": 2,
+    "bug248_tail_recovery": 7,
+    "bug273_shared_index": 9,
+    "concurrent_message_index_persistence": 1,
+    "indexing_diagnostics": 14,
+    "message_index_recovery": 4,
+    "message_store_lifted_test": 4,
+    "shared_message_store_cleanup_safety": 3,
+    "shared_message_store_index_coherence": 5,
+    "shared_message_store_live_reads": 3,
+    "bug273_search_responsiveness": 2,
+    "pre_tool_hook_native_test": 14,
+    "prov149_codex_history": 2,
+    "prov149_codex_reload": 3
+  },
+  "distinct_tests": 82,
+  "test_targets": 16,
+  "required_receipts": {
+    "core-remaining": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "-p",
+        "codelet-core",
+        "--test",
+        "indexing_diagnostics",
+        "--test",
+        "concurrent_message_index_persistence",
+        "--test",
+        "message_store_lifted_test",
+        "--test",
+        "message_index_recovery",
+        "--test",
+        "shared_message_store_cleanup_safety",
+        "--test",
+        "shared_message_store_live_reads",
+        "--test",
+        "shared_message_store_index_coherence",
+        "-j",
+        "1",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 7469473792,
+      "pid": 21381,
+      "exit_code": 0,
+      "free_after": 7463964672
+    },
+    "search-final": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "-p",
+        "codelet-tools",
+        "--test",
+        "bug273_search_responsiveness",
+        "--test",
+        "pre_tool_hook_native_test",
+        "-j",
+        "1",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 7457161216,
+      "pid": 21587,
+      "exit_code": 0,
+      "free_after": 7378202624
+    },
+    "configured-history": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "-p",
+        "codelet-providers",
+        "--test",
+        "prov149_codex_history",
+        "-j",
+        "1",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 7370969088,
+      "pid": 21738,
+      "exit_code": 0,
+      "free_after": 7041130496
+    },
+    "configured-reload-retry": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "-p",
+        "codelet-agent-loop",
+        "--test",
+        "prov149_codex_reload",
+        "-j",
+        "1",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 14926893056,
+      "pid": 26708,
+      "exit_code": 0,
+      "free_after": 11426250752
+    },
+    "legacy-final": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "-p",
+        "codelet-core",
+        "--test",
+        "bug273_shared_index",
+        "-j",
+        "1",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 11430494208,
+      "pid": 34629,
+      "exit_code": 0,
+      "free_after": 10808389632
+    },
+    "check-final": {
+      "command": [
+        "cargo",
+        "check",
+        "--offline",
+        "-p",
+        "codelet-core",
+        "-p",
+        "codelet-tools",
+        "-p",
+        "codelet-providers",
+        "-p",
+        "codelet-cli",
+        "-p",
+        "codelet-sessions",
+        "-p",
+        "codelet-agent-loop",
+        "--lib",
+        "-j",
+        "1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 10807738368,
+      "pid": 35210,
+      "exit_code": 0,
+      "free_after": 9635479552
+    },
+    "clippy-final": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "-p",
+        "codelet-core",
+        "-p",
+        "codelet-tools",
+        "-p",
+        "codelet-providers",
+        "-p",
+        "codelet-cli",
+        "-p",
+        "codelet-sessions",
+        "-p",
+        "codelet-agent-loop",
+        "--lib",
+        "--no-deps",
+        "-j",
+        "1"
+      ],
+      "reserve_bytes": 6442450944,
+      "fixture_root": "/Users/rquast/Documents/Codex/2026-10-23/task-3/validation/indexing-diagnostic-runtime",
+      "free_before": 9631789056,
+      "pid": 36671,
+      "exit_code": 0,
+      "free_after": 8885198848
+    }
+  },
+  "source_review": {
+    "rust/core/src/persistence/messages.rs": {
+      "sha256": "f20689021678c7a2bf1e313266aabd75fa62b104be8804fbd4bb9f948cdcfa13",
+      "lines": 188
+    },
+    "rust/core/src/persistence/messages/index.rs": {
+      "sha256": "552e04e246d6f4033340135811c776fd931787f1639e91f348692537915bc7cc",
+      "lines": 232
+    },
+    "rust/core/src/persistence/messages/maintenance.rs": {
+      "sha256": "5ccbce0c815e56525064d4b9d1d666737c2688211e2642441b95b34d6a31082d",
+      "lines": 193
+    },
+    "rust/core/src/persistence/messages/recovery.rs": {
+      "sha256": "b2b5c87912ea952d4922b3f5a0f3323d5ca7bcef51b2eac309c533079886dbd6",
+      "lines": 26
+    },
+    "rust/core/src/persistence/messages/state.rs": {
+      "sha256": "ab2c78ecc6809b67379077e9c9e16d609ec0df7fda920373b7b9f23a54a7190e",
+      "lines": 97
+    },
+    "rust/core/src/persistence/messages/write.rs": {
+      "sha256": "2c92a0e5184b02e348a7d80cd6ae6d490971bbc3d8be0f1e30fd04f8e99ebc9e",
+      "lines": 164
+    },
+    "rust/core/src/persistence/messages/verified.rs": {
+      "sha256": "a2cab50dbb71d81f6a73f9e208dec72898088c75bcaec63086d64dbb4de936f5",
+      "lines": 58
+    },
+    "rust/tools/src/session_search/mod.rs": {
+      "sha256": "890ed2e4a70ce545e10446d41434ffcf428c442295a22405e4249f702bf19d75",
+      "lines": 205
+    },
+    "legacy_production_sha256": "0b436b7937311fad752acba90e486bc2ee0dac4934f4185e305ca91ed2a47089"
+  },
+  "preserved_baseline_files": 47,
+  "expected_cli_board_change": [
+    "spec/work-units.json"
+  ],
+  "cleanup": {
+    "command": [
+      "cargo",
+      "clean"
+    ],
+    "cwd": "/Users/rquast/projects/fspec/rust",
+    "target": "/Users/rquast/projects/fspec/rust/target",
+    "exit_code": 0,
+    "cargo_output": "Removed 12375 files, 8.1GiB total",
+    "free_before_bytes": 6407753728,
+    "free_after_bytes": 14969659392,
+    "measured_free_increase_bytes": 8561905664,
+    "open_target_files": false,
+    "initial_attempt_denied_before_execution": true,
+    "one_retry_after_new_current_rule_evidence": "succeeded"
+  },
+  "limits": [
+    "Scoped tests and library quality checks; no full-workspace suite or live-store benchmark",
+    "Existing synchronous core APIs and whole-index rewrite remain; native SessionSearch is offloaded",
+    "Mutation correctness tested among current cooperating writers; unchanged legacy writers cannot gain lease discipline from a new reader",
+    "No Windows execution; existing Windows durability work remains separate",
+    "Repository-wide tag debt remains outside this card; all three scoped feature/tag checks pass"
+  ]
+}

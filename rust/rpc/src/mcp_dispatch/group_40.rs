@@ -1,4 +1,63 @@
 use super::*;
+pub(super) mod create_session_checked {
+    use super::*;
+
+    #[derive(serde::Deserialize, schemars::JsonSchema)]
+    #[serde(deny_unknown_fields)]
+    pub struct Args {
+        role: Option<String>,
+    }
+
+    pub fn schema() -> Value {
+        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    }
+
+    pub fn validate(value: Value) -> Result<(), InvokeError> {
+        let _: Args = serde_json::from_value(value)
+            .map_err(|error| InvokeError::Arguments(error.to_string()))?;
+        Ok(())
+    }
+
+    pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
+        let args: Args = serde_json::from_value(value)
+            .map_err(|error| InvokeError::Arguments(error.to_string()))?;
+        let result = client
+            .create_session_checked(tarpc::context::current(), args.role)
+            .await
+            .map_err(|error| InvokeError::Transport(error.to_string()))?
+            .map_err(InvokeError::Daemon)?;
+        serde_json::to_value(result).map_err(|error| InvokeError::Serialization(error.to_string()))
+    }
+}
+
+pub(super) mod session_manifest_issues {
+    use super::*;
+
+    #[derive(serde::Deserialize, schemars::JsonSchema)]
+    #[serde(deny_unknown_fields)]
+    pub struct Args {}
+
+    pub fn schema() -> Value {
+        serde_json::to_value(schemars::schema_for!(Args)).unwrap_or_default()
+    }
+
+    pub fn validate(value: Value) -> Result<(), InvokeError> {
+        let _: Args = serde_json::from_value(value)
+            .map_err(|error| InvokeError::Arguments(error.to_string()))?;
+        Ok(())
+    }
+
+    pub async fn call(client: &FspecServiceClient, value: Value) -> Result<Value, InvokeError> {
+        validate(value)?;
+        let issues = client
+            .session_manifest_issues(tarpc::context::current())
+            .await
+            .map_err(|error| InvokeError::Transport(error.to_string()))?
+            .map_err(InvokeError::Daemon)?;
+        serde_json::to_value(issues).map_err(|error| InvokeError::Serialization(error.to_string()))
+    }
+}
+
 pub(super) mod reply_interaction_checked {
     use super::*;
     #[derive(serde::Deserialize, schemars::JsonSchema)]

@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "Search does not block async workers",
+      "testMappings": [
+        {
+          "file": "rust/tools/tests/bug273_search_responsiveness.rs",
+          "lines": "12-65",
+          "implMappings": [
+            {
+              "file": "rust/tools/src/session_search/mod.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/tools/tests/bug273_search_responsiveness.rs"
+    ],
+    "implFiles": [
+      "rust/tools/src/session_search/mod.rs"
+    ],
+    "totalLinesCovered": 78
+  }
+}

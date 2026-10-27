@@ -29,6 +29,7 @@ mod index;
 mod maintenance;
 mod recovery;
 mod state;
+mod verified;
 mod write;
 
 use chrono::{DateTime, Utc};

@@ -1,0 +1,109 @@
+{
+  "scenarios": [
+    {
+      "name": "Empty historical manifests do not prevent new sessions",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "20-38",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unreadable sessions do not block another project",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "40-61",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Damaged target sessions fail explicitly",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "63-85",
+          "implMappings": []
+        },
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "63-89",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Supported legacy manifests remain readable without rewriting",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "87-111",
+          "implMappings": []
+        },
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "91-121",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unknown references prevent destructive cleanup",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "113-131",
+          "implMappings": []
+        },
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "123-141",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Store wide failures remain errors",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "133-145",
+          "implMappings": []
+        },
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "143-155",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Repair is discovered on the next cold load",
+      "testMappings": [
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "147-173",
+          "implMappings": []
+        },
+        {
+          "file": "rust/core/tests/bug271_manifest_isolation.rs",
+          "lines": "157-183",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/core/tests/bug271_manifest_isolation.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 265
+  }
+}

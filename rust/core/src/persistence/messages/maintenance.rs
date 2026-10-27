@@ -69,6 +69,7 @@ impl MessageStore {
         if let Some((entries, recorded_size)) = index::load_index(&self.index_file) {
             if recorded_size == actual_size && index_is_newer {
                 state.index = entries;
+                state.fully_scanned = super::verified::matches(self, &generation);
                 state.generation = Some(generation);
                 return Ok(());
             }
@@ -80,6 +81,9 @@ impl MessageStore {
         state.index = entries;
         state.generation = Some(StoreGeneration::read(self)?);
         state.fully_scanned = true;
+        if let Some(generation) = &state.generation {
+            super::verified::publish(self, generation);
+        }
         Ok(())
     }
 
@@ -181,6 +185,9 @@ impl MessageStore {
             Some(StoreGeneration::read(self).map_err(|error| {
                 format!("Cleanup promoted; generation refresh failed: {error}")
             })?);
+        if let Some(generation) = &state.generation {
+            super::verified::publish(self, generation);
+        }
         Ok(count)
     }
 }

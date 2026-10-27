@@ -81,49 +81,15 @@ impl App {
             .map(str::to_owned);
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
-        let handle: JoinHandle<()> = tokio::spawn(async move {
-            if isolated {
-                match backend.create_isolated_session(None).await {
-                    Ok(info) => {
-                        let _ = action_tx.send(
-                            crate::app::session_creation::post_create_session_with_work_unit(
-                                info.session_id,
-                                card,
-                            ),
-                        );
-                    }
-                    Err(e) => {
-                        if let Some(sid) = originating_session {
-                            let _ = action_tx.send(Action::EmitSessionNotice(
-                                sid,
-                                format!("[error] create isolated session: {e}"),
-                            ));
-                        }
-                    }
-                }
-            } else {
-                match backend.create_session(None).await {
-                    Ok(session_id) => {
-                        // PROV-101 FIX 1: an empty id is a decline (no default
-                        // model). Map it to the explicit decline action — never
-                        // append an empty-id session.
-                        let _ = action_tx.send(
-                            crate::app::session_creation::post_create_session_with_work_unit(
-                                session_id, card,
-                            ),
-                        );
-                    }
-                    Err(e) => {
-                        if let Some(sid) = originating_session {
-                            let _ = action_tx.send(Action::EmitSessionNotice(
-                                sid,
-                                format!("[error] create session: {e}"),
-                            ));
-                        }
-                    }
-                }
-            }
-        });
+        let handle: JoinHandle<()> =
+            tokio::spawn(super::session_creation_tasks::run_session_creation(
+                backend,
+                isolated,
+                card,
+                None,
+                originating_session,
+                action_tx,
+            ));
         self.pending_tasks.push(handle);
     }
 

@@ -178,19 +178,28 @@ impl Tool for SessionSearchTool {
             });
         }
 
-        let result = execute_session_search(self.session_id, args.action);
-
-        let serialized = if matches!(
-            result,
-            SearchResult::Originals { .. } | SearchResult::OriginalsError { .. }
-        ) {
-            serde_json::to_string(&result)
-        } else {
-            serde_json::to_string_pretty(&result)
-        };
-        serialized.map_err(|e| ToolError::Execution {
-            tool: "session_search",
-            message: format!("Failed to serialize result: {e}"),
+        let session_id = self.session_id;
+        // Handlers take synchronous storage/file leases. Keep both I/O and
+        // potentially large result serialization off the async worker pool.
+        tokio::task::spawn_blocking(move || {
+            let result = execute_session_search(session_id, args.action);
+            let serialized = if matches!(
+                result,
+                SearchResult::Originals { .. } | SearchResult::OriginalsError { .. }
+            ) {
+                serde_json::to_string(&result)
+            } else {
+                serde_json::to_string_pretty(&result)
+            };
+            serialized.map_err(|error| ToolError::Execution {
+                tool: "session_search",
+                message: format!("Failed to serialize result: {error}"),
+            })
         })
+        .await
+        .map_err(|error| ToolError::Execution {
+            tool: "session_search",
+            message: format!("Session search worker failed: {error}"),
+        })?
     }
 }

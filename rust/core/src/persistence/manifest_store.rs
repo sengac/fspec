@@ -39,19 +39,15 @@ impl SessionStore {
             debug!(sessions_dir = %self.sessions_dir.display(), "SessionStore::load_all: sessions directory does not exist, nothing to load");
             return Ok(());
         }
-        for entry in fs::read_dir(&self.sessions_dir)
-            .map_err(|e| format!("Failed to read sessions dir: {e}"))?
-        {
-            let entry = entry.map_err(|e| format!("Failed to read entry: {e}"))?;
-            let path = entry.path();
-            if path.extension().is_some_and(|e| e == "json") {
-                let session = super::manifest_commit::read_manifest(&path).map_err(|error| {
-                    format!("Failed to open committed manifest {path:?}: {error}")
-                })?;
-                self.last_session
-                    .insert(session.project.clone(), session.id);
-                self.cache.insert(session.id, session);
-            }
+        let (sessions, issues) = super::manifest_discovery::discover(&self.sessions_dir)?;
+        for issue in issues {
+            tracing::warn!(path = %issue.path.display(), category = %issue.category,
+                reason = %issue.reason, "Unreadable historical manifest preserved; diagnostics available");
+        }
+        for session in sessions {
+            self.last_session
+                .insert(session.project.clone(), session.id);
+            self.cache.insert(session.id, session);
         }
         info!(sessions_dir = %self.sessions_dir.display(), loaded_count = self.cache.len(), "SessionStore::load_all: finished loading sessions from disk");
         Ok(())
@@ -100,8 +96,9 @@ impl SessionStore {
 
     /// Load a session by ID (returns owned value).
     pub fn load(&self, id: Uuid) -> Result<SessionManifest, String> {
-        super::manifest_commit::read_manifest(&self.sessions_dir.join(format!("{id}.json")))
-            .map_err(|error| format!("Failed to load session {id}: {error}"))
+        let path = self.sessions_dir.join(format!("{id}.json"));
+        super::manifest_commit::read_manifest(&path)
+            .map_err(|error| format!("Failed to load session manifest {path:?}: {error}"))
     }
 
     /// Get the last active session for a project.
@@ -143,7 +140,12 @@ impl SessionStore {
             Ok(())
         })
         .map(|_| ())
-        .map_err(|error| error.to_string())
+        .map_err(|error| {
+            format!(
+                "Failed to update session manifest {:?}: {error}",
+                self.sessions_dir.join(format!("{id}.json"))
+            )
+        })
     }
 
     /// Fork a session at a specific message index.

@@ -147,6 +147,11 @@ impl MessageStore {
             byte_offset + byte_length as u64,
         )?;
         state.generation = Some(StoreGeneration::read(self)?);
+        if state.fully_scanned {
+            if let Some(generation) = &state.generation {
+                super::verified::publish(self, generation);
+            }
+        }
         Ok(())
     }
 

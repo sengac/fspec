@@ -115,58 +115,14 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     /// `block_on` is only legal because `block_in_place` first detaches
     /// the worker from the scheduler.
     fn create_session(&self, role: Option<String>) -> SessionId {
-        let project = std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_default();
-        // PROV-101: NO silent selection fallback. When no default model has
-        // been explicitly set, decline creation (empty SessionId) instead of
-        // substituting "anthropic/claude-opus-4-5".
-        let Some(model) = self.get_default_model() else {
-            tracing::error!(
-                "create_session declined: no default model set (PROV-101: no anthropic fallback)"
-            );
-            return SessionId::new(String::new());
-        };
-
-        tracing::info!(
-            model = %model,
-            project = %project,
-            role = ?role,
-            "create_session: starting session creation via handle"
-        );
-
-        let id_string = tokio::task::block_in_place(|| {
-            tokio::runtime::Handle::current()
-                .block_on(async { SessionManager::create_session(self, &model, &project).await })
+        crate::handle_creation::create_session_checked(self, role).unwrap_or_else(|error| {
+            tracing::error!(%error, "legacy create_session failed; use create_session_checked for the cause");
+            SessionId::new(String::new())
         })
-        .unwrap_or_else(|e| {
-            tracing::error!(
-                model = %model,
-                project = %project,
-                error = %e,
-                "create_session: SessionManager::create_session failed; returning empty SessionId (PROV-101 decline path)"
-            );
-            String::new()
-        });
+    }
 
-        tracing::info!(
-            session_id = %id_string,
-            "create_session: session creation returned from SessionManager"
-        );
-
-        if let Some(role_str) = role {
-            if !role_str.is_empty() {
-                if let Ok(session) = self.get_session(&id_string) {
-                    session.set_role(role_str.clone());
-                    tracing::info!(
-                        session_id = %id_string,
-                        role = %role_str,
-                        "create_session: role set on session"
-                    );
-                }
-            }
-        }
-        SessionId::new(id_string)
+    fn create_session_checked(&self, role: Option<String>) -> Result<SessionId, String> {
+        crate::handle_creation::create_session_checked(self, role)
     }
 
     /// RPC-422: Resume a persisted session by first creating it in memory,

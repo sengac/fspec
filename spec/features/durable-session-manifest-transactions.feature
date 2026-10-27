@@ -51,7 +51,7 @@ Feature: Durable session manifest transactions
   Scenario: Unreadable committed manifests are not absent sessions
     Given an incompatible committed manifest on disk
     When a fresh store opens the sessions directory
-    Then opening fails explicitly instead of silently omitting the session
+    Then the unreadable session is reported explicitly and targeted loading fails without blocking healthy sessions
 
   Scenario: Missing committed message references block replay
     Given a committed session referencing an unavailable original message

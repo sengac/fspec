@@ -6,6 +6,10 @@
 @BUG-170
 Feature: Unrecoverable API error leaves failed tool call in context — replays same error on next message and skips cache-token invalidation
   """
+  BUG-272 scope correction: terminal tail deletion is a legacy non-Codex policy.
+  Codex preserves checkpoint ancestry and genuine outcomes even when terminal
+  recovery is exhausted; see codex-terminal-error-history-preservation.feature.
+
   Token invalidation at the call site in stream_loop.rs after a successful strip: zero session.token_tracker cache_read_input_tokens/cache_creation_input_tokens and call recalculate_token_tracker(session) (interactive_helpers.rs:205) so input_tokens reflects the trimmed list and output_tokens resets for the new turn.
   New file rust/cli/src/interactive/recovery_unrecoverable.rs (sibling of recovery_image.rs) with pub fn strip_failed_tool_call_tail(messages: &mut Vec<Message>) -> StrippedTail. StrippedTail enum: {ToolPair, ToolCallOnly, TrailingUser, None}. Uses tool_call_correlation_key semantics from interactive_helpers (call_id.unwrap_or(id)) to match the ToolResult to its ToolCall item. Postcondition: validate_no_orphan_tool_calls passes. Wired into stream_loop.rs terminal arm (before emit_error/return Err) when is_prompt_too_long_error(error_str) is true and the tail matches; on success → emit_error with annotation + break (session stays interactive), never return Err.
   """
@@ -32,7 +36,7 @@ Feature: Unrecoverable API error leaves failed tool call in context — replays 
   #
   # ========================================
   Background: User Story
-    As a CLI agent session
+    As a non-Codex CLI agent session
     I want to strip a failed tool-call pair from the context stack on a terminal API error
     So that the next user message does not replay the oversized tool call and the session stays usable
 

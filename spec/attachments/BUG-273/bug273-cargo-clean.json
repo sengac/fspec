@@ -1,0 +1,16 @@
+{
+  "command": [
+    "cargo",
+    "clean"
+  ],
+  "cwd": "/Users/rquast/projects/fspec/rust",
+  "target": "/Users/rquast/projects/fspec/rust/target",
+  "exit_code": 0,
+  "cargo_output": "Removed 12375 files, 8.1GiB total",
+  "free_before_bytes": 6407753728,
+  "free_after_bytes": 14969659392,
+  "measured_free_increase_bytes": 8561905664,
+  "open_target_files": false,
+  "initial_attempt_denied_before_execution": true,
+  "one_retry_after_new_current_rule_evidence": "succeeded"
+}

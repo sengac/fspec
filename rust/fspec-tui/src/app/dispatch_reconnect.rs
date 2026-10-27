@@ -141,6 +141,7 @@ impl App {
             task.abort();
         }
         self.spawn_subscriber_tasks();
+        self.spawn_session_manifest_issues(true);
         // RPC-011 rule [5] (kept by TUI-113 R5): re-fetch the work-unit
         // snapshot on the fresh client so the board re-seeds.
         let backend = self.backend.clone();

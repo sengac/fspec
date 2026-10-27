@@ -26,7 +26,7 @@ impl StoreState {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub(super) struct StoreGeneration {
     pub(super) messages: Option<FileStamp>,
     index: Option<FileStamp>,
@@ -41,7 +41,7 @@ impl StoreGeneration {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub(super) struct FileStamp {
     length: u64,
     modified: Option<SystemTime>,
