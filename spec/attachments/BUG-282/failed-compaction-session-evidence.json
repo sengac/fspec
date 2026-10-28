@@ -1,0 +1,315 @@
+{
+  "session_id": "7c55a508-ff74-4a68-895f-c01e9bdbb03c",
+  "host": "gx10-d917",
+  "daemon_pid": 366915,
+  "daemon_address": "ws://127.0.0.1:32893",
+  "workspace": "/home/rquast/projects/fspec",
+  "capture_kind": "bounded RPC metadata and transcript tail; not a filesystem session-log export",
+  "failure": {
+    "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+    "snapshot_end": 25285,
+    "fragment": {
+      "sequence": 25283,
+      "byte_offset": 0,
+      "total_bytes": 236,
+      "json_fragment": "{\"Error\":{\"error\":\"terminal compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\"}}",
+      "original": null
+    },
+    "next_cursor": {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "sequence": 25284,
+      "byte_offset": 0
+    },
+    "complete": false
+  },
+  "metadata": {
+    "fspec_rpc_get_session_status": "Idle",
+    "fspec_rpc_get_session_model": {
+      "provider_id": "codex",
+      "model_id": "gpt-6.1-sol",
+      "context_window": 1050000,
+      "max_output_tokens": 128000,
+      "compaction_threshold": 840000
+    },
+    "fspec_rpc_get_session_tokens": {
+      "input_tokens": 347259,
+      "output_tokens": 59492
+    },
+    "fspec_rpc_get_compaction_progress": null,
+    "fspec_rpc_get_interaction_snapshot": "{\"pause\":{\"request_id\":\"b5d738e0-c125-48f5-977c-92c4ec81691e\",\"state\":null},\"hitl\":{\"request_id\":\"2bdf968c-a054-4923-8508-ad4c506cb447\",\"state\":null}}"
+  },
+  "tail": [
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25269,
+        "byte_offset": 0,
+        "total_bytes": 265,
+        "json_fragment": "{\"ToolProgress\":{\"toolProgress\":{\"tool_call_id\":\"fc_08315b8ecf62358c016ae1b3f8a0c88191b6c3ec77fb36d73f\",\"tool_name\":\"bash\",\"output_chunk\":\"exit_code=0\\n\",\"is_stderr\":false},\"correlationId\":\"7c55a508-ff74-4a68-895f-c01e9bdbb03c-25269\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25270,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25270,
+        "byte_offset": 0,
+        "total_bytes": 337,
+        "json_fragment": "{\"ToolProgress\":{\"toolProgress\":{\"tool_call_id\":\"fc_08315b8ecf62358c016ae1b3f8a0c88191b6c3ec77fb36d73f\",\"tool_name\":\"bash\",\"output_chunk\":\"    Checking codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n\",\"is_stderr\":false},\"correlationId\":\"7c55a508-ff74-4a68-895f-c01e9bdbb03c-25270\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25271,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25271,
+        "byte_offset": 0,
+        "total_bytes": 317,
+        "json_fragment": "{\"ToolProgress\":{\"toolProgress\":{\"tool_call_id\":\"fc_08315b8ecf62358c016ae1b3f8a0c88191b6c3ec77fb36d73f\",\"tool_name\":\"bash\",\"output_chunk\":\"    Finished `ci-test` profile [unoptimized] target(s) in 0.80s\\n\",\"is_stderr\":false},\"correlationId\":\"7c55a508-ff74-4a68-895f-c01e9bdbb03c-25271\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25272,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25272,
+        "byte_offset": 0,
+        "total_bytes": 265,
+        "json_fragment": "{\"ToolProgress\":{\"toolProgress\":{\"tool_call_id\":\"fc_08315b8ecf62358c016ae1b3f8a0c88191b6c3ec77fb36d73f\",\"tool_name\":\"bash\",\"output_chunk\":\"exit_code=0\\n\",\"is_stderr\":false},\"correlationId\":\"7c55a508-ff74-4a68-895f-c01e9bdbb03c-25272\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25273,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25273,
+        "byte_offset": 0,
+        "total_bytes": 3132,
+        "json_fragment": "{\"ToolResult\":{\"toolResult\":{\"tool_call_id\":\"fc_08315b8ecf62358c016ae1b3f8a0c88191b6c3ec77fb36d73f\",\"content\":\"{\\\"success\\\":true,\\\"output\\\":\\\"5b95fa785ff2992b72d0c26695ae304d0f8e871b12e74aae4b314ea968e2b1e3  /tmp/fspec-bug280281-evidence/handoff-specifications.sha256\\n720c6378ba6debb4363c77f0b17f9f36eada287aa4155c243c66ac7c763ffdb0  /tmp/fspec-bug280281-evidence/handoff-tests-source.sha256\\n2d9deacc816e72930dc890c64b01301bc921ee1dac5bae92c76ea9ed5586b891  rust/fspec-tui/tests/board_agent_navigation_rpc012.rs\\nbc497e0d6d70c2ce68dd70c21b055c839b417c2b8b028d5137643bd616fe828f  rust/fspec-tui/tests/session_intent/fixture.rs\\nrust/fspec-tui/tests/bug280281_session_intent.rs:13:#[path = \\\"session_intent/fixture.rs\\\"]\\n   Compiling codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n    Finished `ci-test` profile [unoptimized] target(s) in 6.09s\\n     Running tests/board_agent_navigation_rpc012.rs (/tmp/fspec-bug280281-target/ci-test/deps/board_agent_navigation_rpc012-ec82ee7c9c91e7d1)\\n\\nrunning 9 tests\\ntest agent_view_store_is_empty_after_bootstrap_navigator ... ok\\ntest back_to_board_preserves_focus_and_selection ... ok\\ntest chunks_subscriber_filter_follows_current_session_via_watch_channel ... ok\\ntest creation::enter_on_an_unassociated_work_unit_offers_explicit_creation ... ok\\ntest creation::open_agent_view_with_none_mounts_create_session_dialog ... ok\\ntest creation::session_created_ignores_ambient_work_unit_selection ... ok\\ntest navigator_renders_agent_view_when_active_view_is_agent ... ok\\ntest navigator_renders_board_view_as_first_landing_view ... ok\\ntest open_agent_view_with_session_sets_navigation_target ... ok\\n\\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s\\n\\n     Running tests/bug280281_session_intent.rs (/tmp/fspec-bug280281-target/ci-test/deps/bug280281_session_intent-c5239cf62eb9eca3)\\n\\nrunning 10 tests\\ntest board::board_entry_navigates_to_the_earliest_associated_open_agent ... ok\\ntest board::board_entry_preserves_an_explicitly_resumed_agent ... ok\\ntest board::unassociated_board_entry_offers_story_specific_creation ... ok\\ntest creation::cancelling_story_creation_cannot_leak_intent ... ok\\ntest creation::declined_or_failed_story_creation_cannot_leak_intent ... ok\\ntest creation::duplicate_story_completion_cannot_overwrite_newer_authoritative_focus ... ok\\ntest creation::story_creation_retains_its_target_across_observation_and_focus_races ... ok\\ntest generic::generic_session_observation_and_completion_never_attach_ambient_selection ... ok\\ntest generic::new_agent_starts_unassigned_despite_stale_selection ... ok\\ntest generic::shift_right_navigates_before_offering_unassigned_creation ... ok\\n\\ntest result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s\\n\\nexit_code=0\\n    Checking codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n    Finished `ci-test` profile [unoptimized] target(s) in 0.80s\\nexit_code=0\\n\\\",\\\"error\\\":null}\",\"is_error\":false},\"correlationId\":\"7c55a508-ff74-4a68-895f-c01e9bdbb03c-25273\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25274,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25274,
+        "byte_offset": 0,
+        "total_bytes": 24,
+        "json_fragment": "\"ResponseAttemptStarted\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25275,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25275,
+        "byte_offset": 0,
+        "total_bytes": 45,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Compacting\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25276,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25276,
+        "byte_offset": 0,
+        "total_bytes": 45,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Compacting\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25277,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25277,
+        "byte_offset": 0,
+        "total_bytes": 102,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":{\"phase\":\"Compaction builder working\",\"current\":0,\"total\":0}}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25278,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25278,
+        "byte_offset": 0,
+        "total_bytes": 39,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Idle\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25279,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25279,
+        "byte_offset": 0,
+        "total_bytes": 46,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25280,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25280,
+        "byte_offset": 0,
+        "total_bytes": 39,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Idle\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25281,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25281,
+        "byte_offset": 0,
+        "total_bytes": 261,
+        "json_fragment": "{\"UserNotification\":{\"message\":\"Compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\",\"severity\":\"Warning\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25282,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25282,
+        "byte_offset": 0,
+        "total_bytes": 46,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25283,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25283,
+        "byte_offset": 0,
+        "total_bytes": 236,
+        "json_fragment": "{\"Error\":{\"error\":\"terminal compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25284,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+      "snapshot_end": 25285,
+      "fragment": {
+        "sequence": 25284,
+        "byte_offset": 0,
+        "total_bytes": 6,
+        "json_fragment": "\"Done\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+        "sequence": 25285,
+        "byte_offset": 0
+      },
+      "complete": true
+    }
+  ]
+}

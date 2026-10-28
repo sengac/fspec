@@ -46,7 +46,7 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
   #   6. User types /mux board agent 40; the grid shows Board on the left at 40% and Agent on the right at 60%. /mux v flips the same panes into a top/bottom stack; /mux h flips back to side-by-side.
   #   7. User types /mux board zzz; a one-line error '/mux: unknown pane kind: zzz' appears in the agent scrollback and the grid keeps its previous configuration unchanged.
   #   8. User types /mux save; the current grid config is written to the shared fspec-config.json under tui.mux. Restarting the TUI loads that key and /mux on restores the saved grid. With no saved tui.mux key present, /mux on applies the default preset (horizontal, Board | Agent, 50/50).
-  #   9. In mux mode with Board | Agent, pressing Enter on a selected board work unit binds that unit to the agent pane's session and focuses the agent pane; the board stays visible in its pane (the whole screen does NOT flip to Agent). Pressing /mux off exits mux mode back to the single view that was active before mux was entered (MUX-004: bare /mux now opens the config dialog instead of toggling — commit it with Enabled: Off to exit the same way).
+  #   9. Board Enter navigates to the earliest associated open session, otherwise offers explicit story creation (BUG-280/281); the grid remains visible. /mux off restores the pre-mux view.
   #
   # QUESTIONS (ANSWERED):
   #   Q: What should the default mux preset be?
@@ -240,8 +240,9 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
   Scenario: Enter on a board work unit in mux mode focuses the agent pane
     Given mux mode is active with Board and Agent panes
     And the Board pane is focused with work unit AUTH-001 selected
+    And an open agent is already focused on AUTH-001
     When I press Enter
-    Then the work unit AUTH-001 is bound to the agent pane session
+    Then the associated agent is focused without reassignment
     And the Agent pane is focused
     And the TUI is still in mux mode showing both panes
     And the board stays visible in its pane
@@ -285,6 +286,7 @@ Feature: Mux mode — multiplexed top-level views with /mux configuration
   # R10: existing single-view behavior is unchanged when mux is off
   Scenario: existing single-view behavior is unchanged when mux is off
     Given the TUI is showing the single Board view with mux inactive
+    And an open agent is already focused on the selected work unit
     When I press Enter on a selected work unit
     Then the TUI flips to the single Agent view exactly as before mux existed
     And pressing Esc in the Agent view returns to the single Board view

@@ -53,6 +53,7 @@ Feature: Mux enabled=true in persisted config leaks into non-mux view routing â€
   Scenario: Enter on a board work unit enters the single Agent view when the persisted mux flag is on but the grid is not active
     Given the TUI is on the single Board view with work unit AUTH-001 selected
     And the persisted tui.mux enabled flag is on
+    And an open agent is already focused on AUTH-001
     When I press Enter
     Then the TUI is on the single Agent view
 

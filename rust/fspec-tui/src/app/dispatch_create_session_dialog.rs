@@ -32,10 +32,8 @@ impl App {
     /// RPC-060: route an `Action::OpenCreateSessionDialog`. Pushes a
     /// fresh [`CreateSessionDialog`] onto the Compositor at
     /// Priority::Foreground, preselecting the option indicated by
-    /// `preselect`. The dialog reads the current session's
-    /// `WorkUnitContext` (if any) so the title renders the
-    /// context-aware `"Work on <id>?"` string. Idempotent on dialog
-    /// id — a second open is a no-op.
+    /// `preselect`. Generic creation always has absent story intent.
+    /// Idempotent on dialog id — a second open is a no-op.
     pub(crate) fn handle_open_create_session_dialog(
         &mut self,
         preselect: Option<CreateSessionOption>,
@@ -43,13 +41,20 @@ impl App {
         if self.compositor.contains(CREATE_SESSION_DIALOG_ID) {
             return;
         }
-        let work_unit_context = self
-            .agent_view_store
-            .current_session()
-            .cloned()
-            .and_then(|sid| self.agent_view_store.work_unit_context_for(&sid).cloned());
-        let dialog = CreateSessionDialog::new(preselect, work_unit_context)
-            .with_action_tx(self.action_tx.clone());
+        self.open_creation_dialog(preselect, None);
+    }
+
+    pub(crate) fn open_creation_dialog(
+        &mut self,
+        preselect: Option<CreateSessionOption>,
+        context: Option<codelet_rpc_types::WorkUnitContext>,
+    ) {
+        if self.compositor.contains(CREATE_SESSION_DIALOG_ID) {
+            return;
+        }
+        self.pending_creation_context.clone_from(&context);
+        let dialog =
+            CreateSessionDialog::new(preselect, context).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 
@@ -68,6 +73,10 @@ impl App {
     /// flow in `src/tui/views/BoardView.tsx` where `setViewMode('agent')`
     /// is called from inside the dialog's `onConfirm` callback.
     pub(crate) fn handle_create_session_submitted(&mut self, isolated: bool) {
+        let card = self
+            .pending_creation_context
+            .take()
+            .map(|context| context.id);
         if self.navigator.active_view == crate::views::ViewMode::Board {
             self.navigator.active_view = crate::views::ViewMode::Agent;
         }
@@ -75,10 +84,6 @@ impl App {
             return;
         }
         let originating_session = self.agent_view_store.current_session().cloned();
-        let card = self
-            .agent_view_store
-            .current_work_unit_id()
-            .map(str::to_owned);
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle: JoinHandle<()> =
@@ -97,14 +102,10 @@ impl App {
     /// wire its chrome/attachments. Extracted from `App::dispatch` so the
     /// orchestrator file stays under the 300-LoC ceiling (PROV-101 FIX 3).
     pub(crate) fn handle_session_created(&mut self, session: codelet_rpc_types::SessionId) {
-        self.initialize_session(session, true);
+        self.initialize_session(session);
     }
 
-    pub(crate) fn initialize_session(
-        &mut self,
-        session: codelet_rpc_types::SessionId,
-        bind_board_selection: bool,
-    ) {
+    pub(crate) fn initialize_session(&mut self, session: codelet_rpc_types::SessionId) {
         // RPC-385: idempotent guard. The session-created broadcast folds into
         // Action::SessionCreated for EVERY creation path, so a tab the TUI
         // already opened (create-session dialog, isolated dialog, enter-work-
@@ -145,18 +146,6 @@ impl App {
         // routed bootstrap/lazy creations, spawned subordinates — so the
         // daemon pointer tracks the last focused/created session.
         self.spawn_set_active_session(session.clone());
-        if let Some(id) = self
-            .agent_view_store
-            .current_work_unit_id()
-            .filter(|_| bind_board_selection)
-            .map(std::string::ToString::to_string)
-        {
-            let _ = self
-                .action_tx
-                .send(Action::AttachSession(id.clone(), session.clone()));
-            // RPC-050: late-binding attach for the lazy-session path.
-            let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id));
-        }
         self.refresh_session_chrome(session.clone());
         self.spawn_hydrate_pending_input(session.clone()); // RPC-052
         self.spawn_load_supervisors(session.clone()); // RPC-061
@@ -202,7 +191,8 @@ impl App {
                 self.handle_create_session_submitted(*isolated);
             }
             Action::CreateSessionCancelled => {
-                // Silent no-op — dialog popped via callback.
+                self.pending_creation_context = None;
+                self.navigator.mux.cancel_new_agent_request();
             }
             _ => return false,
         }

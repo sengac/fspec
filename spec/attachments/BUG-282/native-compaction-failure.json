@@ -1,0 +1,17 @@
+{
+  "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+  "snapshot_end": 25285,
+  "fragment": {
+    "sequence": 25283,
+    "byte_offset": 0,
+    "total_bytes": 236,
+    "json_fragment": "{\"Error\":{\"error\":\"terminal compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\"}}",
+    "original": null
+  },
+  "next_cursor": {
+    "generation": "17e67009-0f44-464a-906f-a89a0e3f5282",
+    "sequence": 25284,
+    "byte_offset": 0
+  },
+  "complete": false
+}

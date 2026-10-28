@@ -52,94 +52,8 @@ async fn agent_view_store_is_empty_after_bootstrap_navigator() {
     assert!(app.agent_view_store().current_work_unit_id().is_none());
 }
 
-/// Scenario: Enter on a work unit hands off to AgentView and triggers lazy session creation
-#[tokio::test]
-async fn enter_work_unit_hands_off_to_agent_view_and_triggers_lazy_session_creation() {
-    // @step Given an App with bootstrap complete and BoardStore seeded with [AUTH-002 implementing]
-    let mock = Arc::new(MockBackend::new());
-    mock.seed_work_units(vec![wu("AUTH-002", "implementing")]);
-    mock.script_create_session(SessionId::new("s-lazy"));
-    let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
-    // @step And BoardStore.focused_column() returns "implementing" with selection 0
-    app.board_store_mut().set_focused_column("implementing");
-    app.board_store_mut()
-        .set_selected_index_for("implementing", 0);
-    // @step And AgentViewStore.current_session is None
-    assert!(app.agent_view_store().current_session().is_none());
-    // @step When the App dispatches Action::EnterWorkUnit("AUTH-002")
-    app.dispatch(Action::EnterWorkUnit("AUTH-002".to_string()));
-    // @step Then AgentViewStore.current_work_unit_id equals Some("AUTH-002")
-    assert_eq!(
-        app.agent_view_store().current_work_unit_id(),
-        Some("AUTH-002")
-    );
-    // @step And AgentViewStore.current_work_unit_status equals Some("implementing")
-    assert_eq!(
-        app.agent_view_store().current_work_unit_status(),
-        Some("implementing")
-    );
-    // @step And the Navigator's active_view equals ViewMode::Agent
-    assert_eq!(app.active_view(), ViewMode::Agent);
-    // @step And the App spawns a pending tokio task that resolves to MockBackend.create_session_calls() == 1
-    let handle = app
-        .next_pending_task()
-        .expect("pending create_session task");
-    handle.await.expect("pending task join");
-    assert_eq!(mock.create_session_calls(), 1);
-}
-
-/// Scenario: Shift+Right on an unattached work unit mounts the
-/// CreateSessionDialog onto the compositor.
-///
-/// Originally this test asserted only that two orphan store flags
-/// (`show_create_session_dialog`, `should_auto_create_session`) were
-/// raised. That contract was a bug surfaced by the RPC-097 re-review:
-/// no render-pipeline subscriber consumed those flags, so the dialog
-/// never appeared on the first Shift+Right from BoardView — the user
-/// had to press it a second time to trigger the working AgentView
-/// dispatch path.
-///
-/// The RPC-097 re-review fix rewires this arm to call the canonical
-/// RPC-060 helper `handle_open_create_session_dialog(None)` so the
-/// dialog is actually pushed onto the Compositor. `should_auto_create_session`
-/// is intentionally NOT set — the dialog gives the user an explicit
-/// Yes / Yes - Isolated / Cancel choice; auto-create is the wrong
-/// semantic for this path.
-#[tokio::test]
-async fn open_agent_view_with_none_mounts_create_session_dialog() {
-    // @step Given an App with bootstrap complete and BoardStore seeded with [AUTH-001 backlog]
-    let mock = Arc::new(MockBackend::new());
-    mock.seed_work_units(vec![wu("AUTH-001", "backlog")]);
-    let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
-    // @step And BoardStore has no session_attachments entry for "AUTH-001"
-    assert!(app.board_store().session_for("AUTH-001").is_none());
-    // @step When the App dispatches Action::OpenAgentView(None)
-    app.dispatch(Action::OpenAgentView(None));
-    // @step Then the Compositor contains CREATE_SESSION_DIALOG_ID (RPC-097 re-review)
-    assert!(
-        app.compositor().contains(
-            codelet_fspec_tui::components::create_session_dialog::CREATE_SESSION_DIALOG_ID
-        ),
-        "Action::OpenAgentView(None) must mount CreateSessionDialog onto the compositor"
-    );
-    // @step And AgentViewStore.show_create_session_dialog returns true (backward-compat flag)
-    assert!(app.agent_view_store().show_create_session_dialog());
-    // @step And AgentViewStore.should_auto_create_session returns false (no auto-spawn — dialog handles user choice)
-    assert!(
-        !app.agent_view_store().should_auto_create_session(),
-        "should_auto_create_session must be false: the dialog itself collects the user's \
-         Yes / Yes-Isolated / Cancel choice via Action::CreateSessionSubmitted/Cancelled"
-    );
-    // @step And the Navigator's active_view stays ViewMode::Board (RPC-097: dialog overlays board; view switch only on confirm)
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Board,
-        "Action::OpenAgentView(None) must NOT switch the active view — dialog overlays BoardView; \
-         view switch is deferred to handle_create_session_submitted (TS parity with BoardView.tsx onConfirm)"
-    );
-}
+#[path = "board_agent_navigation/creation.rs"]
+mod creation;
 
 /// Scenario: Shift+Right on an attached work unit sets the navigation target
 #[tokio::test]
@@ -187,37 +101,6 @@ async fn back_to_board_preserves_focus_and_selection() {
     assert_eq!(app.board_store().focused_column(), "implementing");
     // @step And BoardStore.selected_index_for("implementing") still returns 0
     assert_eq!(app.board_store().selected_index_for("implementing"), 0);
-}
-
-/// Scenario: Action::SessionCreated with a current work unit emits Action::AttachSession
-#[tokio::test]
-async fn session_created_with_current_work_unit_emits_attach_session() {
-    // @step Given an App with AgentViewStore.current_work_unit_id = Some("AUTH-002")
-    let mock = Arc::new(MockBackend::new());
-    mock.seed_work_units(vec![wu("AUTH-002", "implementing")]);
-    let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
-    app.agent_view_store_mut().set_current_work_unit(
-        Some("AUTH-002".to_string()),
-        Some("implementing".to_string()),
-    );
-    // @step When the App dispatches Action::SessionCreated(SessionId::new("s-1"))
-    app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    // @step Then the App emits Action::AttachSession("AUTH-002", SessionId::new("s-1")) onto the action bus
-    let action = app.try_recv_action().expect("Action::AttachSession on bus");
-    match action {
-        Action::AttachSession(id, sid) => {
-            assert_eq!(id, "AUTH-002");
-            assert_eq!(sid, SessionId::new("s-1"));
-            // @step And after that action is processed BoardStore.session_for("AUTH-002") equals Some(&SessionId::new("s-1"))
-            app.dispatch(Action::AttachSession(id, sid));
-            assert_eq!(
-                app.board_store().session_for("AUTH-002"),
-                Some(&SessionId::new("s-1"))
-            );
-        }
-        other => panic!("expected AttachSession, got {other:?}"),
-    }
 }
 
 /// Scenario: Navigator renders BoardView as the first landing view
@@ -279,20 +162,16 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     assert!(!joined.contains("Agent — "));
 }
 
-/// Scenario: Chunks subscriber forwards every (SessionId, StreamChunk) regardless of focus
-///
-/// RPC-045 removed the original RPC-012 active-session filter on the
-/// chunks subscriber so background sessions accumulate state without
-/// being dropped. This test was rewritten to pin the NEW behaviour
-/// (both chunks reach the bus) and lives here to keep the source-shape
-/// invariant that ties `rpc012-board-agent-navigation.feature` to this
-/// test file.
+/// Scenario: Chunks subscriber forwards background and focused text through transcript routing
 #[tokio::test]
-async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
+async fn chunks_subscriber_filter_follows_current_session_via_watch_channel(
+) -> Result<(), Box<dyn std::error::Error>> {
+    use codelet_fspec_tui::app::transcript_sync::TranscriptAction;
+
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-001", "backlog")]);
     let mut app = App::new(mock.clone());
-    app.bootstrap().await.expect("bootstrap");
+    app.bootstrap().await?;
     // @step Given an App with bootstrap complete and AgentViewStore.current_session = Some(SessionId::new("s-1"))
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     assert_eq!(
@@ -307,11 +186,6 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
         Some(&SessionId::new("s-2"))
     );
     // @step And the App publishes Some(SessionId::new("s-2")) onto the chunks watch channel
-    //   (RPC-045: the watch channel is no longer consumed by the
-    //   chunks subscriber — every chunk is forwarded regardless. The
-    //   watch channel itself is preserved for RPC-026 attach paths.)
-    // @step And a subsequent chunk for SessionId::new("s-1") is forwarded as Action::ChunkReceived (RPC-045: no filter)
-    // @step And a subsequent chunk for SessionId::new("s-2") is forwarded as Action::ChunkReceived
     mock.push_chunk(
         SessionId::new("s-1"),
         StreamChunk::text("background".to_string()),
@@ -320,25 +194,42 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
         SessionId::new("s-2"),
         StreamChunk::text("foreground".to_string()),
     );
-    // Allow the subscriber task to forward.
-    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     let mut saw_s2 = false;
     let mut saw_s1 = false;
-    while let Some(action) = app.try_recv_action() {
-        match action {
-            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-2") => saw_s2 = true,
-            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-1") => saw_s1 = true,
-            _ => {}
+    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        while !saw_s1 || !saw_s2 {
+            while let Some(action) = app.try_recv_action() {
+                match action {
+                    Action::Transcript(TranscriptAction::Live(session, chunk))
+                        if session == SessionId::new("s-1") =>
+                    {
+                        // @step And text "background" for session "s-1" reaches the action bus as Action::Transcript(TranscriptAction::Live)
+                        assert!(matches!(&chunk, StreamChunk::Text { text, correlation_id: None, observed_correlation_ids: None } if text == "background"), "unexpected background payload: {chunk:?}");
+                        saw_s1 = true;
+                    }
+                    Action::Transcript(TranscriptAction::Live(session, chunk))
+                        if session == SessionId::new("s-2") =>
+                    {
+                        // @step And text "foreground" for session "s-2" reaches the action bus as Action::Transcript(TranscriptAction::Live)
+                        assert!(matches!(&chunk, StreamChunk::Text { text, correlation_id: None, observed_correlation_ids: None } if text == "foreground"), "unexpected focused payload: {chunk:?}");
+                        saw_s2 = true;
+                    }
+                    _ => {}
+                }
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
         }
-    }
+    })
+    .await?;
     assert!(
         saw_s2,
-        "expected ChunkReceived for s-2 (focused) on the bus"
+        "expected Transcript(Live) for s-2 (focused) on the bus"
     );
     assert!(
         saw_s1,
-        "expected ChunkReceived for s-1 (background) on the bus per RPC-045"
+        "expected Transcript(Live) for s-1 (background) on the bus per RPC-045"
     );
+    Ok(())
 }
 
 /// Scenario: Navigator renders AgentView when active_view is Agent

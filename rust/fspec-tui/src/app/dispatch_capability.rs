@@ -43,7 +43,12 @@ impl App {
     /// render flag. `mux_enabled_before` is the mux enabled-flag captured
     /// at the top of the tick so a mux EXIT can be detected for R6.
     pub(crate) fn finish_dispatch_tick(&mut self, action: Action, mux_enabled_before: bool) {
-        self.navigator.apply_action(&action);
+        if !matches!(
+            action,
+            Action::EnterWorkUnit(_) | Action::MuxEnterWorkUnit(_)
+        ) {
+            self.navigator.apply_action(&action);
+        }
         let _ = self.compositor.update(action);
         // MUX-001: keep the persisted MuxState config in lockstep with
         // the live Navigator mux layout so `app.mux_state().config()`

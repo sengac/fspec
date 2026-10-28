@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-28",
+  "session": "38c9951d-1ec2-4d84-bd7b-ee6e066c78f0",
+  "projectRoot": "/home/rquast/projects/fspec",
+  "interface": "functions.fspec",
+  "recordType": "Post-transition native status projections and attachment-integrity receipts",
+  "provenance": "Status fields and updatedAt values below are extracted from actual native show-work-unit format=json responses after both normal transitions. They are not full card exports. Hash verification was executed against the copied registered attachments, not just temporary source files.",
+  "transitions": [
+    {"command":"update-work-unit-status","workUnitId":"BUG-280","from":"validating","to":"done","skipOrForceOptions":false,"response":"✓ Work unit BUG-280 status updated to done"},
+    {"command":"update-work-unit-status","workUnitId":"BUG-281","from":"validating","to":"done","skipOrForceOptions":false,"response":"✓ Work unit BUG-281 status updated to done"}
+  ],
+  "canonicalVerification": [
+    {"command":"show-work-unit","args":{"workUnitId":"BUG-280","format":"json"},"observed":{"id":"BUG-280","status":"done","updatedAt":"2026-10-28T10:20:01.438Z","children":[],"linkedScenarioCount":7,"attachmentsContain":["spec/attachments/BUG-280/session-work-unit-research.md","spec/attachments/BUG-280/BUG-280-281-validation-evidence-historical.md","spec/attachments/BUG-280/BUG-280-281-validation-records-historical.tar.gz","spec/attachments/BUG-280/BUG-280-closure-final.md","spec/attachments/BUG-280/BUG-280-281-closure-raw-evidence.tar.gz","spec/attachments/BUG-280/native-scoped-validation.json","spec/attachments/BUG-280/BUG-280-closure-hashes.sha256"]}},
+    {"command":"show-work-unit","args":{"workUnitId":"BUG-281","format":"json"},"observed":{"id":"BUG-281","status":"done","updatedAt":"2026-10-28T10:20:08.887Z","children":[],"linkedScenarioCount":10,"attachmentsContain":["spec/attachments/BUG-281/session-work-unit-research.md","spec/attachments/BUG-281/BUG-280-281-validation-evidence-historical.md","spec/attachments/BUG-281/BUG-280-281-validation-records-historical.tar.gz","spec/attachments/BUG-281/BUG-281-closure-final.md","spec/attachments/BUG-281/BUG-280-281-closure-raw-evidence.tar.gz","spec/attachments/BUG-281/native-scoped-validation.json","spec/attachments/BUG-281/BUG-281-closure-hashes.sha256"]}},
+    {"command":"show-work-unit","args":{"workUnitId":"BUG-282","format":"json"},"observed":{"id":"BUG-282","status":"done","updatedAt":"2026-10-28T10:16:35.924Z","children":[],"attachmentsContain":["spec/attachments/BUG-282/bug282-review-final-validation.md","spec/attachments/BUG-282/bug282-second-linux-compaction-failure.json"]},"statusTransitionPerformed":false}
+  ],
+  "attachmentIntegrity": {
+    "BUG-280":{"command":"sha256sum --check spec/attachments/BUG-280/BUG-280-closure-hashes.sha256","exitCode":0,"verified":["BUG-280-closure-final.md","BUG-280-281-closure-raw-evidence.tar.gz","native-scoped-validation.json","session-work-unit-research.md"]},
+    "BUG-281":{"command":"sha256sum --check spec/attachments/BUG-281/BUG-281-closure-hashes.sha256","exitCode":0,"verified":["BUG-281-closure-final.md","BUG-280-281-closure-raw-evidence.tar.gz","native-scoped-validation.json","session-work-unit-research.md"]},
+    "BUG-282":{"file":"spec/attachments/BUG-282/bug282-second-linux-compaction-failure.json","expectedAndActualSha256":"cc146bb2f60c397f9e903d063d967dcdfd25f758b2c9360e751e5d906d3dcfaa","matches":true}
+  },
+  "conclusion": "BUG-280 and BUG-281 source/ACDD closure is complete, with 173/173 executed scoped Rust tests and passing applicable quality/native checks; BUG-282 remains source-fix Done. Three focused acceptance features carry verified @done tags. Historical evidence and original issue Markdown remain intact. The installed daemon was not built, installed, restarted or repaired; recurrence evidence is not a live-repair claim. Baseline global format/tag failures and all denials remain explicitly disclosed in the authoritative per-card reports. No previous failed session was accessed, resumed, recovered, compacted, cleared or edited. No new agent/session, model change, source change, denied-action retry or pending approval occurred in this closure."
+}

@@ -202,37 +202,8 @@ fn shift_right_zero_sessions_mounts_with_generic_title() {
     );
 }
 
-/// Scenario: Dialog title and description are work-unit-aware when the current session is bound to a work unit
-#[test]
-fn shift_right_with_work_unit_binding_renders_work_unit_aware_strings() {
-    // @step Given an App in AgentView with one open session bound to WorkUnitContext with id "RPC-097"
-    let mut app = fresh_app();
-    app.dispatch(Action::SessionCreated(sid("s-1")));
-    app.agent_view_store_mut().set_work_unit_context(
-        sid("s-1"),
-        WorkUnitContext {
-            id: "RPC-097".to_string(),
-            title: "Test card".to_string(),
-            status: "specifying".to_string(),
-        },
-    );
-    app.navigator_mut().active_view = ViewMode::Agent;
-
-    // @step When the user presses Shift+Right
-    app.dispatch(Action::SessionNext);
-
-    // @step Then the rendered dialog title is "Work on RPC-097?"
-    // @step And the rendered description is "Start an AI session for this task"
-    let painted = buffer_to_string(&render_app_buffer(&mut app));
-    assert!(
-        painted.contains("Work on RPC-097?"),
-        "expected 'Work on RPC-097?' in rendered buffer, got:\n{painted}"
-    );
-    assert!(
-        painted.contains("Start an AI session for this task"),
-        "expected 'Start an AI session for this task' in rendered buffer, got:\n{painted}"
-    );
-}
+#[path = "shift_right_create_session_dialog/generic.rs"]
+mod generic;
 
 // ─────────────────────────────────────────────────────────────────────
 // Visual parity with TS Ink (the styling drift being fixed)

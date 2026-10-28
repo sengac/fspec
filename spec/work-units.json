@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-28T05:21:19.841Z",
+    "lastUpdated": "2026-10-28T10:21:40.939Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 279,
+    "BUG": 282,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -1900,7 +1900,10 @@
       "BUG-272",
       "BUG-274",
       "BUG-278",
-      "BUG-279"
+      "BUG-279",
+      "BUG-282",
+      "BUG-280",
+      "BUG-281"
     ],
     "blocked": [
       "QUERY-001",
@@ -243151,7 +243154,8 @@
         "spec/attachments/CMPCT-078/00-shared-contract.md"
       ],
       "relatesTo": [
-        "CMPCT-051"
+        "CMPCT-051",
+        "BUG-282"
       ],
       "dependsOn": [
         "CMPCT-055"
@@ -243366,7 +243370,8 @@
       ],
       "relatesTo": [
         "CMPCT-051",
-        "PROV-050"
+        "PROV-050",
+        "BUG-282"
       ],
       "dependsOn": [
         "CMPCT-055",
@@ -244216,7 +244221,10 @@
       "attachments": [
         "spec/attachments/BUG-212/provider-checkpoint-research.md"
       ],
-      "estimate": 3
+      "estimate": 3,
+      "relatesTo": [
+        "BUG-282"
+      ]
     },
     "BUG-213": {
       "id": "BUG-213",
@@ -247579,7 +247587,8 @@
         "spec/attachments/BUG-242/bug242-252-follow-goal-canonical.log"
       ],
       "relatesTo": [
-        "BUG-234"
+        "BUG-234",
+        "BUG-282"
       ],
       "stateHistory": [
         {
@@ -249480,7 +249489,10 @@
           "createdAt": "2026-10-25T04:30:00.917Z"
         }
       ],
-      "nextExampleId": 2
+      "nextExampleId": 2,
+      "relatesTo": [
+        "BUG-282"
+      ]
     },
     "BUG-258": {
       "id": "BUG-258",
@@ -251529,7 +251541,8 @@
       ],
       "nextNoteId": 2,
       "relatesTo": [
-        "BUG-275"
+        "BUG-275",
+        "BUG-282"
       ],
       "estimate": 5
     },
@@ -252319,7 +252332,10 @@
         "spec/attachments/BUG-278/bug278-final-validation.json",
         "spec/attachments/BUG-278/bug278-controller-verification.json"
       ],
-      "estimate": 8
+      "estimate": 8,
+      "relatesTo": [
+        "BUG-282"
+      ]
     },
     "BUG-279": {
       "id": "BUG-279",
@@ -252448,6 +252464,318 @@
       ],
       "nextNoteId": 1,
       "estimate": 5
+    },
+    "BUG-280": {
+      "id": "BUG-280",
+      "title": "Board Enter reassigns the current agent instead of opening the selected story's session",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T06:51:27.102Z",
+      "updatedAt": "2026-10-28T10:21:33.945Z",
+      "description": "Entering a story from the board overwrites the currently selected agent's work-unit association, including a previously closed and resumed agent. The handler does not first resolve the selected story's associated session and bypasses the creation dialog when no current session exists. Recommended behavior: navigate to an associated open session, otherwise offer creation explicitly for that story; leave unrelated agents unchanged. Reconcile older navigation requirements with newer tests that explicitly preserve reassignment. See attached research for code paths, reproduction cases, specification conflicts, and regression recommendations.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-280/session-work-unit-research.md",
+        "spec/attachments/BUG-280/BUG-280-281-validation-evidence.md",
+        "spec/attachments/BUG-280/BUG-280-281-validation-records.tar.gz",
+        "spec/attachments/BUG-280/follow-up-acceptance.log",
+        "spec/attachments/BUG-280/BUG-280-281-feature-integrity.log",
+        "spec/attachments/BUG-280/feature-integrity-acceptance.log",
+        "spec/attachments/BUG-280/BUG-280-281-validation-evidence-historical.md",
+        "spec/attachments/BUG-280/BUG-280-281-validation-records-historical.tar.gz",
+        "spec/attachments/BUG-280/BUG-280-closure-final.md",
+        "spec/attachments/BUG-280/BUG-280-281-closure-raw-evidence.tar.gz",
+        "spec/attachments/BUG-280/native-scoped-validation.json",
+        "spec/attachments/BUG-280/BUG-280-closure-hashes.sha256",
+        "spec/attachments/BUG-280/BUG-280-281-final-native-status.json",
+        "spec/attachments/BUG-280/BUG-280-281-final-native-status.sha256"
+      ],
+      "relatesTo": [
+        "BUG-281"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T07:02:44.500Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T07:24:03.372Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T07:45:13.955Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T08:03:06.184Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2026-10-28T08:11:38.887Z",
+          "reason": "Source fixes and acceptance are GREEN, but full verified completion is blocked at validation: standalone codelet-fspec binary build was DENIED by the tool-only policy; package fmt check fails on unchanged bug207 test formatting; unchanged chunk-subscriber test fails on its retired event expectation; rust-mux-mode has five pre-existing scenario-level work-unit tag violations. No denied operation retried and no unrelated cleanup authorized. Final evidence and raw logs are being attached to both cards."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T08:34:25.665Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T09:54:58.260Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T10:20:01.438Z",
+          "reason": "Substantive ACDD/source closure complete: 10/10 acceptance within 161 TUI regressions plus 12 persistence regressions (173/173), current check/library build/strict Clippy/changed-file format pass, native scoped syntax/tags/coverage and @done metadata verified. Authoritative BUG-280-closure-final.md, sealed raw evidence and SHA256 manifest attached; historical reports/research preserved and superseded transparently. Legacy baseline global format/tag failures disclosed; denied standalone binary build is not a configured gate and was not retried. No live-daemon repair claimed."
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Board Enter navigates to the earliest open session with authoritative focus on the selected story; otherwise it offers normal/isolated creation with explicit story intent. Never reassign an unrelated or resumed agent, never implicitly resume disk-only sessions, and preserve mux layout, cancellation, revision ordering and explicit completion targets.",
+          "deleted": false,
+          "createdAt": "2026-10-28T07:06:45.825Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AUTH-001 remains on resumed agent A when Enter selects AUTH-002: navigate to earliest open AUTH-002 agent B if present; otherwise show Work on AUTH-002? and create only after normal/isolated confirmation. Observation before acknowledgement and intervening focus switches still attach only the new ID; cancellation/failure leaves A unchanged and generic creation blank. Same policy in mux without leaving the grid.",
+          "deleted": false,
+          "createdAt": "2026-10-28T07:06:52.447Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "estimate": 5
+    },
+    "BUG-281": {
+      "id": "BUG-281",
+      "title": "New Agent and right-edge Shift+Right inherit stale work-unit selection",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T06:51:37.902Z",
+      "updatedAt": "2026-10-28T10:21:40.939Z",
+      "description": "New Agent and Shift+Right creation can attach the previous story to a fresh session instead of starting with no work unit. Dialog submission reads global current_work_unit_id, and generic SessionCreated initialization has a second implicit attachment path. Session switching leaves that global value stale, while the dialog title reads different per-session context. Remove ambient assignment from generic creation and carry optional explicit story intent only for story-specific creation. Preserve resumed sessions' own persisted association. Coordinate with BUG-280; attached research includes both attachment routes, conflicting tests, recommended design, and regression matrix.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-281/session-work-unit-research.md",
+        "spec/attachments/BUG-281/BUG-280-281-validation-evidence.md",
+        "spec/attachments/BUG-281/BUG-280-281-validation-records.tar.gz",
+        "spec/attachments/BUG-281/follow-up-acceptance.log",
+        "spec/attachments/BUG-281/BUG-280-281-feature-integrity.log",
+        "spec/attachments/BUG-281/feature-integrity-acceptance.log",
+        "spec/attachments/BUG-281/BUG-280-281-validation-evidence-historical.md",
+        "spec/attachments/BUG-281/BUG-280-281-validation-records-historical.tar.gz",
+        "spec/attachments/BUG-281/BUG-281-closure-final.md",
+        "spec/attachments/BUG-281/BUG-280-281-closure-raw-evidence.tar.gz",
+        "spec/attachments/BUG-281/native-scoped-validation.json",
+        "spec/attachments/BUG-281/BUG-281-closure-hashes.sha256",
+        "spec/attachments/BUG-281/BUG-280-281-final-native-status.json",
+        "spec/attachments/BUG-281/BUG-280-281-final-native-status.sha256"
+      ],
+      "relatesTo": [
+        "BUG-280"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T07:02:52.067Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T07:24:08.105Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T07:45:18.632Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T08:03:11.610Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2026-10-28T08:11:46.523Z",
+          "reason": "Shared source fixes and ten acceptance scenarios are GREEN, but full verified completion is blocked at validation: standalone codelet-fspec binary build was DENIED by the tool-only policy; package fmt check fails on unchanged bug207 test formatting; unchanged chunk-subscriber test fails on its retired event expectation; rust-mux-mode has five pre-existing scenario-level work-unit tag violations. No denied operation retried and no unrelated cleanup authorized. Final evidence and raw logs are being attached to both cards."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T08:34:33.140Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T10:20:08.887Z",
+          "reason": "Substantive ACDD/source closure complete: generic New Agent/Shift Right/observation remain unassigned, shared captured intent and failure/race idempotence covered 1:1 by all 10 acceptance scenarios. Fresh preserved scoped Rust receipts total 173/173; check/library build/strict Clippy/changed-file format pass. Native syntax/tag/coverage and completion tags verified. Authoritative BUG-281-closure-final.md, sealed raw evidence and SHA256 manifest attached. Historical reports/research retained; unrelated global baseline failures and denied non-gate binary build disclosed, not retried or relabeled. No deployment/live repair claim."
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "New Agent, right-edge Shift+Right, generic SessionCreated and remote observation never infer a work unit from global selection or current-session focus. Dialog title and completion use the same captured optional story intent; consume intent on confirmation/cancellation, keep resumes authoritative and creation/observation idempotent.",
+          "deleted": false,
+          "createdAt": "2026-10-28T07:07:00.025Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "With stale AUTH-001 selection and an agent displaying AUTH-002 or no card, New Agent and right-edge Shift+Right show a generic dialog and both normal and isolated new agents start unassigned; original agents keep their focus. Generic creation after story cancellation, decline or failure stays blank even if session observation arrives before completion. Explicit resume restores its own saved focus only.",
+          "deleted": false,
+          "createdAt": "2026-10-28T07:07:06.839Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "estimate": 3
+    },
+    "BUG-282": {
+      "id": "BUG-282",
+      "title": "Recurring native compaction commit rejects Codex checkpoint lineage",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T08:53:31.921Z",
+      "updatedAt": "2026-10-28T10:16:35.924Z",
+      "description": "Investigate preserved Idle session 7c55a508-ff74-4a68-895f-c01e9bdbb03c without modifying or retrying it. Exact failure: terminal compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry. Separate investigation; compare related compaction history without assuming a shared cause. Follow full ACDD with causal fixtures, behavioral RED and atomic/history-preserving validation. Preserve BUG-280/281 and all existing changes.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-282/native-compaction-failure.json",
+        "spec/attachments/BUG-282/failed-compaction-session-evidence.json",
+        "spec/attachments/BUG-282/bug282-findings.md",
+        "spec/attachments/BUG-282/bug282-final-validation.md",
+        "spec/attachments/BUG-282/bug282-raw-evidence.tar.gz",
+        "spec/attachments/BUG-282/bug282-final-hashes.sha256",
+        "spec/attachments/BUG-282/bug282-review-network-failure.json",
+        "spec/attachments/BUG-282/bug282-review-findings.md",
+        "spec/attachments/BUG-282/bug282-review-final-validation.md",
+        "spec/attachments/BUG-282/bug282-review-raw-evidence.tar.gz",
+        "spec/attachments/BUG-282/bug282-review-final-hashes.sha256",
+        "spec/attachments/BUG-282/bug282-second-linux-compaction-failure.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T08:54:22.333Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T08:58:02.147Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T09:12:28.813Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T09:16:28.137Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T09:30:06.560Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T09:35:42.439Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T09:37:23.936Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T09:38:22.534Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T09:43:46.978Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T09:46:08.226Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T09:52:33.108Z"
+        }
+      ],
+      "relatesTo": [
+        "BUG-278",
+        "BUG-272",
+        "CMPCT-078",
+        "CMPCT-080",
+        "BUG-242",
+        "BUG-257",
+        "BUG-212"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Native streamed tool outcomes must retain their exact canonical text and genuine invocation identity through event emission, durable persistence, cold restore and selected-Codex compaction validation; display decoding must never change authoritative history.",
+          "deleted": false,
+          "createdAt": "2026-10-28T08:56:13.602Z"
+        },
+        {
+          "id": 1,
+          "text": "Changed or missing assistant, tool-result or DAG ancestry must remain explicitly rejected before atomic promotion/publication with unchanged manifest, original history and checkpoint; no fallback, reset, invented results, truncation or synthetic success.",
+          "deleted": false,
+          "createdAt": "2026-10-28T08:56:21.268Z"
+        },
+        {
+          "id": 2,
+          "text": "Controller safety review supersedes first-pass negative coverage claims: remove a genuine persisted tool-result original reference and assert its actual typed source-prefix rejection; separately mutate actual function-call arguments and name; tamper a checkpoint DAG ancestor only after a real committed boundary and continuation established it. Preserve all refusal invariants and production guards. Test genuine streamed canonical JSON-string output as well as object escapes.",
+          "deleted": false,
+          "createdAt": "2026-10-28T09:37:31.668Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A real streamed tool returns JSON text containing literal backslash-n, escaped quotes, tabs, carriage returns and Windows paths. Its checkpoint retains canonical text, while current stream handler decodes that text for the event consumed by native persistence. Persisting that event can diverge from checkpoint ancestry; reproduce through real isolated stores and selected compaction, then require exact text and exactly-once continuation.",
+          "deleted": false,
+          "createdAt": "2026-10-28T08:56:27.992Z"
+        },
+        {
+          "id": 1,
+          "text": "An outcome payload, call identity, assistant text or prior DAG is actually altered or a genuine outcome is absent. The same selected commit refuses it, publishes nothing and preserves original history and checkpoint. Valid first/successive and cold-restored boundaries and failed publication identity reconciliation retain existing negative guarantees.",
+          "deleted": false,
+          "createdAt": "2026-10-28T08:56:34.696Z"
+        },
+        {
+          "id": 2,
+          "text": "After a real tool outcome and provider checkpoint are persisted, remove exactly that outcome's manifest reference in the isolated store, leaving the original record and checkpoint untouched. Selected compaction must return typed Rejected with the genuine source-prefix-length diagnostic, publish nothing, preserve the post-injection manifest/checkpoint/all original records, and keep inference blocked. Added assistant text is not this test.",
+          "deleted": false,
+          "createdAt": "2026-10-28T09:37:38.920Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Plan: preserve evidence and compare completed history; specify canonical tool-outcome integrity and strict refusal; reproduce via real stream loop/events plus isolated durable compaction and cold replay before any production edit; fix the proven data boundary minimally; run scoped acceptance/regressions/check/build/strict Clippy/format/spec-tag-coverage gates and attach hashed raw evidence. Existing cards with compaction/checkpoint titles are done except unrelated PROV-009 specifying and generic backlog items; no duplicate active identical fix found. BUG-278 addressed independent generation counters, BUG-272 addressed terminal-error history deletion, CMPCT-078/080 enforce strict refusal, BUG-242 addresses timeout checkpoint settlement. Shared symptoms do not establish shared cause. Protected failed-session logs and live credentials are off limits; bounded tail cannot alone prove which historical payload diverged. BUG-280/281 Rust manifest matches when verified from rust/; both remain validating. Skip event storm: established stream-result/persistence/commit domain and focused data-boundary defect.",
+          "deleted": false,
+          "createdAt": "2026-10-28T08:56:46.593Z"
+        },
+        {
+          "id": 1,
+          "text": "Verified completion: accepted pre-production RED has 1 passing strict-refusal control and 2 causal failures (canonical bytes differ; exact selected-Codex ancestry exception). Minimal source fix removes only second quote/escape decoding before native tool-result persistence; original 23-test handler module mechanically extracted byte-identically to satisfy <300 lines. 81 distinct scoped tests pass; final check, library-only build, strict Clippy -D warnings, formatting, scoped spec/tags and coverage audit pass. All raw failures/successes, source/cache provenance and hashes are registered attachments. Related prior causes are distinguished, not conflated. Bounded RPC evidence cannot prove exclusive historical causation; preserved failed session remains untouched, unretried and unrepaired. BUG-280/281 remain validating with all handoff source/specification hashes preserved outside three explicitly owned changed files unrelated to their fix. No standalone executable build/install/restart, commit/push, new sessions/agents, fallback or safety weakening; no pending denial/approval.",
+          "deleted": false,
+          "createdAt": "2026-10-28T09:30:01.515Z"
+        },
+        {
+          "id": 2,
+          "text": "Reopened substantive controller review, not a new production fix. Preserve accepted-red.log and original sealed receipts. Prior missing case was invented assistant ancestry, not missing-outcome coverage; prior invocation only changed an output call_id; prior DAG added an unestablished message. Revised three scenario-linked tests will assert fixture preconditions: actual missing outcome reference with typed source-prefix rejection, changed actual call arguments/name, established committed DAG text mutation, genuine canonical JSON-string output. All no-publication/unchanged post-injection state/blocked-inference assertions remain. No production edits planned. Earlier 81 distinct regression receipts remain historical passes, not proof of these newly corrected negative cases. Bounded network recovery receipt attached; no restart/model change or failed-session access.",
+          "deleted": false,
+          "createdAt": "2026-10-28T09:37:48.696Z"
+        },
+        {
+          "id": 3,
+          "text": "SUBSTANTIVE REVIEW COMPLETION — supersedes first-pass negative-coverage/completion note; prior Done was premature. Preserved accepted-red.log and all original attachments remain valid historical receipts, but old missing case was invented assistant ancestry, old invocation only an output ID, and old DAG unestablished. Corrected fixtures now remove a genuine outcome original reference (exact typed Rejected: checkpoint identity or source anchor; actual missing state retained), separately change actual call arguments/name, and alter existing DAG checkpoint text after real generation-1 commit/publication/cold restore/continuations. Seven negative cases keep no-promotion/publication, unchanged post-injection manifest/checkpoint/originals and blocked inference, additionally checking every pre-injection archived original including removed outcome. Genuine canonical JSON-string output covers outer-quote retention. Fresh corrected acceptance 3/3; check, strict Clippy -D warnings, rustfmt, scoped feature/tags and 7/7 coverage audit pass. No production file changed during review; prior 78 unchanged regression receipts retained, not rerun or relabeled fresh. Superseding findings/final report/raw evidence/final source hashes and network-failure receipt registered; originals preserved. BUG-280/281 remain validating; protected failed session intact and unretried; no restart/model change/new agents/denied action. Independent historical causal exclusivity/live repair not claimed.",
+          "deleted": false,
+          "createdAt": "2026-10-28T09:51:51.407Z"
+        }
+      ],
+      "nextNoteId": 4
     }
   }
 }

@@ -26,7 +26,7 @@ Feature: Work-unit attach binding (BoardView attach + SessionHeader chip)
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. BoardView Enter on a work unit dispatches Action::AttachWorkUnitToSession(work_unit_id) which calls backend.set_work_unit_context(session_id, Some(ctx)) and navigates to AgentView
+  #   1. Explicit AttachWorkUnitToSession assigns the focused session. Board Enter instead navigates or offers creation (BUG-280).
   #   2. AttachWorkUnitToSession with NO current session is a silent no-op
   #   3. On Ok(()) from backend.set_work_unit_context(Some), the dispatcher emits Action::WorkUnitAttached(SessionId, WorkUnitContext) which folds the context into AgentViewStore.work_unit_context_by_session[session_id]
   #   4. SessionHeader renders the work-unit chip (id + status) from AgentViewStore.work_unit_context_for(session_id) when Some, falling back to the legacy slots when None
@@ -34,7 +34,7 @@ Feature: Work-unit attach binding (BoardView attach + SessionHeader chip)
   # ========================================
   Background: User Story
     As a fspec user navigating the BoardView
-    I want pressing Enter on a work unit to attach it to my active AgentView session
+    I want explicit assignment to attach a work unit to my active AgentView session
     So that the SessionHeader chip and the backend's per-session work-unit binding both reflect the link
 
   Scenario: AttachWorkUnitToSession with a current session calls the backend and folds the context into AgentViewStore

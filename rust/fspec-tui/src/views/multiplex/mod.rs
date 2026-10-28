@@ -63,6 +63,10 @@ impl Default for MultiplexLayout {
 }
 
 impl MultiplexLayout {
+    pub(crate) fn cancel_new_agent_request(&mut self) {
+        self.pending_new_agent = false;
+    }
+
     // ── mutation (called from Navigator::apply_action / routing) ────────
 
     /// Enable mux with the default preset. The pre-mux view is set

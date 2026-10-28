@@ -4,7 +4,10 @@ use super::state::App;
 
 impl App {
     pub(crate) fn handle_work_unit_session_created(&mut self, session: SessionId, card: String) {
-        self.initialize_session(session.clone(), false);
+        if !self.completed_story_creations.insert(session.clone()) {
+            return;
+        }
+        self.initialize_session(session.clone());
         if let Some(index) = self
             .agent_view_store
             .open_sessions()
@@ -13,7 +16,10 @@ impl App {
         {
             self.switch_to_session_index(index);
         }
-        self.handle_attach_work_unit_to_session(card);
+        if self.navigator.active_view == crate::views::ViewMode::Mux {
+            self.navigator.mux.focus_agent_pane_for_session(&session);
+        }
+        self.attach_work_unit_to_session(session, card);
     }
 
     pub(crate) fn handle_legacy_session_attachment(&mut self, card: &str, session: &SessionId) {
@@ -38,7 +44,7 @@ impl App {
 
     pub(crate) fn handle_session_observed(&mut self, info: SessionInfo) {
         let session = SessionId::new(info.id);
-        self.initialize_session(session.clone(), false);
+        self.initialize_session(session.clone());
         self.handle_work_unit_focus_changed(session, info.work_unit_focus);
         self.rebuild_focus_occupancy();
     }

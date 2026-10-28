@@ -27,8 +27,8 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   4. CreateSessionDialog rendering EXACTLY matches src/components/CreateSessionDialog.tsx: three centered button cells with labels ' Yes ', ' Yes - Isolated ', ' Cancel ' (one space pad each side)
   #   5. Selected button styling: backgroundColor=Blue, foreground=White, bold; unselected: foreground=Gray, no background, no bold — NO ▸/○ marker glyphs
   #   6. Footer is exactly '← → Select | Enter Confirm | Esc Cancel' using ASCII pipe U+007C (not box-drawing U+2502), rendered dim
-  #   7. Title is context-aware: 'Start New Agent?' when current session has no WorkUnitContext; 'Work on <id>?' when it does — sourced from agent_view_store.work_unit_context_for(current_session)
-  #   8. Description is context-aware: 'Begin a fresh AI conversation, not linked to any task.' (no work unit) or 'Start an AI session for this task' (with work unit), rendered dim
+  #   7. Generic Shift+Right creation always shows 'Start New Agent?' regardless of the current session's focus (BUG-281).
+  #   8. Generic creation describes an unassigned conversation; story-specific Board Enter uses captured story intent (BUG-280).
   #   9. Dialog border is rounded cyan (Accent::Cyan) — already correct in the current Rust port; preserve it
   #   10. Left/Right cycle wraps: Yes → Yes - Isolated → Cancel → Yes; Left wraps the other way — matches TS modulo arithmetic
   #   11. Enter on Yes emits Action::CreateSessionSubmitted{isolated:false}; Enter on Yes - Isolated emits Action::CreateSessionSubmitted{isolated:true}; Enter on Cancel or Esc emits Action::CreateSessionCancelled — and the dialog removes itself via its callback
@@ -40,7 +40,7 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   1. Given AgentView with one open session at index 0 (the only session), when the user presses Shift+Right, then the Compositor contains CREATE_SESSION_DIALOG_ID at Priority::Foreground
   #   2. Given AgentView with three open sessions and current_session_index==2 (the last), when the user presses Shift+Right, then CreateSessionDialog is mounted and current_session_index stays 2
   #   3. Given AgentView with zero open sessions, when the user presses Shift+Right, then CreateSessionDialog is mounted with title 'Start New Agent?'
-  #   4. Given current session has WorkUnitContext{id:'RPC-097'}, when Shift+Right mounts the dialog, then the rendered title is 'Work on RPC-097?' and the description is 'Start an AI session for this task'
+  #   4. Given current session has WorkUnitContext{id:'RPC-097'}, Shift+Right still offers an unassigned new agent and preserves that session's focus.
   #   5. Given the dialog is freshly mounted with default selection Yes, the rendered 80x24 buffer shows ' Yes ' painted with bg=Blue/fg=White/bold and ' Yes - Isolated ' and ' Cancel ' painted with fg=Gray — and contains NO ▸ or ○ glyph anywhere
   #   6. Given the dialog is mounted, when the user presses Right, then ' Yes - Isolated ' becomes the blue-bg/white/bold selected button; pressing Right again selects ' Cancel '; pressing Right again wraps to ' Yes '
   #   7. Given the dialog is mounted with default selection Yes, when the user presses Left, then selection wraps to ' Cancel '
@@ -95,11 +95,11 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   @tui
   @agent-view
   @tui-component
-  Scenario: Dialog title and description are work-unit-aware when the current session is bound to a work unit
+  Scenario: Dialog title and description remain generic when the current session is bound to a work unit
     Given an App in AgentView with one open session bound to WorkUnitContext with id "RPC-097"
     When the user presses Shift+Right
-    Then the rendered dialog title is "Work on RPC-097?"
-    And the rendered description is "Start an AI session for this task"
+    Then the rendered dialog title is "Start New Agent?"
+    And the rendered description is "Begin a fresh AI conversation, not linked to any task."
 
   @rust
   @tui

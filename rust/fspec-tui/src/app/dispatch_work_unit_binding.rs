@@ -35,6 +35,15 @@ impl App {
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
             return;
         };
+        self.navigator.active_view = crate::views::ViewMode::Agent;
+        self.attach_work_unit_to_session(session_id, work_unit_id);
+    }
+
+    pub(crate) fn attach_work_unit_to_session(
+        &mut self,
+        session_id: SessionId,
+        work_unit_id: String,
+    ) {
         let Some(ctx) = self.lookup_work_unit_context(&work_unit_id) else {
             return;
         };
@@ -42,7 +51,6 @@ impl App {
         // attach action so the explicit dispatch path (used by the
         // future BoardView right-pane button + by Slot 4 dialog/UI
         // paths) lands on AgentView too.
-        self.navigator.active_view = crate::views::ViewMode::Agent;
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -98,7 +106,7 @@ impl App {
     /// Best-effort lookup of a work unit by id across the BoardStore's
     /// known columns. Returns the `WorkUnitContext` that the dispatcher
     /// would persist via `backend.set_work_unit_context(Some(_))`.
-    fn lookup_work_unit_context(&self, work_unit_id: &str) -> Option<WorkUnitContext> {
+    pub(crate) fn lookup_work_unit_context(&self, work_unit_id: &str) -> Option<WorkUnitContext> {
         use crate::store::COLUMN_ORDER;
         for column in COLUMN_ORDER {
             if let Some(unit) = self

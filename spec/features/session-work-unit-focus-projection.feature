@@ -48,9 +48,9 @@ Feature: Session card displays follow authoritative activity focus
     Then the other session remains focused on "AUTH-001"
     And the board badge still navigates to the remaining session
 
-  Scenario: Board entry into an existing session uses the authoritative focus path
+  Scenario: Explicit assignment into an existing session uses the authoritative focus path
     Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
-    When the user enters card "AUTH-002"
+    When the user explicitly assigns card "AUTH-002" to that session
     Then the backend and all card displays identify "AUTH-002"
     And a delayed acknowledgement for the previous card cannot replace the newer focus
 

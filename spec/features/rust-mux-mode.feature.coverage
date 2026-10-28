@@ -4,19 +4,43 @@
       "name": "/mux off returns to the pre-mux view",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "993-1021",
+          "file": "rust/fspec-tui/tests/mux001/navigation.rs",
+          "lines": "21-51",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_mux.rs",
               "lines": [
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
               ]
             }
           ]
@@ -1168,29 +1192,36 @@
       "name": "Enter on a board work unit in mux mode focuses the agent pane",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "336-383",
+          "file": "rust/fspec-tui/tests/mux001/navigation.rs",
+          "lines": "53-81",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
               "lines": [
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
               ]
             }
           ]
@@ -1245,24 +1276,36 @@
       "name": "existing single-view behavior is unchanged when mux is off",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/mux001.rs",
-          "lines": "391-439",
+          "file": "rust/fspec-tui/tests/mux001/navigation.rs",
+          "lines": "83-115",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator.rs",
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
               "lines": [
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
               ]
             }
           ]
@@ -1618,6 +1661,7 @@
     "coveredScenarios": 32,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec-tui/tests/mux001/navigation.rs",
       "rust/fspec-tui/tests/mux001.rs",
       "rust/fspec-tui/tests/bug164_mux_retained_on_session_exit.rs",
       "rust/fspec-tui/tests/bug165_esc_exit_dialog_on_board_pane_in_mux.rs"
@@ -1633,12 +1677,13 @@
       "rust/fspec-tui/src/store/mux_state.rs",
       "rust/sessions/src/mux_config_persistence.rs",
       "rust/fspec-tui/src/views/multiplex/presets.rs",
-      "rust/fspec-tui/src/views/navigator.rs",
+      "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
       "rust/fspec-tui/src/app/events.rs",
+      "rust/fspec-tui/src/views/navigator.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
       "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
       "rust/fspec-tui/src/components/board_exit_confirmation_dialog.rs"
     ],
-    "totalLinesCovered": 2000
+    "totalLinesCovered": 2010
   }
 }

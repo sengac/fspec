@@ -232,60 +232,8 @@ async fn back_to_board_lands_on_the_board_when_the_persisted_flag_is_on_but_the_
 // ─────────────────────────────────────────────────────────────────────────
 
 /// Scenario: Enter on a board work unit enters the single Agent view when the persisted mux flag is on but the grid is not active
-#[tokio::test]
-async fn enter_on_a_board_work_unit_enters_the_single_agent_view_when_the_persisted_flag_is_on() {
-    // @step Given the TUI is on the single Board view with work unit AUTH-001 selected
-    let (mut app, _mock) = fresh_app();
-    use codelet_rpc_types::WorkUnitInfo;
-    app.dispatch(Action::WorkUnitsLoaded(vec![WorkUnitInfo {
-        id: "AUTH-001".to_string(),
-        title: "User Login".to_string(),
-        work_type: "story".to_string(),
-        status: "backlog".to_string(),
-        description: None,
-        estimate: None,
-        epic: None,
-        attachments: Vec::new(),
-        last_state_change_at: None,
-    }]));
-    app.board_store_mut().set_focused_column("backlog");
-    app.board_store_mut().set_selected_index_for("backlog", 0);
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Board,
-        "the scenario requires the single Board view"
-    );
-    // @step And the persisted tui.mux enabled flag is on
-    simulate_leaked_persisted_flag(&mut app);
-    // @step When I press Enter
-    let _ = app.handle_event(&enter());
-    // The routing decision itself: with the grid not active, Enter must
-    // take the single-view path (flip + attach), NOT the mux path
-    // (MuxEnterWorkUnit — which, in a non-mux view, is a dead-end: the
-    // Navigator arm ignores it and nothing flips the view). Drain the
-    // bus observing each action AS IT LANDS so the routing choice is
-    // observable before dispatch folds it.
-    let mut saw_mux_enter = false;
-    while let Some(action) = app.try_recv_action() {
-        if matches!(action, Action::MuxEnterWorkUnit(_)) {
-            saw_mux_enter = true;
-        }
-        app.dispatch(action);
-        while let Some(handle) = app.next_pending_task() {
-            let _ = handle.await;
-        }
-    }
-    assert!(
-        !saw_mux_enter,
-        "Enter from the single Board view must NOT route through MuxEnterWorkUnit (BUG-175: routing gates on the live ViewMode, not the persisted flag)"
-    );
-    // @step Then the TUI is on the single Agent view
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "Enter on a board work unit in single-view mode must flip to the Agent view even with a leaked mux flag"
-    );
-}
+#[path = "bug175_mux_enabled_leak/entry.rs"]
+mod entry;
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: /mux default enters the grid with the enabled flag in

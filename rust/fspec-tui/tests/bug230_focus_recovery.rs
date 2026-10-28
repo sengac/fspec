@@ -45,8 +45,8 @@ async fn an_attachment_acknowledgement_does_not_rewrite_a_newer_remote_clear() -
     app.dispatch(Action::SessionCreated(session.clone()));
     app.dispatch(Action::WorkUnitsLoaded(units()));
     backend.clear_focus_after_binding();
-    // @step When the user enters card "AUTH-002"
-    app.dispatch(Action::EnterWorkUnit("AUTH-002".into()));
+    // @step When the user explicitly assigns card "AUTH-002" to that session
+    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
     settle(&mut app).await;
     // @step And a delayed acknowledgement for the previous card cannot replace the newer focus
     assert!(backend
@@ -93,6 +93,7 @@ async fn remote_creation_before_local_acknowledgement_preserves_board_entry() ->
     app.dispatch(Action::WorkUnitsLoaded(units()));
     // @step When the user enters card "AUTH-002"
     app.dispatch(Action::EnterWorkUnit("AUTH-002".into()));
+    app.dispatch(Action::CreateSessionSubmitted { isolated: false });
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }

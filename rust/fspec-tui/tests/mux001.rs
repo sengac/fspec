@@ -1099,43 +1099,8 @@ async fn slash_mux_on_enables_mux_mode_with_the_default_preset() {
 // Scenario: /mux off returns to the pre-mux view
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: /mux off returns to the pre-mux view
-#[tokio::test]
-async fn slash_mux_off_returns_to_the_pre_mux_view() {
-    // @step Given the TUI is showing the single Agent view
-    // The `/mux off` below triggers the R6 exit auto-save, which writes
-    // the process-global data directory — hold the DATA_DIR_GUARD so a
-    // concurrent persistence test (which re-roots that global at its own
-    // tempdir) can't see this config (or vice-versa).
-    let _guard = DATA_DIR_GUARD.lock().await;
-    let (mut app, _mock) = fresh_app();
-    app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    drain_pending(&mut app).await;
-    app.dispatch(Action::EnterWorkUnit("AUTH-001".to_string()));
-    drain_pending(&mut app).await;
-    assert_eq!(app.active_view(), ViewMode::Agent);
-    // @step When I submit the slash command "/mux on"
-    // (MUX-004: bare /mux now opens the config dialog; the explicit
-    // "/mux on" keeps the MUX-001 enable path this scenario exercises)
-    submit(&mut app, "/mux on");
-    assert_eq!(app.active_view(), ViewMode::Mux);
-    // @step And I submit the slash command "/mux off"
-    submit(&mut app, "/mux off");
-    // @step Then mux mode is inactive
-    assert!(!app.mux_state().config().enabled);
-    // @step And the TUI shows the single Agent view that was active before mux was entered
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "/mux off must restore the pre-mux view"
-    );
-    // @step And the board and agent store state is unchanged by the round trip
-    assert_eq!(
-        app.agent_view_store().current_work_unit_id(),
-        Some("AUTH-001"),
-        "the work-unit binding must survive the mux round trip"
-    );
-}
+#[path = "mux001/navigation.rs"]
+mod navigation;
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: /mux v sets the grid to vertical
@@ -1392,35 +1357,6 @@ async fn a_fresh_bootstrap_with_no_saved_config_applies_the_default_preset() {
 // Scenario: Enter on a board work unit in mux mode focuses the agent pane
 // ─────────────────────────────────────────────────────────────────────────
 
-/// Scenario: Enter on a board work unit in mux mode focuses the agent pane
-#[tokio::test]
-async fn enter_on_a_board_work_unit_in_mux_mode_focuses_the_agent_pane_app() {
-    // @step Given mux mode is active with Board and Agent panes
-    let (mut app, _mock) = fresh_app();
-    app_with_mux(&mut app).await;
-    assert_eq!(app.active_view(), ViewMode::Mux);
-    // @step And the Board pane is focused with work unit AUTH-001 selected
-    // (the App reducer binds the unit + focuses the agent pane when
-    // MuxEnterWorkUnit lands)
-    app.dispatch(Action::MuxEnterWorkUnit("AUTH-001".to_string()));
-    // @step Then the work unit AUTH-001 is bound to the agent pane session
-    assert_eq!(
-        app.agent_view_store().current_work_unit_id(),
-        Some("AUTH-001")
-    );
-    // @step And the Agent pane is focused
-    assert!(app.navigator().mux.focus() == 1);
-    // @step And the TUI is still in mux mode showing both panes
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Mux,
-        "MuxEnterWorkUnit must NOT flip the whole view to Agent (R8)"
-    );
-    // @step And the board stays visible in its pane
-    // (asserted at the Navigator level in mux001_routing.rs; here the
-    // view-mode invariant is the App-level half)
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: pressing ? in mux mode shows the HelpDialog over the full screen
 // ─────────────────────────────────────────────────────────────────────────
@@ -1477,43 +1413,3 @@ async fn closing_the_dialog_leaves_mux_mode_active() {
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: existing single-view behavior is unchanged when mux is off
 // ─────────────────────────────────────────────────────────────────────────
-
-/// Scenario: existing single-view behavior is unchanged when mux is off
-#[tokio::test]
-async fn existing_single_view_behavior_is_unchanged_when_mux_is_off_app() {
-    // @step Given the TUI is showing the single Board view with mux inactive
-    let (mut app, _mock) = fresh_app();
-    assert_eq!(app.active_view(), ViewMode::Board);
-    assert!(!app.mux_state().config().enabled);
-    // @step When I press Enter on a selected work unit
-    app.dispatch(Action::EnterWorkUnit("AUTH-001".to_string()));
-    drain_pending(&mut app).await;
-    // @step Then the TUI flips to the single Agent view exactly as before mux existed
-    assert_eq!(
-        app.active_view(),
-        ViewMode::Agent,
-        "EnterWorkUnit must flip to the single Agent view when mux is off"
-    );
-    // @step And pressing Esc in the Agent view returns to the single Board view
-    app.dispatch(Action::BackToBoard);
-    assert_eq!(app.active_view(), ViewMode::Board);
-    // @step And no mux footer row is painted and no pane divider is rendered
-    let buf = {
-        let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(120, 24))
-            .expect("Terminal::new");
-        term.draw(|frame| app.render(frame.area(), frame.buffer_mut()))
-            .expect("draw");
-        term.backend().buffer().clone()
-    };
-    let rows: Vec<String> = (0..buf.area.height)
-        .map(|y| {
-            (0..buf.area.width)
-                .map(|x| buf[(x, y)].symbol())
-                .collect::<String>()
-        })
-        .collect();
-    assert!(
-        !rows.iter().any(|r| r.contains("MUX")),
-        "no mux footer may be painted when mux is off: {rows:?}"
-    );
-}

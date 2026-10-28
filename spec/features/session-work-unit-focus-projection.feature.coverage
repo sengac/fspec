@@ -177,7 +177,7 @@
       ]
     },
     {
-      "name": "Board entry into an existing session uses the authoritative focus path",
+      "name": "Explicit assignment into an existing session uses the authoritative focus path",
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug230_focus_projection.rs",

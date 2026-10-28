@@ -27,21 +27,10 @@ impl App {
     /// Route a mux action (store-level half).
     pub(crate) fn dispatch_mux(&mut self, action: &Action) {
         match action {
-            Action::MuxEnterWorkUnit(id) if self.navigator.mux.config().enabled => {
-                // R8: bind the work unit to the agent pane session
-                // WITHOUT flipping the whole view (the Navigator's
-                // apply_action focuses the agent pane instead).
-                let status = self
-                    .board_store
-                    .column_units(self.board_store.focused_column())
-                    .iter()
-                    .find(|u| u.id == *id)
-                    .map(|u| u.status.clone());
-                self.agent_view_store
-                    .set_current_work_unit(Some(id.clone()), status);
-                let _ = self
-                    .action_tx
-                    .send(Action::AttachWorkUnitToSession(id.clone()));
+            Action::MuxEnterWorkUnit(id)
+                if self.navigator.active_view == crate::views::ViewMode::Mux =>
+            {
+                self.handle_enter_work_unit(id);
             }
             // MUX-004: the MuxConfigDialog committed its draft. Apply the
             // draft layout (orientation/panes; the scale re-derives for
@@ -119,10 +108,12 @@ impl App {
                 if self.navigator.mux.shift_right() {
                     self.handle_open_create_session_dialog(None);
                 }
+                self.sync_mux_focus_to_session();
                 EventResult::consumed()
             }
             crossterm::event::KeyCode::Left => {
                 self.navigator.mux.shift_left();
+                self.sync_mux_focus_to_session();
                 EventResult::consumed()
             }
             _ => EventResult::ignored(),

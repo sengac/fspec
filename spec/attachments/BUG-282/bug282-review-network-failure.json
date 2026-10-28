@@ -1,0 +1,81 @@
+{
+  "session": "c09c6649-9724-42d6-8aa7-005a885b8d27",
+  "model": {
+    "provider_id": "codex",
+    "model_id": "gpt-6.1-sol",
+    "context_window": 1050000,
+    "max_output_tokens": 128000,
+    "compaction_threshold": 840000
+  },
+  "observed": "2026-10-28T09:35Z",
+  "pages": [
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 20891,
+      "fragment": {
+        "sequence": 20887,
+        "byte_offset": 0,
+        "total_bytes": 24,
+        "json_fragment": "\"ResponseAttemptAborted\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 20888,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 20891,
+      "fragment": {
+        "sequence": 20888,
+        "byte_offset": 0,
+        "total_bytes": 78,
+        "json_fragment": "{\"Error\":{\"error\":\"HttpError: Http client error: Codex network setup failed\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 20889,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 20891,
+      "fragment": {
+        "sequence": 20889,
+        "byte_offset": 0,
+        "total_bytes": 39,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Idle\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 20890,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 20891,
+      "fragment": {
+        "sequence": 20890,
+        "byte_offset": 0,
+        "total_bytes": 6,
+        "json_fragment": "\"Done\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 20891,
+        "byte_offset": 0
+      },
+      "complete": true
+    }
+  ]
+}

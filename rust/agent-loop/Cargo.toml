@@ -57,6 +57,8 @@ codelet-cli.workspace = true
 test-support = ["codelet-providers/test-support"]
 
 [dev-dependencies]
+base64 = "0.22"
+url.workspace = true
 keyring.workspace = true
 tracing-subscriber.workspace = true
 proptest.workspace = true

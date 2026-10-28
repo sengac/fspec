@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "session": "c09c6649-9724-42d6-8aa7-005a885b8d27",
+    "model": {
+      "provider_id": "codex",
+      "model_id": "gpt-6.1-sol",
+      "context_window": 1050000,
+      "max_output_tokens": 128000,
+      "compaction_threshold": 840000
+    },
+    "status": "Idle",
+    "interactions": "{\"pause\":{\"request_id\":\"\",\"state\":null},\"hitl\":{\"request_id\":\"\",\"state\":null}}",
+    "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+    "snapshot_end": 24287,
+    "source_manifest_sha256": "b7b716f409875da1ac3c812b8e3e9b882a029e805ed1d890583878814e055ce5",
+    "remaining": "BUG-280/281 specification checks, tags and evidence/status closure; BUG-282 verified source fix is Done; installed daemon unchanged."
+  },
+  "pages": [
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24274,
+        "byte_offset": 0,
+        "total_bytes": 681,
+        "json_fragment": "{\"ToolCall\":{\"toolCall\":{\"id\":\"fc_01b5374c3098a643016ae1c80090e88191b593d78fe7a16a8e\",\"name\":\"exec_command\",\"input\":\"{\\\"cmd\\\":\\\"bash -c 'for stage in tui-acceptance-regressions persistence-regressions package-check strict-clippy library-build changed-file-format; do printf \\\\\\\"\\\\\\\\n%s\\\\\\\\n\\\\\\\" \\\\\\\"$stage\\\\\\\"; if test -f \\\\\\\"/tmp/fspec-bug280281-closure-evidence/$stage.log\\\\\\\"; then tail -7 \\\\\\\"/tmp/fspec-bug280281-closure-evidence/$stage.log\\\\\\\"; fi; done'\\\",\\\"workdir\\\":\\\"/home/rquast/projects/fspec\\\",\\\"yield_time_ms\\\":1000,\\\"max_output_tokens\\\":2000,\\\"work_unit_id\\\":\\\"BUG-280\\\"}\"},\"correlationId\":\"c09c6649-9724-42d6-8aa7-005a885b8d27-24274\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24275,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24275,
+        "byte_offset": 0,
+        "total_bytes": 2444,
+        "json_fragment": "{\"ToolResult\":{\"toolResult\":{\"tool_call_id\":\"fc_01b5374c3098a643016ae1c80090e88191b593d78fe7a16a8e\",\"content\":\"{\\\"success\\\":true,\\\"exit_code\\\":0,\\\"output\\\":\\\"\\ntui-acceptance-regressions\\ntest attach_work_unit_to_session_with_current_session_calls_backend_and_folds_into_store ... ok\\ntest attach_work_unit_to_session_with_no_current_session_is_silent_no_op ... ok\\ntest session_header_renders_work_unit_chip_from_per_session_context ... ok\\n\\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s\\n\\nexit_code=0\\n\\npersistence-regressions\\ntest scenario_busy_session_reminders_reconcile_the_latest_focus_without_deadlock ... ok\\ntest scenario_focus_restore_preserves_history_and_reconciles_missing_or_completed_cards ... ok\\ntest scenario_session_focus_transitions_are_ordered_isolated_and_project_validated ... ok\\n\\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s\\n\\nexit_code=0\\n\\npackage-check\\n    Checking codelet-sessions v0.10.9 (/home/rquast/projects/fspec/rust/sessions)\\n    Checking codelet-rpc-embedded v0.10.9 (/home/rquast/projects/fspec/rust/rpc-embedded)\\n    Checking codelet-rpc-server v0.10.9 (/home/rquast/projects/fspec/rust/rpc-server)\\n    Checking codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n    Checking codelet-agent-loop v0.10.9 (/home/rquast/projects/fspec/rust/agent-loop)\\n    Finished `ci-test` profile [unoptimized] target(s) in 25.14s\\nexit_code=0\\n\\nstrict-clippy\\n    Checking codelet-cli v0.10.9 (/home/rquast/projects/fspec/rust/cli)\\n    Checking codelet-sessions v0.10.9 (/home/rquast/projects/fspec/rust/sessions)\\n    Checking codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n    Checking codelet-agent-loop v0.10.9 (/home/rquast/projects/fspec/rust/agent-loop)\\n    Finished `ci-test` profile [unoptimized] target(s) in 10.52s\\nexit_code=0\\n\\nlibrary-build\\n   Compiling codelet-cli v0.10.9 (/home/rquast/projects/fspec/rust/cli)\\n   Compiling codelet-sessions v0.10.9 (/home/rquast/projects/fspec/rust/sessions)\\n   Compiling codelet-fspec-tui v0.10.9 (/home/rquast/projects/fspec/rust/fspec-tui)\\n    Finished `ci-test` profile [unoptimized] target(s) in 10.89s\\nexit_code=0\\n\\nchanged-file-format\\nexit_code=0\\n\\\",\\\"wall_time_seconds\\\":1.000300583}\",\"is_error\":false},\"correlationId\":\"c09c6649-9724-42d6-8aa7-005a885b8d27-24275\",\"observedCorrelationIds\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24276,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24276,
+        "byte_offset": 0,
+        "total_bytes": 24,
+        "json_fragment": "\"ResponseAttemptStarted\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24277,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24277,
+        "byte_offset": 0,
+        "total_bytes": 45,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Compacting\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24278,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24278,
+        "byte_offset": 0,
+        "total_bytes": 45,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Compacting\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24279,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24279,
+        "byte_offset": 0,
+        "total_bytes": 102,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":{\"phase\":\"Compaction builder working\",\"current\":0,\"total\":0}}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24280,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24280,
+        "byte_offset": 0,
+        "total_bytes": 39,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Idle\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24281,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24281,
+        "byte_offset": 0,
+        "total_bytes": 46,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24282,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24282,
+        "byte_offset": 0,
+        "total_bytes": 39,
+        "json_fragment": "{\"SessionStateChange\":{\"state\":\"Idle\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24283,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24283,
+        "byte_offset": 0,
+        "total_bytes": 261,
+        "json_fragment": "{\"UserNotification\":{\"message\":\"Compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\",\"severity\":\"Warning\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24284,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24284,
+        "byte_offset": 0,
+        "total_bytes": 46,
+        "json_fragment": "{\"CompactionProgressUpdate\":{\"progress\":null}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24285,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24285,
+        "byte_offset": 0,
+        "total_bytes": 236,
+        "json_fragment": "{\"Error\":{\"error\":\"terminal compaction failed: compaction commit failed: compaction candidate rejected: selected request preparation unavailable: RequestError: Codex checkpoint lineage mismatch: assistant, tool result or DAG ancestry\"}}",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24286,
+        "byte_offset": 0
+      },
+      "complete": false
+    },
+    {
+      "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+      "snapshot_end": 24287,
+      "fragment": {
+        "sequence": 24286,
+        "byte_offset": 0,
+        "total_bytes": 6,
+        "json_fragment": "\"Done\"",
+        "original": null
+      },
+      "next_cursor": {
+        "generation": "3e4c8be7-fc81-4139-8c2e-48a005d58c19",
+        "sequence": 24287,
+        "byte_offset": 0
+      },
+      "complete": true
+    }
+  ]
+}

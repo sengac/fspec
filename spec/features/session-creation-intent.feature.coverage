@@ -1,0 +1,136 @@
+{
+  "scenarios": [
+    {
+      "name": "Board entry navigates to the earliest associated open agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/session_intent/board.rs",
+          "lines": "4-34",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unassociated board entry offers story-specific creation",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/session_intent/board.rs",
+          "lines": "36-73",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board entry preserves an explicitly resumed agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/session_intent/board.rs",
+          "lines": "75-117",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/session_intent/board.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_work_unit_entry.rs"
+    ],
+    "totalLinesCovered": 184
+  }
+}

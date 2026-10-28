@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-28",
+  "session": "38c9951d-1ec2-4d84-bd7b-ee6e066c78f0",
+  "projectRoot": "/home/rquast/projects/fspec",
+  "interface": "functions.fspec",
+  "provenance": "Transcribed native tool response payloads from this closure session, not a shell fspec run. Final checks on the three acceptance features follow @done addition and native format.",
+  "syntax": [
+    {"command":"validate","args":{"file":"spec/features/session-creation-intent.feature"},"response":{"success":true,"output":"✓ spec/features/session-creation-intent.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/session-creation-intent.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/session-creation-completion.feature"},"response":{"success":true,"output":"✓ spec/features/session-creation-completion.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/session-creation-completion.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/generic-agent-creation.feature"},"response":{"success":true,"output":"✓ spec/features/generic-agent-creation.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/generic-agent-creation.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/agentview-shift-right-create-session-dialog.feature"},"response":{"success":true,"output":"✓ spec/features/agentview-shift-right-create-session-dialog.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/agentview-shift-right-create-session-dialog.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/mux-close-session-landing.feature"},"response":{"success":true,"output":"✓ spec/features/mux-close-session-landing.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/mux-close-session-landing.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/rpc012-board-agent-navigation.feature"},"response":{"success":true,"output":"✓ spec/features/rpc012-board-agent-navigation.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/rpc012-board-agent-navigation.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/rust-mux-mode.feature"},"response":{"success":true,"output":"✓ spec/features/rust-mux-mode.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/rust-mux-mode.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/session-work-unit-focus-projection.feature"},"response":{"success":true,"output":"✓ spec/features/session-work-unit-focus-projection.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/session-work-unit-focus-projection.feature","valid":true,"errors":[]}]}},
+    {"command":"validate","args":{"file":"spec/features/work-unit-attach-binding.feature"},"response":{"success":true,"output":"✓ spec/features/work-unit-attach-binding.feature is valid","exitCode":0,"invalidCount":0,"results":[{"file":"spec/features/work-unit-attach-binding.feature","valid":true,"errors":[]}]}}
+  ],
+  "tags": [
+    {"command":"validate-tags","args":{"file":"spec/features/session-creation-intent.feature"},"response":{"results":[{"file":"spec/features/session-creation-intent.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/session-creation-completion.feature"},"response":{"results":[{"file":"spec/features/session-creation-completion.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/generic-agent-creation.feature"},"response":{"results":[{"file":"spec/features/generic-agent-creation.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/agentview-shift-right-create-session-dialog.feature"},"response":{"results":[{"file":"spec/features/agentview-shift-right-create-session-dialog.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/mux-close-session-landing.feature"},"response":{"results":[{"file":"spec/features/mux-close-session-landing.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/rpc012-board-agent-navigation.feature"},"response":{"results":[{"file":"spec/features/rpc012-board-agent-navigation.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/session-work-unit-focus-projection.feature"},"response":{"results":[{"file":"spec/features/session-work-unit-focus-projection.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/work-unit-attach-binding.feature"},"response":{"results":[{"file":"spec/features/work-unit-attach-binding.feature","valid":true,"errors":[]}],"validCount":1,"invalidCount":0}},
+    {"command":"validate-tags","args":{"file":"spec/features/rust-mux-mode.feature"},"response":{"results":[{"file":"spec/features/rust-mux-mode.feature","valid":false,"errors":[{"tag":"@BUG-164","message":"Work unit ID tag @BUG-164 must be at feature level, not scenario level","suggestion":"Move @BUG-164 to feature-level tags. Use coverage files for fine-grained scenario traceability."},{"tag":"@BUG-164","message":"Work unit ID tag @BUG-164 must be at feature level, not scenario level","suggestion":"Move @BUG-164 to feature-level tags. Use coverage files for fine-grained scenario traceability."},{"tag":"@BUG-165","message":"Work unit ID tag @BUG-165 must be at feature level, not scenario level","suggestion":"Move @BUG-165 to feature-level tags. Use coverage files for fine-grained scenario traceability."},{"tag":"@BUG-165","message":"Work unit ID tag @BUG-165 must be at feature level, not scenario level","suggestion":"Move @BUG-165 to feature-level tags. Use coverage files for fine-grained scenario traceability."},{"tag":"@BUG-165","message":"Work unit ID tag @BUG-165 must be at feature level, not scenario level","suggestion":"Move @BUG-165 to feature-level tags. Use coverage files for fine-grained scenario traceability."}]}],"validCount":0,"invalidCount":1}}
+  ],
+  "coverageAudits": [
+    {"command":"audit-coverage","args":{"featureName":"session-creation-intent"},"response":{"output":"✅ All files found (6/6)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"session-creation-completion"},"response":{"output":"✅ All files found (8/8)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"generic-agent-creation"},"response":{"output":"✅ All files found (6/6)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"agentview-shift-right-create-session-dialog"},"response":{"output":"✅ All files found (52/52)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"mux-close-session-landing"},"response":{"output":"✅ All files found (9/9)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"rpc012-board-agent-navigation"},"response":{"output":"✅ All files found (19/19)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"rust-mux-mode"},"response":{"output":"✅ All files found (66/66)\nAll mappings valid","exitCode":0}},
+    {"command":"audit-coverage","args":{"featureName":"session-work-unit-focus-projection"},"response":{"output":"✅ All files found (25/25)\nAll mappings valid","exitCode":0}}
+  ],
+  "coverageSummaryFromShowCoverage": [
+    {"feature":"session-creation-intent","scenarios":3,"fullyCovered":3,"coveragePercent":100,"testFile":"rust/fspec-tui/tests/session_intent/board.rs"},
+    {"feature":"session-creation-completion","scenarios":4,"fullyCovered":4,"coveragePercent":100,"testFile":"rust/fspec-tui/tests/session_intent/creation.rs"},
+    {"feature":"generic-agent-creation","scenarios":3,"fullyCovered":3,"coveragePercent":100,"testFile":"rust/fspec-tui/tests/session_intent/generic.rs"}
+  ],
+  "completionMetadata": {
+    "tag":"@done",
+    "registryCategory":"Status Tags",
+    "files":["spec/features/session-creation-intent.feature","spec/features/session-creation-completion.feature","spec/features/generic-agent-creation.feature"],
+    "method":"add-tag-to-feature with tags [@done] and validateRegistry true; then native format, validate, validate-tags, list-feature-tags and audit-coverage",
+    "formatResponses":[{"formattedCount":1},{"formattedCount":1},{"formattedCount":1}],
+    "allThreeTagListsContainDone":true
+  },
+  "gateMetadata": {
+    "list-hooks":"Configured Hooks:\n\nsession_start:\n\nsession_end:\n\nuser_prompt_submit:\n\nnotification:\n\npre_tool_use:\n\npost_tool_use:",
+    "BUG-280":"No virtual hooks configured for BUG-280",
+    "BUG-281":"No virtual hooks configured for BUG-281",
+    "childrenAndBlockingDependencies":"Both native show-work-unit JSON records have children [] and no blocking dependency fields. They relate to each other without blocking.",
+    "configuredQualityCommands":"None found in the completed handoff; no configuration changed during closure. Standalone executable build is not a configured gate."
+  },
+  "limits":"Coverage audit proves mapped files exist, not execution or correctness of line numbers. The 10 actual acceptance tests and separate Rust receipts prove executed behavior. Nine syntax validations and eight passing scoped tag validations are not an all-workspace tag pass. Five legacy scenario-level work-unit tags remain baseline failures."
+}

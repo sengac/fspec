@@ -44,8 +44,7 @@ async fn dialog_creation_observed_before_acknowledgement_preserves_card_intent()
     backend.script_create_session(session.clone());
     let mut app = App::new(backend.clone());
     app.dispatch(Action::WorkUnitsLoaded(units()));
-    app.agent_view_store_mut()
-        .set_current_work_unit(Some("AUTH-002".into()), Some("implementing".into()));
+    app.dispatch(Action::EnterWorkUnit("AUTH-002".into()));
     // @step When the user enters card "AUTH-002"
     app.dispatch(Action::CreateSessionSubmitted { isolated: false });
     app.dispatch(Action::SessionObserved(

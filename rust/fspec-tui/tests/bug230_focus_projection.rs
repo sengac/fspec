@@ -107,7 +107,7 @@ async fn scenario_several_sessions_can_share_a_card_without_losing_their_individ
 
 /// Feature: spec/features/session-work-unit-focus-projection.feature
 #[tokio::test]
-async fn scenario_board_entry_into_an_existing_session_uses_the_authoritative_focus_path() {
+async fn scenario_explicit_assignment_into_an_existing_session_uses_the_authoritative_focus_path() {
     // @step Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
     let mock = Arc::new(common::MockBackend::new());
     let (mut app, _) = common::test_app(mock.clone());
@@ -127,8 +127,8 @@ async fn scenario_board_entry_into_an_existing_session_uses_the_authoritative_fo
         },
     ]));
 
-    // @step When the user enters card "AUTH-002"
-    app.dispatch(Action::EnterWorkUnit("AUTH-002".into()));
+    // @step When the user explicitly assigns card "AUTH-002" to that session
+    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
     settle(&mut app).await;
 
     // @step Then the backend and all card displays identify "AUTH-002"

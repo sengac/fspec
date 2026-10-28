@@ -167,8 +167,15 @@ async fn reconnect_snapshots_and_remote_changes_reach_real_tui_backends() -> Tes
 
     // @step Given an existing session focused on card "AUTH-001" and card "AUTH-002" on the board
     app.dispatch(Action::OpenAgentView(Some(sessions[1].clone())));
-    // @step When the user enters card "AUTH-002"
-    app.dispatch(Action::EnterWorkUnit("AUTH-002".into()));
+    // @step When the user explicitly assigns card "AUTH-002" to that session
+    let target = app
+        .agent_view_store()
+        .open_sessions()
+        .iter()
+        .position(|context| context.id == sessions[1])
+        .ok_or("missing explicit target")?;
+    app.agent_view_store_mut().focus_session_index(target);
+    app.dispatch(Action::AttachWorkUnitToSession("AUTH-002".into()));
     settle(&mut app).await;
     // @step Then the backend and all card displays identify "AUTH-002"
     assert_eq!(
