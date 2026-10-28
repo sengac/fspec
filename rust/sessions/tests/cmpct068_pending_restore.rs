@@ -3,9 +3,9 @@
 #[path = "../../core/tests/support/compaction_boundary.rs"]
 mod boundary;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_cli::interactive::{run_agent_stream, StreamEvent, StreamOutput};
 use codelet_core::persistence::compaction_commit::{commit_compaction, publish_compaction};
@@ -66,8 +66,16 @@ async fn scenario_cold_notification_loss_blocks_inference_until_exact_identity_r
         context_capacity: Some(200000),
         output_reservation: Some(4096),
     });
-    let agent = RigAgent::new(rig::agent::AgentBuilder::new(model.clone()).build(), 1);
+    let agent = RigAgent::new(
+        rig::agent::AgentBuilder::new(model.clone())
+            .max_tokens(4096)
+            .build(),
+        1,
+    );
     let mut inner = background.inner.lock().await;
+    inner
+        .provider_manager_mut()
+        .override_model_limits(Some(200000), Some(4096));
     let result = tokio::time::timeout(
         std::time::Duration::from_secs(10),
         run_agent_stream(
@@ -87,6 +95,8 @@ async fn scenario_cold_notification_loss_blocks_inference_until_exact_identity_r
         result.is_err(),
         "pending publication must block the actual inference entrypoint"
     );
+    let failure = result.err().ok_or("pending publication was not rejected")?;
+    assert!(failure.to_string().contains("compaction"), "{failure}");
     assert!(server
         .requests
         .lock()
@@ -115,7 +125,12 @@ async fn scenario_cold_notification_loss_blocks_inference_until_exact_identity_r
             .publication_pending
     );
     inner.ensure_compaction_inference_ready()?;
-    let agent = RigAgent::new(rig::agent::AgentBuilder::new(model).build(), 1);
+    let agent = RigAgent::new(
+        rig::agent::AgentBuilder::new(model)
+            .max_tokens(4096)
+            .build(),
+        1,
+    );
     tokio::time::timeout(
         std::time::Duration::from_secs(10),
         run_agent_stream(

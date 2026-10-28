@@ -7,10 +7,7 @@ use rig::completion::CompletionRequestBuilder;
 use rig::streaming::StreamedAssistantContent;
 use serde_json::json;
 
-#[path = "../../tests/prov159_support/mod.rs"]
-mod auth_fixture;
-#[path = "../../tests/fixtures/prov148.rs"]
-mod fixture;
+use crate::test_fixtures::{auth as auth_fixture, transport as fixture};
 #[path = "../../tests/custom_test_helpers.rs"]
 mod helpers;
 

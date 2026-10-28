@@ -1,12 +1,12 @@
+@done
 @bug-fix
 @session-management
 @persistence
 @phase-1
 @BUG-274
 Feature: Restore manifest diagnostics required by default RPC and Fspec builds
-
   """
-  Existing staged BUG-271 RPC/UI calls predate BUG-273 and reference an absent core API. Prior six-library check/Clippy omitted RPC and the final binary. Supply one shared read-only manifest discovery path for session loading and diagnostics; keep target errors and unknown-reference cleanup strict. Preserve user staging and existing UI/RPC edits. Validate default binary, RPC test-fixture and Fspec test-stub-provider features.
+  The public persistence::session_manifest_issues facade and default RPC consumer now share read-only manifest discovery with session loading. Validate real non-draining diagnostics, strict target errors and conservative unknown-reference cleanup, plus actual default RPC/CLI/Fspec binary and supported fixture builds. The original missing-API investigation remains recoverable in BUG-274 architecture notes; no remote schema cause or live-session repair is claimed.
   """
 
   # ========================================
@@ -22,7 +22,6 @@ Feature: Restore manifest diagnostics required by default RPC and Fspec builds
   #   2. Given an invalid sessions root When the exported diagnostic API is called Then a store-wide error is returned instead of an empty success
   #
   # ========================================
-
   Background: User Story
     As a developer building the default Fspec binary
     I want to compile and retrieve complete manifest diagnostics
@@ -33,9 +32,7 @@ Feature: Restore manifest diagnostics required by default RPC and Fspec builds
     When the exported diagnostic API is called twice
     Then stable issues include paths identities categories recovery guidance and files stay unchanged
 
-
   Scenario: Store wide diagnostic failures remain errors
     Given an invalid sessions root
     When the exported diagnostic API is called
     Then a store-wide error is returned instead of an empty success
-

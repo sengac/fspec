@@ -1,5 +1,6 @@
 #[path = "fixtures/prov151.rs"]
 pub mod fixture;
+use fixture::previous::terminal;
 use fixture::*;
 use futures::StreamExt;
 use rig::agent::{AgentBuilder, MultiTurnStreamItem};

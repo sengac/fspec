@@ -2,9 +2,9 @@
 //! Primary feature: spec/features/prov159-rpc-lifecycle.feature
 
 #[path = "../../providers/tests/prov159_support/network.rs"]
-mod network;
+pub mod network;
 #[path = "../../providers/tests/prov159_support/mod.rs"]
-mod prov159_support;
+pub mod prov159_support;
 
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend};
@@ -81,7 +81,7 @@ async fn scenario_a11_esc_permits_immediate_browser_retry_without_stale_commit()
     let stale = reqwest::get(format!("http://{address}/auth/callback?code=old&state=old")).await?;
     assert_eq!(stale.status(), reqwest::StatusCode::BAD_REQUEST);
     assert!(
-        issuer.requests().is_empty(),
+        issuer.requests()?.is_empty(),
         "stale callback reached token exchange"
     );
     assert!(read_codex_auth()?.and_then(|auth| auth.tokens).is_none());

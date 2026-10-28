@@ -1,14 +1,14 @@
 //! Feature: spec/features/client-mcp-full-rpc.feature
 #[test]
-fn every_rpc_has_a_typed_mcp_mapping() {
+fn every_rpc_has_a_typed_mcp_mapping() -> Result<(), Box<dyn std::error::Error>> {
     let source = include_str!("../src/lib.rs");
     let body = source
         .split("pub trait FspecService {")
         .nth(1)
-        .expect("RPC trait")
+        .ok_or("RPC trait missing")?
         .split("\n}\n")
         .next()
-        .expect("trait body");
+        .ok_or("trait body missing")?;
     let expected: std::collections::BTreeSet<_> = body
         .lines()
         .filter_map(|l| l.trim().strip_prefix("async fn "))
@@ -28,4 +28,5 @@ fn every_rpc_has_a_typed_mcp_mapping() {
         )
         .is_err());
     }
+    Ok(())
 }

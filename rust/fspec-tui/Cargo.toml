@@ -83,6 +83,7 @@ dirs.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
+wiremock = "0.6.5"
 keyring.workspace = true
 sha2.workspace = true
 insta.workspace = true

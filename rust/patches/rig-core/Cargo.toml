@@ -31,6 +31,7 @@ ordered-float = "5.0.0"
 quick-xml = { version = "0.38.0", optional = true }
 rayon = { version = "1.10.0", optional = true }
 reqwest = { version = "0.12.20", default-features = false, features = ["json", "stream", "multipart"] }
+rig-derive = { version = "=0.1.10", optional = true }
 schemars = "1.0.4"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
@@ -87,7 +88,7 @@ default = ["reqwest-tls"]
 all = ["derive", "pdf", "rayon"]
 audio = []
 image = []
-derive = []
+derive = ["dep:rig-derive"]
 experimental = []
 discord-bot = ["dep:serenity"]
 pdf = ["dep:lopdf"]
@@ -111,3 +112,79 @@ reqwest-middleware-rustls = ["reqwest-middleware", "reqwest-middleware/rustls-tl
 
 # Empty workspace table to exclude from parent workspace
 [workspace]
+
+[[test]]
+name = "embed_macro"
+required-features = ["derive"]
+
+[[example]]
+name = "complex_agentic_loop_claude"
+required-features = ["derive"]
+
+[[example]]
+name = "gemini_embeddings"
+required-features = ["derive"]
+
+[[example]]
+name = "mistral_embeddings"
+required-features = ["derive"]
+
+[[example]]
+name = "rag"
+required-features = ["derive"]
+
+[[example]]
+name = "rag_ollama"
+required-features = ["derive"]
+
+[[example]]
+name = "pdf_agent"
+required-features = ["derive", "pdf"]
+
+[[example]]
+name = "together_embeddings"
+required-features = ["derive"]
+
+[[example]]
+name = "vector_search"
+required-features = ["derive"]
+
+[[example]]
+name = "vector_search_cohere"
+required-features = ["derive"]
+
+[[example]]
+name = "vector_search_ollama"
+required-features = ["derive"]
+
+[[example]]
+name = "voyageai_embeddings"
+required-features = ["derive"]
+
+[[example]]
+name = "openai_audio_generation"
+required-features = ["audio"]
+
+[[example]]
+name = "hyperbolic_audio_generation"
+required-features = ["audio"]
+
+[[example]]
+name = "openai_image_generation"
+required-features = ["image"]
+
+[[example]]
+name = "hyperbolic_image_generation"
+required-features = ["image"]
+
+[[example]]
+name = "huggingface_image_generation"
+required-features = ["image"]
+
+[[example]]
+name = "rmcp"
+required-features = ["rmcp"]
+
+[[example]]
+name = "discord_bot"
+required-features = ["discord-bot"]

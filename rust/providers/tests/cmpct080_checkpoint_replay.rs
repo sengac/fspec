@@ -2,11 +2,12 @@
 
 use codelet_providers::{codex::history::CodexHistory, session::ProviderSession};
 use codelet_test_helpers::setup_temp_directory;
+use futures::StreamExt;
 use serde_json::{json, Value};
 use std::{fs, sync::Arc};
 
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -16,7 +17,6 @@ fn initial() -> Value {
 
 #[tokio::test]
 async fn a_genuinely_new_session_and_recorded_tool_outcomes_remain_supported() -> TestResult {
-    use futures::StreamExt;
     use rig::{
         completion::{CompletionModel, CompletionRequestBuilder},
         message::{Message, ToolResultContent, UserContent},
@@ -175,7 +175,6 @@ fn failed_reset_cannot_destroy_the_authoritative_checkpoint() -> TestResult {
 
 #[tokio::test]
 async fn replay_refuses_a_tool_call_with_no_recorded_outcome() -> TestResult {
-    use futures::StreamExt;
     use rig::completion::{CompletionModel, CompletionRequestBuilder};
     for call in [
         json!({"type":"function_call","id":"fc_1","call_id":"call_1","name":"inspect","arguments":"{}"}),

@@ -19,7 +19,7 @@ use std::time::Duration;
 #[path = "../../providers/tests/fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

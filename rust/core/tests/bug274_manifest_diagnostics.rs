@@ -83,7 +83,7 @@ fn store_wide_diagnostic_failures_remain_errors() -> TestResult {
     // @step When the exported diagnostic API is called
     let result = persistence::session_manifest_issues();
     // @step Then a store-wide error is returned instead of an empty success
-    let error = result.expect_err("invalid root must remain an error");
+    let error = result.err().ok_or("invalid root must remain an error")?;
     assert!(error.contains("sessions"));
     assert_eq!(fs::read(path)?, b"not a directory");
     Ok(())

@@ -1,7 +1,7 @@
 //! Feature: spec/features/lossless-transcript-delivery.feature
 
 #[path = "bug244/support.rs"]
-mod support;
+pub mod support;
 
 #[path = "bug244/history_fixture.rs"]
 mod history_fixture;

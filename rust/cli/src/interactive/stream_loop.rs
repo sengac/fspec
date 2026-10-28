@@ -781,6 +781,7 @@ where
         // Use Acquire ordering to synchronize with Release store from interrupt setter
         if is_interrupted.load(Acquire) {
             drop(stream);
+            output.acknowledge_interruption();
             super::interruption::record_tool_cancellations(
                 session,
                 &mut tool_calls_buffer,
@@ -797,14 +798,20 @@ where
                     }
                     None => super::interruption::CancellationReason::Unspecified,
                 },
-            )?;
+            )
+            .await?;
             // Emit interrupted notification
             let queued = if let Some(ref mut iq) = input_queue {
                 iq.dequeue_all()
             } else {
                 vec![]
             };
-            output.emit_interrupted(&queued);
+            super::interruption::publish_settlement(
+                output,
+                vec![super::output::StreamEvent::Interrupted(queued)],
+                false,
+            )
+            .await?;
 
             // Still add partial response to message history
             if !assistant_text.is_empty() {
@@ -812,7 +819,12 @@ where
             }
 
             // PROV-039: Propagate stop_reason even on interruption
-            output.emit_done_with_stop_reason(final_stop_reason.take());
+            super::interruption::publish_settlement(
+                output,
+                vec![super::output::StreamEvent::Done(final_stop_reason.take())],
+                false,
+            )
+            .await?;
             break;
         }
 
@@ -1122,7 +1134,8 @@ where
                             &mut tool_calls_buffer,
                             output,
                             super::interruption::CancellationReason::AcceptedCompletion,
-                        )?;
+                        )
+                        .await?;
                         // Flush pending assistant text into history
                         // (interrupt-path pattern) before closing the turn.
                         if !assistant_text.is_empty() {
@@ -2329,19 +2342,11 @@ where
                         }
                     }
 
-                    // BUG-170 / BUG-185: A terminal API error of ANY class (not
-                    // only "prompt is too long") with a failed tool pair at the
-                    // tail of the stack would otherwise be replayed on every
-                    // subsequent user message. Surgically strip the offending
-                    // pair, invalidate the stale cache-token state (the prefix
-                    // the tracker's cache fields reference no longer exists),
-                    // and keep the session interactive — like the EXT-016
-                    // image-recovery path: surface the error, break, stay usable.
-                    // BUG-185 supersedes BUG-170 rule [0]: the strip is no
-                    // longer gated on is_prompt_too_long_error. When the tail
-                    // matches no tool shape (StrippedTail::None), fall through
-                    // to the existing terminal behavior (emit error + Err).
-                    if !is_interrupted.load(Acquire) {
+                    // BUG-170 / BUG-185: legacy non-Codex terminal errors may
+                    // strip tool tails after the earlier recovery cascade.
+                    // BUG-272: Codex owns committed call ancestry; preserve its
+                    // genuine history and propagate the explicit error below.
+                    if !is_interrupted.load(Acquire) && session.current_provider_name() != "codex" {
                         let stripped = super::recovery_unrecoverable::strip_failed_tool_call_tail(
                             &mut session.messages,
                         );

@@ -10,6 +10,21 @@ pub struct CompactionIdentity {
     pub revision: u64,
 }
 
+impl CompactionCheckpoint {
+    pub fn provider_generation(&self) -> Result<u64, String> {
+        if self.payload.get("codexContinuation").is_none() {
+            return Ok(self.generation);
+        }
+        let checkpoint =
+            codelet_providers::codex::session::committed_checkpoint(self.generation, &self.payload)
+                .map_err(|error| error.to_string())?;
+        if checkpoint.model.as_deref() != Some(&self.model) {
+            return Err("incompatible committed provider lineage".into());
+        }
+        Ok(checkpoint.generation)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CompactionSource {
     pub session_id: Uuid,
@@ -113,6 +128,7 @@ pub fn validate_committed_boundary(manifest: &SessionManifest) -> Result<(), Str
         .compaction
         .as_ref()
         .ok_or("committed generation lacks DAG")?;
+    commit.checkpoint.provider_generation()?;
     let lineage: Vec<_> = manifest
         .messages
         .iter()

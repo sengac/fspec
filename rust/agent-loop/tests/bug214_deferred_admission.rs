@@ -3,7 +3,7 @@
 #[path = "../../cli/tests/bug214/model.rs"]
 mod model;
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::generate_compaction_handler::register_generate_compaction_handler;
 use codelet_core::persistence::load_session;

@@ -1,7 +1,7 @@
 #[path = "bug210_progress/support.rs"]
-mod progress_support;
+pub mod progress_support;
 #[path = "bug214_escape/support.rs"]
-mod support;
+pub mod support;
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use progress_support::TestResult;
@@ -29,7 +29,7 @@ async fn scenario_escape_cancels_pending_pre_prompt_compaction_through_the_embed
     // @step And the original conversation remains unchanged and accessible
     fixture.assert_conversation_preserved().await?;
     // @step And compaction activity is cleared for that session without affecting another session
-    fixture.assert_activity_cleared();
+    fixture.assert_activity_cleared()?;
     Ok(())
 }
 
@@ -55,6 +55,6 @@ async fn scenario_escape_cancels_pending_pre_prompt_compaction_through_the_webso
     // @step And the original conversation remains unchanged and accessible
     fixture.assert_conversation_preserved().await?;
     // @step And compaction activity is cleared for that session without affecting another session
-    fixture.assert_activity_cleared();
+    fixture.assert_activity_cleared()?;
     Ok(())
 }

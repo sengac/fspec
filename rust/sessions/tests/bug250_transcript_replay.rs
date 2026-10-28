@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/transcript-only-replay.feature"]
 
 #[path = "../src/replay_content.rs"]
-mod replay_content;
+pub mod replay_content;
 #[path = "../src/replay_media.rs"]
 mod replay_media;
 #[path = "../src/replay_transcript.rs"]

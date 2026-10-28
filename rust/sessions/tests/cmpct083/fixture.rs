@@ -150,7 +150,7 @@ impl Fixture {
         } else {
             std::env::remove_var("ZAI_PLAN_API_KEY");
         }
-        let manager = Arc::new(SessionManager::new());
+        let manager = SessionManager::new_arc();
         let mut manifest =
             create_session_with_provider("runtime gate", directory.path(), model(row))?;
         super::originals::append(&mut manifest)?;
@@ -163,6 +163,10 @@ impl Fixture {
             inner
                 .provider_manager_mut()
                 .override_model_limits(Some(200_000), Some(output_limit(row)));
+            inner.messages.extend([
+                rig::message::Message::user(SENTINEL),
+                rig::message::Message::assistant("retained source response"),
+            ]);
         }
         Ok(Self {
             directory,

@@ -3,7 +3,7 @@
 #[path = "support/bug234_publication.rs"]
 mod publication;
 #[path = "support/bug234_timing.rs"]
-mod timing;
+pub mod timing;
 
 use codelet_agent_loop::generate_compaction_handler::register_generate_compaction_handler;
 use codelet_core::persistence::load_session;

@@ -3,21 +3,16 @@
 //!
 //! Feature: spec/features/inject-summary-handler.feature
 //!
-//! The handler does NOT lock session.inner. The agent_loop
-//! holds that lock during streaming, so locking it here would deadlock.
-//! Instead, the handler stores the DAG content in `pending_dag_content`
-//! (an Arc<std::sync::Mutex<Option<String>>> on BackgroundSession) and
-//! returns immediately. After the stream completes, the agent_loop checks
-//! for pending DAG content and applies the session state changes.
+//! Compatibility functions delegate to the canonical no-fallback engine.
+//! Uncaptured raw candidates cannot replace memory or announce completion.
+//! The live engine uses captured, validated durable compaction operations.
 
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-use codelet_common::token_estimator::count_tokens;
-use codelet_core::compaction::{wrap_dag_content, FileOp, StructuralAnnotation};
-use codelet_tools::inject_summary::{InjectSummaryHandler, InjectSummaryResult};
-use uuid::Uuid;
+use codelet_core::compaction::{FileOp, StructuralAnnotation};
+use codelet_tools::inject_summary::InjectSummaryHandler;
 
 /// Callback invoked after inject_summary stores the DAG and clears the
 /// compaction flag. Used by the NAPI session manager for non-emitting
@@ -34,63 +29,22 @@ use uuid::Uuid;
 /// DAG summary alone, useful for logging only.
 pub type OnInjectedCallback = Arc<dyn Fn(u32) + Send + Sync>;
 
-/// Create an inject_summary handler for a specific session.
-///
-/// The handler captures:
-/// - `pending_dag`: shared storage for the DAG content
-/// - `context_window`: for estimating remaining budget
-/// - `compaction_in_progress`: cleared after DAG is applied
-/// - `on_injected`: optional callback fired immediately after DAG is stored
-///
-/// When invoked by the LLM tool call, the handler:
-/// 1. Stores DAG content in `pending_dag` (does NOT touch session state)
-/// 2. Clears the `compaction_in_progress` flag
-/// 3. Fires `on_injected` callback to emit CompactionComplete immediately
-/// 4. Returns estimated token counts
-///
-/// The actual "partition → clear → restore → inject" happens AFTER the
-/// stream completes, in the agent_loop, which has the session lock.
+/// Compatibility entrypoint for uncaptured legacy submissions.
+/// The canonical engine rejects them without changing context, clearing busy
+/// ownership or firing completion callbacks. Proper compaction is registered
+/// through the captured operation-owned durable commit path.
 pub fn create_handler(
     pending_dag: Arc<std::sync::Mutex<Option<String>>>,
     context_window: u64,
     compaction_in_progress: Arc<AtomicBool>,
     on_injected: Option<OnInjectedCallback>,
 ) -> InjectSummaryHandler {
-    Arc::new(move |_session_id: Uuid, content: String| {
-        let compaction_flag = compaction_in_progress.clone();
-
-        // Step 1: Wrap DAG content
-        let wrapped = wrap_dag_content(&content);
-
-        // Step 2: Estimate token counts (no session lock needed)
-        let injected_tokens = count_tokens(&wrapped) as u64;
-        // Rough estimate — actual budget recalculated when agent_loop applies the DAG
-        let remaining_budget = context_window.saturating_sub(injected_tokens);
-
-        // Step 3: Store DAG content for deferred application by agent_loop
-        if let Ok(mut guard) = pending_dag.lock() {
-            *guard = Some(wrapped);
-        } else {
-            return Err("Failed to acquire pending_dag lock".to_string());
-        }
-
-        // Step 4: Clear compaction_in_progress flag
-        // SessionSearch will stop trimming from this point
-        compaction_flag.store(false, Ordering::SeqCst);
-
-        // Step 5: Fire on_injected callback for non-emitting side effects
-        // (clears the compaction progress spinner as soon as inject_summary
-        // runs). CMPCT-038: the CompactionComplete chunk is emitted later by
-        // apply_pending_dag_and_emit with the recalculated basis.
-        if let Some(ref cb) = on_injected {
-            cb(injected_tokens as u32);
-        }
-
-        Ok(InjectSummaryResult {
-            injected_tokens,
-            remaining_budget,
-        })
-    })
+    codelet_agent_loop::inject_summary_handler::create_handler(
+        pending_dag,
+        context_window,
+        compaction_in_progress,
+        on_injected,
+    )
 }
 
 /// Emit the post-injection events in the correct order:
@@ -280,73 +234,7 @@ pub fn apply_pending_dag(
     session: &mut codelet_cli::session::Session,
     pending_dag: &Arc<std::sync::Mutex<Option<String>>>,
 ) -> Option<Vec<codelet_core::compaction::DagNodeMeta>> {
-    use codelet_cli::interactive_helpers::{recalculate_token_tracker, reset_session_to_reminders};
-    use codelet_core::compaction::parse_dag_nodes;
-    use rig::message::{Message, UserContent};
-    use rig::OneOrMany;
-
-    // Take the pending DAG content (if any)
-    let dag_content = match pending_dag.lock() {
-        Ok(mut guard) => guard.take(),
-        Err(_) => None,
-    };
-
-    let mut wrapped = dag_content?;
-
-    // CMPCT-021: Auto-append <dag-files> block if agent omitted it.
-    // Collect FileModification annotations from the session BEFORE clearing.
-    if !wrapped.contains("<dag-files>") {
-        let all_annotations: Vec<StructuralAnnotation> = session
-            .annotations
-            .values()
-            .flat_map(|v| v.iter().cloned())
-            .collect();
-
-        // Also check for existing dag-files in the previous DAG (for merge on incremental)
-        let existing_dag_files_str = codelet_cli::compaction_dag::detect_existing_dag(
-            &session.messages,
-        )
-        .and_then(|(content, _)| {
-            if content.contains("<dag-files>") {
-                Some(content)
-            } else {
-                None
-            }
-        });
-
-        if let Some(files_block) =
-            build_dag_files_block(&all_annotations, existing_dag_files_str.as_deref())
-        {
-            // Insert the dag-files block before the closing </system-reminder> tag
-            if let Some(close_pos) = wrapped.rfind("</system-reminder>") {
-                wrapped.insert_str(close_pos, &format!("\n\n{}\n", files_block));
-            } else {
-                wrapped.push_str(&format!("\n\n{}", files_block));
-            }
-        }
-    }
-
-    // Parse <dag-node> blocks from the raw DAG content for structured metadata.
-    // The wrapped content includes <system-reminder> tags, so we parse before wrapping
-    // or parse the inner content. Since wrap_dag_content adds the outer tags,
-    // the inner content (what the agent wrote) is inside the system-reminder block.
-    // We parse the full wrapped content — the regex only matches <dag-node> blocks
-    // so the system-reminder wrapper doesn't interfere.
-    let message_count = session.messages.len();
-    let dag_nodes = parse_dag_nodes(&wrapped, Some(message_count));
-
-    // Partition, clear, restore system reminders, clear turns
-    let _counts = reset_session_to_reminders(session);
-
-    // Append the wrapped DAG content as a system-reminder-style user message
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&wrapped)),
-    });
-
-    // Recalculate token tracker from actual post-injection messages
-    recalculate_token_tracker(session);
-
-    Some(dag_nodes)
+    codelet_agent_loop::inject_summary_handler::apply_pending_dag(session, pending_dag)
 }
 
 /// Apply pending DAG content and emit the post-injection events with the
@@ -376,12 +264,12 @@ pub fn apply_pending_dag_and_emit(
     original_tokens: u32,
     emit: &dyn Fn(crate::types::StreamChunk),
 ) -> Option<Vec<codelet_core::compaction::DagNodeMeta>> {
-    let dag_nodes = apply_pending_dag(session, pending_dag)?;
-
-    let compacted_tokens = u32::try_from(session.token_tracker.input_tokens).unwrap_or(u32::MAX);
-    emit_post_injection_events(emit, original_tokens, compacted_tokens);
-
-    Some(dag_nodes)
+    codelet_agent_loop::inject_summary_handler::apply_pending_dag_and_emit(
+        session,
+        pending_dag,
+        original_tokens,
+        emit,
+    )
 }
 
 #[cfg(test)]
@@ -392,94 +280,67 @@ mod tests {
 
     use super::*;
     use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+    use uuid::Uuid;
 
     // Scenario: inject_summary handler clears compaction_in_progress flag
     #[test]
-    fn test_inject_summary_clears_compaction_flag() {
-        // @step Given a session with compaction_in_progress flag set to true
-        let compaction_flag = Arc::new(AtomicBool::new(true));
+    fn test_uncaptured_inject_summary_preserves_compaction_flag(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let flag = Arc::new(AtomicBool::new(true));
+        let pending = Arc::new(std::sync::Mutex::new(None));
+        let handler = create_handler(pending.clone(), 200_000, flag.clone(), None);
+        let result = handler(Uuid::new_v4(), "# D2: Architecture\n- JWT auth".into());
         assert!(
-            compaction_flag.load(Ordering::Relaxed),
-            "Flag should start as true"
+            result.is_err(),
+            "uncaptured submission requires a durable operation"
         );
-
-        let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let context_window: u64 = 200_000;
-
-        let handler = create_handler(
-            pending_dag.clone(),
-            context_window,
-            compaction_flag.clone(),
-            None,
-        );
-
-        let session_id = Uuid::new_v4();
-        let dag_content =
-            "# D2: Architecture\n- JWT auth\n# D1: Current Arc\n- Implementing login".to_string();
-
-        // @step When the agent calls inject_summary with DAG content
-        let result = handler(session_id, dag_content);
-        assert!(result.is_ok(), "inject_summary should succeed");
-
-        // @step Then the inject_summary handler should clear the compaction_in_progress flag
         assert!(
-            !compaction_flag.load(Ordering::Relaxed),
-            "compaction_in_progress flag should be cleared after inject_summary"
+            flag.load(Ordering::Acquire),
+            "busy ownership cannot clear before durable application"
         );
-
-        // @step And the DAG content should be stored in pending_dag
-        let stored = pending_dag.lock().unwrap();
-        assert!(stored.is_some(), "pending_dag should have content");
-        assert!(stored.as_ref().unwrap().contains("compaction-dag"));
+        assert!(pending.lock().map_err(|error| error.to_string())?.is_none());
+        Ok(())
     }
 
     // Scenario: inject_summary stores wrapped DAG content
     #[test]
-    fn test_inject_summary_stores_wrapped_content() {
-        let compaction_flag = Arc::new(AtomicBool::new(true));
-        let pending_dag = Arc::new(std::sync::Mutex::new(None));
-
-        let handler = create_handler(pending_dag.clone(), 200_000, compaction_flag.clone(), None);
-
-        let dag = "# D2: Durable\n- Using bcrypt\n# D1: Arc\n- Building login".to_string();
-        let result = handler(Uuid::new_v4(), dag);
-        assert!(result.is_ok());
-
-        let stored = pending_dag.lock().unwrap();
-        let content = stored.as_ref().unwrap();
-        assert!(content.contains("<system-reminder>"));
-        assert!(content.contains("<!-- type:compaction-dag -->"));
-        assert!(content.contains("Using bcrypt"));
+    fn test_uncaptured_inject_summary_does_not_stage_wrapped_content(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let flag = Arc::new(AtomicBool::new(true));
+        let pending = Arc::new(std::sync::Mutex::new(None));
+        let handler = create_handler(pending.clone(), 200_000, flag.clone(), None);
+        let error = handler(Uuid::new_v4(), "# D2: Durable\n- Using bcrypt".into())
+            .err()
+            .ok_or("raw candidate must not stage fallback memory")?;
+        assert!(error.contains("durable operation capture"));
+        assert!(pending.lock().map_err(|error| error.to_string())?.is_none());
+        assert!(flag.load(Ordering::Acquire));
+        Ok(())
     }
 
     // Scenario: inject_summary returns token counts
     #[test]
-    fn test_inject_summary_returns_token_counts() {
-        let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let handler = create_handler(pending_dag, 200_000, Arc::new(AtomicBool::new(true)), None);
-
-        let result = handler(Uuid::new_v4(), "# Summary".to_string());
-        assert!(result.is_ok());
-        let result = result.unwrap();
-        assert!(result.injected_tokens > 0, "Should report injected tokens");
-        assert!(
-            result.remaining_budget > 0,
-            "Should report remaining budget"
-        );
+    fn test_uncaptured_inject_summary_never_returns_success_token_estimates(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let pending = Arc::new(std::sync::Mutex::new(None));
+        let handler = create_handler(pending, 200_000, Arc::new(AtomicBool::new(true)), None);
+        let error = handler(Uuid::new_v4(), "# Summary".into())
+            .err()
+            .ok_or("uncaptured submission cannot claim injected tokens or remaining budget")?;
+        assert!(error.contains("durable operation capture"));
+        Ok(())
     }
 
     // Scenario: apply_pending_dag with no pending content is a no-op
     #[test]
     fn test_apply_pending_dag_no_content() {
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        // CMPCT-038 drive-by: fall back to an explicit provider so the test
-        // also runs in multi-credential environments (ProviderManager::new()
-        // errors when several providers are credentialed but none selected).
-        let provider_manager = codelet_providers::ProviderManager::new()
-            .or_else(|_| codelet_providers::ProviderManager::with_provider("gemini"))
-            .or_else(|_| codelet_providers::ProviderManager::with_provider("zai"))
-            .or_else(|_| codelet_providers::ProviderManager::with_provider("claude"))
-            .expect("Need at least one API key for tests");
+        // Explicit synthetic configuration: never probe developer credentials.
+        let provider_manager = codelet_providers::ProviderManager::for_testing(
+            codelet_providers::ProviderType::OpenAI,
+            Some(200_000),
+            Some(4096),
+        );
         let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
         let applied = apply_pending_dag(&mut session, &pending_dag);
@@ -575,46 +436,27 @@ mod tests {
 
     // Scenario: on_injected callback fires immediately after DAG is stored
     #[test]
-    fn test_on_injected_callback_fires() {
-        let compaction_flag = Arc::new(AtomicBool::new(true));
-        let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let callback_called = Arc::new(AtomicBool::new(false));
-        let callback_tokens = Arc::new(AtomicU32::new(0));
-
-        let called_clone = callback_called.clone();
-        let tokens_clone = callback_tokens.clone();
-        let on_injected: OnInjectedCallback = Arc::new(move |tokens| {
-            called_clone.store(true, Ordering::SeqCst);
-            tokens_clone.store(tokens, Ordering::SeqCst);
+    fn test_uncaptured_injection_does_not_fire_completion_side_effects(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let flag = Arc::new(AtomicBool::new(true));
+        let pending = Arc::new(std::sync::Mutex::new(None));
+        let called = Arc::new(AtomicBool::new(false));
+        let tokens = Arc::new(AtomicU32::new(0));
+        let observed = called.clone();
+        let recorded = tokens.clone();
+        let callback: OnInjectedCallback = Arc::new(move |count| {
+            observed.store(true, Ordering::SeqCst);
+            recorded.store(count, Ordering::SeqCst);
         });
-
-        let handler = create_handler(
-            pending_dag.clone(),
-            200_000,
-            compaction_flag.clone(),
-            Some(on_injected),
-        );
-
-        // @step When the agent calls inject_summary with DAG content
-        let result = handler(Uuid::new_v4(), "# D2: Architecture\n- JWT auth".to_string());
-        assert!(result.is_ok());
-
-        // @step Then the on_injected callback should have been called
+        let handler = create_handler(pending.clone(), 200_000, flag.clone(), Some(callback));
+        assert!(handler(Uuid::new_v4(), "# D2: Architecture\n- JWT auth".into()).is_err());
         assert!(
-            callback_called.load(Ordering::SeqCst),
-            "on_injected callback should fire"
+            !called.load(Ordering::Acquire),
+            "completion side effects require durable application"
         );
-
-        // @step And the injected token count should be greater than 0
-        assert!(
-            callback_tokens.load(Ordering::SeqCst) > 0,
-            "injected tokens should be > 0"
-        );
-
-        // @step And compaction_in_progress should already be false
-        assert!(
-            !compaction_flag.load(Ordering::Relaxed),
-            "flag should be cleared before callback"
-        );
+        assert_eq!(tokens.load(Ordering::Acquire), 0);
+        assert!(flag.load(Ordering::Acquire));
+        assert!(pending.lock().map_err(|error| error.to_string())?.is_none());
+        Ok(())
     }
 }

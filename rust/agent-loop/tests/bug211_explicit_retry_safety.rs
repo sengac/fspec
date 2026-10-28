@@ -1,7 +1,7 @@
 //! Feature: spec/features/compaction-explicit-retry-safety.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod automatic;
+pub mod automatic;
 
 use codelet_rpc_types::StreamChunk;
 use std::sync::atomic::Ordering;

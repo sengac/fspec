@@ -56,9 +56,12 @@ enum PricingModel {
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 enum MockCaseType {
-    LowerCase,
-    UpperCase,
-    CamelCase,
+    #[serde(rename = "lowerCase")]
+    Lower,
+    #[serde(rename = "upperCase")]
+    Upper,
+    #[serde(rename = "camelCase")]
+    Camel,
 }
 
 /// Mimics Separator enum from AstGrepRefactor
@@ -326,10 +329,7 @@ fn test_tagged_union_enum_inlined_correctly() {
     // Navigate to: properties.transforms -> the inner type should have anyOf (not oneOf)
     // and no $ref
     let params = &response.parameters;
-    assert!(
-        has_no_refs(params),
-        "No $ref should remain after inlining"
-    );
+    assert!(has_no_refs(params), "No $ref should remain after inlining");
     assert!(
         has_no_one_of(params),
         "No oneOf should remain after conversion"
@@ -367,10 +367,7 @@ fn test_simple_schema_unchanged() {
 
     // Should still have the same properties
     assert!(response.parameters.get("properties").is_some());
-    assert_eq!(
-        response.parameters["properties"]["name"]["type"],
-        "string"
-    );
+    assert_eq!(response.parameters["properties"]["name"]["type"], "string");
 }
 
 #[test]
@@ -422,7 +419,10 @@ fn test_all_of_unwrapped_for_codex_compatibility() {
 
     // Also verify refs and oneOf are still handled
     assert!(has_no_refs(&response.parameters), "No $ref should remain");
-    assert!(has_no_one_of(&response.parameters), "No oneOf should remain");
+    assert!(
+        has_no_one_of(&response.parameters),
+        "No oneOf should remain"
+    );
 }
 
 #[test]
@@ -450,7 +450,16 @@ fn test_all_of_preserves_sibling_keys() {
         !color.as_object().unwrap().contains_key("allOf"),
         "allOf should be removed"
     );
-    assert_eq!(color["description"], "The color to use", "description must be preserved");
-    assert_eq!(color["type"], "string", "type from allOf item must be merged in");
-    assert!(color["enum"].is_array(), "enum from allOf item must be merged in");
+    assert_eq!(
+        color["description"], "The color to use",
+        "description must be preserved"
+    );
+    assert_eq!(
+        color["type"], "string",
+        "type from allOf item must be merged in"
+    );
+    assert!(
+        color["enum"].is_array(),
+        "enum from allOf item must be merged in"
+    );
 }

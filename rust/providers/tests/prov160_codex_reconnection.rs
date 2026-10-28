@@ -2,9 +2,9 @@
 #[path = "fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "prov159_support/mod.rs"]
-mod auth;
+pub mod auth;
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 use codelet_providers::codex::{
     history::CodexHistory, refreshing_client::RefreshingCodexClient, CodexResponsesModel,

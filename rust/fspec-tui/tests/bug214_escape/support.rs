@@ -199,9 +199,7 @@ impl EscapeFixture {
         let task = self.task.take().ok_or("pending pre-prompt stream task")?;
         let (cancelled, outcome) = tokio::time::timeout(Duration::from_secs(2), task)
             .await
-            .expect(
-            "Escape reached the session but pending pre-prompt compaction did not stop promptly",
-        )?;
+            .map_err(|error| format!("Escape reached the session but pending pre-prompt compaction did not stop promptly: {error}"))??;
         assert!(cancelled, "expected explicit cancellation, got {outcome}");
         assert!(
             self.dropped.load(Ordering::Acquire),
@@ -240,7 +238,7 @@ impl EscapeFixture {
         Ok(())
     }
 
-    pub fn assert_activity_cleared(&self) {
+    pub fn assert_activity_cleared(&self) -> TestResult {
         assert!(!self.shared.sessions[0]
             .compaction_in_progress
             .load(Ordering::Acquire));
@@ -259,11 +257,12 @@ impl EscapeFixture {
         assert!(!self.shared.footer(0).contains("[compacting:"));
         let other = self.shared.sessions[1]
             .get_compaction_progress()
-            .expect("other session progress remains visible");
+            .ok_or("other session progress remains visible")?;
         assert_eq!(other.phase, "Summarising");
         assert!(!self.shared.sessions[1]
             .is_interrupted
             .load(Ordering::Acquire));
         assert!(self.shared.footer(1).contains("[compacting:"));
+        Ok(())
     }
 }

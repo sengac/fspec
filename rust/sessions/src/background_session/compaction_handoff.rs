@@ -22,6 +22,7 @@ impl BackgroundSession {
                 input: "Continue".into(),
                 thinking_config: None,
                 compaction_epoch: Some(epoch),
+                interrupt_epoch: epoch,
             })
             .map_err(|error| format!("Failed to send compaction continuation: {error}"))
     }

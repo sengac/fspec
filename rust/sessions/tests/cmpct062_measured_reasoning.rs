@@ -3,9 +3,9 @@
 #[path = "../../core/tests/support/compaction_boundary.rs"]
 mod boundary;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_cli::interactive::run_agent_stream;
 use codelet_core::persistence::compaction_commit::{commit_compaction, reconcile_compaction};

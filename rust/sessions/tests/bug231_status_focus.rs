@@ -1,5 +1,5 @@
 //! Feature: spec/features/session-status-focus-reconciliation.feature
-mod bug231_support;
+pub mod bug231_support;
 use bug231_support::{Fixture, Result};
 use codelet_core::{
     persistence::load_session, session_manager_handle::SessionManagerHandle,

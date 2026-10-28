@@ -5,7 +5,7 @@ mod review;
 #[path = "support/bug234_scaffold.rs"]
 mod scaffold;
 #[path = "support/bug234_timing.rs"]
-mod timing;
+pub mod timing;
 
 use codelet_cli::compaction_operation::{
     build_validated_dag, CompactionFailure, CompactionOperation,

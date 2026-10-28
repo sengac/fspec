@@ -101,7 +101,7 @@ pub async fn child() -> TestResult<bool> {
     fixture::environment(&root)?;
     let id = SessionId::new(std::env::var("CMPCT083_COLD_SESSION")?);
     let row = std::env::var("CMPCT083_ROW")?;
-    let manager = SessionManager::new();
+    let manager = SessionManager::new_arc();
     manager.resume_session(&id)?;
     let background = manager.get_session(&id.value)?;
     if std::env::var_os("CMPCT083_RECONCILE").is_some() {

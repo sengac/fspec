@@ -50,6 +50,7 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
+    codelet_core::persistence::reset_stores_for_tests();
     let manager = Arc::new(SessionManager::new());
     Ok((data_dir, manager))
 }

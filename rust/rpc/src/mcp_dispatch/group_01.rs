@@ -45,11 +45,11 @@ pub(super) mod send_input {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .send_input(tarpc::context::current(), args.session_id, args.text)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod interrupt {
@@ -71,10 +71,10 @@ pub(super) mod interrupt {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .interrupt(tarpc::context::current(), args.session_id)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

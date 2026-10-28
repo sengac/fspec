@@ -1,7 +1,7 @@
 //! Feature: spec/features/recovery-completion-accounting.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod automatic;
+pub mod automatic;
 #[path = "support/bug265.rs"]
 mod support;
 #[path = "support/bug265_wire.rs"]

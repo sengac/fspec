@@ -45,6 +45,7 @@ pub fn envelopes_for_manifest(session: &super::SessionManifest) -> Result<Vec<St
                 envelope["_committedCompaction"] = json!({
                     "version":commit.version,
                     "generation":commit.identity.generation,
+                    "providerGeneration":commit.checkpoint.provider_generation()?,
                     "operationId":commit.identity.operation_id,
                     "revision":commit.identity.revision,
                 });

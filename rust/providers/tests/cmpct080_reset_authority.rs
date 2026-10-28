@@ -121,7 +121,7 @@ fn a_newer_committed_boundary_supersedes_retained_older_reset_records() -> TestR
 }
 
 #[path = "fixtures/prov147.rs"]
-mod fixture;
+pub mod fixture;
 
 #[tokio::test]
 async fn an_in_flight_response_cannot_publish_after_explicit_reset() -> TestResult {

@@ -19,7 +19,7 @@ use tokio_tungstenite::{accept_async, tungstenite::Message};
 #[path = "fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

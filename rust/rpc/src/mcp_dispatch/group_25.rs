@@ -18,12 +18,12 @@ pub(super) mod set_debug_directory {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .set_debug_directory(tarpc::context::current(), args.path)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod pause_resume {
@@ -45,12 +45,12 @@ pub(super) mod pause_resume {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .pause_resume(tarpc::context::current(), args.session_id)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod pause_confirm {
@@ -73,11 +73,11 @@ pub(super) mod pause_confirm {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .pause_confirm(tarpc::context::current(), args.session_id, args.accept)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

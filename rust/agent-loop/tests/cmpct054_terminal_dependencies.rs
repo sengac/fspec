@@ -1,7 +1,7 @@
 //! Feature: spec/features/terminal-compaction-dependency-lifetime.feature
 
 #[path = "support/terminal_recovery.rs"]
-mod support;
+pub mod support;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -76,7 +76,7 @@ async fn scenario_terminal_recovery_invokes_the_turn_builder_before_cleanup() {
         loop {
             match chunks.recv().await.expect("stream open") {
                 StreamChunk::Error { error, .. } => terminal_error = Some(error),
-                StreamChunk::Done { .. } => break terminal_error.expect("terminal failure"),
+                StreamChunk::Done => break terminal_error.expect("terminal failure"),
                 StreamChunk::CompactionComplete { .. } => {
                     return "unexpected compaction completion".into();
                 }

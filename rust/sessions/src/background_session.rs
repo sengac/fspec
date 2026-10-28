@@ -92,6 +92,7 @@ pub struct BackgroundSession {
     pub cached_max_output_tokens: AtomicU32,
     pub cached_compaction_threshold: AtomicU32,
     pub inner: Arc<Mutex<codelet_cli::session::Session>>,
+    settlement_gate: Arc<Mutex<()>>,
     status: AtomicU8,
     input_tx: mpsc::Sender<PromptInput>,
     output_buffer: RwLock<crate::transcript_journal::TranscriptJournal>,

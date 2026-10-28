@@ -1,29 +1,29 @@
 //! Feature: spec/features/cold-resume-compaction-acceptance-gate.feature
 
 #[path = "cmpct083/application.rs"]
-mod application;
+pub mod application;
 #[path = "cmpct083/codex.rs"]
-mod codex;
+pub mod codex;
 #[path = "cmpct083/custom.rs"]
-mod custom;
+pub mod custom;
 #[path = "cmpct083/fixture.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct083/lifecycle.rs"]
-mod lifecycle;
+pub mod lifecycle;
 #[path = "cmpct083/originals.rs"]
-mod originals;
+pub mod originals;
 #[path = "cmpct083/recovery.rs"]
-mod recovery;
+pub mod recovery;
 #[path = "cmpct083/restoration.rs"]
-mod restoration;
+pub mod restoration;
 #[path = "cmpct083/runtime.rs"]
-mod runtime;
+pub mod runtime;
 #[path = "cmpct083/suffix.rs"]
-mod suffix;
+pub mod suffix;
 #[path = "cmpct083/transport.rs"]
-mod transport;
+pub mod transport;
 #[path = "cmpct083/zai.rs"]
-mod zai;
+pub mod zai;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]

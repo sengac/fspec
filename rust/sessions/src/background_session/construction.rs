@@ -41,6 +41,7 @@ impl BackgroundSession {
             cached_max_output_tokens: AtomicU32::new(0),
             cached_compaction_threshold: AtomicU32::new(0),
             inner: Arc::new(Mutex::new(inner)),
+            settlement_gate: Arc::new(Mutex::new(())),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             input_tx,
             output_buffer: RwLock::new(crate::transcript_journal::TranscriptJournal::default()),

@@ -1,7 +1,7 @@
 //! Feature: spec/features/session-replay-invocation-identity.feature
 
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::SessionManagerHandle;
 use serde_json::json;

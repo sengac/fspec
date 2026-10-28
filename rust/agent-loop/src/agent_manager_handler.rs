@@ -500,6 +500,7 @@ fn handle_message(
         role_name: sender_role,
         message: final_message,
         images: None,
+        interrupt_epoch: None,
     };
 
     match target_session.receive_agent_message(incoming) {

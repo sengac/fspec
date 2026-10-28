@@ -5,6 +5,8 @@ pub mod transport;
 
 #[path = "fixtures/interruption_tool.rs"]
 mod interruption_tool;
+#[path = "fixtures/legacy_raw_interruption.rs"]
+mod legacy_raw;
 
 use codelet_cli::interactive::{run_agent_stream, StreamEvent, StreamOutput};
 use codelet_cli::session::Session;
@@ -100,14 +102,19 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             directory.path(),
             "codex",
         )?;
+        let _admission = codelet_tools::tool_admission::register_auxiliary(
+            manifest.id,
+            directory.path().to_path_buf(),
+        )?;
         let calls: Vec<Value> = (1..=3)
             .map(|number| {
                 if custom {
-                    json!({"type":"custom_tool_call","id":format!("item-{number}"),
-                        "call_id":format!("call-{number}"),"name":"apply_patch","input":"patch"})
+                    json!({"type":"function_call","id":format!("item-{number}"),
+                        "call_id":format!("call-{number}"),"namespace":"editing","name":"patch_text",
+                        "arguments":json!({"patch":"patch","work_unit_id":"NONE"}).to_string()})
                 } else {
                     json!({"type":"function_call","id":format!("item-{number}"),
-                        "call_id":format!("call-{number}"),"name":"inspect","arguments":"{}"})
+                        "call_id":format!("call-{number}"),"name":"inspect","arguments":"{\"work_unit_id\":\"NONE\"}"})
                 }
             })
             .collect();
@@ -128,18 +135,18 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             .ok_or("Codex session missing")?
             .history
             .clone();
-        let model =
-            server
-                .models()?
-                .0
-                .with_history(history)
-                .with_custom_tools(CustomToolRegistry::new(vec![ToolRegistration {
-                    namespace: None,
-                    name: "apply_patch".into(),
-                    executor: "apply_patch".into(),
-                    grammar: None,
-                    raw_input: true,
-                }])?);
+        let model = server
+            .models()?
+            .0
+            .with_history(history)
+            .with_strict_attribution()
+            .with_custom_tools(CustomToolRegistry::new(vec![ToolRegistration {
+                namespace: Some("editing".into()),
+                name: "patch_text".into(),
+                executor: "apply_patch".into(),
+                grammar: None,
+                raw_input: true,
+            }])?);
         let interrupted = Arc::new(AtomicBool::new(false));
         let interrupt_notify = Arc::new(Notify::new());
         let execution = interruption_tool::Execution {
@@ -179,7 +186,12 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             ),
         )
         .await??;
-        assert_eq!(execution.completed.load(Ordering::SeqCst), completed);
+        assert_eq!(
+            execution.completed.load(Ordering::SeqCst),
+            completed,
+            "custom={custom}, executing={executing}, outcomes={:?}",
+            results(&session.messages)
+        );
         assert_eq!(
             execution.started.load(Ordering::SeqCst),
             completed + usize::from(executing)
@@ -223,11 +235,7 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             .as_array()
             .ok_or("input missing")?;
         for (identity, text) in outcomes {
-            let kind = if custom {
-                "custom_tool_call_output"
-            } else {
-                "function_call_output"
-            };
+            let kind = "function_call_output";
             let recorded: Vec<_> = input
                 .iter()
                 .filter(|item| item["type"] == kind && item["call_id"] == identity)
@@ -236,7 +244,7 @@ async fn interrupted_batches_retain_completed_results_and_cancel_every_remaining
             assert_eq!(recorded[0]["output"], text);
         }
     }
-    Ok(())
+    legacy_raw::assert_legacy_raw_replay(directory.path()).await
 }
 
 /// @step Given a Codex session has no committed tool call

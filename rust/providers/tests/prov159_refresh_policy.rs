@@ -4,8 +4,8 @@
 #[path = "prov159_support/expiry.rs"]
 mod expiry;
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use network::{bounded, client, send, RefreshServer};
 use prov159_support::{Fixture, TestResult};
@@ -96,7 +96,7 @@ async fn scenario_a6_expired_external_jwt_cannot_gain_freshness_from_last_refres
     });
     released?;
     sent?;
-    assert_eq!(issuer.requests().len(), 1);
+    assert_eq!(issuer.requests()?.len(), 1);
     let stored: serde_json::Value = serde_json::from_slice(&std::fs::read(&path)?)?;
     assert_eq!(stored["tokens"]["refresh_token"], "refresh-A-rotated");
     assert!(

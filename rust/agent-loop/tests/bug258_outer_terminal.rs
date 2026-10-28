@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/outer-error-terminal-journaling.feature"]
 
 #[path = "support/automatic_compaction.rs"]
-mod automatic;
+pub mod automatic;
 #[path = "support/bug258.rs"]
 mod support;
 

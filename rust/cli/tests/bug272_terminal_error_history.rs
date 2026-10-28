@@ -1,7 +1,7 @@
 //! Feature: spec/features/codex-terminal-error-history-preservation.feature
 
 #[path = "fixtures/terminal_error_history.rs"]
-mod fixture;
+pub mod fixture;
 
 use fixture::{call, completed, history, rejection, transport, Harness, Output, TestResult};
 use rig::message::{AssistantContent, Message, UserContent};
@@ -87,7 +87,10 @@ async fn a_rejected_continuation_preserves_every_completed_batch_outcome() -> Te
     let result = harness.run("write a batch", &output).await;
     let expected = output.results();
     assert_eq!(expected.len(), 2);
-    assert!(expected[1].2.contains("genuine tool failure"), "{expected:?}");
+    assert!(
+        expected[1].2.contains("genuine tool failure"),
+        "{expected:?}"
+    );
     harness.assert_retained(&expected)?;
     assert!(result.is_err());
     harness.assert_continuation(&expected).await?;
@@ -171,5 +174,47 @@ async fn an_unresolved_committed_call_still_fails_replay_safely() -> TestResult 
         .is_empty());
     assert!(output.results().is_empty());
     output.assert_failure("no recorded outcome");
+    Ok(())
+}
+
+#[tokio::test]
+#[serial_test::serial]
+async fn network_setup_failure_preserves_completed_work_across_cold_resume() -> TestResult {
+    // @step Given a Codex batch has completed a filesystem change and a genuine tool error
+    let mut harness = Harness::with_disconnects(vec![
+        Some(completed(vec![call(1, false), call(2, true)])),
+        None,
+        Some(transport::terminal("completed", None, None)),
+    ])
+    .await?;
+    let output = Output::default();
+    // @step When the continuation connection closes before response headers arrive
+    let failure = harness.run("write a batch once", &output).await;
+    // @step Then the setup failure is explicit and every original call and outcome remains unchanged
+    let expected = output.results();
+    assert_eq!(expected.len(), 2);
+    assert!(expected[0].2.contains("saved"));
+    assert!(expected[1].2.contains("genuine tool failure"));
+    assert_eq!(
+        std::fs::read_to_string(harness.directory.path().join("effects"))?,
+        "effect\neffect\n"
+    );
+    let error = failure.err().ok_or("setup failure must propagate")?;
+    assert!(format!("{error:#}").contains("Codex network setup failed"));
+    output.assert_failure("Codex network setup failed");
+    harness.assert_retained(&expected)?;
+    // @step And cold resume replays each real outcome exactly once without repeating side effects
+    harness.cold_reload()?;
+    harness.assert_retained(&expected)?;
+    harness.assert_continuation(&expected).await?;
+    assert_eq!(
+        harness
+            .server
+            .requests
+            .lock()
+            .map_err(|_| "requests poisoned")?
+            .len(),
+        3
+    );
     Ok(())
 }

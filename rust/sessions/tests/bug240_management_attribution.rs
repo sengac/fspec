@@ -1,7 +1,7 @@
 //! Feature: spec/features/agent-manager-caller-attribution.feature
 
 #[path = "bug231_support/mod.rs"]
-mod fixture;
+pub mod fixture;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_rpc_types::SessionId;

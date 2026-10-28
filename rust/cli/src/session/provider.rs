@@ -67,6 +67,7 @@ impl Session {
 
     pub fn reset_provider_state(&mut self) -> Result<(), ExtensionError> {
         self.provider_session.reset()?;
+        self.durable_summary = None;
         self.token_tracker.invalidate_input();
         Ok(())
     }

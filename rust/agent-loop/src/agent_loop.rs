@@ -40,6 +40,8 @@ pub async fn agent_loop(
         } else {
             let mut is_fresh_user_input = false;
             let mut manual_compaction_epoch = None;
+            let mut interrupt_epoch = session.compaction_epoch();
+            let mut cancelled_at_submission = false;
             let mut supervisor_rx = session.incoming_message_rx.lock().await;
             let input_to_process = tokio::select! {
                 biased;
@@ -47,6 +49,7 @@ pub async fn agent_loop(
                     match result {
                         Some(prompt_input) => {
                             manual_compaction_epoch = prompt_input.compaction_epoch;
+                            interrupt_epoch = prompt_input.interrupt_epoch;
                             is_fresh_user_input = manual_compaction_epoch.is_none();
                             Some(InputWithImages {
                                 text: prompt_input.input,
@@ -62,7 +65,11 @@ pub async fn agent_loop(
                     }
                 }
                 result = supervisor_rx.recv() => {
-                    result.map(|message| input::supervisor_input(&session, message))
+                    result.map(|message| {
+                        cancelled_at_submission = message.interrupt_epoch.is_none();
+                        interrupt_epoch = message.interrupt_epoch.unwrap_or(interrupt_epoch);
+                        input::supervisor_input(&session, message)
+                    })
                 }
                 result = mcp_injection_rx.recv(), if mcp_channel_open => {
                     match result {
@@ -97,6 +104,8 @@ pub async fn agent_loop(
                 is_fresh_user_input,
                 is_compaction_retry: manual_compaction_epoch.is_some(),
                 manual_compaction_epoch,
+                interrupt_epoch,
+                cancelled_at_submission,
             })
         };
         let Some(pending) = pending else {
@@ -116,6 +125,9 @@ pub async fn agent_loop(
             thinking_model_key.as_deref(),
         );
         let mut inner_session = session.inner.lock().await;
+        if prompt::finish_cancelled_prompt(&session, pending.interrupt_epoch, false) {
+            continue;
+        }
         if let Err(error) = session.refresh_runtime_settings_for_turn(&mut inner_session) {
             session.handle_output(StreamChunk::error(error));
             session.set_status(SessionStatus::Idle);
@@ -195,18 +207,23 @@ pub async fn agent_loop(
             Ok(false)
         };
         let builder_retry_failed = builder_retry.is_err();
-        let mut result = providers::run_selected_provider(
-            &mut inner_session,
-            input,
-            bridge_images,
-            &session,
-            &output,
-            thinking_config_value,
-            &current_provider,
-            current_model.clone(),
-            builder_retry,
-        )
-        .await;
+        let mut result = if session.compaction_cancelled(pending.interrupt_epoch) {
+            prompt::finish_cancelled_prompt(&session, pending.interrupt_epoch, false);
+            Ok(())
+        } else {
+            providers::run_selected_provider(
+                &mut inner_session,
+                input,
+                bridge_images,
+                &session,
+                &output,
+                thinking_config_value,
+                &current_provider,
+                current_model.clone(),
+                builder_retry,
+            )
+            .await
+        };
         let applied = reconciliation::reconcile_turn(
             &session,
             &mut inner_session,

@@ -4,7 +4,7 @@ lazy_static::lazy_static! {
 }
 
 pub(super) fn init_message_store() -> Result<(), String> {
-    let mut store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
+    let mut store = codelet_common::read_work::lock(&MESSAGE_STORE)?;
     if store.is_none() {
         *store = Some(MessageStore::new()?);
     }
@@ -13,7 +13,7 @@ pub(super) fn init_message_store() -> Result<(), String> {
 
 pub(super) fn init_session_store() -> Result<(), String> {
     super::manifest_updates::ensure_session_access()?;
-    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    let mut store = codelet_common::read_work::lock(&SESSION_STORE)?;
     if store.is_none() {
         *store = Some(SessionStore::new()?);
     }
@@ -112,7 +112,7 @@ pub fn save_session(session: &SessionManifest) -> Result<(), String> {
 /// Load a session by ID.
 pub fn load_session(id: Uuid) -> Result<SessionManifest, String> {
     init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    let store = codelet_common::read_work::lock(&SESSION_STORE)?;
     store
         .as_ref()
         .ok_or("Session store not initialized")?

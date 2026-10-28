@@ -16,12 +16,37 @@ fn invocation(call: &ToolCall) -> &str {
     call.call_id.as_deref().unwrap_or(&call.id)
 }
 
-pub(super) fn record_tool_cancellations<O: StreamOutput>(
+pub(super) async fn publish_settlement<O: StreamOutput>(
+    output: &O,
+    events: Vec<StreamEvent>,
+    cancellations: bool,
+) -> anyhow::Result<()> {
+    fn publish(output: &dyn StreamOutput, events: Vec<StreamEvent>, cancellations: bool) {
+        for event in events {
+            match event {
+                StreamEvent::ToolResult(result) if cancellations => {
+                    output.emit_tool_cancellation(result);
+                }
+                event => output.emit(event),
+            }
+        }
+    }
+    if let Some(emitter) = output.settlement_emitter().map_err(anyhow::Error::msg)? {
+        tokio::task::spawn_blocking(move || publish(emitter.as_ref(), events, cancellations))
+            .await?;
+    } else {
+        publish(output, events, cancellations);
+    }
+    Ok(())
+}
+
+pub(super) async fn record_tool_cancellations<O: StreamOutput>(
     session: &mut Session,
     buffered: &mut Vec<AssistantContent>,
     output: &O,
     reason: CancellationReason,
 ) -> anyhow::Result<()> {
+    let mut events = Vec::new();
     let mut completed = HashSet::new();
     let mut published = HashSet::new();
     for message in &session.messages {
@@ -90,7 +115,7 @@ pub(super) fn record_tool_cancellations<O: StreamOutput>(
                     &mut session.messages,
                     vec![AssistantContent::ToolCall(call.clone())],
                 )?;
-                output.emit(StreamEvent::ToolCall(ToolCallEvent {
+                events.push(StreamEvent::ToolCall(ToolCallEvent {
                     id: call.id.clone(),
                     call_id: call.call_id.clone(),
                     name: call.function.name.clone(),
@@ -116,13 +141,13 @@ pub(super) fn record_tool_cancellations<O: StreamOutput>(
                 Some(call_id.clone()),
                 content,
             ));
-            output.emit_tool_cancellation(ToolResultEvent {
+            events.push(StreamEvent::ToolResult(ToolResultEvent {
                 id: call.id,
                 call_id: Some(call_id),
                 content: content.into(),
                 is_error: true,
-            });
+            }));
         }
     }
-    Ok(())
+    publish_settlement(output, events, true).await
 }

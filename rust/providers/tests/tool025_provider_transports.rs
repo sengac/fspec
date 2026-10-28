@@ -67,7 +67,7 @@ fn assert_contract(body: &Value) -> TestResult {
     assert_eq!(
         parameters["properties"]
             .as_object()
-            .map(|properties| properties.len()),
+            .map(serde_json::Map::len),
         Some(3)
     );
     assert!(parameters["required"]

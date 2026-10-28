@@ -72,11 +72,11 @@ pub(super) mod schedule_remove {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .schedule_remove(tarpc::context::current(), args.name)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

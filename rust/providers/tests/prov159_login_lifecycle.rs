@@ -3,8 +3,8 @@
 //! A11's primary embedded-backend test is in prov159_rpc_lifecycle.rs.
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::codex_auth::{delete_codex_auth, read_codex_auth, write_codex_auth};
 use codelet_providers::codex::codex_device_auth::{device_auth_login, DeviceAuthConfig};

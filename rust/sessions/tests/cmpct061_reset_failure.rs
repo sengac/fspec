@@ -1,7 +1,7 @@
 //! Feature: spec/features/provider-reset-failure-atomicity.feature
 
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::SessionManagerHandle;
 use codelet_providers::session::{ExtensionError, ProviderSessionExtension, StateWriter};

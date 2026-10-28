@@ -10,6 +10,10 @@ pub(super) struct IdleOnDropGuard {
 impl Drop for IdleOnDropGuard {
     fn drop(&mut self) {
         if self.armed {
+            if self.session.settlement_in_progress() {
+                self.session.set_status(SessionStatus::Interrupted);
+                return;
+            }
             tracing::warn!(
                 "AMGR-016: IdleOnDropGuard fired (panic or early exit) — forcing session {} to Idle",
                 self.session.id

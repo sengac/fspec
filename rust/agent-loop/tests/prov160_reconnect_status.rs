@@ -21,7 +21,7 @@ mod attempt_events;
 #[path = "fixtures/prov160_environment.rs"]
 mod environment;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

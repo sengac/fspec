@@ -37,7 +37,7 @@ async fn terminal_builder_receives_the_exact_current_durable_source(
         Ok(())
     })?;
     append_message(&mut manifest, "user", "new evidence after the previous DAG")?;
-    let (source, existing) = session.capture_durable_compaction_state(manifest.id)?;
+    let source = session.capture_durable_compaction(manifest.id)?;
     assert_eq!(source.prefix.len(), 2);
     let expected = source.clone();
     codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(
@@ -58,7 +58,8 @@ async fn terminal_builder_receives_the_exact_current_durable_source(
     .await;
     codelet_cli::compactor_sub_agent::set_compactor_sub_agent_handler(manifest.id, None);
     assert!(result
-        .expect_err("the fixture deliberately stops after inspecting the captured source")
+        .err()
+        .ok_or("the fixture deliberately stops after inspecting the captured source")?
         .to_string()
         .contains("verified exact captured source"));
     Ok(())

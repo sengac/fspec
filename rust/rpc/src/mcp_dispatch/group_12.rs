@@ -20,7 +20,7 @@ pub(super) mod save_profile {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .save_profile(
                 tarpc::context::current(),
                 args.provider_id,
@@ -30,7 +30,7 @@ pub(super) mod save_profile {
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod delete_profile {
@@ -53,7 +53,7 @@ pub(super) mod delete_profile {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .delete_profile(
                 tarpc::context::current(),
                 args.provider_id,
@@ -62,7 +62,7 @@ pub(super) mod delete_profile {
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod rename_profile {
@@ -87,7 +87,7 @@ pub(super) mod rename_profile {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .rename_profile(
                 tarpc::context::current(),
                 args.provider_id,
@@ -98,6 +98,6 @@ pub(super) mod rename_profile {
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

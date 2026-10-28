@@ -1,0 +1,946 @@
+{
+  "workUnitId": "BUG-279",
+  "date": "2026-10-28",
+  "statusAtReceipt": "validating",
+  "head": "9b490e8917e8928cc87ab3ca6bad920bf7afbc39",
+  "validationComplete": true,
+  "upstream": {
+    "origin": "https://github.com/openai/codex.git",
+    "commit": "6ba3a84680236c621b93e0b8dc140687a37f41fc",
+    "committedAt": "2026-10-28T04:05:31Z",
+    "cleanReadOnlyCheckout": true
+  },
+  "reportedLiveErrorEstablishedByLogs": false,
+  "logReview": {
+    "method": "Read-only category/timestamp scan; no raw lines or sensitive payloads displayed or copied.",
+    "matchingDeviceAuthFailureCategories": 0,
+    "wholeWordDeviceMentions": [
+      {
+        "file": "fspec-combined.log.2026-10-27",
+        "timestamp": "2026-10-27T03:43:23.959168Z"
+      },
+      {
+        "file": "private/client.log.2026-10-28",
+        "timestamp": "2026-10-28T04:25:22.437070+00:00"
+      }
+    ],
+    "filesModifiedByReview": false,
+    "activeDaemonMayAppendIndependently": true
+  },
+  "redReceipts": [
+    {
+      "label": "red-provider",
+      "exitCode": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol",
+      "started": "2026-10-28T04:34:44Z",
+      "finished": "2026-10-28T04:38:20Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/red-provider.log",
+      "logSha256": "9e33b49e2e5608d51fb58e306ee382954b613bb6c8fe1a9942c69c431ae90e31",
+      "causalEvidence": false,
+      "exclusion": "Compilation failure: missing test snapshot binding; no behavioral RED."
+    },
+    {
+      "label": "red-provider-executed",
+      "exitCode": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol",
+      "started": "2026-10-28T04:40:16Z",
+      "finished": "2026-10-28T04:40:21Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/red-provider-executed.log",
+      "logSha256": "dcf1f56a0a2c3e2dd5f7795f34af060b0d4c66cf56cf5f9c2aa9dc122c42e6cc",
+      "causalEvidence": "Four behavioral failures only; the malformed/terminal ENOENT setup failure is excluded."
+    },
+    {
+      "label": "red-native",
+      "exitCode": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "started": "2026-10-28T04:40:35Z",
+      "finished": "2026-10-28T04:46:38Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/red-native.log",
+      "logSha256": "9ae49cd5b1c3124db17c099a6c6fb792811f65a7714df2299b690cea22af2821",
+      "causalEvidence": false,
+      "exclusion": "Both tests stopped at missing projected provider row; no menu-path causal RED."
+    },
+    {
+      "label": "red-provider-corrected",
+      "exitCode": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol",
+      "started": "2026-10-28T04:49:40Z",
+      "finished": "2026-10-28T04:49:44Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/red-provider-corrected.log",
+      "logSha256": "987f77dfd9845fc538f8d26f366eb981a224711ab016840f4355cecd18b8cd0a",
+      "causalEvidence": "Five executed behavioral failures: independent string interval parser, pending polling, timeout semantics, HTTP500 reaching exchange, and exchange error disclosure."
+    },
+    {
+      "label": "red-native-executed",
+      "exitCode": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "started": "2026-10-28T04:49:44Z",
+      "finished": "2026-10-28T04:49:49Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/red-native-executed.log",
+      "logSha256": "dae497f3ddba23f20ee876916a8d74801a24287d46e98713b4c396d5ef521728",
+      "causalEvidence": "Two executed native menu/embedded-RPC behavioral failures: strict JSON start HTTP415 and secret-bearing settings error."
+    }
+  ],
+  "supersededQualityReceipts": [
+    {
+      "label": "final-native-clippy",
+      "exitCode": 101,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login --test prov159_rpc_lifecycle --test prov159_oauth_logout --test prov159_settings_failures -- -D warnings",
+      "started": "2026-10-28T05:04:59Z",
+      "finished": "2026-10-28T05:07:20Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-native-clippy.log",
+      "logSha256": "f08e91683e22524bb4e6ddc9393e68ce85fc18d8c768fff9fdc0c58c27941195",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged.",
+      "supersededBy": "final-native-clippy-corrected",
+      "reason": "Two test-only redundant clone/closure errors; fixed without suppressions or assertion changes."
+    }
+  ],
+  "finalCargoReceipts": [
+    {
+      "label": "green-provider",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol --test codex_device_auth_test",
+      "started": "2026-10-28T04:54:18Z",
+      "finished": "2026-10-28T04:54:41Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/green-provider.log",
+      "logSha256": "3aa5056fdbbba75e24f66cecca6c5dc2d30c321a01a2a7db83579810e0df551a"
+    },
+    {
+      "label": "green-native",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "started": "2026-10-28T04:54:42Z",
+      "finished": "2026-10-28T04:55:25Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/green-native.log",
+      "logSha256": "cca6189eaab15f49f941873d8b5df0f15610bde1e0ae79c5c6bbfd5b0d55e18d"
+    },
+    {
+      "label": "final-native-tests",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "started": "2026-10-28T05:10:27Z",
+      "finished": "2026-10-28T05:10:35Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-native-tests.log",
+      "logSha256": "ba9d496628d370b61c4f9184efb8deac689fe84d25673c10d22199417d9c9e58",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    },
+    {
+      "label": "final-provider-regressions",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test prov159_login_lifecycle --test prov159_login_review --test prov159_review_regressions --test prov159_entry_points --test prov159_credential_storage",
+      "started": "2026-10-28T04:56:41Z",
+      "finished": "2026-10-28T04:56:52Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-provider-regressions.log",
+      "logSha256": "6a82a8818acc1c2bb11f50389db5b12a8928782766649dba4b9c746b6490b092",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-native-regressions",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test prov159_rpc_lifecycle --test prov159_oauth_logout --test prov159_settings_failures",
+      "started": "2026-10-28T04:56:52Z",
+      "finished": "2026-10-28T04:57:27Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-native-regressions.log",
+      "logSha256": "79316318808632045ccb0df708cb3467260a82f8ea852ba476531ea5b8d35903",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-production-check",
+      "exitCode": 0,
+      "command": "cargo check --offline --profile ci-test -j2 -p codelet-providers -p codelet-rpc -p codelet-fspec-tui --lib",
+      "started": "2026-10-28T04:57:28Z",
+      "finished": "2026-10-28T04:59:00Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-production-check.log",
+      "logSha256": "34527c85c7d52c4d2a4ec6587820d6442701f191404d153115ff5130f85fd523",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-default-build",
+      "exitCode": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec",
+      "started": "2026-10-28T04:59:01Z",
+      "finished": "2026-10-28T05:02:15Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-default-build.log",
+      "logSha256": "5c4a86bca8b8bcb69bf1330c831ab2410042b5ebf0d2daed4b8a891319251cf5",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-fixture-build",
+      "exitCode": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider",
+      "started": "2026-10-28T05:02:16Z",
+      "finished": "2026-10-28T05:03:13Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-fixture-build.log",
+      "logSha256": "bdaba996b21080192330f61d266d0eb5453711301440c672cc3acbf17c3e01f0",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-production-clippy",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers -p codelet-rpc -p codelet-fspec-tui --lib -- -D warnings",
+      "started": "2026-10-28T05:03:14Z",
+      "finished": "2026-10-28T05:03:55Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-production-clippy.log",
+      "logSha256": "65272dd62bbb14c89a770ca4c7053c7adf8282fed78f2122f3ba66724dd35f81",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-provider-clippy",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol --test codex_device_auth_test --test prov159_login_lifecycle --test prov159_login_review --test prov159_review_regressions --test prov159_entry_points --test prov159_credential_storage -- -D warnings",
+      "started": "2026-10-28T05:03:56Z",
+      "finished": "2026-10-28T05:04:58Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-provider-clippy.log",
+      "logSha256": "a3d1dddfe0269297a6fa0c16b4a190c9c02d915eaa286475f4d1e32de29fe868",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "24c97d6525c70a5a0c92823c640b42a1622dce07b6c3c1f77a5b0a381054851a",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "ec73ac36e81d879a120f1a2d1d1c856ac39335611292d77f80400748118e6a18",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": [
+        "rust/providers/tests/codex_device_auth_test.rs",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "laterChangeExplanation": "Test-only module ordering and native redundant clone/closure cleanup. Fresh final-legacy-tests, final-native-tests and their dedicated final Clippy receipts supersede the affected targets. Production source and all assertions remain unchanged."
+    },
+    {
+      "label": "final-native-clippy-corrected",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login --test prov159_rpc_lifecycle --test prov159_oauth_logout --test prov159_settings_failures -- -D warnings",
+      "started": "2026-10-28T05:10:40Z",
+      "finished": "2026-10-28T05:10:41Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-native-clippy-corrected.log",
+      "logSha256": "695977ff902f39f87430ec862d37569ed7731ba20ff86f3c6ff60add2496b0de",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    },
+    {
+      "label": "final-default-clippy",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec -- -D warnings",
+      "started": "2026-10-28T05:10:44Z",
+      "finished": "2026-10-28T05:12:08Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-default-clippy.log",
+      "logSha256": "49dcde575f83f3d9a762ee807f7648702e13474a2fe04e8460adcedb16d2b41d",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    },
+    {
+      "label": "final-fixture-clippy",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider -- -D warnings",
+      "started": "2026-10-28T05:12:09Z",
+      "finished": "2026-10-28T05:12:35Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-fixture-clippy.log",
+      "logSha256": "5159faa3796919b7a5b625b6b185841aecc33ee732655241c6674b4709c978f2",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    },
+    {
+      "label": "final-legacy-tests",
+      "exitCode": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test codex_device_auth_test",
+      "started": "2026-10-28T05:10:36Z",
+      "finished": "2026-10-28T05:10:39Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-legacy-tests.log",
+      "logSha256": "484c772570448eee76165bd450b75bc7ea587a95f9dd624ee1ab84f38539f338",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    },
+    {
+      "label": "final-legacy-clippy",
+      "exitCode": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers --features test-support --test codex_device_auth_test -- -D warnings",
+      "started": "2026-10-28T05:10:42Z",
+      "finished": "2026-10-28T05:10:43Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-legacy-clippy.log",
+      "logSha256": "43521f517b7893e944ffb73b48b61856a1743fcbbca2062efa6b230894c429ba",
+      "inputSourceSha256": {
+        "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+        "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+        "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+        "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+        "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+        "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+        "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+        "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+        "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+        "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+        "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+        "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+        "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+        "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+      },
+      "unchangedDuringCommand": true,
+      "laterChanges": []
+    }
+  ],
+  "gates": [
+    {
+      "label": "final-add-done-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec add-tag-to-feature spec/features/native-codex-device-code-protocol-compatibility.feature @done",
+      "started": "2026-10-28T05:15:51Z",
+      "finished": "2026-10-28T05:15:51Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-add-done-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "18032e052ca851ea33b32fbbedc94216addcb5e56f3ebd19bca1e416ace90384"
+    },
+    {
+      "label": "final-add-done-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec add-tag-to-feature spec/features/native-codex-device-code-settings.feature @done",
+      "started": "2026-10-28T05:15:53Z",
+      "finished": "2026-10-28T05:15:53Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-add-done-native-codex-device-code-settings.log",
+      "logSha256": "19f5b12c58cf9a04660f26fbec9c2ba453d10495318967008bff65c5ad40b406"
+    },
+    {
+      "label": "final-audit-legacy",
+      "exitCode": 0,
+      "command": "fspec audit-coverage device-auth-flow",
+      "started": "2026-10-28T05:02:47Z",
+      "finished": "2026-10-28T05:02:47Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-audit-legacy.log",
+      "logSha256": "a5c812022bc1c6f3a4a379bef3eab77fbe992f78fd54f90752a7386c3e253134"
+    },
+    {
+      "label": "final-audit-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec audit-coverage native-codex-device-code-protocol-compatibility",
+      "started": "2026-10-28T05:02:43Z",
+      "finished": "2026-10-28T05:02:43Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-audit-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "e2af6b0db468545be778acf4fe8ccfcc845782170cae200ee291c423a0b4fb91"
+    },
+    {
+      "label": "final-audit-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec audit-coverage native-codex-device-code-settings",
+      "started": "2026-10-28T05:02:46Z",
+      "finished": "2026-10-28T05:02:46Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-audit-native-codex-device-code-settings.log",
+      "logSha256": "4f3c7a73379b5dd698891f059b75c5464f9074be332dba807605f988b5a645a9"
+    },
+    {
+      "label": "final-audit-settings-after-lints",
+      "exitCode": 0,
+      "command": "fspec audit-coverage native-codex-device-code-settings",
+      "started": "2026-10-28T05:12:36Z",
+      "finished": "2026-10-28T05:12:36Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-audit-settings-after-lints.log",
+      "logSha256": "4f3c7a73379b5dd698891f059b75c5464f9074be332dba807605f988b5a645a9"
+    },
+    {
+      "label": "final-coverage-legacy",
+      "exitCode": 0,
+      "command": "fspec show-coverage device-auth-flow --format json",
+      "started": "2026-10-28T05:02:47Z",
+      "finished": "2026-10-28T05:02:47Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-coverage-legacy.log",
+      "logSha256": "a608fbc4687037ba6cec0094e866f390597d42f49fecf68656225f04aba595c3"
+    },
+    {
+      "label": "final-coverage-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec show-coverage native-codex-device-code-protocol-compatibility --format json",
+      "started": "2026-10-28T05:02:42Z",
+      "finished": "2026-10-28T05:02:42Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-coverage-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "7c71acbca8c8ea9367001a3705252fe3aafe9691360b0d92eb907c7fde6e92fd"
+    },
+    {
+      "label": "final-coverage-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec show-coverage native-codex-device-code-settings --format json",
+      "started": "2026-10-28T05:02:45Z",
+      "finished": "2026-10-28T05:02:45Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-coverage-native-codex-device-code-settings.log",
+      "logSha256": "e8363cb01da234afb321f6fe1234f778265ebe0419a2c2e1e96160634a0e748e"
+    },
+    {
+      "label": "final-coverage-settings-after-lints",
+      "exitCode": 0,
+      "command": "fspec show-coverage native-codex-device-code-settings --format json",
+      "started": "2026-10-28T05:12:35Z",
+      "finished": "2026-10-28T05:12:35Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-coverage-settings-after-lints.log",
+      "logSha256": "10f7784295034f2981051997eb5a9dd5b08aea687c7b8eed2bb712c97edb8cca"
+    },
+    {
+      "label": "final-diff-check-after-lints",
+      "exitCode": 0,
+      "command": "git diff --check",
+      "started": "2026-10-28T05:12:35Z",
+      "finished": "2026-10-28T05:12:35Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-diff-check-after-lints.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-diff-check",
+      "exitCode": 0,
+      "command": "git diff --check",
+      "started": "2026-10-28T05:02:40Z",
+      "finished": "2026-10-28T05:02:40Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-diff-check.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-format-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec format spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "started": "2026-10-28T05:02:40Z",
+      "finished": "2026-10-28T05:02:40Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-format-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "fe854d3c2fd6d756891bd09f9d8c2172bcc0d26c17970b5b7161cd1624fba8b6"
+    },
+    {
+      "label": "final-format-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec format spec/features/native-codex-device-code-settings.feature",
+      "started": "2026-10-28T05:02:43Z",
+      "finished": "2026-10-28T05:02:43Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-format-native-codex-device-code-settings.log",
+      "logSha256": "a2f1f80e67f8bd9aecc11a8d39e29a9f71478ea928b0e91d9ce03b079c0c86df"
+    },
+    {
+      "label": "final-global-tags",
+      "exitCode": 1,
+      "command": "fspec validate-tags",
+      "started": "2026-10-28T05:02:48Z",
+      "finished": "2026-10-28T05:02:48Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-global-tags.log",
+      "logSha256": "bcfe6bc14b481187ee10bd0c95c48979f7ca71e8b6085736d331be4ebcd1740c"
+    },
+    {
+      "label": "final-owned-rustfmt",
+      "exitCode": 0,
+      "command": "rustfmt --check --edition 2021 --config skip_children=true rust/providers/src/codex/codex_device_auth.rs rust/providers/src/codex/device_poll.rs rust/providers/tests/bug279_device_protocol.rs rust/providers/tests/codex_device_auth_test.rs rust/providers/tests/device_protocol/support.rs rust/providers/tests/device_protocol/legacy_happy.rs rust/providers/tests/device_protocol/legacy_poll.rs rust/providers/tests/device_protocol/legacy_failures.rs rust/fspec-tui/tests/bug279_native_device_login.rs",
+      "started": "2026-10-28T05:12:34Z",
+      "finished": "2026-10-28T05:12:34Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-owned-rustfmt.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-remove-wip-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec remove-tag-from-feature spec/features/native-codex-device-code-protocol-compatibility.feature @wip",
+      "started": "2026-10-28T05:15:50Z",
+      "finished": "2026-10-28T05:15:50Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-remove-wip-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "49f23c487d98c5b0e82b15182b46f28734ad28f79f718fa453cf6ec8f81d6165"
+    },
+    {
+      "label": "final-remove-wip-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec remove-tag-from-feature spec/features/native-codex-device-code-settings.feature @wip",
+      "started": "2026-10-28T05:15:52Z",
+      "finished": "2026-10-28T05:15:52Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-remove-wip-native-codex-device-code-settings.log",
+      "logSha256": "1f9746afc933f7ae4e36af2ffaaec12e26b150cb8de9a81a577e0f07c051406a"
+    },
+    {
+      "label": "final-tags-done-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "started": "2026-10-28T05:15:51Z",
+      "finished": "2026-10-28T05:15:51Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-tags-done-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-tags-done-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-settings.feature",
+      "started": "2026-10-28T05:15:54Z",
+      "finished": "2026-10-28T05:15:54Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-tags-done-native-codex-device-code-settings.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-tags-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "started": "2026-10-28T05:02:41Z",
+      "finished": "2026-10-28T05:02:42Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-tags-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-tags-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-settings.feature",
+      "started": "2026-10-28T05:02:44Z",
+      "finished": "2026-10-28T05:02:44Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-tags-native-codex-device-code-settings.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "final-validate-done-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "started": "2026-10-28T05:15:52Z",
+      "finished": "2026-10-28T05:15:52Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-validate-done-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "360f5d64693f260b9b0d345a45d7c5ec842ea0caad11b842cff2d60f7e7ef258"
+    },
+    {
+      "label": "final-validate-done-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-settings.feature",
+      "started": "2026-10-28T05:15:54Z",
+      "finished": "2026-10-28T05:15:54Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-validate-done-native-codex-device-code-settings.log",
+      "logSha256": "6a3290224a45f4b0b287b4015106309b909b6d36d7dc8985f72ff86277ba59b4"
+    },
+    {
+      "label": "final-validate-legacy",
+      "exitCode": 0,
+      "command": "fspec validate spec/features/device-auth-flow.feature",
+      "started": "2026-10-28T05:02:46Z",
+      "finished": "2026-10-28T05:02:46Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-validate-legacy.log",
+      "logSha256": "17270843ad611a910c81dff28580a95fc5659f52d9bfc38a45613c2e1cd43fd6"
+    },
+    {
+      "label": "final-validate-native-codex-device-code-protocol-compatibility",
+      "exitCode": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "started": "2026-10-28T05:02:41Z",
+      "finished": "2026-10-28T05:02:41Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-validate-native-codex-device-code-protocol-compatibility.log",
+      "logSha256": "360f5d64693f260b9b0d345a45d7c5ec842ea0caad11b842cff2d60f7e7ef258"
+    },
+    {
+      "label": "final-validate-native-codex-device-code-settings",
+      "exitCode": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-settings.feature",
+      "started": "2026-10-28T05:02:44Z",
+      "finished": "2026-10-28T05:02:44Z",
+      "logPath": "/tmp/fspec-device-oauth-work/logs/final-validate-native-codex-device-code-settings.log",
+      "logSha256": "6a3290224a45f4b0b287b4015106309b909b6d36d7dc8985f72ff86277ba59b4"
+    }
+  ],
+  "redProductionSha256": {
+    "rust/providers/src/codex/codex_device_auth.rs": "6f4c3ee7412ce0ec134ae6f49bd142cd3503c8d84cf6688826942620f1553a48",
+    "rust/providers/src/codex/device_poll.rs": "9ca959bbe5d737d40260fd0ec0cc3d93e0a4e7ec09aea7e4039f7879a55c682e"
+  },
+  "testTargets": [
+    {
+      "receipt": "green-provider",
+      "target": "bug279_device_protocol.rs",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "receipt": "final-native-tests",
+      "target": "bug279_native_device_login.rs",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "receipt": "final-provider-regressions",
+      "target": "prov159_credential_storage.rs",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "receipt": "final-provider-regressions",
+      "target": "prov159_entry_points.rs",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "receipt": "final-provider-regressions",
+      "target": "prov159_login_lifecycle.rs",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "receipt": "final-provider-regressions",
+      "target": "prov159_login_review.rs",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "receipt": "final-provider-regressions",
+      "target": "prov159_review_regressions.rs",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "receipt": "final-native-regressions",
+      "target": "prov159_oauth_logout.rs",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "receipt": "final-native-regressions",
+      "target": "prov159_rpc_lifecycle.rs",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "receipt": "final-native-regressions",
+      "target": "prov159_settings_failures.rs",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "receipt": "final-legacy-tests",
+      "target": "codex_device_auth_test.rs",
+      "passed": 11,
+      "failed": 0
+    }
+  ],
+  "totalTopLevelPassed": 44,
+  "totalTopLevelFailed": 0,
+  "nestedOutputCountedAgain": false,
+  "supersededLegacyGreenCountedAgain": false,
+  "supersededNativeGreenCountedAgain": false,
+  "coverage": {
+    "native-codex-device-code-protocol-compatibility": {
+      "totalScenarios": 5,
+      "coveredScenarios": 5,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/providers/tests/bug279_device_protocol.rs"
+      ],
+      "implFiles": [
+        "rust/providers/src/codex/codex_device_auth.rs",
+        "rust/providers/src/codex/device_poll.rs",
+        "rust/providers/src/codex/device_session.rs"
+      ],
+      "totalLinesCovered": 655
+    },
+    "native-codex-device-code-settings": {
+      "totalScenarios": 2,
+      "coveredScenarios": 2,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/fspec-tui/tests/bug279_native_device_login.rs"
+      ],
+      "implFiles": [
+        "rust/providers/src/codex/codex_device_auth.rs",
+        "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
+        "rust/fspec-tui/src/views/provider_settings/projection.rs",
+        "rust/providers/src/codex/device_session.rs",
+        "rust/rpc/src/oauth_login.rs"
+      ],
+      "totalLinesCovered": 448
+    },
+    "device-auth-flow": {
+      "totalScenarios": 9,
+      "coveredScenarios": 9,
+      "coveragePercent": 100,
+      "testFiles": [
+        "rust/providers/tests/device_protocol/legacy_happy.rs",
+        "rust/providers/tests/device_protocol/legacy_poll.rs",
+        "rust/providers/tests/device_protocol/legacy_failures.rs"
+      ],
+      "implFiles": [
+        "rust/providers/src/codex/codex_device_auth.rs",
+        "rust/providers/src/codex/device_poll.rs"
+      ],
+      "totalLinesCovered": 975
+    }
+  },
+  "sourceSha256": {
+    "rust/Cargo.lock": "c4f366ab051e6e10f618d678750093d17517baf81b345a35545a81d113d4f2ec",
+    "rust/fspec-tui/Cargo.toml": "d37f379536515915cdc6b2966b34da2c102ebb240174356796eee004a7e7cf7f",
+    "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+    "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+    "rust/providers/src/codex/device_session.rs": "4c39f2f4795c5528b4f9c602b72a6286943e05d402d81630ce2a02a0901a4521",
+    "rust/providers/src/codex/codex_oauth.rs": "2378946e6c53045c78a04902caef7c2af2f5c8dd1514d91d5f2436077daf4b19",
+    "rust/providers/src/codex/auth_lifecycle.rs": "d452629d8d0956bdb566f7c0c328cf0c31377eccf362b51bc51a96e6c1270046",
+    "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+    "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+    "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+    "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+    "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+    "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+    "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+  },
+  "safety": {
+    "privateCredentialConfigBaselineFilesUnchanged": 2,
+    "privateCredentialHashesDisclosed": false,
+    "actualConfigSha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+    "preExistingWorkUnitRecordsUnchanged": 1790,
+    "priorDoneBugs": [
+      "BUG-271",
+      "BUG-272",
+      "BUG-274",
+      "BUG-278"
+    ],
+    "historicalManifestSha256": "51e67fcbc1c9b1c60e2c0a2247c49e5edeabe0aa537e7aa224cb8bc8f5a19a08",
+    "historicalSessionReadOnly": true,
+    "takenOverTaskUntouched": true,
+    "clientIdIssuerBrowserAndLifecycleControlsUnchanged": true,
+    "operationBudgetSeconds": 300,
+    "allTestHttpLoopback": true,
+    "testCredentialBuilder": "mock",
+    "testCodexHomeGuardRestored": true,
+    "isolatedRoot": "/tmp/fspec-device-oauth-isolated",
+    "isolatedVariables": [
+      "FSPEC_USER_DIR",
+      "XDG_CONFIG_HOME",
+      "XDG_RUNTIME_DIR",
+      "TMPDIR"
+    ],
+    "cargoProfile": "ci-test",
+    "cargoDebug": 0,
+    "cargoOffline": true,
+    "cargoJobs": 2,
+    "compilerQueues": 1,
+    "minimumFreeKiBGuard": 6000000,
+    "agentsOrSessionsCreated": false,
+    "realLoginOrDeviceRequestAttempted": false,
+    "commitPushInstallRestartDeployOrCleanPerformed": false
+  },
+  "limitations": [
+    "Exact live error remains unconfirmed; protocol causality is synthetic integration evidence.",
+    "522 pre-existing global tag-invalid files remain; no workspace-wide clean claim.",
+    "No Windows or live account login execution.",
+    "Prior unrelated intermittent OAuth timing control is not claimed fixed; scoped lifecycle controls passed unchanged.",
+    "Standard supported done transition and its checkpoint behavior follow this validation receipt."
+  ]
+}

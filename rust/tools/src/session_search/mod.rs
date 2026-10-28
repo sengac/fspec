@@ -67,6 +67,10 @@ impl SessionSearchTool {
 impl Tool for SessionSearchTool {
     const NAME: &'static str = "SessionSearch";
 
+    fn cancel_on_abandon(&self) -> bool {
+        true
+    }
+
     type Error = ToolError;
     type Args = SessionSearchArgs;
     type Output = String;
@@ -179,21 +183,43 @@ impl Tool for SessionSearchTool {
         }
 
         let session_id = self.session_id;
+        let cancellation = codelet_common::read_work::ReadCancellation::default();
+        struct CancelOnDrop(codelet_common::read_work::ReadCancellation);
+        impl Drop for CancelOnDrop {
+            fn drop(&mut self) {
+                self.0.cancel();
+            }
+        }
+        let _owner = CancelOnDrop(cancellation.clone());
         // Handlers take synchronous storage/file leases. Keep both I/O and
         // potentially large result serialization off the async worker pool.
         tokio::task::spawn_blocking(move || {
-            let result = execute_session_search(session_id, args.action);
-            let serialized = if matches!(
-                result,
-                SearchResult::Originals { .. } | SearchResult::OriginalsError { .. }
-            ) {
-                serde_json::to_string(&result)
-            } else {
-                serde_json::to_string_pretty(&result)
-            };
-            serialized.map_err(|error| ToolError::Execution {
-                tool: "session_search",
-                message: format!("Failed to serialize result: {error}"),
+            cancellation.run(|| {
+                let check = || {
+                    codelet_common::read_work::checkpoint("search.worker").map_err(|error| {
+                        ToolError::Execution {
+                            tool: "session_search",
+                            message: error.to_string(),
+                        }
+                    })
+                };
+                check()?;
+                let result = execute_session_search(session_id, args.action);
+                check()?;
+                let serialized = if matches!(
+                    result,
+                    SearchResult::Originals { .. } | SearchResult::OriginalsError { .. }
+                ) {
+                    serde_json::to_string(&result)
+                } else {
+                    serde_json::to_string_pretty(&result)
+                };
+                let serialized = serialized.map_err(|error| ToolError::Execution {
+                    tool: "session_search",
+                    message: format!("Failed to serialize result: {error}"),
+                })?;
+                check()?;
+                Ok(serialized)
             })
         })
         .await

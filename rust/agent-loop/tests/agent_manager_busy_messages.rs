@@ -218,6 +218,7 @@ async fn scenario_failed_delivery_leaves_an_idle_recipient_idle() -> TestResult 
             role_name: String::new(),
             message: "existing external input".to_string(),
             images: None,
+            interrupt_epoch: None,
         })?;
     }
     let result = fixture.send("cannot queue");

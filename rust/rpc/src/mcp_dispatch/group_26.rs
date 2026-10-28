@@ -19,12 +19,12 @@ pub(super) mod pause_triple {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .pause_triple(tarpc::context::current(), args.session_id, args.choice)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod send_hitl_response {
@@ -47,12 +47,12 @@ pub(super) mod send_hitl_response {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .send_hitl_response(tarpc::context::current(), args.session_id, args.response)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod get_pause_state {

@@ -35,3 +35,20 @@ Feature: Structured generation aware session replay
     Given replay envelopes captured before a newer message commit
     When the older snapshot is restored
     Then restore reports a revision conflict and retains the installed history
+
+  Scenario: Refreshing runtime prefix reminders does not corrupt a replay installation
+    Given an installed replay with a trusted committed revision
+    And runtime context is refreshed before a new persisted suffix arrives
+    When the current committed history is restored
+    Then the exact installed replay is located without losing or duplicating runtime context
+
+  Scenario: Ambiguous replay relocation fails without dropping content
+    Given an installed replay that appears twice after runtime prefix changes
+    When the current committed history is restored
+    Then restore reports an explicit conflict and retains all history without fallback
+
+  Scenario: Gemini transport decoration does not change durable replay identity
+    Given committed tool history without a provider thought signature
+    When Gemini adds its recognized transport-only placeholder before sending
+    Then repeated replay retains the same durable history identity
+    And genuine signature or tool argument changes remain explicit conflicts

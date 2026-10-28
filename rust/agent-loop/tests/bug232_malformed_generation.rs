@@ -1,7 +1,7 @@
 //! Feature: spec/features/compaction-malformed-generation-recovery.feature
 
 #[path = "cmpct056/support.rs"]
-mod durable;
+pub mod durable;
 #[path = "support/dag_generation_recovery.rs"]
 mod recovery;
 

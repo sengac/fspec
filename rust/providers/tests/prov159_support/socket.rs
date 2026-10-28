@@ -49,15 +49,22 @@ impl SocketProbe {
                         started.notify_one();
                         let Ok(permit) = release.acquire().await else { return };
                         permit.forget();
+                        #[allow(clippy::result_large_err, reason = "tungstenite requires an unboxed HTTP ErrorResponse in its handshake callback")]
                         let socket = accept_hdr_async(stream, |request: &http::Request<()>, mut response: http::Response<()>| {
-                            headers.lock().expect("header capture lock is available").push(request.headers().clone());
+                            let Ok(mut captured) = headers.lock() else {
+                                return Err(http::Response::builder().status(500).body(Some("header capture poisoned".into())).unwrap_or_default());
+                            };
+                            captured.push(request.headers().clone());
                             response.headers_mut().insert("x-codex-turn-state", http::HeaderValue::from_static("account-A-route"));
                             Ok(response)
                         }).await;
                         let Ok(mut socket) = socket else { return };
                         while let Some(Ok(Message::Text(text))) = socket.next().await {
                             let Ok(body) = serde_json::from_str(&text) else { return };
-                            messages.lock().expect("message capture lock is available").push(body);
+                            {
+                                let Ok(mut captured) = messages.lock() else { return };
+                                captured.push(body);
+                            }
                             let response = serde_json::json!({"type": "response.completed", "response": {
                                 "id": "account-A-continuation", "status": "completed", "output": []
                             }});
@@ -125,11 +132,11 @@ impl SocketProbe {
         Ok(())
     }
 
-    pub fn requests(&self) -> usize {
+    pub fn requests(&self) -> Result<usize, String> {
         self.messages
             .lock()
-            .expect("message capture lock is available")
-            .len()
+            .map(|messages| messages.len())
+            .map_err(|error| error.to_string())
     }
 }
 

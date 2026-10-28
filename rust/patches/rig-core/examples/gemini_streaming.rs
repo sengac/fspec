@@ -14,7 +14,8 @@ async fn main() -> Result<(), anyhow::Error> {
     let gen_cfg = GenerationConfig {
         thinking_config: Some(ThinkingConfig {
             include_thoughts: Some(true),
-            thinking_budget: 2048,
+            thinking_budget: Some(2048),
+            thinking_level: None,
         }),
         ..Default::default()
     };

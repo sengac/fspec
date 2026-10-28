@@ -5,12 +5,35 @@ use codelet_rpc_types::{NotificationSeverity, SessionStatus, StreamChunk};
 use codelet_sessions::background_session::BackgroundSession;
 use std::sync::atomic::Ordering;
 
+pub(super) fn finish_cancelled_prompt(
+    session: &BackgroundSession,
+    epoch: u64,
+    cancelled_at_submission: bool,
+) -> bool {
+    if !cancelled_at_submission && !session.compaction_cancelled(epoch) {
+        return false;
+    }
+    session.handle_output(StreamChunk::InterruptedWithReason {
+        queued_inputs: Vec::new(),
+        reason: session
+            .interruption_reason()
+            .unwrap_or(codelet_rpc_types::InterruptionReason::User),
+    });
+    session.set_status(SessionStatus::Idle);
+    session.handle_output(StreamChunk::done());
+    true
+}
+
 pub(super) async fn admit_prompt(
     session: &BackgroundSession,
     pending: &PendingInput,
     state: &mut LoopState,
 ) -> bool {
+    session.wait_for_settlement().await;
     let input = &pending.input.text;
+    if pending.is_fresh_user_input {
+        session.admit_input_epoch(pending.interrupt_epoch);
+    }
     if let Some(epoch) = pending.manual_compaction_epoch {
         if session.discard_cancelled_compaction(epoch).await {
             session.handle_output(StreamChunk::done());
@@ -54,7 +77,9 @@ pub(super) async fn admit_prompt(
             images.len()
         );
     }
-    if let Some(ref hooks) = session.lifecycle_hooks {
+    if let Some(hooks) = session.lifecycle_hooks.as_ref().filter(|_| {
+        !pending.cancelled_at_submission && !session.compaction_cancelled(pending.interrupt_epoch)
+    }) {
         if !hooks.user_prompt_submit.is_empty() {
             let ctx = session.hook_context();
             let outcome = run_user_prompt(hooks, &ctx, input).await;
@@ -98,11 +123,17 @@ pub(super) async fn admit_prompt(
         session.handle_output(StreamChunk::done());
         return false;
     }
-    if let Err(error) = persist_user_input(
-        &session.id,
-        input,
-        pending.input.images.as_deref().unwrap_or_default(),
-    ) {
+    let session_id = session.id;
+    let persisted_input = input.clone();
+    let images = pending.input.images.clone().unwrap_or_default();
+    let persistence = tokio::task::spawn_blocking(move || {
+        persist_user_input(&session_id, &persisted_input, &images)
+    })
+    .await;
+    if let Err(error) = persistence
+        .map_err(|error| error.to_string())
+        .and_then(|result| result.map_err(|error| error.to_string()))
+    {
         tracing::error!(
             "Failed to persist user message for session {}: {}",
             session.id,
@@ -115,10 +146,15 @@ pub(super) async fn admit_prompt(
         session.handle_output(StreamChunk::done());
         return false;
     }
-    session.set_status(SessionStatus::Running);
-    if !pending.is_compaction_retry {
-        session.reset_interrupt();
+    if finish_cancelled_prompt(
+        session,
+        pending.interrupt_epoch,
+        pending.cancelled_at_submission,
+    ) {
+        return false;
     }
+    session.set_status(SessionStatus::Running);
+    state.turn_epoch = pending.interrupt_epoch;
     tracing::debug!(
         session_id = %session.id,
         input_chars = input.chars().count(),

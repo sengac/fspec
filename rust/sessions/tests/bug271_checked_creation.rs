@@ -1,4 +1,4 @@
-//! Feature: spec/features/session-storage-diagnostics.feature
+//! Feature: spec/features/checked-session-creation.feature
 
 use codelet_core::SessionManagerHandle;
 use codelet_sessions::SessionManager;
@@ -39,7 +39,9 @@ async fn checked_creation_distinguishes_declines_from_application_failures(
     let failure = manager.create_session_checked(None);
     // @step Then only the missing model returns an empty decline while the storage failure returns its cause and publishes no session
     assert!(decline.value.is_empty());
-    let error = failure.expect_err("a persistence failure must remain an error");
+    let error = failure
+        .err()
+        .ok_or("a persistence failure must remain an error")?;
     assert!(error.contains("persist session manifest"), "{error}");
     assert!(error.contains("sessions"), "{error}");
     assert!(!error.contains("no default model"), "{error}");

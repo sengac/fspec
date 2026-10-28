@@ -3,7 +3,7 @@
 #[path = "../../cli/tests/bug214/model.rs"]
 mod model;
 #[path = "support/terminal_recovery.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::terminal_overflow_recovery::{
     try_terminal_overflow_recovery, TerminalRecoveryError,

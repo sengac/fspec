@@ -15,7 +15,7 @@ use serial_test::serial;
 use tempfile::TempDir;
 
 #[path = "common/profile_rpc_helpers.rs"]
-mod helpers;
+pub mod helpers;
 use helpers::{
     basic_def, config_path, make_handle, point_env, read_profile, read_root, seed_config,
 };
@@ -23,7 +23,7 @@ use helpers::{
 // Scenario: Saving a new profile to a missing config file creates it
 #[test]
 #[serial]
-fn scenario_save_creates_missing_config() {
+fn scenario_save_creates_missing_config() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given no fspec-config.json file exists
     let _env = point_env(tmp.path());
@@ -40,17 +40,18 @@ fn scenario_save_creates_missing_config() {
     assert!(result.is_ok(), "save_profile should succeed: {result:?}");
 
     // @step And the profile "work-vllm" has baseUrl "http://localhost:8888"
-    let profile = read_profile(tmp.path(), "work-vllm");
+    let profile = read_profile(tmp.path(), "work-vllm")?;
     assert_eq!(profile["baseUrl"], "http://localhost:8888");
 
     // @step And the profile "work-vllm" has apiKey "sk-test"
     assert_eq!(profile["apiKey"], "sk-test");
+    Ok(())
 }
 
 // Scenario: Saving an existing profile preserves its custom models
 #[test]
 #[serial]
-fn scenario_save_preserves_custom_models() {
+fn scenario_save_preserves_custom_models() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given an openai profile "work-vllm" exists with a custom model "alpha"
     let _env = seed_config(
@@ -59,7 +60,7 @@ fn scenario_save_preserves_custom_models() {
             "work-vllm": { "baseUrl": "http://old", "apiKey": "sk-old",
                 "customModels": [ { "id": "alpha" } ] }
         } } } }),
-    );
+    )?;
     let handle = make_handle();
 
     // @step When I save the profile "work-vllm" with baseUrl "http://localhost:9999" and apiKey "sk-new"
@@ -73,19 +74,20 @@ fn scenario_save_preserves_custom_models() {
     assert!(result.is_ok(), "save_profile should succeed: {result:?}");
 
     // @step And the profile "work-vllm" has baseUrl "http://localhost:9999"
-    let profile = read_profile(tmp.path(), "work-vllm");
+    let profile = read_profile(tmp.path(), "work-vllm")?;
     assert_eq!(profile["baseUrl"], "http://localhost:9999");
 
     // @step And the profile "work-vllm" still has the custom model "alpha"
     let models = profile["customModels"].as_array().expect("customModels[]");
     assert_eq!(models.len(), 1);
     assert_eq!(models[0]["id"], "alpha");
+    Ok(())
 }
 
 // Scenario: Saving a profile preserves sibling profiles and top-level keys
 #[test]
 #[serial]
-fn scenario_save_preserves_siblings_and_top_level() {
+fn scenario_save_preserves_siblings_and_top_level() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given a config with openai profiles "work-vllm" and "home" and a top-level "theme" key
     let _env = seed_config(
@@ -94,7 +96,7 @@ fn scenario_save_preserves_siblings_and_top_level() {
             "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" },
             "home": { "baseUrl": "http://b", "apiKey": "k2" }
         } } } }),
-    );
+    )?;
     let handle = make_handle();
 
     // @step When I save the profile "work-vllm" with baseUrl "http://localhost:1111" and apiKey "sk-x"
@@ -108,18 +110,19 @@ fn scenario_save_preserves_siblings_and_top_level() {
     assert!(result.is_ok(), "save_profile should succeed: {result:?}");
 
     // @step And the sibling profile "home" is unchanged
-    let home = read_profile(tmp.path(), "home");
+    let home = read_profile(tmp.path(), "home")?;
     assert_eq!(home["baseUrl"], "http://b");
     assert_eq!(home["apiKey"], "k2");
 
     // @step And the top-level "theme" key is unchanged
-    assert_eq!(read_root(tmp.path())["theme"], "dark");
+    assert_eq!(read_root(tmp.path())?["theme"], "dark");
+    Ok(())
 }
 
 // Scenario: Saving a profile writes supplied optional fields
 #[test]
 #[serial]
-fn scenario_save_writes_optional_fields() {
+fn scenario_save_writes_optional_fields() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given no fspec-config.json file exists
     let _env = point_env(tmp.path());
@@ -147,7 +150,7 @@ fn scenario_save_writes_optional_fields() {
     // @step Then the call returns Ok
     assert!(result.is_ok(), "save_profile should succeed: {result:?}");
 
-    let profile = read_profile(tmp.path(), "work-vllm");
+    let profile = read_profile(tmp.path(), "work-vllm")?;
     // @step And the profile "work-vllm" has contextWindow 32000
     assert_eq!(profile["contextWindow"], 32_000);
 
@@ -157,6 +160,7 @@ fn scenario_save_writes_optional_fields() {
     // @step And the profile "work-vllm" has compactionThreshold type "percentage" and value 80
     assert_eq!(profile["compactionThreshold"]["type"], "percentage");
     assert_eq!(profile["compactionThreshold"]["value"], 80);
+    Ok(())
 }
 
 // Scenario: Saving a profile for a non-openai provider preserves other providers
@@ -199,7 +203,7 @@ fn scenario_save_non_openai_preserves_other_providers() -> Result<(), Box<dyn st
 // Scenario: Deleting a profile removes only the named profile
 #[test]
 #[serial]
-fn scenario_delete_removes_only_named() {
+fn scenario_delete_removes_only_named() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given a config with openai profiles "work-vllm" and "home"
     let _env = seed_config(
@@ -208,7 +212,7 @@ fn scenario_delete_removes_only_named() {
             "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" },
             "home": { "baseUrl": "http://b", "apiKey": "k2" }
         } } } }),
-    );
+    )?;
     let handle = make_handle();
 
     // @step When I delete the profile "work-vllm"
@@ -218,18 +222,19 @@ fn scenario_delete_removes_only_named() {
     assert!(result.is_ok(), "delete_profile should succeed: {result:?}");
 
     // @step And the profile "work-vllm" is gone
-    let profiles = read_root(tmp.path())["providers"]["openai"]["profiles"].clone();
+    let profiles = read_root(tmp.path())?["providers"]["openai"]["profiles"].clone();
     assert!(profiles.get("work-vllm").is_none());
 
     // @step And the sibling profile "home" is unchanged
     assert_eq!(profiles["home"]["baseUrl"], "http://b");
     assert_eq!(profiles["home"]["apiKey"], "k2");
+    Ok(())
 }
 
 // Scenario: Deleting from a missing config file is a no-op
 #[test]
 #[serial]
-fn scenario_delete_missing_config_no_op() {
+fn scenario_delete_missing_config_no_op() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given no fspec-config.json file exists
     let _env = point_env(tmp.path());
@@ -243,12 +248,13 @@ fn scenario_delete_missing_config_no_op() {
 
     // @step And no fspec-config.json file is written
     assert!(!config_path(tmp.path()).exists());
+    Ok(())
 }
 
 // Scenario: Deleting a non-existent profile leaves config unchanged
 #[test]
 #[serial]
-fn scenario_delete_non_existent_unchanged() {
+fn scenario_delete_non_existent_unchanged() -> Result<(), Box<dyn std::error::Error>> {
     let tmp = TempDir::new().unwrap();
     // @step Given a config with an openai profile "work-vllm"
     let _env = seed_config(
@@ -256,7 +262,7 @@ fn scenario_delete_non_existent_unchanged() {
         json!({ "providers": { "openai": { "profiles": {
             "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" }
         } } } }),
-    );
+    )?;
     let before = std::fs::read_to_string(config_path(tmp.path())).unwrap();
     let handle = make_handle();
 
@@ -269,4 +275,5 @@ fn scenario_delete_non_existent_unchanged() {
     // @step And the configuration is left byte-identical
     let after = std::fs::read_to_string(config_path(tmp.path())).unwrap();
     assert_eq!(before, after);
+    Ok(())
 }

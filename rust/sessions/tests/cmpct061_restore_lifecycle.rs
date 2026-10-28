@@ -1,5 +1,5 @@
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::{
     append_message, get_session_message_envelopes, load_session, set_compaction_state,
@@ -172,5 +172,54 @@ async fn metadata_only_revision_preserves_runtime_suffix() -> TestResult {
     assert!(manifest.revision > old_revision);
     manager.restore_session_messages(&session_id, get_session_message_envelopes(background.id)?)?;
     assert_eq!(background.inner.lock().await.messages, before);
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn refreshed_runtime_prefix_relocates_the_exact_installed_replay() -> TestResult {
+    let (_directory, manager, id, _) = support::manager().await?;
+    let background = manager.get_session(&id.value)?;
+    let mut manifest = load_session(background.id)?;
+    append_message(&mut manifest, "user", "persisted H")?;
+    manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    {
+        let mut inner = background.inner.lock().await;
+        inner
+            .messages
+            .insert(0, Message::user("fresh runtime prefix"));
+        inner.messages.push(Message::user("persisted T"));
+    }
+    append_message(&mut manifest, "user", "persisted T")?;
+    let before = background.inner.lock().await.messages.clone();
+    manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    assert_eq!(background.inner.lock().await.messages, before);
+    manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    assert_eq!(background.inner.lock().await.messages, before);
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[serial_test::serial]
+async fn ambiguous_replay_relocation_retains_content_and_blocks_inference() -> TestResult {
+    let (_directory, manager, id, _) = support::manager().await?;
+    let background = manager.get_session(&id.value)?;
+    let mut manifest = load_session(background.id)?;
+    append_message(&mut manifest, "user", "persisted H")?;
+    manager.restore_session_messages(&id, get_session_message_envelopes(background.id)?)?;
+    background
+        .inner
+        .lock()
+        .await
+        .messages
+        .insert(0, Message::user("persisted H"));
+    append_message(&mut manifest, "user", "persisted T")?;
+    let before = background.inner.lock().await.messages.clone();
+    assert!(manager
+        .restore_session_messages(&id, get_session_message_envelopes(background.id)?)
+        .is_err());
+    let inner = background.inner.lock().await;
+    assert_eq!(inner.messages, before);
+    assert!(inner.ensure_compaction_inference_ready().is_err());
     Ok(())
 }

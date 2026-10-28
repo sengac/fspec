@@ -1,7 +1,7 @@
 //! Feature: spec/features/committed-token-state-restore.feature
 
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::*;
 use codelet_core::session_manager_handle::SessionManagerHandle;

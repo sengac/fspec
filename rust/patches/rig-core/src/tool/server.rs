@@ -1,6 +1,6 @@
 use futures::channel::oneshot::Canceled;
 use std::sync::Arc;
-use tokio::sync::mpsc::{Sender, error::SendError};
+use tokio::sync::mpsc::{error::SendError, Sender};
 
 #[path = "server_configuration.rs"]
 mod configuration;
@@ -8,7 +8,7 @@ mod configuration;
 use crate::{
     completion::{CompletionError, ToolDefinition},
     tool::{Tool, ToolDyn, ToolError, ToolMiddleware, ToolSet, ToolSetError},
-    vector_store::{VectorSearchRequest, VectorStoreIndexDyn, request::Filter},
+    vector_store::{request::Filter, VectorSearchRequest, VectorStoreIndexDyn},
 };
 
 pub struct ToolServer {
@@ -111,7 +111,7 @@ impl ToolServer {
 
     pub async fn handle_message(&mut self, message: ToolServerRequest) {
         let ToolServerRequest {
-            callback_channel,
+            mut callback_channel,
             data,
         } = message;
 
@@ -161,7 +161,21 @@ impl ToolServer {
                 let _ = callback_channel.send(ToolServerResponse::ToolDeleted);
             }
             ToolServerRequestMessageKind::CallTool { name, args } => {
-                match self.toolset.call(&name, args.clone()).await {
+                let cancellable = self
+                    .toolset
+                    .get(&name)
+                    .is_some_and(|tool| tool.cancel_on_abandon());
+                let call = self.toolset.call(&name, args.clone());
+                let result = if cancellable {
+                    tokio::select! {
+                        biased;
+                        _ = callback_channel.cancellation() => return,
+                        result = call => result,
+                    }
+                } else {
+                    call.await
+                };
+                match result {
                     Ok(result) => {
                         let _ = callback_channel.send(ToolServerResponse::ToolExecuted { result });
                     }
@@ -391,7 +405,7 @@ mod tests {
 
     use crate::{
         completion::ToolDefinition,
-        tool::{Tool, server::ToolServer},
+        tool::{server::ToolServer, Tool},
     };
 
     #[derive(Deserialize)]

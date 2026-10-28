@@ -6,7 +6,7 @@ mod environment;
 #[path = "support/cont011_native.rs"]
 mod native;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 #[path = "support/cont011_security.rs"]
 mod security;
 #[path = "support/cont011_wire.rs"]

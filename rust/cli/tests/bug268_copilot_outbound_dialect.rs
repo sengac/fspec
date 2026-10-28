@@ -3,7 +3,7 @@
 #[path = "../../agent-loop/tests/support/bug268_environment.rs"]
 mod environment;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 #[path = "support/bug268.rs"]
 mod support;
 #[path = "support/bug268_wire.rs"]

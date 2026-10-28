@@ -5,7 +5,7 @@ mod assertions;
 #[path = "support/bug242_codex.rs"]
 mod codex;
 #[path = "support/bug234_timing.rs"]
-mod timing;
+pub mod timing;
 
 use codelet_core::persistence::load_session;
 use codelet_providers::codex::history::CodexHistory;

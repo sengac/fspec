@@ -3,9 +3,9 @@
 #[path = "fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "prov159_support/mod.rs"]
-mod auth;
+pub mod auth;
 #[path = "fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 use codelet_providers::codex::{
     history::CodexHistory,

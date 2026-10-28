@@ -111,7 +111,7 @@ fn chat_body(usage: Value, streaming: bool) -> String {
     if streaming {
         format!(
             "{}data: [DONE]\n\n",
-            sse(json!({"choices":[],"usage":usage}))
+            sse(json!({"choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":usage}))
         )
     } else {
         json!({"id":"physical-response","object":"chat.completion","created":0,

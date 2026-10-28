@@ -1,10 +1,10 @@
 //! Feature: spec/features/automatic-compaction-lifecycle.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod support;
+pub mod support;
 
 #[path = "support/bug210_completion_metrics.rs"]
-mod metrics;
+pub mod metrics;
 
 use codelet_rpc_types::{SessionState, SessionStatus, StreamChunk};
 

@@ -1,5 +1,5 @@
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use std::time::Duration;
 use support::{assert_clean, assert_no_completion, snapshot, Fixture, Server};

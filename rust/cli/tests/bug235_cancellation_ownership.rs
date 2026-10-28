@@ -16,18 +16,26 @@ struct Output(Mutex<Vec<StreamEvent>>);
 
 impl StreamOutput for Output {
     fn emit(&self, event: StreamEvent) {
-        self.0.lock().expect("recorded events").push(event);
+        self.0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .push(event);
     }
 }
 
 #[tokio::test]
 #[serial_test::serial]
-async fn scenario_retry_threshold_cancellation_agrees_with_current_turn_recovery() {
+async fn scenario_retry_threshold_cancellation_agrees_with_current_turn_recovery(
+) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a current turn and an independent session with separate token states
     let current = Arc::new(Mutex::new(TokenState::default()));
     let independent = Arc::new(Mutex::new(TokenState::default()));
+    let server = wiremock::MockServer::start().await;
     let client: rig::providers::openai::CompletionsClient =
-        rig::providers::openai::CompletionsClient::new("unused-test-key").expect("test client");
+        rig::providers::openai::CompletionsClient::builder()
+            .api_key("offline-synthetic")
+            .base_url(server.uri())
+            .build()?;
     let agent = client.agent("o3").build();
     // @step When a refreshed retry stream crosses its compaction threshold
     let hook = retry_compaction_hook(&current, 190_847, 0, 190_000);
@@ -46,7 +54,12 @@ async fn scenario_retry_threshold_cancellation_agrees_with_current_turn_recovery
         classify_compaction_branch(&failure, &current),
         CompactionBranch::Recover { disagreement: None }
     );
-    assert!(current.lock().expect("current state").compaction_needed);
+    assert!(
+        current
+            .lock()
+            .map_err(|error| error.to_string())?
+            .compaction_needed
+    );
     let mut session = codelet_cli::session::Session::from_provider_manager(
         codelet_providers::ProviderManager::for_testing(
             codelet_providers::ProviderType::OpenAI,
@@ -62,29 +75,35 @@ async fn scenario_retry_threshold_cancellation_agrees_with_current_turn_recovery
         &mut String::new(),
         &output,
         true,
-    )
-    .expect("typed recovery handoff");
+    )?;
     assert_eq!(
         output
             .0
             .lock()
-            .expect("events")
+            .map_err(|error| error.to_string())?
             .iter()
             .filter(|event| matches!(event, StreamEvent::CompactionStarted))
             .count(),
         1
     );
+    assert!(server
+        .received_requests()
+        .await
+        .ok_or("capture unavailable")?
+        .is_empty());
     // @step And the independent session remains unchanged
     assert!(
         !independent
             .lock()
-            .expect("independent state")
+            .map_err(|error| error.to_string())?
             .compaction_needed
     );
+    Ok(())
 }
 
 #[test]
-fn scenario_refreshing_retry_usage_preserves_pending_compaction_intent() {
+fn scenario_refreshing_retry_usage_preserves_pending_compaction_intent(
+) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given the current turn already requires compaction
     let current = Arc::new(Mutex::new(TokenState {
         compaction_needed: true,
@@ -95,16 +114,18 @@ fn scenario_refreshing_retry_usage_preserves_pending_compaction_intent() {
         let hook = retry_compaction_hook(&current, input, output, 190_000);
         // @step Then the shared allocation and pending intent remain intact
         assert!(Arc::ptr_eq(&hook.state, &current));
-        let state = current.lock().expect("current state");
+        let state = current.lock().map_err(|error| error.to_string())?;
         assert_eq!(state.input_tokens, input);
         assert_eq!(state.output_tokens, output);
         assert_eq!(state.cache_read_input_tokens, 0);
         assert!(state.compaction_needed);
     }
+    Ok(())
 }
 
 #[test]
-fn scenario_missing_intent_still_receives_defensive_typed_recovery() {
+fn scenario_missing_intent_still_receives_defensive_typed_recovery(
+) -> Result<(), Box<dyn std::error::Error>> {
     // @step Given a typed cancellation whose current turn intent was reset
     let current = Arc::new(Mutex::new(TokenState::default()));
     let failure = anyhow::Error::from(PromptError::PromptCancelled {
@@ -120,10 +141,16 @@ fn scenario_missing_intent_still_receives_defensive_typed_recovery() {
             disagreement: Some(CompactionDisagreement::FlagMissing)
         }
     );
-    assert!(current.lock().expect("current state").compaction_needed);
+    assert!(
+        current
+            .lock()
+            .map_err(|error| error.to_string())?
+            .compaction_needed
+    );
     // @step And unrelated errors do not authorize compaction
     assert!(matches!(
         classify_compaction_branch(&anyhow::Error::msg("user interrupted"), &current),
         CompactionBranch::NotCompaction { .. }
     ));
+    Ok(())
 }

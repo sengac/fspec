@@ -13,8 +13,28 @@ pub use polling::poll_device_token;
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeviceCodeResponse {
     pub device_auth_id: String,
+    #[serde(alias = "usercode")]
     pub user_code: String,
+    #[serde(default, deserialize_with = "deserialize_interval")]
     pub interval: u64,
+}
+
+fn deserialize_interval<'de, Deserializer>(
+    deserializer: Deserializer,
+) -> Result<u64, Deserializer::Error>
+where
+    Deserializer: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Interval {
+        Seconds(u64),
+        Text(String),
+    }
+    match Interval::deserialize(deserializer)? {
+        Interval::Seconds(seconds) => Ok(seconds),
+        Interval::Text(text) => text.trim().parse().map_err(serde::de::Error::custom),
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -46,17 +66,22 @@ pub struct PollConfig<'a> {
 }
 
 pub async fn request_device_code(issuer_url: &str) -> Result<DeviceCodeResponse> {
+    let issuer_url = issuer_url.trim_end_matches('/');
     let response = reqwest::Client::new()
         .post(format!("{issuer_url}/api/accounts/deviceauth/usercode"))
-        .form(&[("client_id", CODEX_CLIENT_ID)])
+        .json(&serde_json::json!({"client_id": CODEX_CLIENT_ID}))
         .send()
         .await
         .map_err(|error| anyhow!("Failed to connect to device auth endpoint: {error}"))?;
     if !response.status().is_success() {
         let status = response.status();
-        let body = response.text().await.unwrap_or_default();
+        if status == reqwest::StatusCode::NOT_FOUND {
+            return Err(anyhow!(
+                "Device code login is not enabled (HTTP 404). Use browser login or verify the server URL."
+            ));
+        }
         return Err(anyhow!(
-            "Device auth usercode request failed with status {status}: {body}"
+            "Device auth usercode request failed with status {status}"
         ));
     }
     response
@@ -78,7 +103,7 @@ pub async fn device_auth_login(config: DeviceAuthConfig) -> Result<CodexTokens> 
             if let Some(display) = &config.display_fn {
                 display(&device_code.user_code, &verification_url);
             } else {
-                tracing::debug!("To authenticate, visit: {verification_url}; enter code: {}", device_code.user_code);
+                tracing::debug!("Device authorization requested; waiting for user approval");
             }
             finish(&config, &device_code, &attempt).await
         }) => result.map_err(|_| anyhow!("Device login timed out"))?,
@@ -105,13 +130,18 @@ pub(super) async fn finish(
         } => (authorization_code, code_verifier),
         PollResult::TerminalError { error } => return Err(anyhow!("Device auth failed: {error}")),
     };
+    let redirect_uri = format!(
+        "{}/deviceauth/callback",
+        config.issuer_url.trim_end_matches('/')
+    );
     let response = exchange_authorization_code(
         &config.issuer_url,
         &authorization_code,
         &code_verifier,
-        None,
+        Some(&redirect_uri),
     )
-    .await?;
+    .await
+    .map_err(|_| anyhow!("Device token exchange failed"))?;
     let account_id = extract_account_id(Some(&response.id_token), Some(&response.access_token))
         .ok_or_else(|| anyhow!("Failed to extract account_id from token response"))?;
     let tokens = CodexTokens {

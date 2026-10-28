@@ -28,13 +28,13 @@ async fn unsolicited_native_compaction_never_replaces_the_checkpoint() -> fixtur
         let model = server.models()?.0.with_history(history.clone());
         let initial = fixture::collect(model.clone()).await?;
         assert!(initial.errors.is_empty());
-        let prior = history.snapshot();
+        let prior = history.snapshot()?;
         let rejected = fixture::collect(model).await?;
         assert_eq!(rejected.errors.len(), 1);
         assert!(rejected.errors[0].contains("native memory unsupported"));
         assert!(rejected.finals.is_empty());
         assert_eq!(rejected.tools, 0);
-        assert_eq!(history.snapshot(), prior);
+        assert_eq!(history.snapshot()?, prior);
         let requests = server.requests.lock().map_err(|_| "requests lock")?;
         assert_eq!(requests.len(), 2);
         for request in requests.iter() {

@@ -76,6 +76,7 @@ impl Session {
             .filter(|boundary| boundary.publication_pending)
             .map(|boundary| boundary.identity.clone());
         self.restore_durable_tokens(manifest);
+        self.install_durable_summary(manifest);
         if self.pending_compaction_commit.is_none() {
             self.compaction_inference_block = None;
         }

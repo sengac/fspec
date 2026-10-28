@@ -7,7 +7,7 @@ use rig::providers::anthropic::{
 };
 
 #[path = "fixtures/cmpct069_anthropic.rs"]
-mod fixture;
+pub mod fixture;
 
 #[derive(Clone)]
 struct Guard(&'static str);

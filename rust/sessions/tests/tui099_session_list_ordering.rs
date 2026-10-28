@@ -45,6 +45,7 @@ fn make_session(id: &str, ts: Option<i64>) -> SessionInfo {
         worktree_path: None,
         role: None,
         updated_at_ms: ts,
+        work_unit_focus: Default::default(),
     }
 }
 

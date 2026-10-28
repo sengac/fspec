@@ -15,7 +15,7 @@ use serde_json::{json, Value};
 use std::sync::{Arc, Mutex};
 
 #[path = "fixtures/prov151.rs"]
-mod fixture;
+pub mod fixture;
 use fixture::{ReadTool, Server, TestResult};
 
 fn assistant(text: &str) -> Value {

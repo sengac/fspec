@@ -1,0 +1,481 @@
+{
+  "verified_at_utc": "2026-10-28T05:19:28.134830+00:00",
+  "work_unit": "BUG-279",
+  "status": "done",
+  "registered_issue_attachment": "spec/attachments/BUG-279/codex-native-device-oauth-issue.md",
+  "passing_tests": 44,
+  "test_targets": 11,
+  "acceptance_chains": [
+    {
+      "feature": "native-codex-device-code-protocol-compatibility",
+      "scenario": "Official usercode response formats are accepted",
+      "test": "rust/providers/tests/bug279_device_protocol.rs",
+      "lines": "16-45",
+      "implementation_mappings": 1
+    },
+    {
+      "feature": "native-codex-device-code-protocol-compatibility",
+      "scenario": "Pending HTTP statuses do not require JSON bodies",
+      "test": "rust/providers/tests/bug279_device_protocol.rs",
+      "lines": "49-82",
+      "implementation_mappings": 2
+    },
+    {
+      "feature": "native-codex-device-code-protocol-compatibility",
+      "scenario": "Malformed and terminal responses cannot authorize exchange",
+      "test": "rust/providers/tests/bug279_device_protocol.rs",
+      "lines": "86-149",
+      "implementation_mappings": 2
+    },
+    {
+      "feature": "native-codex-device-code-protocol-compatibility",
+      "scenario": "Timeout and cancellation preserve credential ownership",
+      "test": "rust/providers/tests/bug279_device_protocol.rs",
+      "lines": "153-204",
+      "implementation_mappings": 2
+    },
+    {
+      "feature": "native-codex-device-code-protocol-compatibility",
+      "scenario": "Failed exchange or missing account identity cannot replace credentials",
+      "test": "rust/providers/tests/bug279_device_protocol.rs",
+      "lines": "208-244",
+      "implementation_mappings": 1
+    },
+    {
+      "feature": "native-codex-device-code-settings",
+      "scenario": "Native settings completes official device authorization",
+      "test": "rust/fspec-tui/tests/bug279_native_device_login.rs",
+      "lines": "129-145",
+      "implementation_mappings": 5
+    },
+    {
+      "feature": "native-codex-device-code-settings",
+      "scenario": "Native settings reports redacted errors and permits retry",
+      "test": "rust/fspec-tui/tests/bug279_native_device_login.rs",
+      "lines": "149-190",
+      "implementation_mappings": 3
+    }
+  ],
+  "nested_child_output_counted_again": false,
+  "phase_receipts": [
+    {
+      "phase": "green-provider",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol --test codex_device_auth_test",
+      "log_sha256": "3aa5056fdbbba75e24f66cecca6c5dc2d30c321a01a2a7db83579810e0df551a"
+    },
+    {
+      "phase": "green-native",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "log_sha256": "cca6189eaab15f49f941873d8b5df0f15610bde1e0ae79c5c6bbfd5b0d55e18d"
+    },
+    {
+      "phase": "final-provider-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test prov159_login_lifecycle --test prov159_login_review --test prov159_review_regressions --test prov159_entry_points --test prov159_credential_storage",
+      "log_sha256": "6a82a8818acc1c2bb11f50389db5b12a8928782766649dba4b9c746b6490b092"
+    },
+    {
+      "phase": "final-native-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test prov159_rpc_lifecycle --test prov159_oauth_logout --test prov159_settings_failures",
+      "log_sha256": "79316318808632045ccb0df708cb3467260a82f8ea852ba476531ea5b8d35903"
+    },
+    {
+      "phase": "final-production-check",
+      "exit": 0,
+      "command": "cargo check --offline --profile ci-test -j2 -p codelet-providers -p codelet-rpc -p codelet-fspec-tui --lib",
+      "log_sha256": "34527c85c7d52c4d2a4ec6587820d6442701f191404d153115ff5130f85fd523"
+    },
+    {
+      "phase": "final-default-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec",
+      "log_sha256": "5c4a86bca8b8bcb69bf1330c831ab2410042b5ebf0d2daed4b8a891319251cf5"
+    },
+    {
+      "phase": "final-diff-check",
+      "exit": 0,
+      "command": "git diff --check",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-format-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec format spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "log_sha256": "fe854d3c2fd6d756891bd09f9d8c2172bcc0d26c17970b5b7161cd1624fba8b6"
+    },
+    {
+      "phase": "final-validate-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "log_sha256": "360f5d64693f260b9b0d345a45d7c5ec842ea0caad11b842cff2d60f7e7ef258"
+    },
+    {
+      "phase": "final-tags-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-coverage-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec show-coverage native-codex-device-code-protocol-compatibility --format json",
+      "log_sha256": "7c71acbca8c8ea9367001a3705252fe3aafe9691360b0d92eb907c7fde6e92fd"
+    },
+    {
+      "phase": "final-audit-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec audit-coverage native-codex-device-code-protocol-compatibility",
+      "log_sha256": "e2af6b0db468545be778acf4fe8ccfcc845782170cae200ee291c423a0b4fb91"
+    },
+    {
+      "phase": "final-format-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec format spec/features/native-codex-device-code-settings.feature",
+      "log_sha256": "a2f1f80e67f8bd9aecc11a8d39e29a9f71478ea928b0e91d9ce03b079c0c86df"
+    },
+    {
+      "phase": "final-validate-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-settings.feature",
+      "log_sha256": "6a3290224a45f4b0b287b4015106309b909b6d36d7dc8985f72ff86277ba59b4"
+    },
+    {
+      "phase": "final-tags-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-settings.feature",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-coverage-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec show-coverage native-codex-device-code-settings --format json",
+      "log_sha256": "e8363cb01da234afb321f6fe1234f778265ebe0419a2c2e1e96160634a0e748e"
+    },
+    {
+      "phase": "final-audit-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec audit-coverage native-codex-device-code-settings",
+      "log_sha256": "4f3c7a73379b5dd698891f059b75c5464f9074be332dba807605f988b5a645a9"
+    },
+    {
+      "phase": "final-validate-legacy",
+      "exit": 0,
+      "command": "fspec validate spec/features/device-auth-flow.feature",
+      "log_sha256": "17270843ad611a910c81dff28580a95fc5659f52d9bfc38a45613c2e1cd43fd6"
+    },
+    {
+      "phase": "final-coverage-legacy",
+      "exit": 0,
+      "command": "fspec show-coverage device-auth-flow --format json",
+      "log_sha256": "a608fbc4687037ba6cec0094e866f390597d42f49fecf68656225f04aba595c3"
+    },
+    {
+      "phase": "final-audit-legacy",
+      "exit": 0,
+      "command": "fspec audit-coverage device-auth-flow",
+      "log_sha256": "a5c812022bc1c6f3a4a379bef3eab77fbe992f78fd54f90752a7386c3e253134"
+    },
+    {
+      "phase": "final-global-tags",
+      "exit": 1,
+      "command": "fspec validate-tags",
+      "log_sha256": "bcfe6bc14b481187ee10bd0c95c48979f7ca71e8b6085736d331be4ebcd1740c"
+    },
+    {
+      "phase": "final-fixture-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider",
+      "log_sha256": "bdaba996b21080192330f61d266d0eb5453711301440c672cc3acbf17c3e01f0"
+    },
+    {
+      "phase": "final-production-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers -p codelet-rpc -p codelet-fspec-tui --lib -- -D warnings",
+      "log_sha256": "65272dd62bbb14c89a770ca4c7053c7adf8282fed78f2122f3ba66724dd35f81"
+    },
+    {
+      "phase": "final-provider-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol --test codex_device_auth_test --test prov159_login_lifecycle --test prov159_login_review --test prov159_review_regressions --test prov159_entry_points --test prov159_credential_storage -- -D warnings",
+      "log_sha256": "a3d1dddfe0269297a6fa0c16b4a190c9c02d915eaa286475f4d1e32de29fe868"
+    },
+    {
+      "phase": "final-native-tests",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+      "log_sha256": "ba9d496628d370b61c4f9184efb8deac689fe84d25673c10d22199417d9c9e58"
+    },
+    {
+      "phase": "final-legacy-tests",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test codex_device_auth_test",
+      "log_sha256": "484c772570448eee76165bd450b75bc7ea587a95f9dd624ee1ab84f38539f338"
+    },
+    {
+      "phase": "final-native-clippy-corrected",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login --test prov159_rpc_lifecycle --test prov159_oauth_logout --test prov159_settings_failures -- -D warnings",
+      "log_sha256": "695977ff902f39f87430ec862d37569ed7731ba20ff86f3c6ff60add2496b0de"
+    },
+    {
+      "phase": "final-legacy-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers --features test-support --test codex_device_auth_test -- -D warnings",
+      "log_sha256": "43521f517b7893e944ffb73b48b61856a1743fcbbca2062efa6b230894c429ba"
+    },
+    {
+      "phase": "final-default-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec -- -D warnings",
+      "log_sha256": "49dcde575f83f3d9a762ee807f7648702e13474a2fe04e8460adcedb16d2b41d"
+    },
+    {
+      "phase": "final-owned-rustfmt",
+      "exit": 0,
+      "command": "rustfmt --check --edition 2021 --config skip_children=true rust/providers/src/codex/codex_device_auth.rs rust/providers/src/codex/device_poll.rs rust/providers/tests/bug279_device_protocol.rs rust/providers/tests/codex_device_auth_test.rs rust/providers/tests/device_protocol/support.rs rust/providers/tests/device_protocol/legacy_happy.rs rust/providers/tests/device_protocol/legacy_poll.rs rust/providers/tests/device_protocol/legacy_failures.rs rust/fspec-tui/tests/bug279_native_device_login.rs",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-diff-check-after-lints",
+      "exit": 0,
+      "command": "git diff --check",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-fixture-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider -- -D warnings",
+      "log_sha256": "5159faa3796919b7a5b625b6b185841aecc33ee732655241c6674b4709c978f2"
+    },
+    {
+      "phase": "final-coverage-settings-after-lints",
+      "exit": 0,
+      "command": "fspec show-coverage native-codex-device-code-settings --format json",
+      "log_sha256": "10f7784295034f2981051997eb5a9dd5b08aea687c7b8eed2bb712c97edb8cca"
+    },
+    {
+      "phase": "final-audit-settings-after-lints",
+      "exit": 0,
+      "command": "fspec audit-coverage native-codex-device-code-settings",
+      "log_sha256": "4f3c7a73379b5dd698891f059b75c5464f9074be332dba807605f988b5a645a9"
+    },
+    {
+      "phase": "final-remove-wip-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec remove-tag-from-feature spec/features/native-codex-device-code-protocol-compatibility.feature @wip",
+      "log_sha256": "49f23c487d98c5b0e82b15182b46f28734ad28f79f718fa453cf6ec8f81d6165"
+    },
+    {
+      "phase": "final-add-done-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec add-tag-to-feature spec/features/native-codex-device-code-protocol-compatibility.feature @done",
+      "log_sha256": "18032e052ca851ea33b32fbbedc94216addcb5e56f3ebd19bca1e416ace90384"
+    },
+    {
+      "phase": "final-tags-done-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-validate-done-native-codex-device-code-protocol-compatibility",
+      "exit": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-protocol-compatibility.feature",
+      "log_sha256": "360f5d64693f260b9b0d345a45d7c5ec842ea0caad11b842cff2d60f7e7ef258"
+    },
+    {
+      "phase": "final-remove-wip-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec remove-tag-from-feature spec/features/native-codex-device-code-settings.feature @wip",
+      "log_sha256": "1f9746afc933f7ae4e36af2ffaaec12e26b150cb8de9a81a577e0f07c051406a"
+    },
+    {
+      "phase": "final-add-done-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec add-tag-to-feature spec/features/native-codex-device-code-settings.feature @done",
+      "log_sha256": "19f5b12c58cf9a04660f26fbec9c2ba453d10495318967008bff65c5ad40b406"
+    },
+    {
+      "phase": "final-tags-done-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec validate-tags spec/features/native-codex-device-code-settings.feature",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-validate-done-native-codex-device-code-settings",
+      "exit": 0,
+      "command": "fspec validate spec/features/native-codex-device-code-settings.feature",
+      "log_sha256": "6a3290224a45f4b0b287b4015106309b909b6d36d7dc8985f72ff86277ba59b4"
+    }
+  ],
+  "causal_red_evidence": {
+    "verified_at_utc": "2026-10-28T04:53:05.936952+00:00",
+    "work_unit": "BUG-279",
+    "causal_red_tests": 7,
+    "receipts": [
+      {
+        "label": "red-provider-corrected",
+        "exit": 101,
+        "tests_executed": 5,
+        "behavioral_failures": 5,
+        "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --features test-support --test bug279_device_protocol",
+        "started": "2026-10-28T04:49:40Z",
+        "finished": "2026-10-28T04:49:44Z",
+        "log_sha256": "987f77dfd9845fc538f8d26f366eb981a224711ab016840f4355cecd18b8cd0a"
+      },
+      {
+        "label": "red-native-executed",
+        "exit": 101,
+        "tests_executed": 2,
+        "behavioral_failures": 2,
+        "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug279_native_device_login",
+        "started": "2026-10-28T04:49:44Z",
+        "finished": "2026-10-28T04:49:49Z",
+        "log_sha256": "dae497f3ddba23f20ee876916a8d74801a24287d46e98713b4c396d5ef521728"
+      }
+    ],
+    "excluded_attempts": {
+      "red-provider": "compiler failure",
+      "red-provider-executed": "contains one credential-fixture ENOENT setup failure",
+      "red-native": "provider-row setup failure before authentication"
+    },
+    "modified_production_files_at_observation": [],
+    "exact_historical_live_error_confirmed": false
+  },
+  "real_config_and_credential_files_unchanged": true,
+  "credential_hashes_published": false,
+  "all_prior_work_unit_records_and_prior_bug_sources_unchanged": true,
+  "failed_historical_manifest_unchanged": true,
+  "upstream": {
+    "origin": "https://github.com/openai/codex.git",
+    "revision": "6ba3a84680236c621b93e0b8dc140687a37f41fc",
+    "clean": true,
+    "public_client_id_matches": true,
+    "source_sha256": {
+      "codex-rs/login/src/device_code_auth.rs": "075c3f83cbc2612dde7b50f118b7a3c1ef3b7641ce6acfcca99aff5dd7454012",
+      "codex-rs/login/src/auth/manager.rs": "786ca243ef10931573ba6e2fc37bf83c1ca9e9cced158152d1706d6950c2f53a",
+      "codex-rs/login/src/server.rs": "2f66d1c033e3918bc8bfda0cdad047c4553c10ec6a33ef8f80a7f9d6c2b47c10"
+    }
+  },
+  "git_head_before": "9b490e8917e8928cc87ab3ca6bad920bf7afbc39",
+  "git_head_at_verification": "9b490e8917e8928cc87ab3ca6bad920bf7afbc39",
+  "owned_rust_source_sha256": {
+    "rust/fspec-tui/tests/bug279_native_device_login.rs": "1f893583170f48eef6d4ad3248fcfcbea65bd51482da0d7bc567599f77f72094",
+    "rust/providers/src/codex/codex_device_auth.rs": "7e1d5902d5c411db2472e2f1e739ad5f32fabc3e2d05070605663f87eaa6f51b",
+    "rust/providers/src/codex/device_poll.rs": "2a2999ae0bdc7bc25e308a08726d980bdabf368eb3cf05a13336d40d40003964",
+    "rust/providers/tests/bug279_device_protocol.rs": "7ac9a26565b6ace7045ef3d21da8178d44972d3e5a680e06482c256d11c22661",
+    "rust/providers/tests/codex_device_auth_test.rs": "f2deda51ada3e982eb0094a9692d1636593cf473532b8186f7c6578514cc2fe3",
+    "rust/providers/tests/device_protocol/legacy_failures.rs": "55e274f0661c38e790be70bbf3b450be245321381da169015ccb3d8139517fb5",
+    "rust/providers/tests/device_protocol/legacy_happy.rs": "e524781a5038005d5d34fd87779d1b7372259e8832ccc87bf90436f5c7510602",
+    "rust/providers/tests/device_protocol/legacy_poll.rs": "d2df247c88f366e3696c32469ccf83873d0d1e7b54541be5a7711d54c2c8b9f6",
+    "rust/providers/tests/device_protocol/support.rs": "493ff09880c7a17fb86e4ea38f16eb573678c9ddee27ed6eb8430ea3c0e31d36"
+  },
+  "owned_rust_files_below_300_lines": true,
+  "limitations": [
+    "Exact historical live error unconfirmed in logs; proof uses pinned-upstream synthetic fixtures",
+    "No real login or credential replacement attempted",
+    "522 existing global tag-invalid files remain",
+    "No workspace-wide test or Windows execution claim",
+    "Running daemon and installed binary were not replaced or restarted"
+  ],
+  "superseded_failed_validation_attempts": [
+    {
+      "phase": "final-native-clippy",
+      "exit": 101,
+      "replaced_by": "final-native-clippy-corrected",
+      "reason": "Two test-only method-closure Clippy errors corrected without suppression",
+      "log_sha256": "f08e91683e22524bb4e6ddc9393e68ce85fc18d8c768fff9fdc0c58c27941195"
+    }
+  ],
+  "target_results": {
+    "bug279_device_protocol": {
+      "passed": 5,
+      "failed": 0,
+      "phase": "green-provider",
+      "log_mtime": 1793163281.9273703
+    },
+    "codex_device_auth_test": {
+      "passed": 11,
+      "failed": 0,
+      "phase": "final-legacy-tests",
+      "log_mtime": 1793164239.6822698
+    },
+    "bug279_native_device_login": {
+      "passed": 2,
+      "failed": 0,
+      "phase": "final-native-tests",
+      "log_mtime": 1793164235.7282155
+    },
+    "prov159_credential_storage": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-provider-regressions",
+      "log_mtime": 1793163412.4227052
+    },
+    "prov159_entry_points": {
+      "passed": 5,
+      "failed": 0,
+      "phase": "final-provider-regressions",
+      "log_mtime": 1793163412.4227052
+    },
+    "prov159_login_lifecycle": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-provider-regressions",
+      "log_mtime": 1793163412.4227052
+    },
+    "prov159_login_review": {
+      "passed": 6,
+      "failed": 0,
+      "phase": "final-provider-regressions",
+      "log_mtime": 1793163412.4227052
+    },
+    "prov159_review_regressions": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-provider-regressions",
+      "log_mtime": 1793163412.4227052
+    },
+    "prov159_oauth_logout": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-native-regressions",
+      "log_mtime": 1793163447.4758823
+    },
+    "prov159_rpc_lifecycle": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-native-regressions",
+      "log_mtime": 1793163447.4758823
+    },
+    "prov159_settings_failures": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-native-regressions",
+      "log_mtime": 1793163447.4758823
+    }
+  },
+  "native_session_final_observation": {
+    "observed_at_utc": "2026-10-28T05:21:12.915290+00:00",
+    "session_id": "966e549b-6e1d-45ef-ab9e-19763a2257b9",
+    "status": "Idle",
+    "model": {
+      "provider_id": "codex",
+      "model_id": "gpt-6.1-sol",
+      "context_window": 1050000,
+      "max_output_tokens": 128000,
+      "compaction_threshold": 700000
+    },
+    "pending_approval": false,
+    "card_statuses": {
+      "BUG-271": "done",
+      "BUG-272": "done",
+      "BUG-274": "done",
+      "BUG-278": "done",
+      "BUG-279": "done"
+    }
+  }
+}

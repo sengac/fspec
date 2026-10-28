@@ -9,7 +9,7 @@ use rig::streaming::StreamedAssistantContent;
 use serde_json::{json, Value};
 
 #[path = "fixtures/prov151.rs"]
-mod fixture;
+pub mod fixture;
 use fixture::{event, Server, TestResult};
 
 fn message() -> Value {

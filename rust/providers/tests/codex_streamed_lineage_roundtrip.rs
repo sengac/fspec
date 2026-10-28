@@ -17,7 +17,7 @@ use std::{
 };
 
 #[path = "fixtures/prov151.rs"]
-mod fixture;
+pub mod fixture;
 use fixture::{ReadTool, Server, TestResult};
 
 const COMMENTARY: &str = "I’ll check the latest commit’s summary and changes.";
@@ -54,7 +54,7 @@ fn initial() -> Value {
     json!({"model":"shared-model","input":[{"role":"user","content":[{"type":"input_text","text":"inspect"}]}]})
 }
 
-fn projected(text: &str, arguments: Value) -> Vec<Message> {
+fn projected(text: &str, arguments: Value) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
     let mut content = text
         .split_inclusive(' ')
         .map(AssistantContent::text)
@@ -65,14 +65,14 @@ fn projected(text: &str, arguments: Value) -> Vec<Message> {
         "read_file",
         arguments,
     ));
-    vec![
+    Ok(vec![
         Message::user("inspect"),
         Message::Assistant {
             id: None,
-            content: rig::OneOrMany::many(content).expect("text and call are present"),
+            content: rig::OneOrMany::many(content)?,
         },
         Message::tool_result_with_call_id("fc_1", Some("call_1".into()), "real result"),
-    ]
+    ])
 }
 
 #[tokio::test]
@@ -159,7 +159,7 @@ async fn scenario_lossless_history_projections_preserve_original_checkpoint_item
             .with_history(history)
             .with_request_admission(limits());
         let request = CompletionRequestBuilder::new(model.clone(), "next")
-            .messages(projected(COMMENTARY, json!({"limit":10,"path":"a"})))
+            .messages(projected(COMMENTARY, json!({"limit":10,"path":"a"}))?)
             .build();
         let mut stream = model.stream(request).await?;
         while let Some(event) = stream.next().await {
@@ -199,7 +199,7 @@ async fn scenario_changed_projected_ancestry_remains_rejected() -> TestResult {
             .with_history(history.clone())
             .with_request_admission(limits());
         let request = CompletionRequestBuilder::new(model.clone(), "next")
-            .messages(projected(text, arguments))
+            .messages(projected(text, arguments)?)
             .build();
         assert!(model.stream(request).await.is_err());
         assert_eq!(history.snapshot()?, previous);

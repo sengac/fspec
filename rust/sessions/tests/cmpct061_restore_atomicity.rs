@@ -3,7 +3,7 @@
 #[path = "../../core/tests/support/compaction_boundary.rs"]
 mod boundary;
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::compaction_commit::{commit_compaction, publish_compaction};
 use codelet_core::persistence::*;
@@ -50,10 +50,14 @@ async fn exercise(failure: &str) -> support::TestResult {
         &mut manifest,
         "assistant",
         "",
-        [(
-            "codexContinuation".into(),
-            retained_checkpoint(failure, &model)?,
-        )]
+        [
+            ("provider".into(), json!("codex")),
+            ("message".into(), json!({"role":"assistant","content":[]})),
+            (
+                "codexContinuation".into(),
+                retained_checkpoint(failure, &model)?,
+            ),
+        ]
         .into(),
     )?;
     drop(background);
@@ -98,7 +102,16 @@ async fn probe(session_id: codelet_rpc_types::SessionId, failure: &str) -> suppo
         assert!(inner.ensure_compaction_inference_ready().is_ok());
     }
     background.handle_output(codelet_rpc_types::StreamChunk::text("prior display".into()));
-    let invalid = get_session_message_envelopes(manifest.id)?;
+    let invalid = if failure == "future generation" {
+        get_session_message_envelopes(manifest.id)?
+    } else {
+        assert!(
+            get_session_message_envelopes(manifest.id).is_err(),
+            "malformed persisted native state must fail before replay assembly: {failure}"
+        );
+        vec![json!({"_sessionReplay":{"version":1,"sessionId":manifest.id,"revision":manifest.revision},
+            "codexContinuation":retained_checkpoint(failure, &model)?}).to_string()]
+    };
     let before = state(&background, &checkpoint).await?;
     let mut events = background.subscribe_to_stream();
     // @step When persisted retained checkpoint metadata has <failure>

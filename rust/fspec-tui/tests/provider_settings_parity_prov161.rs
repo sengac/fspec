@@ -69,7 +69,11 @@ fn rendered(view: &mut ProviderSettingsView) -> String {
     let area = Rect::new(0, 0, 150, 30);
     let mut buffer = Buffer::empty(area);
     view.render(area, &mut buffer);
-    buffer.content.iter().map(|cell| cell.symbol()).collect()
+    buffer
+        .content
+        .iter()
+        .map(ratatui::buffer::Cell::symbol)
+        .collect()
 }
 
 #[test]

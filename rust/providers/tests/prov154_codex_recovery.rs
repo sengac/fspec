@@ -1,7 +1,7 @@
 //! Feature: spec/features/codex-stream-recovery.feature
 mod fixtures;
 #[path = "fixtures/prov148.rs"]
-mod stream_fixture;
+pub mod stream_fixture;
 
 use codelet_providers::codex::refreshing_client::RefreshingCodexClient;
 use futures::StreamExt;

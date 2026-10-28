@@ -219,7 +219,9 @@ impl SessionStore {
 }
 
 pub(super) fn read_manifest(path: &Path) -> Result<SessionManifest, ManifestCommitError> {
-    Ok(serde_json::from_slice(&fs::read(path)?)?)
+    Ok(serde_json::from_slice(
+        &codelet_common::read_work::read_file(path, "manifest.bytes")?,
+    )?)
 }
 
 #[cfg(unix)]

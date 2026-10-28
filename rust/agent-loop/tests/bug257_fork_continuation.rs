@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/fork-native-continuation.feature"]
 
 #[path = "support/bug257.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::messages::durability::observe;
 use support::{fixtures::*, inventory, next_request, Environment};

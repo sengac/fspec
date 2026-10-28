@@ -11,7 +11,6 @@ use rig::OneOrMany;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use uuid::Uuid;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -39,13 +38,33 @@ async fn assert_blocked_failure(
     handler: Option<CompactorSubAgentHandler>,
     expected: CompactionFailure,
 ) -> TestResult {
-    let session_id = Uuid::new_v4();
-    let mut session =
-        Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
-            codelet_providers::ProviderType::OpenAI,
-            Some(200_000),
-            Some(4096),
-        ));
+    let directory = codelet_test_helpers::setup_temp_directory()?;
+    codelet_common::set_data_directory(directory.path().to_path_buf())?;
+    codelet_core::persistence::reset_stores_for_tests();
+    let mut manifest = codelet_core::persistence::create_session_with_provider(
+        "blocked compaction",
+        directory.path(),
+        "openai/o3",
+    )?;
+    codelet_core::persistence::append_message(
+        &mut manifest,
+        "user",
+        "committed suffix must remain intact",
+    )?;
+    let session_id = manifest.id;
+    let committed = std::fs::read(
+        directory
+            .path()
+            .join("sessions")
+            .join(format!("{session_id}.json")),
+    )?;
+    let mut manager = codelet_providers::ProviderManager::for_testing(
+        codelet_providers::ProviderType::OpenAI,
+        Some(200_000),
+        Some(4096),
+    );
+    manager.set_model_direct("openai", "o3", Some(200_000), Some(4096), None)?;
+    let mut session = Session::from_provider_manager(manager);
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text("committed suffix must remain intact")),
     });
@@ -75,6 +94,15 @@ async fn assert_blocked_failure(
     );
     assert!(session.ensure_compaction_inference_ready().is_err());
     assert_eq!(serde_json::to_value(&session.messages)?, original);
+    assert_eq!(
+        std::fs::read(
+            directory
+                .path()
+                .join("sessions")
+                .join(format!("{session_id}.json"))
+        )?,
+        committed
+    );
     assert_eq!(session.token_tracker.input_tokens, 120_000);
     assert!(!busy.load(Ordering::Acquire));
     assert!(
@@ -98,6 +126,7 @@ async fn assert_blocked_failure(
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn missing_builder_preserves_the_committed_conversation() -> TestResult {
     // @step Given committed conversation and no registered DAG builder
     // @step When automatic compaction runs
@@ -108,6 +137,7 @@ async fn missing_builder_preserves_the_committed_conversation() -> TestResult {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn builder_diagnostics_cannot_become_a_replacement_dag() -> TestResult {
     // @step Given committed conversation and a builder failing with valid-looking DAG diagnostics
     // @step When automatic compaction runs
@@ -120,6 +150,7 @@ async fn builder_diagnostics_cannot_become_a_replacement_dag() -> TestResult {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn invalid_builder_output_cannot_become_a_replacement_dag() -> TestResult {
     // @step Given committed conversation and a builder returning invalid output
     // @step When automatic compaction runs

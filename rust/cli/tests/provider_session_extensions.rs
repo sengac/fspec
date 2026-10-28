@@ -24,20 +24,24 @@ impl ProviderSessionExtension for IndependentExtension {
             .push("restore".into());
         Ok(())
     }
-    fn set_writer(&self, writer: StateWriter) {
-        if let Ok(mut slot) = self.writer.lock() {
-            *slot = Some(writer);
-        }
+    fn set_writer(&self, writer: StateWriter) -> Result<(), ExtensionError> {
+        *self
+            .writer
+            .lock()
+            .map_err(|error| ExtensionError::Persistence(error.to_string()))? = Some(writer);
+        Ok(())
     }
     fn begin_turn(&self) {
         if let Ok(mut events) = self.events.lock() {
             events.push("begin".into());
         }
     }
-    fn reset(&self) {
-        if let Ok(mut events) = self.events.lock() {
-            events.push("reset".into());
-        }
+    fn reset(&self) -> Result<(), ExtensionError> {
+        self.events
+            .lock()
+            .map_err(|error| ExtensionError::Persistence(error.to_string()))?
+            .push("reset".into());
+        Ok(())
     }
 }
 
@@ -65,9 +69,9 @@ fn independent_provider_extensions_receive_session_lifecycle_events(
     let session_id = manifest.id;
     session
         .restore_provider_state(&[json!({"independentContinuation":{"saved":true}}).to_string()])?;
-    session.bind_provider_persistence(session_id);
+    session.bind_provider_persistence(session_id)?;
     session.begin_provider_turn();
-    session.reset_provider_state();
+    session.reset_provider_state()?;
     assert_eq!(
         *extension.events.lock().map_err(|error| error.to_string())?,
         ["restore", "begin", "reset"]

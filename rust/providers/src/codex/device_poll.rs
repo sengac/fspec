@@ -14,19 +14,37 @@ pub async fn poll_device_token(
     device_code: &DeviceCodeResponse,
 ) -> Result<PollResult> {
     let client = reqwest::Client::new();
-    let url = format!("{}/api/accounts/deviceauth/token", config.issuer_url);
+    let url = format!(
+        "{}/api/accounts/deviceauth/token",
+        config.issuer_url.trim_end_matches('/')
+    );
     let mut interval = config
         .poll_interval_override_ms
         .unwrap_or(device_code.interval.saturating_mul(1000));
     let increment = config.slow_down_increment_override_ms.unwrap_or(5000);
     tokio::time::timeout(std::time::Duration::from_millis(config.timeout_ms), async {
         loop {
-            let response: DevicePollResponse = client
+            let response = client
                 .post(&url)
-                .form(&[("device_auth_id", &device_code.device_auth_id)])
+                .json(&serde_json::json!({
+                    "device_auth_id": device_code.device_auth_id,
+                    "user_code": device_code.user_code,
+                }))
                 .send()
                 .await
-                .map_err(|error| anyhow!("Polling request failed: {error}"))?
+                .map_err(|error| anyhow!("Polling request failed: {error}"))?;
+            let status = response.status();
+            if matches!(
+                status,
+                reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::NOT_FOUND
+            ) {
+                tokio::time::sleep(std::time::Duration::from_millis(interval)).await;
+                continue;
+            }
+            if !status.is_success() {
+                return Err(anyhow!("Device auth polling failed with status {status}"));
+            }
+            let response: DevicePollResponse = response
                 .json()
                 .await
                 .map_err(|error| anyhow!("Failed to parse poll response: {error}"))?;
@@ -52,7 +70,7 @@ pub async fn poll_device_token(
                     }
                     _ => {
                         return Ok(PollResult::TerminalError {
-                            error: format!("Device auth polling returned error: {error}"),
+                            error: "Device auth polling returned an unrecognized error".to_owned(),
                         })
                     }
                 }

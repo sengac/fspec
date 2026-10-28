@@ -14,9 +14,9 @@ use serde_json::json;
 #[path = "fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct078/support.rs"]
-mod support;
+pub mod support;
 use support::{boundary, history, request};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

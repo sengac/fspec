@@ -5,7 +5,7 @@ use codelet_rpc_types::{ContextFillInfo, StreamChunk};
 use serde_json::json;
 
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

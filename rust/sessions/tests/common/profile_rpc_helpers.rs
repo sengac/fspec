@@ -48,27 +48,26 @@ pub fn point_env(dir: &Path) -> EnvGuard {
 
 /// Write an `fspec-config.json` into `dir` from the given root JSON and point
 /// `FSPEC_USER_DIR` at `dir`. The returned guard must be held for the test.
-#[must_use]
-pub fn seed_config(dir: &Path, root: Value) -> EnvGuard {
+#[must_use = "Hold the environment guard for the entire test"]
+pub fn seed_config(dir: &Path, root: Value) -> Result<EnvGuard, Box<dyn std::error::Error>> {
     std::fs::write(
         dir.join("fspec-config.json"),
-        serde_json::to_string_pretty(&root).unwrap(),
-    )
-    .unwrap();
-    point_env(dir)
+        serde_json::to_string_pretty(&root)?,
+    )?;
+    Ok(point_env(dir))
 }
 
 pub fn config_path(dir: &Path) -> std::path::PathBuf {
     dir.join("fspec-config.json")
 }
 
-pub fn read_root(dir: &Path) -> Value {
-    let content = std::fs::read_to_string(config_path(dir)).unwrap();
-    serde_json::from_str(&content).unwrap()
+pub fn read_root(dir: &Path) -> Result<Value, Box<dyn std::error::Error>> {
+    let content = std::fs::read_to_string(config_path(dir))?;
+    Ok(serde_json::from_str(&content)?)
 }
 
-pub fn read_profile(dir: &Path, name: &str) -> Value {
-    read_root(dir)["providers"]["openai"]["profiles"][name].clone()
+pub fn read_profile(dir: &Path, name: &str) -> Result<Value, Box<dyn std::error::Error>> {
+    Ok(read_root(dir)?["providers"]["openai"]["profiles"][name].clone())
 }
 
 pub fn basic_def(base_url: &str, api_key: &str) -> ProfileDefinition {

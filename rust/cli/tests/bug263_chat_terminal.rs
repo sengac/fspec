@@ -1,11 +1,11 @@
 //! Feature: spec/features/honest-chat-terminal-evidence.feature
 
 #[path = "support/bug262_chat.rs"]
-mod chat;
+pub mod chat;
 #[path = "support/prov161_gated_sse.rs"]
-mod gated;
+pub mod gated;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 #[path = "support/bug263_chat.rs"]
 mod terminal;
 

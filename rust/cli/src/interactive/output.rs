@@ -241,6 +241,14 @@ pub enum StreamEvent {
 ///
 /// Default methods provide a convenient API that wraps events in StreamEvent.
 pub trait StreamOutput: Send + Sync {
+    fn acknowledge_interruption(&self) {
+        self.emit_status("Interruption requested; settling durable outcomes.");
+    }
+
+    fn settlement_emitter(&self) -> Result<Option<std::sync::Arc<dyn StreamOutput>>, String> {
+        Ok(None)
+    }
+
     fn prepare_tool_dispatch(&self, _id: &str) -> Result<(), String> {
         Ok(())
     }
@@ -632,6 +640,14 @@ impl StreamOutput for CliOutput {
 // This allows the tool progress callback to emit directly via StreamOutput
 // without going through a channel that would block during tool execution.
 impl<O: StreamOutput> StreamOutput for std::sync::Arc<O> {
+    fn acknowledge_interruption(&self) {
+        (**self).acknowledge_interruption();
+    }
+
+    fn settlement_emitter(&self) -> Result<Option<std::sync::Arc<dyn StreamOutput>>, String> {
+        (**self).settlement_emitter()
+    }
+
     fn emit_tool_cancellation(&self, result: ToolResultEvent) {
         (**self).emit_tool_cancellation(result);
     }

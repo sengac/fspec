@@ -3,7 +3,7 @@
 #[path = "support/bug220.rs"]
 mod support;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 use codelet_cli::interactive::run_agent_stream;
 use codelet_core::RigAgent;
@@ -127,8 +127,10 @@ impl Tool for InterruptTool {
 async fn scenario_running_tool_cancellation_preserves_its_initiating_cause() -> TestResult {
     // @step Given a committed Codex tool batch with a running tool
     for user in [false, true] {
-        let (_directory, session, output) = fixture().await?;
-        let calls: Vec<_> = (1..=2).map(|index| json!({"type":"function_call","id":format!("item-{index}"),"call_id":format!("call-{index}"),"name":"inspect","arguments":"{}"})).collect();
+        let (directory, session, output) = fixture().await?;
+        let _admission =
+            codelet_tools::tool_admission::register_auxiliary(session.id, directory.path().into())?;
+        let calls: Vec<_> = (1..=2).map(|index| json!({"type":"function_call","id":format!("item-{index}"),"call_id":format!("call-{index}"),"name":"inspect","arguments":"{\"work_unit_id\":\"NONE\"}"})).collect();
         let server = transport::Server::start(vec![transport::event(json!({"type":"response.completed","response":{"id":"response-1","status":"completed","output":calls,"end_turn":true,"usage":{"input_tokens":12,"output_tokens":8,"total_tokens":20}}}))], false).await?;
         let dropped = Arc::new(AtomicBool::new(false));
         let release = Arc::new(tokio::sync::Notify::new());
@@ -170,7 +172,8 @@ async fn scenario_running_tool_cancellation_preserves_its_initiating_cause() -> 
                 session.id,
             ),
         )
-        .await??;
+        .await
+        .map_err(|error| format!("stream teardown timed out (user={user}): {error}"))??;
         // @step Then unfinished tools are cancelled exactly once with the actual cause before interrupted and done
         let chunks: Vec<_> = session
             .get_buffered_output(10000)
@@ -210,7 +213,8 @@ async fn scenario_running_tool_cancellation_preserves_its_initiating_cause() -> 
                 tokio::task::yield_now().await;
             }
         })
-        .await?;
+        .await
+        .map_err(|error| format!("tool release timed out (user={user}): {error}"))?;
     }
     Ok(())
 }

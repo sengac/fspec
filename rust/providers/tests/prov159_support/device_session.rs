@@ -1,9 +1,6 @@
 //! Feature: spec/features/provider-settings-oauth-login.feature
 
-mod support {
-    use crate as codelet_providers;
-    include!("mod.rs");
-}
+use crate::test_fixtures::auth as support;
 
 use super::*;
 use crate::codex::oauth_test_support::{configure, OAuthTestConfig};

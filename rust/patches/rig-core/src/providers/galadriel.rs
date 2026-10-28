@@ -330,8 +330,7 @@ impl TryFrom<Message> for message::Message {
                         .chain(
                             message
                                 .content
-                                .map(|content| message::AssistantContent::text(&content))
-                                .into_iter(),
+                                .map(|content| message::AssistantContent::text(&content)),
                         ),
                 )
                 .map_err(|_| {

@@ -1,7 +1,7 @@
 //! Feature: spec/features/custom-done-settlement.feature
 
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 
 use codelet_cli::{interactive::StreamEvent, session::Session};
 use codelet_core::RigAgent;

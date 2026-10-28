@@ -195,8 +195,9 @@ fn isolated_child_writer() -> TestResult {
 #[serial]
 fn concurrent_processes_share_verified_completeness() -> TestResult {
     let fixture = Fixture::new(2, 64)?;
+    let executable = std::env::current_exe()?;
     let launch = || {
-        std::process::Command::new(std::env::current_exe().expect("test executable"))
+        std::process::Command::new(&executable)
             .args(["--exact", "isolated_child_writer", "--nocapture"])
             .env("BUG273_CHILD_STORE", fixture.directory.path())
             .spawn()

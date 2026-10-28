@@ -79,7 +79,8 @@ async fn unavailable_or_unusable_model_limits_fail_before_streaming_changes_hist
                 uuid::Uuid::new_v4(),
             )
             .await
-            .expect_err("unavailable limits must reject the prompt");
+            .err()
+            .ok_or("unavailable limits must reject the prompt")?;
             assert_eq!(
                 error.downcast_ref::<RequestAdmissionError>(),
                 Some(&expected),

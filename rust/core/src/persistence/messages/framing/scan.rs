@@ -3,7 +3,7 @@ use crate::persistence::messages::index::IndexEntry;
 use crate::persistence::messages::{compute_hash, StoredMessage};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Seek, SeekFrom};
+use std::io::{BufReader, Seek, SeekFrom};
 use std::path::Path;
 use uuid::Uuid;
 
@@ -35,7 +35,7 @@ pub(crate) fn scan_range(
     let mut bytes = Vec::new();
     loop {
         bytes.clear();
-        if reader.read_until(b'\n', &mut bytes)? == 0 {
+        if codelet_common::read_work::read_until(&mut reader, b'\n', &mut bytes)? == 0 {
             break;
         }
         if !bytes.iter().all(u8::is_ascii_whitespace) {

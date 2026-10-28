@@ -76,7 +76,10 @@ pub(super) fn load_index(index_path: &Path) -> Option<(HashMap<Uuid, IndexEntry>
     let mut entries = HashMap::with_capacity(entry_count);
     let mut buf = [0u8; ENTRY_SIZE];
 
-    for _ in 0..entry_count {
+    for position in 0..entry_count {
+        if position % 256 == 0 {
+            codelet_common::read_work::checkpoint("index.read").ok()?;
+        }
         if file.read_exact(&mut buf).is_err() {
             warn!("Truncated index file, rebuilding");
             return None;
@@ -117,9 +120,16 @@ pub(super) fn read_message_at(
     file.seek(SeekFrom::Start(entry.byte_offset))
         .map_err(|e| format!("Failed to seek to message: {e}"))?;
 
-    let mut buf = vec![0u8; entry.byte_length as usize];
-    file.read_exact(&mut buf)
-        .map_err(|e| format!("Failed to read message bytes: {e}"))?;
+    let mut buf = Vec::new();
+    codelet_common::read_work::read_to_end(
+        &mut file.take(u64::from(entry.byte_length)),
+        &mut buf,
+        "message.bytes",
+    )
+    .map_err(|e| format!("Failed to read message bytes: {e}"))?;
+    if buf.len() != entry.byte_length as usize {
+        return Err("Message bytes are truncated".into());
+    }
 
     super::framing::parse_record(&buf, entry.byte_offset).map_err(|error| error.to_string())
 }

@@ -1,7 +1,7 @@
 //! Feature: spec/features/automatic-compaction-continuation.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod support;
+pub mod support;
 
 use codelet_rpc_types::StreamChunk;
 use std::sync::atomic::Ordering;

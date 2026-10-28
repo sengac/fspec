@@ -2,8 +2,8 @@
 //! Feature: spec/features/prov159-refresh-freshness.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use network::{bounded, client, send, RefreshServer};
 use prov159_support::{Fixture, TestResult};
@@ -36,7 +36,7 @@ async fn scenario_a6_expired_jwt_overrides_stale_future_expiry_metadata() -> Tes
         .await;
     issuer.release.add_permits(1);
     bounded(send(&cached, &api.uri())).await??;
-    assert_eq!(issuer.requests().len(), 1);
+    assert_eq!(issuer.requests()?.len(), 1);
     let stored: serde_json::Value = serde_json::from_slice(&std::fs::read(&path)?)?;
     assert_eq!(stored["tokens"]["refresh_token"], "refresh-A-rotated");
     Ok(())
@@ -68,7 +68,7 @@ async fn scenario_a5_unchanged_tokens_still_publish_renewed_freshness() -> TestR
     issuer.release.add_permits(2);
     bounded(send(&first, &api.uri())).await??;
     bounded(send(&second, &api.uri())).await??;
-    assert_eq!(issuer.requests().len(), 1);
+    assert_eq!(issuer.requests()?.len(), 1);
     assert_eq!(
         api.received_requests()
             .await

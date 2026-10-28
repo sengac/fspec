@@ -39,7 +39,11 @@ impl From<AgentMessageError> for AgentManagerResult {
 impl BackgroundSession {
     /// Accept one AgentManager message only while idle, claiming the session
     /// before publishing the message so concurrent sends cannot build a backlog.
-    pub fn receive_agent_message(&self, input: IncomingMessage) -> Result<(), AgentMessageError> {
+    pub fn receive_agent_message(
+        &self,
+        mut input: IncomingMessage,
+    ) -> Result<(), AgentMessageError> {
+        input.interrupt_epoch = self.queued_input_epoch();
         let status = self.get_status();
         if status != SessionStatus::Idle {
             return Err(AgentMessageError::Busy {

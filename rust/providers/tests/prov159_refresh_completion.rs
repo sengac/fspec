@@ -1,8 +1,8 @@
 //! Feature: spec/features/prov159-refresh-completion.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::codex_auth::{delete_codex_auth, write_codex_auth};
 use codelet_providers::codex::refreshing_client::RefreshingCodexClient;

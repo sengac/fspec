@@ -4,7 +4,7 @@ mod authority;
 #[path = "../../agent-loop/tests/support/bug268_environment.rs"]
 mod environment;
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "support/prov162.rs"]
 mod support;
 

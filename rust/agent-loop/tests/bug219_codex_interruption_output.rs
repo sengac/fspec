@@ -3,7 +3,7 @@
 #[path = "fixtures/prov160_environment.rs"]
 mod environment;
 #[path = "../../providers/tests/fixtures/prov160.rs"]
-mod fixture;
+pub mod fixture;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_providers::{

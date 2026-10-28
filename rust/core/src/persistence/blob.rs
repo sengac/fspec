@@ -17,7 +17,7 @@
 
 use sha2::{Digest, Sha256};
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -103,11 +103,17 @@ impl BlobStore {
             File::open(&blob_path).map_err(|e| format!("Failed to open blob file: {e}"))?;
 
         let mut content = Vec::new();
-        file.read_to_end(&mut content)
+        codelet_common::read_work::read_to_end(&mut file, &mut content, "blob.bytes")
             .map_err(|e| format!("Failed to read blob content: {e}"))?;
 
         // Verify hash.
-        let actual_hash = compute_sha256(&content);
+        let mut hasher = Sha256::new();
+        for chunk in content.chunks(64 * 1024) {
+            codelet_common::read_work::checkpoint("blob.hash")
+                .map_err(|error| error.to_string())?;
+            hasher.update(chunk);
+        }
+        let actual_hash = hex::encode(hasher.finalize());
         if actual_hash != hash {
             return Err(format!(
                 "Blob hash mismatch: expected {hash}, got {actual_hash}"
@@ -207,7 +213,7 @@ lazy_static::lazy_static! {
 }
 
 fn init_blob_store() -> Result<(), String> {
-    let mut store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
+    let mut store = codelet_common::read_work::lock(&BLOB_STORE)?;
     if store.is_none() {
         *store = Some(BlobStore::new()?);
     }
@@ -230,7 +236,7 @@ pub fn store_blob(content: &[u8]) -> Result<String, String> {
 /// Get content from blob storage.
 pub fn get_blob(hash: &str) -> Result<Vec<u8>, String> {
     init_blob_store()?;
-    let store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
+    let store = codelet_common::read_work::lock(&BLOB_STORE)?;
     store
         .as_ref()
         .ok_or("Blob store not initialized")?

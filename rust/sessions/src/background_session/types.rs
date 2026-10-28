@@ -6,6 +6,7 @@ pub struct PromptInput {
     pub input: String,
     pub thinking_config: Option<String>,
     pub compaction_epoch: Option<u64>,
+    pub interrupt_epoch: u64,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -48,6 +49,7 @@ pub struct IncomingMessage {
     pub role_name: String,
     pub message: String,
     pub images: Option<Vec<BridgeImageData>>,
+    pub interrupt_epoch: Option<u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -70,6 +72,7 @@ impl IncomingMessage {
             role_name,
             message,
             images: None,
+            interrupt_epoch: None,
         })
     }
 
@@ -87,6 +90,7 @@ impl IncomingMessage {
             role_name,
             message,
             images,
+            interrupt_epoch: None,
         })
     }
 }

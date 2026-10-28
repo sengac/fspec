@@ -1,0 +1,450 @@
+{
+  "verified_at_utc": "2026-10-28T04:17:17.390987+00:00",
+  "work_unit": "BUG-278",
+  "status": "done",
+  "prior_cards_and_all_existing_work_units_unchanged": true,
+  "prior_user_rust_changes_unchanged": true,
+  "git_head_and_staged_entries_unchanged": true,
+  "real_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+  "failed_evidence_session_sha256": "51e67fcbc1c9b1c60e2c0a2247c49e5edeabe0aa537e7aa224cb8bc8f5a19a08",
+  "registered_issue_attachment": "spec/attachments/BUG-278/fspec-codex-compaction-issue.md",
+  "trace_chains": [
+    {
+      "scenario": "First and successive Codex compactions preserve independent authoritative generations",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "12-92",
+      "implementation_mappings": 6
+    },
+    {
+      "scenario": "Unproven or incompatible Codex checkpoint authority is refused",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "96-110",
+      "implementation_mappings": 3
+    },
+    {
+      "scenario": "Missing originals or genuine outcomes cannot authorize compaction",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "114-139",
+      "implementation_mappings": 2
+    },
+    {
+      "scenario": "Mutation during admission cannot promote a different candidate",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "143-198",
+      "implementation_mappings": 1
+    },
+    {
+      "scenario": "Failed Codex publication reconciles only the promoted identity",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "202-223",
+      "implementation_mappings": 1
+    },
+    {
+      "scenario": "Lost Codex durability acknowledgement retains exact ownership",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "228-265",
+      "implementation_mappings": 1
+    },
+    {
+      "scenario": "Stale durable Codex sources cannot advance lineage",
+      "test": "rust/cli/tests/bug278_codex_compaction_lineage.rs",
+      "lines": "269-282",
+      "implementation_mappings": 1
+    }
+  ],
+  "passing_tests": 105,
+  "targets": 28,
+  "nested_child_runs_counted_again": false,
+  "target_results": {
+    "bug278_codex_compaction_lineage": {
+      "passed": 7,
+      "failed": 0,
+      "phase": "final-acceptance"
+    },
+    "bug212_selected_provider_checkpoints": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct059_profile_identity": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct059_promoted_ack": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct059_provider_identity": {
+      "passed": 7,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct059_runtime_commit": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct059_selected_publication": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct071_whole_request_fit": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct079_no_substitute_success": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct082_explicit_admission": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-cli-regressions"
+    },
+    "cmpct078_checkpoint_precedence": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct078_committed_lineage": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct078_completion_freshness": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct078_idempotent_boundary": {
+      "passed": 3,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct078_physical_freshness": {
+      "passed": 2,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct080_checkpoint_replay": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct080_invalid_checkpoint": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct080_reset_authority": {
+      "passed": 5,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct080_restore_preflight": {
+      "passed": 2,
+      "failed": 0,
+      "phase": "final-provider-regressions"
+    },
+    "cmpct055_checkpoint_preservation": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-core-regressions"
+    },
+    "cmpct055_generation_commit": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-core-regressions"
+    },
+    "cmpct055_publication_ownership": {
+      "passed": 2,
+      "failed": 0,
+      "phase": "final-core-regressions"
+    },
+    "compaction_blob_availability": {
+      "passed": 6,
+      "failed": 0,
+      "phase": "final-core-regressions"
+    },
+    "cmpct083_cold_process": {
+      "passed": 11,
+      "failed": 0,
+      "phase": "final-cold-process"
+    },
+    "bug212_switched_provider_replay": {
+      "passed": 2,
+      "failed": 0,
+      "phase": "final-session-regressions"
+    },
+    "cmpct061_restore_atomicity": {
+      "passed": 4,
+      "failed": 0,
+      "phase": "final-session-regressions"
+    },
+    "cmpct061_restore_lifecycle": {
+      "passed": 10,
+      "failed": 0,
+      "phase": "final-session-regressions"
+    },
+    "cmpct068_pending_restore": {
+      "passed": 1,
+      "failed": 0,
+      "phase": "final-session-regressions"
+    }
+  },
+  "phase_receipts": [
+    {
+      "phase": "final-acceptance",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-cli --test bug278_codex_compaction_lineage",
+      "log_sha256": "b329d2b3ca77764dca6543d8297089c0671fd03d1f10c300c6a52f25e7e05ca0"
+    },
+    {
+      "phase": "final-cli-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-cli --test bug212_selected_provider_checkpoints --test cmpct059_profile_identity --test cmpct059_provider_identity --test cmpct059_runtime_commit --test cmpct059_promoted_ack --test cmpct059_selected_publication --test cmpct071_whole_request_fit --test cmpct079_no_substitute_success --test cmpct082_explicit_admission",
+      "log_sha256": "7a8a78274fb6a0176ac1e7ecafd5a651aa67529d6f9432281ee32fadf8e01816"
+    },
+    {
+      "phase": "final-provider-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --test cmpct078_committed_lineage --test cmpct078_checkpoint_precedence --test cmpct078_idempotent_boundary --test cmpct078_physical_freshness --test cmpct078_completion_freshness --test cmpct080_checkpoint_replay --test cmpct080_invalid_checkpoint --test cmpct080_restore_preflight --test cmpct080_reset_authority",
+      "log_sha256": "b527b6171b610cf938165a3f7154508212dbf1ed65604c5553196271f72f6305"
+    },
+    {
+      "phase": "final-core-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-core --test cmpct055_generation_commit --test cmpct055_checkpoint_preservation --test cmpct055_publication_ownership --test compaction_blob_availability",
+      "log_sha256": "699047d8aa666b6f99030c12ad46cc312b8e659412eb2c3fa8a0830f5c853b5a"
+    },
+    {
+      "phase": "final-cold-process",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-sessions --test cmpct083_cold_process",
+      "log_sha256": "a9883e5bf5e6cec7b4b0d82e0a4224e0826caa0ee498a0a1ed6c5f058941dcac"
+    },
+    {
+      "phase": "final-session-regressions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-sessions --test bug212_switched_provider_replay --test cmpct061_restore_atomicity --test cmpct061_restore_lifecycle --test cmpct068_pending_restore",
+      "log_sha256": "157f6e5310d5d83ddd8413257e4a3e360c729e69d8fc6d352aafa03f564f6b30"
+    },
+    {
+      "phase": "final-production-check",
+      "exit": 0,
+      "command": "cargo check --offline --profile ci-test -j2 -p codelet-providers -p codelet-core -p codelet-cli -p codelet-sessions --lib",
+      "log_sha256": "bb06aa4376adcc40d3783bb0c8f91e25e4c8e79a1b79ec229e3f72b517749788"
+    },
+    {
+      "phase": "final-default-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec",
+      "log_sha256": "f7e0cc31c1b8fd843a79305f76b7e70b1de6e9535861c9f71b7ee7b8a0b3203c"
+    },
+    {
+      "phase": "final-fixture-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider",
+      "log_sha256": "20b70fc596a8ca404617cef49654432f398d389af5780a4ca9d2b82f6554a028"
+    },
+    {
+      "phase": "final-production-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers -p codelet-core -p codelet-cli -p codelet-sessions --lib -- -D warnings",
+      "log_sha256": "c851de8d42dc9890151efea313e88176e764b954b0917adaed45e7e0b59c0646"
+    },
+    {
+      "phase": "final-cli-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-cli --test bug278_codex_compaction_lineage --test bug212_selected_provider_checkpoints --test cmpct059_profile_identity --test cmpct059_provider_identity --test cmpct059_runtime_commit --test cmpct059_promoted_ack --test cmpct059_selected_publication --test cmpct071_whole_request_fit --test cmpct079_no_substitute_success --test cmpct082_explicit_admission -- -D warnings",
+      "log_sha256": "1fbd68f93f8c0a8d52dfffde9eda2c3f37882e72f388c4047554e57f0adf5e81"
+    },
+    {
+      "phase": "final-provider-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-providers --test cmpct078_committed_lineage --test cmpct078_checkpoint_precedence --test cmpct078_idempotent_boundary --test cmpct078_physical_freshness --test cmpct078_completion_freshness --test cmpct080_checkpoint_replay --test cmpct080_invalid_checkpoint --test cmpct080_restore_preflight --test cmpct080_reset_authority -- -D warnings",
+      "log_sha256": "2ed3ef0003a1c2e1852637cd0d756bef0cc7c9eda23d8435fa75643bb020313e"
+    },
+    {
+      "phase": "final-core-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-core --test cmpct055_generation_commit --test cmpct055_checkpoint_preservation --test cmpct055_publication_ownership --test compaction_blob_availability -- -D warnings",
+      "log_sha256": "6689192ba54c7b51e42634c258b489710c9239d4285072a38a258cf303c29aa1"
+    },
+    {
+      "phase": "final-session-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-sessions --test cmpct083_cold_process --test bug212_switched_provider_replay --test cmpct061_restore_atomicity --test cmpct061_restore_lifecycle --test cmpct068_pending_restore -- -D warnings",
+      "log_sha256": "a55a656103bdb63e1930480245ec01430306666746560772dfb54ebc0b207aa0"
+    },
+    {
+      "phase": "final-default-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec -- -D warnings",
+      "log_sha256": "66a56f5531ed39c4c405e3fce2023c02e943d7d21c192c4115ade67a1b4478e6"
+    },
+    {
+      "phase": "final-fixture-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-fspec --bin fspec --features test-stub-provider -- -D warnings",
+      "log_sha256": "ed8af0f91f1c1d17af2e96e0f0b83ab997fd8ef0a3fa14f160a125124c3b7c85"
+    },
+    {
+      "phase": "final-owned-rustfmt",
+      "exit": 0,
+      "command": "rustfmt --check --edition 2021 --config skip_children=true rust/cli/src/session/compaction.rs rust/cli/src/session/selected_compaction.rs rust/cli/tests/bug278_codex_compaction_lineage.rs rust/cli/tests/fixtures/bug278.rs rust/cli/tests/fixtures/bug278_binding.rs rust/cli/tests/cmpct071_whole_request_fit.rs rust/core/src/persistence/compaction_boundary.rs rust/core/src/persistence/provider_state/replay.rs rust/core/src/persistence/session_replay.rs rust/providers/src/session.rs rust/providers/src/session_compaction.rs rust/providers/src/selected_request.rs rust/providers/src/codex/session.rs rust/providers/src/codex/compaction.rs rust/providers/src/codex/checkpoint_restore.rs rust/sessions/tests/cmpct083/application.rs rust/sessions/tests/cmpct083/fixture.rs rust/sessions/tests/cmpct083/transport.rs rust/sessions/tests/bug212_switched_provider_replay.rs rust/sessions/tests/cmpct061_restore_atomicity.rs rust/sessions/tests/cmpct068_pending_restore.rs",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-diff-check",
+      "exit": 0,
+      "command": "git diff --check",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-feature-validate",
+      "exit": 0,
+      "command": "fspec validate spec/features/codex-durable-compaction-lineage.feature",
+      "log_sha256": "cfb326657e7135da472419bacc54e7f9fd3e48fdb190780549edbed9d13fcf8f"
+    },
+    {
+      "phase": "final-feature-tags",
+      "exit": 0,
+      "command": "fspec validate-tags spec/features/codex-durable-compaction-lineage.feature",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "final-coverage-report",
+      "exit": 0,
+      "command": "fspec show-coverage codex-durable-compaction-lineage --format json",
+      "log_sha256": "469ffcb20d2a412a35675a11e0752f33e68a169b2e070620a47c00854408855d"
+    },
+    {
+      "phase": "final-audit-codex-durable-compaction-lineage",
+      "exit": 0,
+      "command": "fspec audit-coverage codex-durable-compaction-lineage",
+      "log_sha256": "28c2fac43509d614aa366d4e999462be175c7035552a0f1c63d4fe22b2061b6a"
+    },
+    {
+      "phase": "final-audit-whole-request-admission-before-dag-commit",
+      "exit": 0,
+      "command": "fspec audit-coverage whole-request-admission-before-dag-commit",
+      "log_sha256": "62b36c107eca7959556946909f7b485aa5abde754b0fefcd05aa2d0e963c7781"
+    },
+    {
+      "phase": "final-audit-session-checkpoint-restore-atomicity",
+      "exit": 0,
+      "command": "fspec audit-coverage session-checkpoint-restore-atomicity",
+      "log_sha256": "62b36c107eca7959556946909f7b485aa5abde754b0fefcd05aa2d0e963c7781"
+    },
+    {
+      "phase": "final-audit-compaction-switched-provider-replay",
+      "exit": 0,
+      "command": "fspec audit-coverage compaction-switched-provider-replay",
+      "log_sha256": "c5d54af8e2f9fb1ba088e2cd282ff292de70bb4b4e1026bf7dbaf2b37d18945a"
+    },
+    {
+      "phase": "final-audit-cold-compaction-publication-reconciliation",
+      "exit": 0,
+      "command": "fspec audit-coverage cold-compaction-publication-reconciliation",
+      "log_sha256": "59d6a8e17997bc14bb00da7b72885bbabc20ec8a372685e29a87af58df4b4b8c"
+    }
+  ],
+  "executed_red_receipts": [
+    {
+      "name": "canonical-baseline-red",
+      "exit": 101,
+      "executed_tests": 1,
+      "failed_tests": 1,
+      "reason": "generation must advance with a selected model",
+      "log_sha256": "ae0c89304952c5af8687e0931945b4e2c06ee92a4df668d00ca1502aa96938d7"
+    },
+    {
+      "name": "binding-red-executed",
+      "exit": 101,
+      "executed_tests": 1,
+      "failed_tests": 1,
+      "reason": "missing binding authorized cold continuation",
+      "log_sha256": "c329e43a3f28e5f0fa7dee0e5bdd805e979d9211b0ac9d3caaf1e1d79369c1da"
+    }
+  ],
+  "unchanged_global_tag_limit": {
+    "exit": 1,
+    "files_with_violations": 522,
+    "log_sha256": "390cc313233eaac02ece1ad0ef63cbb8726bd5820bcbd7eee16ec28d1afb965e"
+  },
+  "strict_generation_contract_and_invalid_lineage_control_unchanged": true,
+  "owned_source_sha256": {
+    "rust/cli/src/session/compaction.rs": "fb6ee2f453a23db761ab5ed0341d7c5d2257e4cbd0c9d77f2db4ab8c6410aabc",
+    "rust/cli/src/session/selected_compaction.rs": "6838a5b94afc66d3582b0351461ceee1e3462b48a743d048f8db5b078d2de049",
+    "rust/cli/tests/bug278_codex_compaction_lineage.rs": "ae922f52480bed83f04162ead5d3acbfd95e73df6bb993d31b2ca43cf8615a65",
+    "rust/cli/tests/cmpct071_whole_request_fit.rs": "fa33cd6b6c39e1c361978dc316954c07b158615fcae733a9427b2b073b0096b6",
+    "rust/cli/tests/fixtures/bug278.rs": "5ba7c4a5fb021d44c17aaa332d5ed0f554c399b9d5ec452bfd5f1f19a510fc79",
+    "rust/cli/tests/fixtures/bug278_binding.rs": "e876dd164cf604de72177c497701988986a0311f151b5e43c5049513689fe983",
+    "rust/core/src/persistence/compaction_boundary.rs": "73584ea26a7330a2fae9509fe67b1c210065395428daf1b1e5f95b99123d7b10",
+    "rust/core/src/persistence/provider_state/replay.rs": "ab7c4b042f1b19493f4eb8eddf62ec26cee0946f9ef007235baea7759cf736c8",
+    "rust/core/src/persistence/session_replay.rs": "9edb3c349741e9626d9e230821b1341c86f3c0407aeb76b3dfd6df226447a1ec",
+    "rust/providers/src/codex/checkpoint_restore.rs": "febecb2d461aa48837ab405f963c9d82c16034a0a854c54628b3bdb428470166",
+    "rust/providers/src/codex/compaction.rs": "611cb02e3e1baf5ca18595ff081437d0dde8ef6de5cd5ab97f85df70d9a210f6",
+    "rust/providers/src/codex/session.rs": "3e3a340d8562d740bb4a3d6e602170f58dbc6f944d28a21953c2115690214d19",
+    "rust/providers/src/selected_request.rs": "b632efae67286b172df11ac8b7b9637b4d60513b038b37a6ccd786a436df380b",
+    "rust/providers/src/session.rs": "4f4d79fc1c6570423df2ff586644e4b093de5d454245fcd5e8c4445948b1da68",
+    "rust/providers/src/session_compaction.rs": "73c588b7094346383ce85eb26e525d3e8d2167fae80ce557fcffe7a94301ad22",
+    "rust/sessions/tests/bug212_switched_provider_replay.rs": "f83a6e0fa7b88e7fc72486fac12be4d2ca643b9849586fc278fe6b5829448c81",
+    "rust/sessions/tests/cmpct061_restore_atomicity.rs": "143239550fb936c9be61034b8ea0c3b6bd8cddb914edb478016dd9f3bc5c0e36",
+    "rust/sessions/tests/cmpct068_pending_restore.rs": "d55611245d774568217781744f290b25ad5c145594917d9f6a49a37077f20cb4",
+    "rust/sessions/tests/cmpct083/application.rs": "4bd13bd2d8d8ddd99d6b2b7eececa862463f9d52117c10bc0588a352736448bb",
+    "rust/sessions/tests/cmpct083/fixture.rs": "9d68311bcf61c8aceaaae78e606571524b569d68305ccf611ab3f89e113ad650",
+    "rust/sessions/tests/cmpct083/transport.rs": "8bf0377b6658cd89f9d3ce1becbd617163a2fdd067c7048b74c5439a906e51c7"
+  },
+  "owned_rust_files_below_300_lines": true,
+  "remaining_limits": [
+    "No workspace-wide suite or Windows run; 522 existing global tag violations remain",
+    "Running daemon and installed binary were not replaced or restarted",
+    "Failed evidence session remains unrepaired and unchanged"
+  ],
+  "native_session_final_observation": {
+    "session_id": "966e549b-6e1d-45ef-ab9e-19763a2257b9",
+    "status": "Idle",
+    "model": {
+      "provider_id": "codex",
+      "model_id": "gpt-6.1-sol",
+      "context_window": 1050000,
+      "max_output_tokens": 128000,
+      "compaction_threshold": 700000
+    },
+    "pending_approval": false,
+    "compaction_committed_identity": {
+      "session_id": "966e549b-6e1d-45ef-ab9e-19763a2257b9",
+      "generation": 1,
+      "operation_id": "cfad0bb9-c6c4-414c-b9e0-e07ba7a959a7",
+      "revision": 1046
+    },
+    "compaction_publication_pending": false,
+    "provider_checkpoint_generation": 1,
+    "limitation": "This native compaction used the unchanged running daemon with aligned generations; it is not live execution of the newly built fix."
+  },
+  "verification_scope": "Snapshot at verified_at_utc; the later Git commit is described in post_verification_settlement. All validated source bytes remain current.",
+  "post_verification_settlement": {
+    "observed_at_utc": "2026-10-28T04:19:36.789214+00:00",
+    "head": "9b490e8917e8928cc87ab3ca6bad920bf7afbc39",
+    "parent": "92cdf15f7d5c212d3a2af86d027b4fbe63f66323",
+    "commit_subject": "more fixes",
+    "commit_author_name": "Roland Quast",
+    "commit_time_utc": "2026-10-28T04:17:29Z",
+    "commit_was_not_invoked_by_controller_or_recorded_native_tools": true,
+    "actor_not_independently_identified": true,
+    "validated_source_files_unchanged": 21,
+    "prior_source_changes_unchanged": true,
+    "all_prior_work_units_unchanged": true,
+    "four_cards_done": true,
+    "real_config_and_failed_session_unchanged": true,
+    "staged_changes_against_new_head": false,
+    "intervening_commit_preserved": true
+  }
+}

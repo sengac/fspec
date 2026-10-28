@@ -98,21 +98,27 @@ impl Fixture {
                 .build()?;
         let model = client.completion_model("selected-model");
         let agent = codelet_core::RigAgent::with_default_depth(
-            rig::agent::AgentBuilder::new(model)
+            rig::agent::AgentBuilder::new(model.clone())
                 .preamble("actual selected provider instructions")
                 .max_tokens(reservation as u64)
                 .build(),
         );
         if capacity == 0 || reservation == 0 {
-            let preparer = agent
-                .selected_request_preparer(
-                    "current selected prompt",
-                    codelet_providers::request_admission::AdmissionLimits {
-                        context_capacity: (capacity > 0).then_some(capacity as u64),
-                        output_reservation: (reservation > 0).then_some(reservation as u64),
-                    },
-                )
-                .await?;
+            let template = rig::completion::CompletionRequestBuilder::new(
+                model.clone(),
+                "current selected prompt",
+            )
+            .preamble("actual selected provider instructions".into())
+            .max_tokens(reservation as u64)
+            .build();
+            let preparer = codelet_providers::selected_request::SelectedRequestPreparer::new(
+                model,
+                template,
+                codelet_providers::request_admission::AdmissionLimits {
+                    context_capacity: (capacity > 0).then_some(capacity as u64),
+                    output_reservation: (reservation > 0).then_some(reservation as u64),
+                },
+            );
             session.install_selected_preparer(preparer);
         } else {
             codelet_cli::interactive::run_agent_stream(

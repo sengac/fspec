@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_no_substitute_success.rs",
-          "lines": "100-108",
+          "lines": "130-137",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
@@ -190,7 +190,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_no_substitute_success.rs",
-          "lines": "110-120",
+          "lines": "141-150",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
@@ -375,7 +375,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_no_substitute_success.rs",
-          "lines": "122-136",
+          "lines": "154-167",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
@@ -560,7 +560,7 @@
       "testMappings": [
         {
           "file": "rust/cli/tests/cmpct079_no_substitute_success.rs",
-          "lines": "138-166",
+          "lines": "171-197",
           "implMappings": [
             {
               "file": "rust/cli/src/compactor_sub_agent.rs",
@@ -752,6 +752,6 @@
       "rust/cli/src/compactor_sub_agent.rs",
       "rust/cli/src/compaction_operation.rs"
     ],
-    "totalLinesCovered": 720
+    "totalLinesCovered": 715
   }
 }

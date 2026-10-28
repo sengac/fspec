@@ -2,7 +2,7 @@
 #[path = "../../agent-loop/tests/support/bug268_environment.rs"]
 mod environment;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 
 use codelet_cli::{
     interactive::{ContinueStateReason, StreamEvent},

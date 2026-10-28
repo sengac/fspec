@@ -1,7 +1,7 @@
 //! Feature: spec/features/transcript-hydration-live-state.feature
 
 #[path = "bug244/support.rs"]
-mod support;
+pub mod support;
 
 #[path = "bug244/app_support.rs"]
 mod app_support;

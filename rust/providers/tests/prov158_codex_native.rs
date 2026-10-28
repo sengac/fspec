@@ -52,7 +52,12 @@ fn native_compaction_is_unsupported_even_with_a_trigger() -> TestResult {
         "input":[{"type":"compaction_trigger"}]
     }));
     assert!(memory_policy::validate_request(&json!({"context_management":[]})).is_err());
+    assert!(
+        memory_policy::validate_response(&json!({"output":[{"type":"message","content":[]}]}))
+            .is_ok()
+    );
     for family in ["compaction", "compaction_summary", "context_compaction"] {
+        assert!(memory_policy::validate_response(&json!({"output":[{"type":family}]})).is_err());
         let error = output
             .terminal(&[json!({"type":family,"id":"cmp_1",
             "encrypted_content":"opaque+/=秘密"})])

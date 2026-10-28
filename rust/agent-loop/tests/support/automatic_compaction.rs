@@ -1,5 +1,5 @@
 #[path = "terminal_recovery.rs"]
-mod terminal;
+pub mod terminal;
 
 use codelet_agent_loop::agent_loop::agent_loop;
 use codelet_rpc_types::StreamChunk;

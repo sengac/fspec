@@ -23,9 +23,9 @@ use wiremock::{
 };
 
 #[path = "fixtures/prov147.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct078/support.rs"]
-mod support;
+pub mod support;
 use support::{history, request};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

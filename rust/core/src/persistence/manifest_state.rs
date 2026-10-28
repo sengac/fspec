@@ -56,7 +56,7 @@ pub fn get_session_lineage(session: &SessionManifest) -> SessionLineage {
 /// List all sessions for a specific project (owned values).
 pub fn list_sessions_for_project(project: &Path) -> Result<Vec<SessionManifest>, String> {
     init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    let store = codelet_common::read_work::lock(&SESSION_STORE)?;
     Ok(store
         .as_ref()
         .ok_or("Session store not initialized")?
@@ -69,7 +69,7 @@ pub fn list_sessions_for_project(project: &Path) -> Result<Vec<SessionManifest>,
 /// List all sessions across all projects.
 pub fn list_all_sessions() -> Result<Vec<SessionManifest>, String> {
     init_session_store()?;
-    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    let store = codelet_common::read_work::lock(&SESSION_STORE)?;
     Ok(store
         .as_ref()
         .ok_or("Session store not initialized")?

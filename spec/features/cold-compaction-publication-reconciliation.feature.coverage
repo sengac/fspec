@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/cmpct068_pending_restore.rs",
-          "lines": "23-139",
+          "lines": "23-154",
           "implMappings": [
             {
               "file": "rust/sessions/src/session_restore.rs",
@@ -83,90 +83,6 @@
                 78,
                 79
               ]
-            },
-            {
-              "file": "rust/cli/src/session/compaction.rs",
-              "lines": [
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173
-              ]
-            },
-            {
-              "file": "rust/cli/src/session/restore_compaction.rs",
-              "lines": [
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
-              ]
             }
           ]
         }
@@ -181,10 +97,8 @@
       "rust/sessions/tests/cmpct068_pending_restore.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/session_restore.rs",
-      "rust/cli/src/session/compaction.rs",
-      "rust/cli/src/session/restore_compaction.rs"
+      "rust/sessions/src/session_restore.rs"
     ],
-    "totalLinesCovered": 263
+    "totalLinesCovered": 204
   }
 }

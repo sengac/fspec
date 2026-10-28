@@ -29,8 +29,9 @@ impl BackgroundSession {
 
     pub fn receive_incoming_message(
         &self,
-        input: IncomingMessage,
+        mut input: IncomingMessage,
     ) -> std::result::Result<(), String> {
+        input.interrupt_epoch = self.queued_input_epoch();
         self.incoming_message_tx
             .try_send(input)
             .map_err(|e| format!("Failed to queue supervisor input: {}", e))?;
@@ -44,15 +45,16 @@ impl BackgroundSession {
     }
 
     pub fn send_input(&self, input: String, thinking_config: Option<String>) -> Result<(), String> {
+        let interrupt_epoch = self.compaction_epoch();
         self.set_pending_input(None);
         self.handle_output(StreamChunk::user_input(input.clone()));
         self.set_status(SessionStatus::Running);
-        self.reset_interrupt();
         self.input_tx
             .try_send(PromptInput {
                 input,
                 thinking_config,
                 compaction_epoch: None,
+                interrupt_epoch,
             })
             .map_err(|e| {
                 self.set_status(SessionStatus::Idle);

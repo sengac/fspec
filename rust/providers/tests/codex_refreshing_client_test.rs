@@ -1,6 +1,6 @@
 //! Feature: spec/features/codex-refreshing-client.feature
 
-mod prov159_support;
+pub mod prov159_support;
 #[path = "codex_refreshing_client/support.rs"]
 mod support;
 

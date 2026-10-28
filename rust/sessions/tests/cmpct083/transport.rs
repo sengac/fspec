@@ -55,8 +55,8 @@ pub async fn server(row: &str) -> MockServer {
         ),
         _ => format!(
             "data: {}\n\ndata: {}\n\ndata: [DONE]\n\n",
-            json!({"id":"gate","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{"role":"assistant","content":"ready"},"finish_reason":"stop"}]}),
-            json!({"choices":[],"usage":{"prompt_tokens":10,"completion_tokens":1,"total_tokens":11}})
+            json!({"id":"gate","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{"role":"assistant","content":"ready"},"finish_reason":null}]}),
+            json!({"choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":1,"total_tokens":11}})
         ),
     };
     Mock::given(method("POST"))
@@ -72,7 +72,7 @@ pub async fn server(row: &str) -> MockServer {
 
 pub async fn submission(row: &str, content: &str) -> MockServer {
     let server = MockServer::start().await;
-    let arguments = json!({"content":content}).to_string();
+    let arguments = json!({"content":content,"work_unit_id":"NONE"}).to_string();
     let body = match row {
         "anthropic" => [
             ("message_start", json!({"type":"message_start","message":{"id":"msg_submit","type":"message","role":"assistant","model":"claude-sonnet-4","content":[],"usage":{"input_tokens":10,"output_tokens":0}}})),
@@ -82,9 +82,10 @@ pub async fn submission(row: &str, content: &str) -> MockServer {
             ("message_delta", json!({"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"output_tokens":1}})),
             ("message_stop", json!({"type":"message_stop"})),
         ].into_iter().map(|(kind, value)| format!("event: {kind}\ndata: {value}\n\n")).collect(),
-        "gemini" => format!("data: {}\n\n", json!({"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"inject_summary","args":{"content":content}}}]},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":1,"totalTokenCount":11}})),
+        "gemini" => format!("data: {}\n\n", json!({"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"inject_summary","args":{"content":content,"work_unit_id":"NONE"}}}]},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":1,"totalTokenCount":11}})),
         "codex" => {
-            let item = json!({"type":"function_call","id":"fc_summary","call_id":"summary-call","name":"inject_summary","arguments":arguments,"status":"completed"});
+            let call_id = format!("summary-{}", uuid::Uuid::new_v4());
+            let item = json!({"type":"function_call","id":format!("item-{call_id}"),"call_id":call_id,"name":"inject_summary","arguments":arguments,"status":"completed"});
             [json!({"type":"response.output_item.done","output_index":0,"sequence_number":1,"item":item}),
                 json!({"type":"response.completed","sequence_number":2,"response":{"id":"resp_submit","status":"completed","end_turn":true,"output":[item],"usage":{"input_tokens":10,"output_tokens":1,"total_tokens":11}}})]
                 .into_iter().map(|value| format!("data: {value}\n\n")).collect()
@@ -92,7 +93,7 @@ pub async fn submission(row: &str, content: &str) -> MockServer {
         "custom" => format!("data: {}\n\ndata: {}\n\n", json!({"kind":"tool_call","id":"summary-call","name":"inject_summary","arguments":arguments,"complete":true}), json!({"kind":"stop","reason":"tool_use"})),
         _ => [
             json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"summary-call","type":"function","function":{"name":"inject_summary","arguments":arguments}}]},"finish_reason":null}]}),
-            json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}),
+            json!({"id":"submission","object":"chat.completion.chunk","created":1,"model":"o3","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":10,"completion_tokens":1,"total_tokens":11}}),
         ].into_iter().map(|value| format!("data: {value}\n\n")).chain(std::iter::once("data: [DONE]\n\n".into())).collect(),
     };
     Mock::given(method("POST"))

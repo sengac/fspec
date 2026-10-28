@@ -1,8 +1,8 @@
 //! Feature: spec/features/codex-sole-dag-memory-policy.feature
 #[path = "fixtures/prov147.rs"]
-mod baseline;
+pub mod baseline;
 #[path = "fixtures/cmpct077.rs"]
-mod fixture;
+pub mod fixture;
 
 use fixture::{model, PersistedHistory, TestResult};
 use rig::completion::{CompletionModel, CompletionRequestBuilder};

@@ -1,5 +1,5 @@
 #[path = "terminal_recovery.rs"]
-mod terminal;
+pub mod terminal;
 
 use codelet_agent_loop::generate_compaction_handler::{
     register_compactor_sub_agent_handler, register_generate_compaction_handler,

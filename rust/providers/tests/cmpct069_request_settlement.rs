@@ -10,7 +10,7 @@ use serde_json::json;
 use std::sync::{Arc, Mutex};
 
 #[path = "fixtures/cmpct069_anthropic.rs"]
-mod anthropic_fixture;
+pub mod anthropic_fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

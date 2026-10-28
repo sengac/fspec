@@ -5,7 +5,7 @@ use fixtures::{Fixture, TestResult};
 use serde_json::{json, Value};
 
 #[path = "fixtures/prov161_runtime.rs"]
-mod fixtures;
+pub mod fixtures;
 
 struct ProviderDirectory(Option<std::ffi::OsString>);
 

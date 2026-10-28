@@ -126,12 +126,14 @@ use rig::providers::openai::responses_api::{
 };
 
 fn make_responses_usage(reasoning_tokens: u64, cached_tokens: u64) -> ResponsesUsage {
+    let input_tokens = 1000.max(cached_tokens);
+    let output_tokens = 500.max(reasoning_tokens);
     ResponsesUsage {
-        input_tokens: 1000,
+        input_tokens,
         input_tokens_details: Some(InputTokensDetails { cached_tokens }),
-        output_tokens: 500,
+        output_tokens,
         output_tokens_details: Some(OutputTokensDetails { reasoning_tokens }),
-        total_tokens: 1500,
+        total_tokens: input_tokens + output_tokens,
     }
 }
 
@@ -208,6 +210,9 @@ fn test_responses_api_streaming_propagates_reasoning_tokens() {
     let streaming_resp =
         rig::providers::openai::responses_api::streaming::StreamingCompletionResponse {
             usage: make_responses_usage(2000, 0),
+            stop_reason: None,
+            request_context: None,
+            request_usage: vec![],
         };
 
     // @step When token_usage() is called on the streaming response
@@ -226,6 +231,9 @@ fn test_responses_api_streaming_propagates_cache_read_input_tokens() {
     let streaming_resp =
         rig::providers::openai::responses_api::streaming::StreamingCompletionResponse {
             usage: make_responses_usage(0, 5000),
+            stop_reason: None,
+            request_context: None,
+            request_usage: vec![],
         };
 
     // @step When token_usage() is called on the streaming response
@@ -281,6 +289,7 @@ fn test_completions_api_non_streaming_propagates_reasoning_tokens() {
                 refusal: None,
                 audio: None,
                 name: None,
+                reasoning: None,
                 tool_calls: vec![],
             },
             logprobs: None,
@@ -288,8 +297,8 @@ fn test_completions_api_non_streaming_propagates_reasoning_tokens() {
         }],
         usage: Some(Usage {
             prompt_tokens: 1000,
-            completion_tokens: Some(500),
-            total_tokens: 1500,
+            completion_tokens: Some(1200),
+            total_tokens: 2200,
             prompt_tokens_details: None,
             completion_tokens_details: Some(CompletionTokensDetails {
                 reasoning_tokens: 1200,
@@ -316,13 +325,14 @@ fn test_completions_api_streaming_propagates_reasoning_tokens() {
     let streaming_resp = StreamingCompletionResponse {
         usage: Usage {
             prompt_tokens: 2000,
-            completion_tokens: Some(1000),
-            total_tokens: 3000,
+            completion_tokens: Some(3000),
+            total_tokens: 5000,
             prompt_tokens_details: None,
             completion_tokens_details: Some(CompletionTokensDetails {
                 reasoning_tokens: 3000,
             }),
         },
+        stop_reason: None,
     };
 
     // @step When the Usage event is emitted during streaming
@@ -341,8 +351,8 @@ fn test_completions_api_get_token_usage_propagates_reasoning_tokens() {
     // @step Given an OpenAI Completions API Usage with completion_tokens_details containing reasoning_tokens of 800
     let usage = Usage {
         prompt_tokens: 1000,
-        completion_tokens: Some(500),
-        total_tokens: 1500,
+        completion_tokens: Some(800),
+        total_tokens: 1800,
         prompt_tokens_details: None,
         completion_tokens_details: Some(CompletionTokensDetails {
             reasoning_tokens: 800,

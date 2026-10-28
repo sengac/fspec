@@ -1,13 +1,11 @@
-//! BUG-170: Surgical removal of a failed tool-call pair from the context
-//! stack after an unrecoverable (prompt-too-long) terminal API error.
+//! BUG-170 / BUG-185: Legacy non-Codex terminal-error tail removal.
 //!
-//! When the next API call after a tool result fails with a context-length
-//! error, the offending `Assistant(ToolCall)` + `User(ToolResult)` pair is
-//! still in `session.messages`. Without removal, the next user message
-//! replays the same oversized tool call and the same error recurs every
-//! turn. This module provides the tail-surgery primitive; the stream loop's
-//! terminal error arm invokes it (only for prompt-too-long errors) and then
-//! invalidates the stale cache-token state at the call site.
+//! After the earlier recovery cascade, the stream loop may invoke this
+//! shape-based primitive for any non-interrupted non-Codex terminal error,
+//! then invalidate stale cache-token state when a tool tail was removed.
+//! BUG-272 excludes Codex: its committed checkpoint ancestry requires genuine
+//! calls and outcomes to remain intact, including tool errors. Codex terminal
+//! failures propagate explicitly without this surgery or checkpoint repair.
 
 use crate::interactive_helpers::tool_call_correlation_key;
 use crate::session::system_reminders::is_system_reminder;

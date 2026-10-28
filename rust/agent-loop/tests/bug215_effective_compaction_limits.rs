@@ -1,9 +1,9 @@
 //! Feature: spec/features/compaction-builder-effective-limits.feature
 
 #[path = "support/bug211_budget.rs"]
-mod budget;
+pub mod budget;
 #[path = "support/bug210_completion_metrics.rs"]
-mod metrics;
+pub mod metrics;
 
 use codelet_agent_loop::generate_compaction_handler::{
     register_compactor_sub_agent_handler, register_generate_compaction_handler,

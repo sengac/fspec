@@ -1,5 +1,5 @@
 #[path = "support/terminal_recovery.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::agent_loop::agent_loop;
 use codelet_rpc_types::{SessionState, StreamChunk};

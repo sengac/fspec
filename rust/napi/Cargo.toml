@@ -182,3 +182,7 @@ required-features = ["__full_runtime"]
 [[test]]
 name = "session_bindings_smoke"
 required-features = ["__full_runtime"]
+
+[[test]]
+name = "uncaptured_compaction_contract"
+required-features = ["__full_runtime"]

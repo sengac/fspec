@@ -115,10 +115,12 @@ async fn builder_failure(fixture: &Fixture, row: &str, output: &Output) -> TestR
         );
     }
     codelet_cli::interactive::set_deep_search_wall_clock_timeout_override(Some(
-        Duration::from_millis(500),
+        // The budget includes actual request preparation and tool-definition
+        // capture. 500 ms expired before this fixture reached either fault.
+        Duration::from_secs(5),
     ));
     let result = tokio::time::timeout(
-        Duration::from_secs(2),
+        Duration::from_secs(8),
         run_compactor_sub_agent_round(
             &mut inner,
             id,
@@ -132,13 +134,33 @@ async fn builder_failure(fixture: &Fixture, row: &str, output: &Output) -> TestR
     let failure = result
         .err()
         .ok_or("negative builder row must return typed failure")?;
+    let requests = server
+        .received_requests()
+        .await
+        .ok_or("builder request capture")?;
+    if row == "missing handler" {
+        assert!(requests.is_empty(), "unavailable builder made a request");
+    } else {
+        assert!(
+            !requests.is_empty(),
+            "fault fixture must reach its real local provider request: {failure:?}"
+        );
+    }
     assert!(
-        matches!(
-            (row, &failure),
-            ("missing handler", CompactionFailure::Unavailable)
-                | ("bad candidate", CompactionFailure::Candidate(_))
-                | ("timeout", CompactionFailure::Deadline)
-        ),
+        match (row, &failure) {
+            ("missing handler", CompactionFailure::Unavailable) => true,
+            // The real registered builder returns Result<String, String>;
+            // run_round deliberately wraps its inner failure as Builder.
+            ("bad candidate", CompactionFailure::Builder(reason)) => {
+                reason.contains("candidate rejected after 3 attempts: invalid DAG candidate")
+                    && reason.contains("missing or unclosed dag-node structure")
+            }
+            ("timeout", CompactionFailure::Builder(reason)) => {
+                reason == "compaction synthesis deadline exceeded; submit fresh input to retry"
+            }
+            ("timeout", CompactionFailure::Deadline) => true,
+            _ => false,
+        },
         "wrong typed outcome {row}: {failure:?}"
     );
     Ok(())

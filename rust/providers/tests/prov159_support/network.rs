@@ -88,11 +88,11 @@ impl RefreshServer {
         })
     }
 
-    pub fn requests(&self) -> Vec<String> {
+    pub fn requests(&self) -> Result<Vec<String>, String> {
         self.requests
             .lock()
-            .expect("request capture lock is available")
-            .clone()
+            .map(|requests| requests.clone())
+            .map_err(|error| error.to_string())
     }
 }
 

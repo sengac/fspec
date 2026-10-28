@@ -79,38 +79,37 @@ fn adapt_response(
         .map(|choice| map_finish_reason(&choice.finish_reason))
         .ok_or_else(|| CompletionError::ResponseError("missing OpenAI finish reason".into()))?;
 
-    if let Some(choice) = response.choices.first() {
-        if let Message::Assistant {
+    if let Some(choice) = response.choices.first()
+        && let Message::Assistant {
             content,
             tool_calls,
             reasoning,
             ..
         } = &choice.message
+    {
+        if let Some(reasoning_text) = reasoning
+            && !reasoning_text.is_empty()
         {
-            if let Some(reasoning_text) = reasoning {
-                if !reasoning_text.is_empty() {
-                    items.push(RawStreamingChoice::ReasoningDelta {
-                        id: None,
-                        reasoning: reasoning_text.clone(),
-                    });
-                }
-            }
+            items.push(RawStreamingChoice::ReasoningDelta {
+                id: None,
+                reasoning: reasoning_text.clone(),
+            });
+        }
 
-            for part in content {
-                if let AssistantContent::Text { text } = part {
-                    if !text.is_empty() {
-                        items.push(RawStreamingChoice::Message(text.clone()));
-                    }
-                }
+        for part in content {
+            if let AssistantContent::Text { text } = part
+                && !text.is_empty()
+            {
+                items.push(RawStreamingChoice::Message(text.clone()));
             }
+        }
 
-            for call in tool_calls {
-                items.push(RawStreamingChoice::ToolCall(RawStreamingToolCall::new(
-                    call.id.clone(),
-                    call.function.name.clone(),
-                    call.function.arguments.clone(),
-                )));
-            }
+        for call in tool_calls {
+            items.push(RawStreamingChoice::ToolCall(RawStreamingToolCall::new(
+                call.id.clone(),
+                call.function.name.clone(),
+                call.function.arguments.clone(),
+            )));
         }
     }
 

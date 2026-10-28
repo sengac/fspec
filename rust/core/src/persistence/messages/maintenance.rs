@@ -32,7 +32,7 @@ impl MessageStore {
             .write(true)
             .open(&lock_path)
             .map_err(|error| format!("Failed to open messages lock {lock_path:?}: {error}"))?;
-        lock.lock()
+        codelet_common::read_work::lock_file(&lock)
             .map_err(|error| format!("Failed to lock messages store {lock_path:?}: {error}"))?;
         Ok(lock)
     }

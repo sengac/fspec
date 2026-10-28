@@ -3,7 +3,7 @@
 #[path = "support/bug241_metadata.rs"]
 mod support;
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 use futures::StreamExt;
 use rig::completion::{CompletionModel, CompletionRequestBuilder};

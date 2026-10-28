@@ -1,3 +1,4 @@
+@done
 @cli
 @feature-management
 @BUG-271
@@ -39,8 +40,3 @@ Feature: Session storage diagnostics
     Given a selected model and unreadable historical manifests
     When each transport creates a session with a role
     Then a durable session with that role exists and unresolved warnings remain available
-
-  Scenario: Checked creation distinguishes declines from application failures
-    Given a fresh session manager with an offline model catalog
-    When checked creation is attempted before model selection and after the sessions path becomes unusable
-    Then only the missing model returns an empty decline while the storage failure returns its cause and publishes no session

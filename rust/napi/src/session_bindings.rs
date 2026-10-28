@@ -77,23 +77,6 @@ pub struct GlobalChunkCallbackArgs {
     pub chunk: StreamChunk,
 }
 
-/// RPC-041: Helper that gates closures previously short-circuited via
-/// the legacy `.get().is_none()` check on the removed callback static.
-/// Returns true once
-/// `session_set_global_chunk_callback` has stored a TSFN inside the
-/// `CHUNK_FANOUT_TSFN` slot.
-///
-/// RPC-043: promoted to `pub(crate)` so the agent_loop in
-/// `crate::agent_loop` can re-use the same gate without owning the
-/// underlying static.
-pub(crate) fn is_global_chunk_callback_registered() -> bool {
-    CHUNK_FANOUT_TSFN
-        .get()
-        .and_then(|m| m.lock().ok())
-        .map(|g| g.is_some())
-        .unwrap_or(false)
-}
-
 /// Maximum concurrent sessions
 #[allow(dead_code)]
 const MAX_SESSIONS: usize = 10;
@@ -1552,8 +1535,9 @@ pub fn session_clear_history(session_id: String) -> Result<()> {
     let session = SessionManager::instance()
         .get_session(&session_id)
         .map_err(napi::Error::from_reason)?;
-    session.clear_history();
-    Ok(())
+    session
+        .clear_history()
+        .map_err(|error| Error::from_reason(error.to_string()))
 }
 
 /// Get session status

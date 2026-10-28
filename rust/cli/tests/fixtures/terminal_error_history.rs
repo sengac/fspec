@@ -9,7 +9,7 @@ use codelet_providers::codex::session::CodexSession;
 use codelet_providers::{ProviderManager, ProviderType};
 use codelet_test_helpers::setup_temp_directory;
 use rig::completion::ToolDefinition;
-use rig::message::{AssistantContent, Message, UserContent};
+use rig::message::{AssistantContent, Message, ToolResultContent, UserContent};
 use rig::tool::Tool;
 use serde_json::{json, Value};
 use std::io::Write;
@@ -98,7 +98,7 @@ impl Tool for WriteTool {
 pub fn call(number: usize, fail: bool) -> Value {
     json!({"type":"function_call", "id":format!("item-{number}"),
         "call_id":format!("call-{number}"), "name":"write_effect",
-        "arguments":json!({"fail":fail}).to_string()})
+        "arguments":json!({"fail":fail,"work_unit_id":"NONE"}).to_string()})
 }
 
 pub fn completed(calls: Vec<Value>) -> String {
@@ -139,6 +139,12 @@ pub struct Harness {
 
 impl Harness {
     pub async fn new(bodies: Vec<String>) -> Result<Self, Box<dyn std::error::Error>> {
+        Self::with_disconnects(bodies.into_iter().map(Some).collect()).await
+    }
+
+    pub async fn with_disconnects(
+        bodies: Vec<Option<String>>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         let directory = setup_temp_directory()?;
         codelet_common::set_data_directory(directory.path().to_path_buf())?;
         reset_stores_for_tests();
@@ -148,12 +154,16 @@ impl Harness {
         Ok(Self {
             directory,
             session,
-            server: transport::Server::start(bodies, false).await?,
+            server: transport::Server::start_with_disconnects(bodies, false).await?,
             id: manifest.id,
         })
     }
 
     pub async fn run(&mut self, prompt: &str, output: &Output) -> anyhow::Result<()> {
+        let _admission = codelet_tools::tool_admission::register_auxiliary(
+            self.id,
+            self.directory.path().to_path_buf(),
+        )?;
         let model = self
             .server
             .models()
@@ -214,6 +224,14 @@ impl Harness {
                             results.push((
                                 result.id.clone(),
                                 result.call_id.clone().unwrap_or_default(),
+                                result
+                                    .content
+                                    .iter()
+                                    .filter_map(|part| match part {
+                                        ToolResultContent::Text(text) => Some(text.text.as_str()),
+                                        _ => None,
+                                    })
+                                    .collect::<String>(),
                             ));
                         }
                     }
@@ -229,7 +247,7 @@ impl Harness {
             "terminal errors must retain committed calls"
         );
         assert_eq!(
-            results, identities,
+            results, expected,
             "terminal errors must retain genuine outcomes"
         );
         assert_eq!(

@@ -3,7 +3,7 @@
 #[path = "bug244/app_support.rs"]
 mod app_support;
 #[path = "bug244/support.rs"]
-mod support;
+pub mod support;
 
 use app_support::{drain, rendered};
 use codelet_core::work_units::WorkUnitsWatcher;

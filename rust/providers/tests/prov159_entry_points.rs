@@ -4,8 +4,8 @@
 #![cfg(feature = "test-support")]
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::auth_lifecycle::LoginAttempt;
 use codelet_providers::codex::codex_auth::{
@@ -166,7 +166,7 @@ async fn race(transition: Transition) -> TestResult {
             "{entry:?} accepted a refresh from a revoked login generation"
         );
         assert_eq!(
-            issuer.requests().len(),
+            issuer.requests()?.len(),
             1,
             "{entry:?} continued to token exchange after revocation"
         );

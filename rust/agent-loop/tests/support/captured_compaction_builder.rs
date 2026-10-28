@@ -44,7 +44,7 @@ async fn builder_tool_reads_the_captured_prefix_not_its_live_suffix() -> support
     let observed = calls.clone();
     let arguments = serde_json::to_string(&json!({
         "action_type":"originals", "session_id":source_id,
-        "limit":100, "max_bytes":61440
+        "limit":100, "max_bytes":61440, "work_unit_id":"NONE"
     }))?;
     Mock::given(wiremock::matchers::method("POST"))
         .respond_with(move |_: &wiremock::Request| {

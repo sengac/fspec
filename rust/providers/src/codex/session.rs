@@ -7,6 +7,9 @@ use std::{any::Any, sync::Arc};
 
 #[path = "checkpoint_restore.rs"]
 mod checkpoint_restore;
+#[path = "compaction.rs"]
+mod compaction;
+pub use compaction::committed_checkpoint;
 
 #[derive(Default)]
 pub struct CodexSession {
@@ -31,6 +34,15 @@ impl ProviderSessionExtension for CodexSession {
         self.history
             .restore_state(selected.checkpoint, selected.generation)?;
         Ok(())
+    }
+
+    fn prepare_compaction_generation(
+        &self,
+        generation: u64,
+        model: &str,
+        envelopes: &[String],
+    ) -> Result<crate::session::PreparedProviderGeneration, ExtensionError> {
+        compaction::prepare(&self.history, generation, model, envelopes)
     }
 
     fn validate_restore_for_provider(
@@ -79,19 +91,17 @@ impl ProviderSessionExtension for CodexSession {
         metadata: &std::collections::HashMap<String, Value>,
         envelopes: &[String],
     ) -> Result<(), ExtensionError> {
-        let value = metadata
-            .get("codexContinuation")
-            .ok_or(super::history::CheckpointError::Missing)?;
-        let checkpoint: super::history::CodexCheckpoint = serde_json::from_value(value.clone())?;
+        let checkpoint = committed_checkpoint(generation, &serde_json::to_value(metadata)?)?;
+        let provider_generation = checkpoint.generation;
         let expected_model = checkpoint.model.clone();
         let isolated = CodexHistory::default();
         isolated.restore_state(self.history.snapshot()?, self.history.generation()?)?;
-        isolated.install_committed_generation(generation, checkpoint)?;
+        isolated.install_committed_generation(provider_generation, checkpoint)?;
         let selected =
             checkpoint_restore::select(envelopes, isolated.snapshot()?, isolated.generation()?)?
                 .checkpoint
                 .ok_or(super::history::CheckpointError::Missing)?;
-        if selected.generation != generation || selected.model != expected_model {
+        if selected.generation != provider_generation || selected.model != expected_model {
             return Err(
                 super::history::CheckpointError::Lineage("prospective replay identity").into(),
             );
@@ -125,11 +135,9 @@ impl ProviderSessionExtension for CodexSession {
         generation: u64,
         metadata: &std::collections::HashMap<String, Value>,
     ) -> Result<(), ExtensionError> {
-        let value = metadata
-            .get("codexContinuation")
-            .ok_or(super::history::CheckpointError::Missing)?;
+        let checkpoint = committed_checkpoint(generation, &serde_json::to_value(metadata)?)?;
         self.history
-            .install_committed_generation(generation, serde_json::from_value(value.clone())?)?;
+            .install_committed_generation(checkpoint.generation, checkpoint)?;
         self.routing.reset();
         self.metadata.reset();
         Ok(())

@@ -37,11 +37,13 @@ pub use message_cleanup::cleanup_orphaned_messages;
 /// Get a stored message by ID.
 pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
     init_message_store()?;
-    let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    Ok(store
+    let store = codelet_common::read_work::lock(&MESSAGE_STORE)?;
+    let message = store
         .as_ref()
         .ok_or("Message store not initialized")?
-        .get(id))
+        .get(id);
+    codelet_common::read_work::checkpoint("message.loaded").map_err(|error| error.to_string())?;
+    Ok(message)
 }
 
 /// Get all messages for a session, respecting compaction state.
@@ -95,14 +97,17 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
 
 /// Get ALL messages for a session, ignoring compaction state.
 pub fn get_session_messages_full(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
-    init_message_store()?;
-    let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    let store_ref = store.as_ref().ok_or("Message store not initialized")?;
     let mut messages = Vec::new();
-    for msg_ref in &session.messages {
-        if let Some(msg) = store_ref.get(msg_ref.message_id) {
+    for (position, msg_ref) in session.messages.iter().enumerate() {
+        if position % 32 == 0 {
+            codelet_common::read_work::checkpoint("history.batch")
+                .map_err(|error| error.to_string())?;
+        }
+        if let Some(msg) = get_message(msg_ref.message_id)? {
             messages.push(msg);
         }
+        codelet_common::read_work::checkpoint("history.message")
+            .map_err(|error| error.to_string())?;
     }
     Ok(messages)
 }

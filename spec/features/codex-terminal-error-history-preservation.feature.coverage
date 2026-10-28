@@ -6,7 +6,14 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "10-47",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
         }
       ]
     },
@@ -16,7 +23,14 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "49-71",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
         }
       ]
     },
@@ -26,7 +40,14 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "73-95",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
         }
       ]
     },
@@ -36,7 +57,14 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "97-128",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
         }
       ]
     },
@@ -46,19 +74,45 @@
         {
           "file": "rust/cli/tests/bug272_terminal_error_history.rs",
           "lines": "130-175",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Network setup failure preserves completed work across cold resume",
+      "testMappings": [
+        {
+          "file": "rust/cli/tests/bug272_terminal_error_history.rs",
+          "lines": "177-220",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                2349
+              ]
+            }
+          ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "rust/cli/tests/bug272_terminal_error_history.rs"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 162
+    "implFiles": [
+      "rust/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 212
   }
 }

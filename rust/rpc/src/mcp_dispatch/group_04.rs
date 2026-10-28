@@ -80,7 +80,7 @@ pub(super) mod restore_checkpoint_file {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .restore_checkpoint_file(
                 tarpc::context::current(),
                 args.work_unit_id,
@@ -90,6 +90,6 @@ pub(super) mod restore_checkpoint_file {
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?
             .map_err(|e| InvokeError::Daemon(format!("{e:?}")))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }

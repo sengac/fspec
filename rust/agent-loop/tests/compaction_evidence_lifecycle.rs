@@ -3,7 +3,7 @@ mod boundary;
 #[path = "support/captured_compaction_builder.rs"]
 mod captured_builder;
 #[path = "../../sessions/tests/cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::compaction_evidence::CompactionEvidence;
 use codelet_agent_loop::generate_compaction_handler::register_generate_compaction_handler;

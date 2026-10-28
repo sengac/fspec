@@ -17,8 +17,8 @@ use transport::TestResult;
 
 pub fn expected(index: usize) -> (&'static str, Value) {
     match index {
-        0 => ("inspect", json!({"path":"first.rs"})),
-        1 => ("search", json!({"pattern":"needle"})),
+        0 => ("inspect", json!({"path":"first.rs","work_unit_id":"NONE"})),
+        1 => ("search", json!({"pattern":"needle","work_unit_id":"NONE"})),
         _ => (
             "apply_patch",
             json!({"patch":"*** Begin Patch\n*** End Patch"}),
@@ -113,6 +113,10 @@ impl Batch {
         session_id: uuid::Uuid,
         output: &O,
     ) -> TestResult {
+        let _admission = codelet_tools::tool_admission::register_auxiliary(
+            session_id,
+            codelet_common::get_data_dir()?,
+        )?;
         let agent = rig::agent::AgentBuilder::new(self.model.clone())
             .preamble("Test instructions")
             .tool(interruption_tool::RecordingTool {

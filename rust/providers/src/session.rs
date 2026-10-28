@@ -5,6 +5,10 @@ use std::{
     sync::Arc,
 };
 
+#[path = "session_compaction.rs"]
+mod compaction;
+pub use compaction::PreparedProviderGeneration;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ExtensionError {
     #[error(transparent)]
@@ -31,6 +35,18 @@ pub trait ProviderSessionExtension: Any + Send + Sync {
     fn restore(&self, envelopes: &[String]) -> Result<(), ExtensionError>;
     fn validate_restore(&self, _envelopes: &[String]) -> Result<(), ExtensionError> {
         Ok(())
+    }
+
+    fn prepare_compaction_generation(
+        &self,
+        generation: u64,
+        model: &str,
+        _envelopes: &[String],
+    ) -> Result<PreparedProviderGeneration, ExtensionError> {
+        Ok(PreparedProviderGeneration {
+            generation,
+            metadata: self.prepare_generation(generation, model)?,
+        })
     }
 
     fn restore_for_provider(

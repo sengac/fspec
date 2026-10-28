@@ -106,8 +106,6 @@ async fn session_list_refreshes_with_project_filter_after_deleting() {
             role: None,
             updated_at_ms: None,
             work_unit_focus: Default::default(),
-            work_unit_focus: Default::default(),
-            work_unit_focus: Default::default(),
         },
         SessionInfo {
             id: "session-2".to_string(),
@@ -121,6 +119,7 @@ async fn session_list_refreshes_with_project_filter_after_deleting() {
             worktree_path: None,
             role: None,
             updated_at_ms: None,
+            work_unit_focus: Default::default(),
         },
     ];
     mock.seed_sessions(sessions);
@@ -200,6 +199,7 @@ async fn background_sessions_included_with_filtered_persisted() {
             worktree_path: None,
             role: None,
             updated_at_ms: None,
+            work_unit_focus: Default::default(),
         },
     ];
     mock.seed_sessions(sessions);

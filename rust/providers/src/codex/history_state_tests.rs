@@ -12,7 +12,13 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn poison<T: Send + 'static>(lock: Arc<Mutex<T>>) {
     let outcome = thread::spawn(move || {
-        let _guard = lock.lock().expect("lock initially accessible");
+        assert!(
+            !lock.is_poisoned(),
+            "fixture lock must initially be accessible"
+        );
+        let _guard = lock
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         resume_unwind(Box::new("scripted lock owner termination"));
     })
     .join();

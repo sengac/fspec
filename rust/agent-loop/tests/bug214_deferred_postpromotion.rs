@@ -1,7 +1,7 @@
 //! Feature: spec/features/deferred-compaction-postpromotion-cancellation.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod automatic;
+pub mod automatic;
 
 use codelet_core::persistence::{get_session_messages_full, load_session};
 use codelet_rpc_types::{SessionState, SessionStatus, StreamChunk};

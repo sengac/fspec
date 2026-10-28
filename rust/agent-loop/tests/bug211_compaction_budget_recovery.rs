@@ -1,11 +1,11 @@
 //! Feature: spec/features/compaction-builder-budget-recovery.feature
 
 #[path = "support/automatic_compaction.rs"]
-mod automatic;
+pub mod automatic;
 #[path = "support/bug211_budget.rs"]
-mod budget;
+pub mod budget;
 #[path = "support/bug210_completion_metrics.rs"]
-mod metrics;
+pub mod metrics;
 
 use codelet_rpc_types::{SessionStatus, StreamChunk};
 use std::sync::atomic::Ordering;

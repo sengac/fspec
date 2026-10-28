@@ -112,7 +112,7 @@ where
         }
 
         // Compute the embeddings.
-        let mut embeddings = stream::iter(texts.into_iter())
+        let mut embeddings = stream::iter(texts)
             // Merge the texts of each document into a single list of texts.
             .flat_map(|(i, texts)| stream::iter(texts.into_iter().map(move |text| (i, text))))
             // Chunk them into batches. Each batch size is at most the embedding API limit per request.

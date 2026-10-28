@@ -18,12 +18,18 @@ async fn search_does_not_block_async_workers() -> Result<(), Box<dyn std::error:
     set_session_search_handler(
         session,
         Some(Arc::new(move |_, _| {
-            started_tx.send(()).expect("signal storage wait");
-            release_rx
-                .lock()
-                .expect("release channel")
-                .recv()
-                .expect("release storage");
+            let wait = || -> Result<(), String> {
+                started_tx.send(()).map_err(|error| error.to_string())?;
+                release_rx
+                    .lock()
+                    .map_err(|error| error.to_string())?
+                    .recv()
+                    .map_err(|error| error.to_string())?;
+                Ok(())
+            };
+            if let Err(message) = wait() {
+                return SessionSearchResult::Error { message };
+            }
             SessionSearchResult::Recent { sessions: vec![] }
         })),
     );
@@ -32,15 +38,15 @@ async fn search_does_not_block_async_workers() -> Result<(), Box<dyn std::error:
     let controller = std::thread::spawn(move || {
         started_rx
             .recv_timeout(Duration::from_secs(5))
-            .expect("search started");
+            .map_err(|error| error.to_string())?;
         ready_tx
             .send(())
-            .expect("tell async heartbeat search is blocked");
+            .map_err(|_| "async heartbeat listener disappeared".to_owned())?;
         let responsive = heartbeat_rx
             .recv_timeout(Duration::from_millis(500))
             .is_ok();
-        release_tx.send(()).expect("release blocked search");
-        responsive
+        release_tx.send(()).map_err(|error| error.to_string())?;
+        Ok::<_, String>(responsive)
     });
     // @step When the tool runs on a single async worker
     let search = tokio::spawn(async move {
@@ -51,12 +57,13 @@ async fn search_does_not_block_async_workers() -> Result<(), Box<dyn std::error:
             .await
     });
     let heartbeat = tokio::spawn(async move {
-        ready_rx.await.expect("search wait barrier");
+        ready_rx.await.map_err(|error| error.to_string())?;
         let _ = heartbeat_tx.send(()); // Controller records an expired heartbeat as failure.
+        Ok::<_, String>(())
     });
     let result = search.await?;
-    heartbeat.await?;
-    let responsive = controller.join().map_err(|_| "controller failed")?;
+    heartbeat.await??;
+    let responsive = controller.join().map_err(|_| "controller failed")??;
     set_session_search_handler(session, None);
     // @step Then unrelated async work continues and the search result is preserved
     assert!(responsive, "storage blocked the only async worker");

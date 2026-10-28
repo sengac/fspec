@@ -1,0 +1,388 @@
+{
+  "work_units": [
+    "BUG-271",
+    "BUG-272",
+    "BUG-274"
+  ],
+  "model": "codex/gpt-6.1-sol (controller verified; unchanged)",
+  "isolation": {
+    "FSPEC_USER_DIR": "/tmp/fspec-bug271-272-274-isolated-z8nz6hi7/user",
+    "XDG_CONFIG_HOME": "/tmp/fspec-bug271-272-274-isolated-z8nz6hi7/config",
+    "XDG_RUNTIME_DIR": "/tmp/fspec-bug271-272-274-isolated-z8nz6hi7/runtime",
+    "CARGO_PROFILE_CI_TEST_DEBUG": "0",
+    "cargo_flags": "--offline --profile ci-test -j2"
+  },
+  "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+  "acceptance": {
+    "BUG_271": 13,
+    "BUG_272": 6,
+    "BUG_274": 2,
+    "total": 21
+  },
+  "final_tests": {
+    "reported_passing_tests": 120,
+    "targets": 35,
+    "failed": 0,
+    "nested_child_runs_counted_again": false,
+    "targets_by_name": {
+      "bug271_manifest_isolation": {
+        "passed": 7,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "bug273_shared_index": {
+        "passed": 9,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-index-configured.log"
+      },
+      "bug274_manifest_diagnostics": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct055_checkpoint_preservation": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct064_lost_ack": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct064_manifest_transactions": {
+        "passed": 8,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct070_cold_boundary": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct070_promotion_validation": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct072_durable_preservation": {
+        "passed": 8,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-core.log"
+      },
+      "cmpct078_setup_authority": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-providers.log"
+      },
+      "cmpct080_checkpoint_replay": {
+        "passed": 4,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-providers.log"
+      },
+      "cmpct080_invalid_checkpoint": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-providers.log"
+      },
+      "cmpct080_restore_preflight": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-providers.log"
+      },
+      "codex_recovery_boundaries": {
+        "passed": 3,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-oauth-quiescent.log"
+      },
+      "codex_replay_regressions": {
+        "passed": 5,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-providers.log"
+      },
+      "bug170_strip_failed_tool_call_tail": {
+        "passed": 8,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "bug185_strip_failed_tool_call_tail_on_any_terminal_error": {
+        "passed": 7,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "bug272_terminal_error_history": {
+        "passed": 6,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "cmpct058_selected_overflow": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "cmpct079_no_substitute_success": {
+        "passed": 4,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-durable-fixture.log"
+      },
+      "cmpct079_recovery_isolation": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "codex_accepted_completion_batch": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "codex_interruption_call_pairs": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "codex_interruption_outcomes": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "codex_reconnect_lineage": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "codex_restored_interruption": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "compaction_durable_source": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-cli.log"
+      },
+      "bug271_checked_creation": {
+        "passed": 1,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-sessions.log"
+      },
+      "prov101_no_selection_fallbacks": {
+        "passed": 3,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-sessions.log"
+      },
+      "bug271_session_storage_diagnostics": {
+        "passed": 5,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-tui.log"
+      },
+      "prov101_session_creation_decline": {
+        "passed": 3,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-tui.log"
+      },
+      "bug275_cancellation_settlement": {
+        "passed": 5,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-settlement.log"
+      },
+      "bug276_prompt_admission_cancellation": {
+        "passed": 5,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-settlement.log"
+      },
+      "bug277_search_integrity": {
+        "passed": 2,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-settlement.log"
+      },
+      "bug277_search_worker_lifetime": {
+        "passed": 5,
+        "failed": 0,
+        "log": "/tmp/bug271-272-274-settlement.log"
+      }
+    }
+  },
+  "command_receipts": [
+    {
+      "phase": "core",
+      "exit": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-core --test bug271_manifest_isolation --test bug274_manifest_diagnostics --test cmpct064_manifest_transactions --test cmpct064_lost_ack --test cmpct070_cold_boundary --test cmpct070_promotion_validation --test cmpct072_durable_preservation --test cmpct055_checkpoint_preservation --test bug273_shared_index --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-core.log"
+    },
+    {
+      "phase": "core",
+      "exit": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-core --test bug271_manifest_isolation --test bug274_manifest_diagnostics --test cmpct064_manifest_transactions --test cmpct064_lost_ack --test cmpct070_cold_boundary --test cmpct070_promotion_validation --test cmpct072_durable_preservation --test cmpct055_checkpoint_preservation --test bug273_shared_index --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-core.log"
+    },
+    {
+      "phase": "providers",
+      "exit": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --test codex_replay_regressions --test cmpct080_checkpoint_replay --test cmpct080_invalid_checkpoint --test cmpct080_restore_preflight --test codex_recovery_boundaries --test cmpct078_setup_authority --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-providers.log"
+    },
+    {
+      "phase": "cli",
+      "exit": 101,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-cli --test bug272_terminal_error_history --test codex_interruption_call_pairs --test codex_interruption_outcomes --test codex_accepted_completion_batch --test codex_restored_interruption --test codex_reconnect_lineage --test bug170_strip_failed_tool_call_tail --test bug185_strip_failed_tool_call_tail_on_any_terminal_error --test cmpct058_selected_overflow --test cmpct079_no_substitute_success --test compaction_durable_source --test cmpct079_recovery_isolation --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-cli.log"
+    },
+    {
+      "phase": "sessions",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-sessions --test bug271_checked_creation --test prov101_no_selection_fallbacks --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-sessions.log"
+    },
+    {
+      "phase": "tui",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-fspec-tui --test bug271_session_storage_diagnostics --test prov101_session_creation_decline --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-tui.log"
+    },
+    {
+      "phase": "settlement",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-agent-loop --features test-support --test bug275_cancellation_settlement --test bug276_prompt_admission_cancellation --test bug277_search_integrity --test bug277_search_worker_lifetime --no-fail-fast ",
+      "log": "/tmp/bug271-272-274-settlement.log"
+    },
+    {
+      "phase": "default-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-rpc -p codelet-cli -p codelet-fspec ",
+      "log": "/tmp/bug271-272-274-default-build.log"
+    },
+    {
+      "phase": "rpc-fixture-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-rpc --features test-fixture ",
+      "log": "/tmp/bug271-272-274-rpc-fixture-build.log"
+    },
+    {
+      "phase": "fspec-fixture-build",
+      "exit": 0,
+      "command": "cargo build --offline --profile ci-test -j2 -p codelet-fspec --features test-stub-provider ",
+      "log": "/tmp/bug271-272-274-fspec-fixture-build.log"
+    },
+    {
+      "phase": "default-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-core -p codelet-cli -p codelet-providers -p codelet-sessions -p codelet-rpc -p codelet-fspec-tui -p codelet-fspec -- -D warnings ",
+      "log": "/tmp/bug271-272-274-default-clippy.log"
+    },
+    {
+      "phase": "fixture-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-rpc -p codelet-fspec --features codelet-rpc/test-fixture\\,codelet-fspec/test-stub-provider -- -D warnings ",
+      "log": "/tmp/bug271-272-274-fixture-clippy.log"
+    },
+    {
+      "phase": "owned-test-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-cli --test bug272_terminal_error_history -p codelet-sessions --test bug271_checked_creation --test prov101_no_selection_fallbacks -- -D warnings ",
+      "log": "/tmp/bug271-272-274-owned-test-clippy.log"
+    },
+    {
+      "phase": "index-configured",
+      "exit": 0,
+      "command": "env FSPEC_INDEX_DIAGNOSTIC_ROOT=/tmp/fspec-bug271-272-274-isolated-z8nz6hi7/index-fixtures TMPDIR=/tmp/fspec-bug271-272-274-isolated-z8nz6hi7/index-fixtures cargo test --offline --profile ci-test -j2 -p codelet-core --test bug273_shared_index ",
+      "log": "/tmp/bug271-272-274-index-configured.log"
+    },
+    {
+      "phase": "durable-fixture",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-cli --test cmpct079_no_substitute_success ",
+      "log": "/tmp/bug271-272-274-durable-fixture.log"
+    },
+    {
+      "phase": "oauth-quiescent",
+      "exit": 0,
+      "command": "cargo test --offline --profile ci-test -j2 -p codelet-providers --test codex_recovery_boundaries ",
+      "log": "/tmp/bug271-272-274-oauth-quiescent.log"
+    },
+    {
+      "phase": "durable-fixture-clippy",
+      "exit": 0,
+      "command": "cargo clippy --offline --profile ci-test -j2 -p codelet-cli --test cmpct079_no_substitute_success -- -D warnings ",
+      "log": "/tmp/bug271-272-274-durable-fixture-clippy.log"
+    },
+    {
+      "phase": "final-check",
+      "exit": 0,
+      "command": "cargo check --offline --profile ci-test -j2 -p codelet-core -p codelet-cli -p codelet-providers -p codelet-sessions -p codelet-rpc -p codelet-fspec-tui -p codelet-fspec ",
+      "log": "/tmp/bug271-272-274-final-check.log"
+    },
+    {
+      "phase": "coverage-final",
+      "exit": 1,
+      "command": "python3 /tmp/bug271-272-274-coverage.py ",
+      "log": "/tmp/bug271-272-274-coverage-final.log"
+    },
+    {
+      "phase": "global-features",
+      "exit": 0,
+      "command": "rust/target/ci-test/fspec validate ",
+      "log": "/tmp/bug271-272-274-global-features.log"
+    },
+    {
+      "phase": "global-tags",
+      "exit": 1,
+      "command": "rust/target/ci-test/fspec validate-tags ",
+      "log": "/tmp/bug271-272-274-global-tags.log"
+    },
+    {
+      "phase": "owned-rustfmt",
+      "exit": 0,
+      "command": "rustfmt --edition 2021 --config skip_children=true --check rust/cli/src/interactive/stream_loop.rs rust/cli/src/interactive/recovery_unrecoverable.rs rust/cli/tests/bug272_terminal_error_history.rs rust/cli/tests/fixtures/terminal_error_history.rs rust/cli/tests/cmpct079_no_substitute_success.rs rust/providers/tests/fixtures/prov148.rs rust/sessions/tests/bug271_checked_creation.rs rust/sessions/tests/prov101_no_selection_fallbacks.rs ",
+      "log": "/tmp/bug271-272-274-owned-rustfmt.log"
+    },
+    {
+      "phase": "diff-check",
+      "exit": 0,
+      "command": "git diff --check ",
+      "log": "/tmp/bug271-272-274-diff-check.log"
+    }
+  ],
+  "final_acceptance_logs": [
+    "/tmp/bug271-274-final-acceptance.log",
+    "/tmp/bug272-final-acceptance.log"
+  ],
+  "coverage": {
+    "final_exit": 0,
+    "scenarios": 21,
+    "features": 5,
+    "log": "/tmp/bug271-272-274-coverage-complete.log",
+    "initial_failures": [
+      "duplicate stale test mappings survived single-file unlink",
+      "existing implementation anchors extended beyond current file lengths"
+    ],
+    "correction": "Supported unlink --all and relink against attached originals; retain all scenarios and bound current source ranges"
+  },
+  "specifications": {
+    "global_feature_files_valid": 2161,
+    "owned_features_valid": 5,
+    "owned_tag_checks_passed": 5,
+    "global_tag_exit": 1,
+    "unrelated_preexisting_tag_violation_files": 522
+  },
+  "failed_and_incomplete_checks": [
+    "Initial BUG-272 attribution failures are not valid causal RED; admitted consolidated RED is 1 pass/5 fail before the guard, GREEN 6/6.",
+    "Interrupted cache-miss/pre-isolation builds had no successful completion receipt; not counted as passes.",
+    "PROV-101 initial full target 2/3 failed with manifest ENOENT, standalone explicit model 1/1 passed. Reset cached stores per temp fixture, preserving assertions; final 3/3.",
+    "BUG-273 index target initially 1/9 because required diagnostic root was unset; configured TMPDIR/root rerun 9/9 without source changes.",
+    "No-substitute controls initially 0/4 before durable fixture initialization; seed real originals/manifest/model and serialize tests, retain all assertions plus manifest-byte preservation; final 4/4.",
+    "OAuth recovery initially 2/3 (None versus WaitingForNetwork after 150ms). Approved quiescent full-target rerun 3/3 without source or assertion changes; intermittent timing failure is preserved, not claimed fixed.",
+    "Coverage checks first detected duplicate/stale/out-of-bounds metadata; corrected using supported CLI with recoverable snapshots; final all 21 trace chains pass.",
+    "Global tag validation remains failed on the same 522 unrelated pre-existing files; all five scoped features pass. No unrelated tag cleanup."
+  ],
+  "safety_evidence": "spec/attachments/BUG-271/bug271-272-274-safety-and-history.md",
+  "queue_logs": [
+    "/tmp/bug271-272-274-queue.log",
+    "/tmp/bug271-272-274-followup-queue.log"
+  ],
+  "limits": [
+    "No workspace-wide suite or Windows run",
+    "No live history repair or remote schema-cause claim",
+    "No installation/deployment, daemon restart, commit or push",
+    "No compaction fallback or fabricated outcomes"
+  ]
+}

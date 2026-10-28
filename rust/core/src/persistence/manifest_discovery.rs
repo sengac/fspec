@@ -24,6 +24,8 @@ pub(super) fn discover(
     };
     let mut paths = Vec::new();
     for entry in entries {
+        codelet_common::read_work::checkpoint("manifest.entry")
+            .map_err(|error| error.to_string())?;
         let path = entry
             .map_err(|error| {
                 format!("Failed to enumerate sessions directory {directory:?}: {error}")
@@ -40,7 +42,12 @@ pub(super) fn discover(
     let mut sessions = Vec::new();
     let mut issues = Vec::new();
     for path in paths {
-        match read_candidate(&path) {
+        codelet_common::read_work::checkpoint("manifest.candidate")
+            .map_err(|error| error.to_string())?;
+        let candidate = read_candidate(&path);
+        codelet_common::read_work::checkpoint("manifest.complete")
+            .map_err(|error| error.to_string())?;
+        match candidate {
             Ok(session) => sessions.push(session),
             Err(issue) => issues.push(issue),
         }
@@ -50,7 +57,8 @@ pub(super) fn discover(
 }
 
 fn read_candidate(path: &Path) -> Result<SessionManifest, SessionManifestIssue> {
-    let bytes = fs::read(path).map_err(|error| issue(path, "unreadable", &error.to_string()))?;
+    let bytes = codelet_common::read_work::read_file(path, "manifest.bytes")
+        .map_err(|error| issue(path, "unreadable", &error.to_string()))?;
     if bytes.iter().all(u8::is_ascii_whitespace) {
         return Err(issue(
             path,

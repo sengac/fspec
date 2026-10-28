@@ -1,7 +1,7 @@
 //! Feature: spec/features/background-compaction-request-ordering.feature
 
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_rpc_types::{
     CommittedContextSnapshot, ContextFillInfo, ContextProvenance, RequestContextSnapshot,

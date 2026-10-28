@@ -27,7 +27,18 @@ pub async fn repeated(
     let bytes = fixture::manifest_bytes(root, background.id)?;
     let originals = serde_json::to_value(get_session_messages_full(&before)?)?;
     let envelopes = get_session_message_envelopes(background.id)?;
-    manager.restore_session_messages(id, envelopes.clone())?;
+    manager
+        .restore_session_messages(id, envelopes.clone())
+        .map_err(|error| {
+            format!(
+                "{error}; installed replay/runtime count: {:?}; incoming envelopes: {}",
+                background
+                    .inner
+                    .try_lock()
+                    .map(|inner| (inner.restored_replay.clone(), inner.messages.len())),
+                envelopes.len()
+            )
+        })?;
     let (messages, tokens, first_checkpoint) = {
         let inner = background.inner.lock().await;
         (

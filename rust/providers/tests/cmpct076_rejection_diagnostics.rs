@@ -1,6 +1,6 @@
 //! Feature: spec/features/codex-rejection-diagnostics.feature
 #[path = "fixtures/cmpct076.rs"]
-mod fixture;
+pub mod fixture;
 
 use codelet_providers::codex::diagnostics::{EvidenceState, RejectionClass, MAX_DIAGNOSTIC_BYTES};
 use codelet_providers::codex::refreshing_client::RefreshingCodexClient;

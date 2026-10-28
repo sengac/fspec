@@ -25,7 +25,7 @@ proptest! {
     #[test]
     fn individual_cookie_values_are_redacted(secret in "[a-z]{16}") {
         let mut headers = http::HeaderMap::new();
-        headers.insert("cookie", format!("first=public; session=\"{secret}\"").parse().expect("valid ASCII cookie header"));
+        headers.insert("cookie", format!("first=public; session=\"{secret}\"").parse().map_err(|error| TestCaseError::fail(format!("invalid fixture cookie: {error}")))?);
         let redactor = Redactor::from_headers(&headers);
         prop_assert_eq!(redactor.clean(&secret, 8192), "[redacted]");
     }
@@ -34,7 +34,7 @@ proptest! {
     fn padded_authentication_schemes_do_not_hide_credentials(secret in "[a-z]{16}") {
         for name in ["authorization", "proxy-authorization"] {
             let mut headers = http::HeaderMap::new();
-            headers.insert(name, format!(" \tBearer  {secret}\t ").parse().expect("valid padded authorization"));
+            headers.insert(name, format!(" \tBearer  {secret}\t ").parse().map_err(|error| TestCaseError::fail(format!("invalid fixture authorization: {error}")))?);
             let redactor = Redactor::from_headers(&headers);
             prop_assert_eq!(redactor.clean(&secret, 8192), "[redacted]");
         }
@@ -51,7 +51,7 @@ proptest! {
 
     #[test]
     fn sensitive_header_values_are_redacted(secret in "[a-z]{16}") {
-        let mut value = http::HeaderValue::from_str(&secret).expect("valid ASCII header");
+        let mut value = http::HeaderValue::from_str(&secret).map_err(|error| TestCaseError::fail(error.to_string()))?;
         value.set_sensitive(true);
         let mut headers = http::HeaderMap::new();
         headers.append("x-private-token", value);
@@ -61,28 +61,25 @@ proptest! {
 }
 
 #[test]
-fn opaque_header_values_are_redacted() {
+fn opaque_header_values_are_redacted() -> Result<(), Box<dyn std::error::Error>> {
     let mut headers = http::HeaderMap::new();
     headers.append(
         "authorization",
-        http::HeaderValue::from_bytes("Bearer privé-token".as_bytes())
-            .expect("valid opaque header"),
+        http::HeaderValue::from_bytes("Bearer privé-token".as_bytes())?,
     );
     let redactor = Redactor::from_headers(&headers);
     assert_eq!(redactor.clean("privé-token", 8192), "[redacted]");
+    Ok(())
 }
 
 #[test]
-fn proxy_credentials_are_redacted_without_the_authentication_scheme() {
+fn proxy_credentials_are_redacted_without_the_authentication_scheme(
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut headers = http::HeaderMap::new();
-    headers.append(
-        "proxy-authorization",
-        "Basic private-proxy-token"
-            .parse()
-            .expect("valid proxy authorization"),
-    );
+    headers.append("proxy-authorization", "Basic private-proxy-token".parse()?);
     let redactor = Redactor::from_headers(&headers);
     assert_eq!(redactor.clean("private-proxy-token", 8192), "[redacted]");
+    Ok(())
 }
 
 #[test]

@@ -5,6 +5,9 @@
 #[cfg(test)]
 extern crate self as codelet_providers;
 
+#[cfg(test)]
+pub mod test_fixtures;
+
 pub mod adapter;
 pub mod cache_optimization;
 pub mod cache_token_extractor;

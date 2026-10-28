@@ -184,3 +184,83 @@ async fn scenario_permanent_accepted_websocket_failures_never_send_replacement_r
     }
     Ok(())
 }
+
+#[tokio::test]
+async fn the_production_resolver_handles_only_the_local_fixture_destination() -> TestResult {
+    let server = wiremock::MockServer::start().await;
+    wiremock::Mock::given(wiremock::matchers::method("GET"))
+        .respond_with(wiremock::ResponseTemplate::new(204))
+        .expect(1)
+        .mount(&server)
+        .await;
+    let port = server.address().port();
+    let addresses = tokio::time::timeout(
+        Duration::from_secs(2),
+        network_error::resolve("localhost", port),
+    )
+    .await??;
+    assert!(!addresses.is_empty());
+    assert!(addresses
+        .iter()
+        .all(|address| address.ip().is_loopback() && address.port() == port));
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .dns_resolver(Arc::new(network_error::NetworkResolver))
+        .timeout(Duration::from_secs(2))
+        .build()?;
+    assert_eq!(
+        client
+            .get(format!("http://localhost:{port}/resolver-control"))
+            .send()
+            .await?
+            .status(),
+        204
+    );
+    server.verify().await;
+    Ok(())
+}
+
+#[test]
+fn abrupt_socket_closure_is_typed_as_an_interrupted_stream() {
+    use std::error::Error;
+    use tokio_tungstenite::tungstenite::{error::ProtocolError, Error as SocketError};
+    for failure in [
+        SocketError::ConnectionClosed,
+        SocketError::Protocol(ProtocolError::ResetWithoutClosingHandshake),
+        SocketError::Io(std::io::ErrorKind::BrokenPipe.into()),
+    ] {
+        let error = network_error::socket_stream(failure);
+        assert!(
+            error
+                .source()
+                .and_then(|source| source.downcast_ref::<reconnect::NetworkFailure>())
+                .is_some_and(|failure| matches!(failure, reconnect::NetworkFailure::Interrupted)),
+            "{error:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn a_successful_connection_resets_only_connection_backoff() {
+    use futures::FutureExt;
+    let handle = reconnect::CodexRecoveryHandle::default();
+    let mut policy = reconnect::RecoveryPolicy::new(handle.clone());
+    let connection =
+        || CompletionError::HttpError(reconnect::NetworkFailure::Connection.into_http_error());
+    assert!(policy.retry(connection()).now_or_never().is_none());
+    assert_eq!(
+        handle.status(),
+        Some(reconnect::RecoveryStatus::WaitingForNetwork { attempt: 1 })
+    );
+    assert!(policy.retry(connection()).now_or_never().is_none());
+    assert_eq!(
+        handle.status(),
+        Some(reconnect::RecoveryStatus::WaitingForNetwork { attempt: 2 })
+    );
+    policy.connected();
+    assert!(policy.retry(connection()).now_or_never().is_none());
+    assert_eq!(
+        handle.status(),
+        Some(reconnect::RecoveryStatus::WaitingForNetwork { attempt: 1 })
+    );
+}

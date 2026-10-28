@@ -1,7 +1,7 @@
 //! Feature: spec/features/cross-session-compaction-ownership.feature
 
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use std::sync::Arc;
 use std::time::Duration;

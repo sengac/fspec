@@ -164,11 +164,19 @@
       "testMappings": [
         {
           "file": "rust/sessions/tests/bug212_switched_provider_replay.rs",
-          "lines": "143-184",
+          "lines": "145-188",
           "implMappings": [
             {
               "file": "rust/cli/src/session/restore_compaction.rs",
               "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
                 15,
                 16,
                 17,
@@ -181,6 +189,22 @@
                 24,
                 25,
                 26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
                 43,
                 44,
                 45,
@@ -213,49 +237,6 @@
                 72,
                 73,
                 74,
-                75
-              ]
-            },
-            {
-              "file": "rust/providers/src/session.rs",
-              "lines": [
-                43,
-                44,
-                45,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139
-              ]
-            },
-            {
-              "file": "rust/providers/src/codex/session.rs",
-              "lines": [
-                74,
                 75,
                 76,
                 77,
@@ -268,26 +249,7 @@
                 84,
                 85,
                 86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106
+                87
               ]
             }
           ]
@@ -308,6 +270,6 @@
       "rust/providers/src/codex/session.rs",
       "rust/sessions/src/session_restore.rs"
     ],
-    "totalLinesCovered": 342
+    "totalLinesCovered": 316
   }
 }

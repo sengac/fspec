@@ -1,5 +1,5 @@
 #[path = "../../sessions/tests/cmpct060/support.rs"]
-mod session_support;
+pub mod session_support;
 
 use std::sync::{
     atomic::{AtomicUsize, Ordering},

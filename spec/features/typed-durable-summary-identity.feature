@@ -37,3 +37,10 @@ Feature: Typed durable summary identity
     Given an envelope with ambiguous or incompatible typed reminder identity
     When its history is restored
     Then restore fails explicitly without installing partial model history
+
+  Scenario: A builder refuses a cached summary after another durable generation is promoted
+    Given a builder has restored a validated durable summary
+    And another session owner promotes a newer durable compaction generation
+    When the stale builder prepares its next working view
+    Then it fails explicitly without using cached summary authority or mutating history
+    And restoring the current authoritative boundary enables the next builder

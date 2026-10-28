@@ -28,11 +28,19 @@ pub(crate) fn metadata(manifest: &SessionManifest) -> Result<Vec<Value>, Provide
         let committed = manifest.compaction_commit.as_ref().filter(|commit| {
             commit.checkpoint.provider.split('/').next() == Some(checkpoint.provider.as_str())
         });
+        let committed_generation = committed
+            .map(|commit| commit.checkpoint.provider_generation())
+            .transpose()
+            .map_err(|error| invalid(&error))?;
         if let Some(commit) = committed {
-            if checkpoint.generation < commit.identity.generation {
+            let provider_generation = commit
+                .checkpoint
+                .provider_generation()
+                .map_err(|error| invalid(&error))?;
+            if checkpoint.generation < provider_generation {
                 continue;
             }
-            if checkpoint.generation == commit.identity.generation
+            if checkpoint.generation == provider_generation
                 && (checkpoint.metadata["codexContinuation"]["model"] != commit.checkpoint.model
                     || checkpoint.metadata["codexContinuation"]["protocol"]
                         != commit.source.protocol)
@@ -41,7 +49,7 @@ pub(crate) fn metadata(manifest: &SessionManifest) -> Result<Vec<Value>, Provide
             }
         }
         if let Some(reset) = &checkpoint.reset {
-            if committed.is_none_or(|commit| checkpoint.generation > commit.identity.generation)
+            if committed_generation.is_none_or(|generation| checkpoint.generation > generation)
                 && !checkpoint.metadata["codexContinuation"].is_null()
             {
                 envelopes.push(serde_json::to_value(reset)?);

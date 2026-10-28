@@ -7,7 +7,7 @@ use fixtures::{Fixture, TestResult};
 use rig::message::Message;
 
 #[path = "fixtures/prov161_runtime.rs"]
-mod fixtures;
+pub mod fixtures;
 
 fn changed_settings() -> ProfileDefinition {
     ProfileDefinition {

@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/codex-interruption-outcome-recording.feature"]
 
 #[path = "../../cli/tests/fixtures/committed_interruption.rs"]
-mod committed_interruption;
+pub mod committed_interruption;
 #[path = "../../cli/tests/fixtures/interruption_tool.rs"]
 mod interruption_tool;
 #[path = "../../providers/tests/fixtures/prov148.rs"]

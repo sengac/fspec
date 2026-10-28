@@ -59,7 +59,11 @@ impl Session {
             .provider_session
             .for_selected_provider(self.current_provider_name());
         let metadata = provider_session
-            .prepare_generation(generation, &model)
+            .prepare_compaction_generation(
+                generation,
+                &model,
+                &envelopes_for_manifest(&manifest).map_err(CompactionCommitError::Rejected)?,
+            )
             .map_err(|error| CompactionCommitError::Rejected(error.to_string()))?;
         let candidate = CompactionCandidate {
             operation_id,
@@ -67,7 +71,7 @@ impl Session {
                 provider: source.provider.clone(),
                 model: model.clone(),
                 generation,
-                payload: serde_json::to_value(&metadata)
+                payload: serde_json::to_value(&metadata.metadata)
                     .map_err(|error| CompactionCommitError::Rejected(error.to_string()))?,
             },
             source,
@@ -78,6 +82,7 @@ impl Session {
         };
         let mut installation = None;
         let committed = commit_compaction_admitted(candidate, &model, |current, candidate| {
+            self.validate_current_compaction_history(current, &candidate.source)?;
             let context =
                 super::preservation::validation_context(self, current, &candidate.source)?;
             let checked = validate_dag_candidate(&candidate.dag.content, &context)
@@ -94,10 +99,20 @@ impl Session {
             projected.compaction_commit = None;
             let reminders = retained_reminders(self, &candidate.source)?;
             let messages = replay_messages(&projected, &reminders)?;
-            let prepared = prepare(&messages, generation)
+            let prepared = prepare(&messages, metadata.generation)
                 .map_err(|error| format!("selected request admission: {error}"))?;
-            if prepared.generation() != generation {
+            if prepared.generation() != metadata.generation {
                 return Err("admission certificate has wrong generation".into());
+            }
+            let authoritative = provider_session
+                .prepare_compaction_generation(
+                    generation,
+                    &model,
+                    &envelopes_for_manifest(current)?,
+                )
+                .map_err(|error| error.to_string())?;
+            if authoritative != metadata {
+                return Err("provider checkpoint changed during admission".into());
             }
             let admitted = CompactionAdmission {
                 input_tokens: prepared.input_tokens(),
@@ -122,7 +137,7 @@ impl Session {
             reason,
         };
         provider_session
-            .install_committed_generation(generation, &metadata)
+            .install_committed_generation(generation, &metadata.metadata)
             .map_err(|error| failed(error.to_string()))?;
         self.messages =
             installation.ok_or_else(|| failed("missing admitted installation".into()))?;
@@ -172,11 +187,12 @@ impl Session {
         self.restore_durable_tokens(&reconciled);
         self.pending_compaction_commit = None;
         self.compaction_inference_block = None;
+        self.install_durable_summary(&reconciled);
         Ok(reconciled)
     }
 }
 
-fn replay_messages(
+pub(super) fn replay_messages(
     manifest: &SessionManifest,
     reminders: &[Message],
 ) -> Result<Vec<Message>, String> {

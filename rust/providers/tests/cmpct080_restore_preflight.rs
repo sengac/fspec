@@ -8,7 +8,7 @@ use std::sync::{
 };
 
 #[path = "cmpct078/support.rs"]
-mod support;
+pub mod support;
 use support::{history, request};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

@@ -15,12 +15,12 @@ use serde_json::{json, Value};
 use std::fs;
 
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[path = "cmpct078/support.rs"]
-mod support;
+pub mod support;
 use support::{boundary, history, request};
 
 #[tokio::test]

@@ -1,0 +1,212 @@
+{
+  "verified_at_utc": "2026-10-28T02:45:00.736694+00:00",
+  "audit": {
+    "verified_at_utc": "2026-10-28T02:41:20.873741+00:00",
+    "scope": [
+      "BUG-271",
+      "BUG-272",
+      "BUG-274"
+    ],
+    "daemon": {
+      "pid": 82606,
+      "cwd": "/Users/rquast/projects/fspec",
+      "mcp_url": "ws://127.0.0.1:56382",
+      "bpd_pid_excluded": 371
+    },
+    "session_id": "ba15d5a4-4ccf-4d70-9ec9-78594797286a",
+    "effective_model_mcp": "codex/gpt-6.1-sol",
+    "original_validation_reconstructed_exactly": true,
+    "original_validation_sha256": "e9663fac1f2224eed5de16a685a978a78921eddf4ed5e0a52315a171463e9189",
+    "passing_tests": 120,
+    "test_targets": 35,
+    "acceptance_scenarios": 21,
+    "fresh_feature_tag_coverage_gates": "5/5 passed",
+    "all_21_mappings_single_current_and_bounded": true,
+    "source_files_unchanged_since_validation_by_mtime": true,
+    "source_sha256": {
+      "rust/cli/src/interactive/recovery_unrecoverable.rs": "9228b8ce7a997ed1bf2007f16305c9b8392d781527042e295a07e0cd004bb8a5",
+      "rust/cli/src/interactive/stream_loop.rs": "3cbfd1d44f21d7b54515d8b4f6b68e320a150584a1bd8083d2c96474abe7790e",
+      "rust/cli/tests/bug272_terminal_error_history.rs": "20af360bc27995b1e7e3c1ec076ef37cdfa4cfc2f97c7aba324522611359601f",
+      "rust/cli/tests/cmpct079_no_substitute_success.rs": "77a7edc3c5416069da6c503683b9adb0aa42633b0b82f8a769ae3e775a4bc20a",
+      "rust/cli/tests/fixtures/terminal_error_history.rs": "46694ee223a1e081a89861d44a34e28f7c0d8a639583d5e75e9d4f7b947d3bfb",
+      "rust/core/src/persistence/manifest_discovery.rs": "a17ba7bd803d3f3bfbd00a6569ea21f76ebcd3282b89b23fe186666eae355199",
+      "rust/core/src/persistence/manifest_store.rs": "34ffedd384a2cabb407fb009d915e17d954a539fd31723a51a98b23731f7146c",
+      "rust/core/src/persistence/manifest_types.rs": "718f5b99cd5da4968b5cd6fcb80d84bdb6ca0cc10a9dc7f3690098d5c431026d",
+      "rust/core/src/persistence/message_cleanup.rs": "d1f8de5eb332b21db280668fd0e57f5e170304e23ba410786a321662ea035ff9",
+      "rust/core/src/persistence/messages/framing/references.rs": "31e3c409e602cf74c191ce772b86e01ad709a9793de00aef0d4ef6599b23e4d1",
+      "rust/core/tests/bug271_manifest_isolation.rs": "b6b6f3e6d429e6a130fcee8d79f648dafd42aa0c6c15bf11c050b9f4e7b1c542",
+      "rust/core/tests/bug274_manifest_diagnostics.rs": "31cd40a2bbb836f6e997b3aa49d2bde3b1aee8bd247d01fef082246b4102ea7c",
+      "rust/fspec-tui/src/app/dispatch_reconnect.rs": "066950c17b88852d470a93a78fcde830cc05ce7cf2609d723eed96821beb90ba",
+      "rust/fspec-tui/src/app/session_creation.rs": "9def51790d4767b8e3520bf655e80e7bff8131843f32449beec69368e3475e67",
+      "rust/fspec-tui/src/app/session_creation_tasks.rs": "fe81b5c9d5fb5a8f648180a0cd459722ef3e0221d1344a6e067cec809a3e95e3",
+      "rust/fspec-tui/src/app/session_storage.rs": "0755e92ff01b9f6ae9cee68032f7e96c93ce50e7b62db3aa5cc709a6060a6d03",
+      "rust/fspec-tui/tests/bug271_session_storage_diagnostics.rs": "6187a2ca896b2b6a9e5e6c56aed99c2275f926a0e1d3860889462604c5b87199",
+      "rust/providers/tests/fixtures/prov148.rs": "72000a5d9624380e900cfc88f864d75ed0d011175184fe4365cc6d5d3de26282",
+      "rust/sessions/src/handle_creation.rs": "5455284d7b92cc6010ebb65520d9070f28cb634fa0d5e121f4a4b9d39842af2f",
+      "rust/sessions/tests/bug271_checked_creation.rs": "ced6e5d5b98bc09f2e2371fd65dcf20f9213ffc0a86b193d664503aeacd45f34",
+      "rust/sessions/tests/prov101_no_selection_fallbacks.rs": "3a25b6f87ef858f650f90fab49c8e9471b3332db9b7899bdb1be8d186e98efd9"
+    },
+    "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+    "no_tests_or_builds_rerun": true,
+    "verification_isolation": {
+      "FSPEC_USER_DIR": "/var/folders/1t/vxbg5kgx68l70y170y3jlwfc0000gn/T/fspec-recovery-isolated-ine0gce0/user",
+      "XDG_CONFIG_HOME": "/var/folders/1t/vxbg5kgx68l70y170y3jlwfc0000gn/T/fspec-recovery-isolated-ine0gce0/config",
+      "XDG_RUNTIME_DIR": "/var/folders/1t/vxbg5kgx68l70y170y3jlwfc0000gn/T/fspec-recovery-isolated-ine0gce0/runtime",
+      "TMPDIR": "/var/folders/1t/vxbg5kgx68l70y170y3jlwfc0000gn/T/fspec-recovery-isolated-ine0gce0/data"
+    },
+    "initial_statuses": {
+      "BUG-271": "validating",
+      "BUG-272": "validating",
+      "BUG-274": "validating"
+    },
+    "git_head_before": "92cdf15f7d5c212d3a2af86d027b4fbe63f66323",
+    "git_index_entries_sha256_before": "e54d6d9fe8f7eef3fa580e82ba2aacd69d51c45a315d579eea4ea189821321b0",
+    "git_status_before": " M rust/cli/src/interactive/recovery_unrecoverable.rs\n M rust/cli/src/interactive/stream_loop.rs\n M rust/cli/tests/bug272_terminal_error_history.rs\n M rust/cli/tests/cmpct079_no_substitute_success.rs\n M rust/cli/tests/fixtures/terminal_error_history.rs\n M rust/providers/tests/fixtures/prov148.rs\n M rust/sessions/tests/bug271_checked_creation.rs\n M rust/sessions/tests/prov101_no_selection_fallbacks.rs\n M spec/features/codex-terminal-error-history-preservation.feature\n M spec/features/codex-terminal-error-history-preservation.feature.coverage\n M spec/features/manifest-diagnostics-facade.feature\n M spec/features/runtime-compaction-no-substitute-success.feature.coverage\n M spec/features/session-storage-diagnostics.feature\n M spec/features/session-storage-diagnostics.feature.coverage\n M spec/features/unreadable-session-isolation.feature\n M spec/features/unreadable-session-isolation.feature.coverage\n M spec/work-units.json\n?? spec/attachments/BUG-271/bug271-272-274-safety-and-history.md\n?? spec/attachments/BUG-271/bug271-acdd-completion.md\n?? spec/attachments/BUG-271/bug271-coverage-before-reconciliation.json\n?? spec/attachments/BUG-271/bug271-session-storage-before-split.feature\n?? spec/attachments/BUG-271/bug271-session-storage-coverage-before-split.json\n?? spec/attachments/BUG-272/bug271-272-274-validation-results.json\n?? spec/attachments/BUG-272/bug272-acdd-completion.md\n?? spec/attachments/BUG-272/bug272-durable-control-coverage-before-fixture-update.json\n?? spec/attachments/BUG-274/\n?? spec/features/checked-session-creation.feature\n?? spec/features/checked-session-creation.feature.coverage\n",
+    "session_manifest": {
+      "revision": 936,
+      "messages": 372,
+      "sha256": "f2b60234812188572ea503abb73677eb094526df437f9b90786cdf02fc0e4cac",
+      "compaction": null,
+      "compaction_commit": null,
+      "provider_state_reference_digest_valid": true,
+      "checkpoints": [
+        {
+          "provider": "codex",
+          "generation": 1,
+          "sourceRevision": 932,
+          "prefixLen": 370,
+          "prefixHash": "904e90643876b9f13056b1db2d2a3a08096f11cde2be28ed7be2b4da2cdcb19b"
+        }
+      ],
+      "provider_prefix_hashes_valid": true,
+      "recovery_files": 0
+    },
+    "durable_terminal_events": [
+      {
+        "timestamp": "2026-10-28T00:59:08.476960Z",
+        "request_id": "3a176b65-291c-4592-94bc-aaf2a3191a06",
+        "sequence": 478,
+        "kind": "terminal",
+        "outcome": "user_cancelled"
+      },
+      {
+        "timestamp": "2026-10-28T01:13:25.035325Z",
+        "request_id": "841e70da-18db-48a2-9672-c2310e42733f",
+        "sequence": 336,
+        "kind": "tool_outcome_unknown",
+        "outcome": null
+      },
+      {
+        "timestamp": "2026-10-28T01:13:25.188752Z",
+        "request_id": "841e70da-18db-48a2-9672-c2310e42733f",
+        "sequence": 337,
+        "kind": "terminal",
+        "outcome": "user_cancelled"
+      },
+      {
+        "timestamp": "2026-10-28T02:29:30.432108Z",
+        "request_id": "33fa99c0-a7ca-4500-ab1f-53325f2e54f1",
+        "sequence": 723,
+        "kind": "terminal",
+        "outcome": "compaction_failed"
+      }
+    ],
+    "limits": [
+      "Live terminal compaction failed with Codex checkpoint lineage mismatch; no retry, fallback, ancestry reset or repair attempted.",
+      "Original intermittent OAuth timing failure remains documented; original unchanged quiescent rerun passed.",
+      "Global tags retain 522 unrelated pre-existing failing files; no workspace-wide clean claim.",
+      "Source timestamps establish no intervening edits; current source hashes are recorded here, not retroactively claimed as original receipts."
+    ]
+  },
+  "final_live_card_statuses": {
+    "BUG-271": "done",
+    "BUG-272": "done",
+    "BUG-274": "done"
+  },
+  "transitions": {
+    "BUG-271": {
+      "verified_at_utc": "2026-10-28T02:42:01.422460+00:00",
+      "work_unit": "BUG-271",
+      "exit": 0,
+      "status": "done",
+      "history": {
+        "state": "done",
+        "timestamp": "2026-10-28T02:42:00.754Z",
+        "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
+      },
+      "unrelated_cards_unchanged": true,
+      "source_files_unchanged": true,
+      "git_head_and_staged_entries_unchanged": true,
+      "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+      "workflow_checkpoint_behavior": "Standard Fspec transition creates a temporary internal checkpoint object and removes this card auto-checkpoint refs; no branch commit or source staging is performed."
+    },
+    "BUG-272": {
+      "verified_at_utc": "2026-10-28T02:42:12.590284+00:00",
+      "work_unit": "BUG-272",
+      "exit": 0,
+      "status": "done",
+      "history": {
+        "state": "done",
+        "timestamp": "2026-10-28T02:42:11.943Z",
+        "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
+      },
+      "unrelated_cards_unchanged": true,
+      "source_files_unchanged": true,
+      "git_head_and_staged_entries_unchanged": true,
+      "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+      "workflow_checkpoint_behavior": "Standard Fspec transition creates a temporary internal checkpoint object and removes this card auto-checkpoint refs; no branch commit or source staging is performed."
+    },
+    "BUG-274": {
+      "verified_at_utc": "2026-10-28T02:42:22.641048+00:00",
+      "work_unit": "BUG-274",
+      "exit": 0,
+      "status": "done",
+      "history": {
+        "state": "done",
+        "timestamp": "2026-10-28T02:42:21.996Z",
+        "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
+      },
+      "unrelated_cards_unchanged": true,
+      "source_files_unchanged": true,
+      "git_head_and_staged_entries_unchanged": true,
+      "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+      "workflow_checkpoint_behavior": "Standard Fspec transition creates a temporary internal checkpoint object and removes this card auto-checkpoint refs; no branch commit or source staging is performed."
+    }
+  },
+  "final_live_model": {
+    "provider_id": "codex",
+    "model_id": "gpt-6.1-sol",
+    "context_window": 1050000,
+    "max_output_tokens": 128000,
+    "compaction_threshold": 700000
+  },
+  "session_status": "Idle",
+  "interaction_pending": false,
+  "final_manifest_summary": {
+    "revision": 937,
+    "updated_at": "2026-10-28T02:42:01.320706Z",
+    "provider": "codex/gpt-6.1-sol",
+    "compaction": null,
+    "compaction_commit": null,
+    "provider_state": {
+      "version": 1,
+      "state_id": "62e420aa471e2d6c3a0af3bd7583122652e47d3d3b8506084dc99b81fa0e0c7d"
+    },
+    "work_unit_focus": {
+      "revision": 54,
+      "context": null,
+      "source": "watcher"
+    }
+  },
+  "final_manifest_sha256": "51e67fcbc1c9b1c60e2c0a2247c49e5edeabe0aa537e7aa224cb8bc8f5a19a08",
+  "manifest_revision_note": "Revision advanced 936 to 937 on BUG-271 completion; current work_unit_focus has null context and source watcher. This metadata change is recorded; whole-manifest byte equality is not claimed. Provider-state digest, checkpoint prefix, message count and null compaction remain verified.",
+  "all_unrelated_cards_unchanged": true,
+  "existing_card_content_and_evidence_preserved": true,
+  "no_branch_commit_or_staged_changes": true,
+  "no_compaction_retry_fallback_or_repair": true,
+  "actual_user_config_sha256": "8eed6007c58b8f902efcf640fb8625a2662367cf4551f532ab354773650fce4c",
+  "fresh_gates_log_sha256": "d89d54e6cc7d57b5b3b4c2aa13efba19c52a51ae0de9786f0e79e2b92f8ee1e2",
+  "live_session_receipt_sha256": "5d0b050cf5017653916fdfbd4fc8970cef19752172c9818c950ddb56d643e053",
+  "supporting_original_receipts": "spec/attachments/BUG-272/bug271-272-274-validation-results.json",
+  "fresh_gates_attachment": "spec/attachments/BUG-271/bug271-272-274-recovery-gates.log"
+}

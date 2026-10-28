@@ -3,9 +3,7 @@
 @PROV-014
 Feature: Device Auth Flow for Headless Environments
   """
-  New file: rust/providers/src/codex/codex_device_auth.rs - Implements the device authorization flow. Three new API functions: request_device_code() POSTs to usercode endpoint, poll_device_token() polls the token endpoint, and device_auth_login() orchestrates the full flow (request code → display → poll → exchange → persist). Returns Result<CodexTokens>.
-  Reuses extract_account_id() from codex_oauth.rs for JWT parsing, write_codex_auth() from codex_auth.rs for persistence, and CodexTokens/CodexAuthJson structs. CANNOT reuse exchange_authorization_code() because it requires redirect_uri — needs a new exchange_device_code() function or pub(crate) post_to_token_endpoint().
-  DeviceAuthConfig struct for testability (same pattern as OAuthServerConfig in codex_oauth_server.rs): issuer_url (test vs production), timeout_ms (short for tests), display callback (for TUI integration later). Tests use wiremock for the HTTP endpoints.
+  BUG-279 corrects the original PROV-014 protocol assumptions against official Codex commit 6ba3a84680236c621b93e0b8dc140687a37f41fc: start and poll use JSON, polls carry both original identifiers, usercode aliases and string/missing intervals are accepted, HTTP403/404 remain bounded pending, and token exchange includes the issuer deviceauth callback redirect_uri. Retain the existing shared LoginAttempt cancellation/deadline, account identity and atomic credential commit controls. Original pending/slow-down/expiry/denial/display/persistence/shape/network assertions remain executable in small isolated integration modules using mock keyring and synthetic loopback credentials. Historical example-map comments below are superseded where they claimed no redirect_uri.
   """
 
   # ========================================
@@ -55,7 +53,7 @@ Feature: Device Auth Flow for Headless Environments
     When the system polls the token endpoint at the specified interval
     And the user completes authorization on the external device
     Then the polling endpoint should return an authorization_code and code_verifier
-    And the authorization_code should be exchanged for tokens at the token endpoint without redirect_uri
+    And the authorization_code should be exchanged for tokens using the device callback redirect_uri
     And the account_id should be extracted from the JWT id_token claims
     And the tokens should be persisted to auth.json with refresh_token, access_token, and account_id
 
@@ -95,12 +93,12 @@ Feature: Device Auth Flow for Headless Environments
     Then the device auth flow should terminate immediately with a network error
     And no polling should be attempted
 
-  Scenario: Token exchange uses correct parameters without redirect_uri
+  Scenario: Token exchange uses correct parameters with device callback redirect_uri
     Given a device auth login received a successful polling response
     And the response contains authorization_code and code_verifier
     When the authorization_code is exchanged at the token endpoint
     Then the exchange should POST grant_type authorization_code, code, code_verifier, and client_id
-    And the exchange should NOT include a redirect_uri parameter
+    And the exchange should include the issuer deviceauth callback redirect_uri
     And the response should contain id_token, access_token, and refresh_token
 
   Scenario: Device auth produces same CodexTokens output as browser OAuth

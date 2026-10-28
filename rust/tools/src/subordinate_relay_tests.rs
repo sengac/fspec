@@ -250,7 +250,7 @@ mod subordinate_relay_tests {
                             );
                         }
                         for tx in &fwd_senders {
-                            let _ = tx.send((sub_session_id, chunk_json.clone()));
+                            let _ = tx.send((sub_session_id, chunk_json.clone())).await;
                         }
                     }
                     Err(broadcast::error::RecvError::Closed) => break,
@@ -358,7 +358,7 @@ mod subordinate_relay_tests {
                                 );
                             }
                             for tx in &fwd_senders {
-                                let _ = tx.send((sid, chunk_json.clone()));
+                                let _ = tx.send((sid, chunk_json.clone())).await;
                             }
                         }
                         Err(broadcast::error::RecvError::Closed) => break,
@@ -420,7 +420,7 @@ mod subordinate_relay_tests {
                             );
                         }
                         for tx in &fwd_senders {
-                            let _ = tx.send((sub_session_id, chunk_json.clone()));
+                            let _ = tx.send((sub_session_id, chunk_json.clone())).await;
                         }
                     }
                     Err(broadcast::error::RecvError::Closed) => break,

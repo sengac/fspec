@@ -3,7 +3,7 @@
 #[path = "support/bug268_environment.rs"]
 mod environment;
 #[path = "support/bug268_live.rs"]
-mod support;
+pub mod support;
 
 use environment::{Environment, TestResult};
 use serde_json::json;

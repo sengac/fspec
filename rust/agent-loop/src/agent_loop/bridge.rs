@@ -49,6 +49,7 @@ pub(super) fn register_bridge_handlers(session: &Arc<BackgroundSession>) {
                     role_name: "bridge".to_string(),
                     message: String::new(),
                     images: bridge_images,
+                    interrupt_epoch: None,
                 }
             } else {
                 IncomingMessage {
@@ -56,6 +57,7 @@ pub(super) fn register_bridge_handlers(session: &Arc<BackgroundSession>) {
                     role_name: "bridge".to_string(),
                     message: input.message.clone(),
                     images: bridge_images,
+                    interrupt_epoch: None,
                 }
             };
             match session_for_injector.receive_incoming_message(supervisor_input) {

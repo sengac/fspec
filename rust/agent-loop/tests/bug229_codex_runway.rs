@@ -1,9 +1,9 @@
 //! Feature: spec/features/codex-compactor-occupancy-runway.feature
 
 #[path = "support/bug211_budget.rs"]
-mod budget;
+pub mod budget;
 #[path = "support/bug210_completion_metrics.rs"]
-mod metrics;
+pub mod metrics;
 
 use codelet_providers::codex::{refreshing_client::RefreshingCodexClient, CodexResponsesModel};
 use codelet_providers::request_admission::{AdmissionLimits, RequestAdmissionError};

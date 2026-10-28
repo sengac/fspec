@@ -73,10 +73,11 @@ fn damaged_target_sessions_fail_explicitly() -> TestResult {
         fs::write(&path, contents)?;
         // @step When the user loads or updates each damaged session
         let mut store = SessionStore::new()?;
-        let load_error = store.load(id).expect_err("damaged target must fail");
+        let load_error = store.load(id).err().ok_or("damaged target must fail")?;
         let update_error = store
             .rename(id, "replacement")
-            .expect_err("update must fail");
+            .err()
+            .ok_or("update must fail")?;
         // @step Then each operation reports its path and cause without changing the damaged bytes
         assert!(load_error.contains(&id.to_string()));
         assert!(load_error.contains("manifest"));

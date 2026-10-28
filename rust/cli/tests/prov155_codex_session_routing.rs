@@ -22,11 +22,12 @@ async fn session_routing_persists_across_provider_reconstruction_and_resets_with
         )
         .mount(&server)
         .await;
-    let session = Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
-        codelet_providers::ProviderType::Codex,
-        Some(272_000),
-        Some(4096),
-    ));
+    let mut session =
+        Session::from_provider_manager(codelet_providers::ProviderManager::for_testing(
+            codelet_providers::ProviderType::Codex,
+            Some(272_000),
+            Some(4096),
+        ));
     let client = RefreshingCodexClient::new_api_key();
     let routing = session
         .provider_session
@@ -45,7 +46,7 @@ async fn session_routing_persists_across_provider_reconstruction_and_resets_with
     let mut request = http::Request::post(server.uri()).body(json!({"input":[]}).to_string())?;
     request.extensions_mut().insert(routing.clone());
     client.send_streaming(request).await?;
-    session.reset_provider_state();
+    session.reset_provider_state()?;
     let mut request = http::Request::post(server.uri()).body(json!({"input":[]}).to_string())?;
     request.extensions_mut().insert(routing.clone());
     client.send_streaming(request).await?;

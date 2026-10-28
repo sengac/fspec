@@ -7,14 +7,7 @@ use std::sync::{
 };
 use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
-mod fixture {
-    use crate as codelet_providers;
-    include!("../../tests/prov159_support/mod.rs");
-}
-mod network {
-    use crate as codelet_providers;
-    include!("../../tests/prov159_support/network.rs");
-}
+use crate::test_fixtures::{auth as fixture, network};
 
 #[tokio::test]
 #[serial_test::serial]
@@ -60,7 +53,7 @@ async fn reset_during_credential_refresh_prevents_the_authorized_retry(
     let error = tokio::time::timeout(std::time::Duration::from_secs(4), task).await??;
     // @step Then the stream fails without another physical inference request
     assert_eq!(attempts.load(Ordering::SeqCst), 1);
-    assert_eq!(issuer.requests().len(), 1);
+    assert_eq!(issuer.requests()?.len(), 1);
     assert!(
         error
             .as_deref()

@@ -1,5 +1,5 @@
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::generate_compaction_handler::register_generate_compaction_handler;
 use codelet_tools::inject_summary::execute_inject_summary;

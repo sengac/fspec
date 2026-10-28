@@ -9,7 +9,8 @@ use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[path = "prov147.rs"]
-pub mod baseline;
+pub mod response_fixture;
+pub use response_fixture as baseline;
 
 pub type TestResult = Result<(), Box<dyn std::error::Error>>;
 pub type Final = rig::providers::openai::responses_api::streaming::StreamingCompletionResponse;
@@ -28,6 +29,13 @@ impl Drop for Server {
 
 impl Server {
     pub async fn start(bodies: Vec<String>, hold: bool) -> Result<Self, std::io::Error> {
+        Self::start_with_disconnects(bodies.into_iter().map(Some).collect(), hold).await
+    }
+
+    pub async fn start_with_disconnects(
+        bodies: Vec<Option<String>>,
+        hold: bool,
+    ) -> Result<Self, std::io::Error> {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
         let url = format!("http://{}", listener.local_addr()?);
         let requests = Arc::new(Mutex::new(Vec::new()));
@@ -70,6 +78,9 @@ impl Server {
                         }
                     }
                 }
+                let Some(body) = body else {
+                    continue;
+                };
                 let header = "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n";
                 if socket
                     .write_all(format!("{header}{body}").as_bytes())

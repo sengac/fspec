@@ -1,7 +1,7 @@
 use super::Session;
 use crate::compaction_dag::{
-    detect_existing_dag, COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
-    DAG_NODE_SYNTAX, DAG_RANGE_RULES,
+    COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL, DAG_NODE_SYNTAX,
+    DAG_RANGE_RULES,
 };
 use crate::interactive_helpers::validate_no_orphan_tool_calls;
 use rig::message::Message;
@@ -14,13 +14,23 @@ pub(crate) struct CompactionWorkingView {
 
 impl Session {
     pub fn prepare_compaction_view(&mut self, prompt: Option<&str>) -> Result<(), String> {
+        if self.pending_compaction_commit.is_some() {
+            return Err(
+                "pending durable compaction must be reconciled before another builder view".into(),
+            );
+        }
         validate_no_orphan_tool_calls(&self.messages).map_err(|orphans| {
             format!(
                 "compaction refuses orphan tool calls: {}",
                 orphans.join(", ")
             )
         })?;
-        let instruction = match detect_existing_dag(&self.messages) {
+        let instruction = match self
+            .durable_summary
+            .as_ref()
+            .map(super::durable_summary::DurableSummary::builder_dag)
+            .transpose()?
+        {
             Some((content, end)) => COMPACTION_INSTRUCTION_INCREMENTAL
                 .replace("{existing_dag_content}", &content)
                 .replace("{last_compacted_turn}", &end.saturating_add(1).to_string()),

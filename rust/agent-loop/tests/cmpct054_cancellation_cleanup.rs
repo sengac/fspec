@@ -1,7 +1,7 @@
 //! Feature: spec/features/aborted-turn-compaction-dependency-cleanup.feature
 
 #[path = "support/terminal_recovery.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::agent_loop::agent_loop;
 use codelet_cli::compactor_sub_agent::has_compactor_sub_agent_handler;

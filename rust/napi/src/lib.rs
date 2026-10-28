@@ -11,6 +11,9 @@
 #[cfg_attr(not(feature = "noop"), macro_use)]
 extern crate napi_derive;
 
+mod stream_wire;
+pub use stream_wire::stream_chunk_to_json_value;
+
 // These modules use ThreadsafeFunction and must be excluded in noop mode
 #[cfg(not(feature = "noop"))]
 mod astgrep;
@@ -64,8 +67,6 @@ pub mod bridges;
 pub mod footer_poller;
 #[cfg(not(feature = "noop"))]
 pub mod interjection;
-#[cfg(not(feature = "noop"))]
-pub mod persist;
 #[cfg(not(feature = "noop"))]
 pub mod session_bindings;
 #[cfg(not(feature = "noop"))]

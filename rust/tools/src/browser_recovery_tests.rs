@@ -89,7 +89,7 @@ fn scenario_recover_an_idle_expired_connected_browser() -> Result<(), ChromeErro
     let error = original
         .new_tab()
         .err()
-        .expect("expired transport must fail");
+        .ok_or_else(|| ChromeError::ConnectionError("expired transport must fail".into()))?;
     assert!(error
         .to_string()
         .contains("underlying connection is closed"));

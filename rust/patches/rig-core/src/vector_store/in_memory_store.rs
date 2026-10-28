@@ -227,7 +227,7 @@ impl<D: Serialize + Eq> InMemoryVectorStore<D> {
         }
 
         // Sort by distance and take top n
-        scored_docs.sort_by(|a, b| b.0.cmp(&a.0)); // Sort in descending order (highest similarity first)
+        scored_docs.sort_by_key(|scored_doc| Reverse(scored_doc.0));
         scored_docs.truncate(n);
 
         // Convert to BinaryHeap format using the original HashMap keys

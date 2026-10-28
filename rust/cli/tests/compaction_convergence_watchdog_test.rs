@@ -1,48 +1,24 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-// Feature: spec/features/compaction-convergence-watchdog.feature
+//! Feature: spec/features/committed-compaction-watchdog-lifecycle.feature
+//! All nine historical watchdog cases remain, individually adapted to the
+//! CMPCT-057/079 no-fallback contract and actual durable runtime APIs.
 //
 // This test file validates the acceptance criteria defined in the feature file.
 // Scenarios map directly to Gherkin scenarios.
 
-use codelet_cli::compaction_dag::{
-    extract_partial_dag_nodes, force_inject_fallback_dag, COMPACTION_ESCALATION_MESSAGE,
-};
+#[path = "fixtures/compactor_contract.rs"]
+pub mod contract;
+use codelet_cli::compaction_operation::{CompactionFailure, CompactionOperation};
+use codelet_cli::interactive::StreamEvent;
+use contract::{Fixture, Output, TestResult};
 use rig::message::{AssistantContent, Message, Text, UserContent};
 use rig::one_or_many::OneOrMany;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::time::Duration;
 
 // ========================================
 // Test helpers
 // ========================================
-
-fn create_test_session() -> codelet_cli::session::Session {
-    let provider_manager =
-        codelet_providers::ProviderManager::new().expect("Need at least one API key for tests");
-
-    let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(
-            "<system-reminder>\n<!-- type:environment -->\nPlatform: test\n</system-reminder>",
-        )),
-    });
-    session
-}
-
-fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: usize) {
-    for i in 0..count {
-        session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(format!("User message {i}"))),
-        });
-        let assistant_text = AssistantContent::Text(Text {
-            text: format!("Assistant response {i}"),
-        });
-        session.messages.push(Message::Assistant {
-            id: None,
-            content: OneOrMany::one(assistant_text),
-        });
-    }
-}
 
 // ========================================
 // Scenario: Normal compaction succeeds without watchdog intervention
@@ -56,203 +32,181 @@ fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: us
 // runs, so `was_compacting && !has_pending_dag` must be false, no escalation
 // message may be injected, and the counter stays at 0.
 
-#[test]
-fn scenario_normal_compaction_no_watchdog_intervention() {
-    // @step Given a session in compaction mode after execute_compaction
-    let mut session = create_test_session();
-    add_conversation_turns(&mut session, 3);
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-    let mut watchdog_counter: usize = 0;
-
-    // @step When the agent calls inject_summary during the first stream attempt
-    // A successful inject_summary clears the compaction flag before the
-    // watchdog check runs (mirrors the end-of-turn `swap(false)` in the
-    // agent-loop / napi agent loops).
-    compaction_flag.swap(false, Ordering::SeqCst);
-
-    // @step Then the compaction_in_progress flag should be cleared
+#[tokio::test]
+#[serial_test::serial]
+async fn scenario_normal_compaction_no_watchdog_intervention() -> TestResult {
+    let mut fixture = Fixture::new(3)?;
+    fixture.valid_builder();
+    let output = Output::default();
+    fixture.run(&output).await?;
     assert!(
-        !compaction_flag.load(Ordering::Acquire),
-        "flag must be cleared after inject_summary succeeds"
+        !fixture.busy.load(Ordering::Acquire),
+        "flag clears after committed success"
     );
-
-    // @step And no escalation message should be injected
-    // Engine decision predicate (agent_loop / napi twins):
-    // escalate only when `was_compacting && !has_pending_dag`.
-    let was_compacting = compaction_flag.load(Ordering::Acquire);
-    let has_pending_dag = false;
-    if was_compacting && !has_pending_dag {
-        watchdog_counter += 1;
-        session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(COMPACTION_ESCALATION_MESSAGE)),
-        });
-    }
     assert!(
-        !was_compacting,
-        "watchdog must not fire when inject_summary succeeded"
+        !fixture
+            .tokens
+            .lock()
+            .map_err(|error| error.to_string())?
+            .compaction_needed
     );
-    let has_escalation = session.messages.iter().any(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text == COMPACTION_ESCALATION_MESSAGE;
-            }
-        }
-        false
-    });
-    assert!(!has_escalation, "no escalation message on the normal path");
-
-    // @step And the watchdog counter should remain at 0
-    assert_eq!(watchdog_counter, 0, "counter must remain 0 on success");
+    let text = serde_json::to_string(&fixture.session.messages)?;
+    assert!(
+        !text.contains("TIMEOUT"),
+        "no synthetic escalation instruction after normal success"
+    );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionFailed { .. })),
+        0
+    );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        1
+    );
+    let mut operation = CompactionOperation::new(Duration::from_secs(1), 2);
+    let identity = operation.begin()?;
+    operation.committed(identity)?;
+    assert_eq!(
+        operation.attempts(),
+        0,
+        "counter resets only after committed success"
+    );
+    assert!(!operation.is_blocked());
+    Ok(())
 }
 
 // ========================================
 // Scenario: Escalation triggers after first failed attempt
 // ========================================
 
-#[test]
-fn test_escalation_triggers_after_first_failure() {
-    // @step Given a session in compaction mode where the agent never calls inject_summary
-    let mut session = create_test_session();
-    add_conversation_turns(&mut session, 5);
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-    let mut watchdog_counter: usize = 0;
-
-    // @step When the first stream attempt completes without inject_summary
-    // Simulate: stream ends but compaction_in_progress is still true
-    let still_compacting = compaction_flag.load(Ordering::Acquire);
-    assert!(still_compacting, "Flag should still be true");
-    watchdog_counter += 1;
-
-    // @step Then the watchdog should detect that compaction_in_progress is still true
-    assert!(compaction_flag.load(Ordering::Acquire));
+#[tokio::test]
+#[serial_test::serial]
+async fn first_failure_blocks_without_automatic_escalation() -> TestResult {
+    let mut fixture = Fixture::new(5)?;
+    let before = fixture.snapshot()?;
+    let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let observed = calls.clone();
+    fixture.handler(Arc::new(move |_, _| {
+        observed.fetch_add(1, Ordering::SeqCst);
+        Box::pin(async { Err("builder did not finish".into()) })
+    }));
+    let output = Output::default();
+    assert!(matches!(
+        fixture.run(&output).await,
+        Err(CompactionFailure::Builder(_))
+    ));
+    fixture.assert_memory_preserved(&before)?;
+    assert!(matches!(
+        fixture.run(&output).await,
+        Err(CompactionFailure::Blocked)
+    ));
     assert_eq!(
-        watchdog_counter, 1,
-        "Counter should be 1 after first failure"
+        calls.load(Ordering::SeqCst),
+        1,
+        "no automatic second request after failure"
     );
-
-    // @step And an escalation message should be injected into session messages
-    // Simulate watchdog decision logic
-    if watchdog_counter == 1 {
-        session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(COMPACTION_ESCALATION_MESSAGE)),
-        });
-    }
-    let has_escalation = session.messages.iter().any(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text.contains("TIMEOUT") || t.text.contains("inject_summary");
-            }
-        }
-        false
-    });
-    assert!(has_escalation, "Escalation message should be in messages");
-
-    // @step And a second stream attempt should be initiated automatically
-    // The watchdog counter being 1 means we should retry
-    assert!(
-        watchdog_counter < 2,
-        "Should retry before force-inject threshold"
+    assert_eq!(
+        fixture.snapshot()?,
+        before,
+        "no escalation message is injected"
     );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionFailed { .. })),
+        1
+    );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        0
+    );
+    Ok(())
 }
 
 // ========================================
 // Scenario: Escalation message content is directive
 // ========================================
 
-#[test]
-fn test_escalation_message_content() {
-    // @step Given the COMPACTION_ESCALATION_MESSAGE constant
-    let message = COMPACTION_ESCALATION_MESSAGE;
-
-    // @step When its content is examined
-    assert!(!message.is_empty(), "Message should not be empty");
-
-    // @step Then it should instruct the agent to stop making SessionSearch calls
-    assert!(
-        message.contains("SessionSearch") || message.contains("search"),
-        "Should mention stopping search calls"
+#[tokio::test]
+#[serial_test::serial]
+async fn failed_operation_reports_explicit_resolution_without_model_instructions() -> TestResult {
+    let mut fixture = Fixture::new(3)?;
+    let before = fixture.snapshot()?;
+    fixture.handler(Arc::new(|_, _| {
+        Box::pin(async { Err("watchdog builder timed out".into()) })
+    }));
+    let output = Output::default();
+    let error = fixture
+        .run(&output)
+        .await
+        .err()
+        .ok_or("builder failure must remain visible")?;
+    assert!(error.to_string().contains("timed out"));
+    let blocked = fixture
+        .run(&output)
+        .await
+        .err()
+        .ok_or("failed operation needs explicit resolution")?;
+    assert!(matches!(blocked, CompactionFailure::Blocked));
+    assert!(blocked.to_string().contains("explicit resolution"));
+    fixture.assert_memory_preserved(&before)?;
+    assert_eq!(output.count(|event|matches!(event,StreamEvent::CompactionFailed{reason} if reason.contains("timed out"))),1);
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        0
     );
-
-    // @step And it should instruct the agent to write a summary and call inject_summary immediately
-    assert!(
-        message.contains("inject_summary"),
-        "Should mention inject_summary"
-    );
-
-    // @step And it should convey urgency about the compaction timeout
-    assert!(
-        message.contains("TIMEOUT") || message.contains("timeout") || message.contains("NOW"),
-        "Should convey urgency"
-    );
+    Ok(())
 }
 
 // ========================================
 // Scenario: force_inject_fallback_dag resets session state correctly
 // ========================================
 
-#[test]
-fn test_force_inject_resets_session_state() {
-    // @step Given a session with conversation messages and compaction_in_progress flag set to true
-    let mut session = create_test_session();
-    add_conversation_turns(&mut session, 10);
-    session.token_tracker.input_tokens = 50_000;
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-
-    let fallback_dag = r#"<dag-node depth="D1" turns="0-20" label="Auto-recovered: compaction timeout">
-Session was auto-compacted due to convergence timeout.
-Use SessionSearch to recover context.
-</dag-node>"#;
-
-    // @step When force_inject_fallback_dag is called with a fallback DAG
-    force_inject_fallback_dag(&mut session, &compaction_flag, fallback_dag);
-
-    // @step Then it should call reset_session_to_reminders to preserve system reminders
-    let has_env_reminder = session.messages.iter().any(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text.contains("type:environment");
-            }
-        }
-        false
-    });
+#[tokio::test]
+#[serial_test::serial]
+async fn admitted_compaction_preserves_reminders_and_updates_state() -> TestResult {
+    let mut fixture = Fixture::new(10)?;
+    fixture.session.messages.insert(
+        0,
+        Message::User {
+            content: OneOrMany::one(UserContent::text(
+                "<system-reminder>\n<!-- type:environment -->\nPlatform: test\n</system-reminder>",
+            )),
+        },
+    );
+    fixture.session.token_tracker.input_tokens = 50_000;
+    fixture
+        .tokens
+        .lock()
+        .map_err(|error| error.to_string())?
+        .input_tokens = 50_000;
+    fixture.valid_builder();
+    let output = Output::default();
+    fixture.run(&output).await?;
+    let session = &fixture.session;
+    let has_env_reminder=session.messages.iter().any(|message|matches!(message,Message::User{content} if content.iter().any(|part|matches!(part,UserContent::Text(text) if text.text.contains("type:environment")))));
     assert!(
         has_env_reminder,
         "Should preserve environment system reminder"
     );
-
-    // @step And the DAG should be wrapped in compaction-dag system-reminder tags
-    let has_dag = session.messages.iter().any(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text.contains("type:compaction-dag");
-            }
-        }
-        false
-    });
-    assert!(has_dag, "Should have wrapped DAG in compaction-dag tags");
-
-    // @step And the wrapped DAG should be pushed as a user message
-    let dag_msg = session.messages.iter().find(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text.contains("Auto-recovered");
-            }
-        }
-        false
-    });
-    assert!(dag_msg.is_some(), "Fallback DAG should be in messages");
-
-    // @step And recalculate_token_tracker should update the token counts
+    fixture.assert_typed_summary()?;
+    let dag_message=session.messages.iter().find(|message|matches!(message,Message::User{content} if content.iter().any(|part|matches!(part,UserContent::Text(text) if text.text.contains("Overflow arc")))));
+    assert!(
+        dag_message.is_some(),
+        "the committed DAG must be in a user message"
+    );
     assert!(
         session.token_tracker.input_tokens > 0,
         "Token tracker should be recalculated"
     );
-
-    // @step And the compaction_in_progress flag should be cleared
+    assert!(session.token_tracker.input_tokens < 50_000);
     assert!(
-        !compaction_flag.load(Ordering::Relaxed),
+        !fixture.busy.load(Ordering::Acquire),
         "compaction_in_progress should be cleared"
     );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        1
+    );
+    Ok(())
 }
 
 // ========================================
@@ -262,7 +216,7 @@ Use SessionSearch to recover context.
 #[test]
 fn test_extract_partial_dag_nodes_finds_blocks() {
     // @step Given session messages containing partial dag-node blocks from assistant responses
-    let messages = vec![
+    let messages = [
         Message::User {
             content: OneOrMany::one(UserContent::text("Build DAG")),
         },
@@ -285,16 +239,34 @@ I'll call inject_summary next..."#
     ];
 
     // @step When extract_partial_dag_nodes is called
-    let nodes = extract_partial_dag_nodes(&messages);
+    let nodes: Vec<_> = messages
+        .iter()
+        .flat_map(|message| {
+            let Message::Assistant { content, .. } = message else {
+                return Vec::new();
+            };
+            content
+                .iter()
+                .flat_map(|block| match block {
+                    AssistantContent::Text(text) => {
+                        codelet_core::compaction::parse_dag_nodes(&text.text, None)
+                    }
+                    _ => Vec::new(),
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect();
 
     // @step Then it should find and return all dag-node block strings from assistant messages
     assert!(!nodes.is_empty(), "Should find dag-node blocks");
     assert!(
-        nodes.iter().any(|n| n.contains("Architecture Decisions")),
+        nodes
+            .iter()
+            .any(|n| n.label.contains("Architecture Decisions")),
         "Should find first node"
     );
     assert!(
-        nodes.iter().any(|n| n.contains("Current work")),
+        nodes.iter().any(|n| n.label.contains("Current work")),
         "Should find second node"
     );
 }
@@ -306,7 +278,7 @@ I'll call inject_summary next..."#
 #[test]
 fn test_extract_partial_dag_nodes_returns_empty() {
     // @step Given session messages with no dag-node blocks
-    let messages = vec![
+    let messages = [
         Message::User {
             content: OneOrMany::one(UserContent::text("Build DAG")),
         },
@@ -319,11 +291,24 @@ fn test_extract_partial_dag_nodes_returns_empty() {
     ];
 
     // @step When extract_partial_dag_nodes is called
-    let nodes = extract_partial_dag_nodes(&messages);
+    let mut nodes = messages.iter().flat_map(|message| {
+        let Message::Assistant { content, .. } = message else {
+            return Vec::new();
+        };
+        content
+            .iter()
+            .flat_map(|block| match block {
+                AssistantContent::Text(text) => {
+                    codelet_core::compaction::parse_dag_nodes(&text.text, None)
+                }
+                _ => Vec::new(),
+            })
+            .collect::<Vec<_>>()
+    });
 
     // @step Then it should return an empty collection
     assert!(
-        nodes.is_empty(),
+        nodes.next().is_none(),
         "Should return empty when no dag-nodes found"
     );
 }
@@ -332,96 +317,92 @@ fn test_extract_partial_dag_nodes_returns_empty() {
 // Scenario: Force-inject with partial dag-nodes after two failed attempts
 // ========================================
 
-#[test]
-fn test_force_inject_with_partial_dag_nodes() {
-    // @step Given a session in compaction mode where the agent writes partial dag-node blocks but never calls inject_summary
-    let mut session = create_test_session();
-    session.token_tracker.input_tokens = 50_000;
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-
-    // @step And the recent messages contain dag-node blocks for turns 0-30 and 31-50
-    session.messages.push(Message::Assistant {
-        id: None,
-        content: OneOrMany::one(AssistantContent::Text(Text {
-            text: r#"<dag-node depth="D2" turns="0-30" label="Architecture">
+#[tokio::test]
+#[serial_test::serial]
+async fn partial_nodes_require_complete_admitted_source_coverage() -> TestResult {
+    let partial = r#"<dag-node depth="D2" turns="0-30" label="Architecture">
 - Decisions made
 </dag-node>
 <dag-node depth="D0" turns="31-50" label="Recent">
 - Current work
-</dag-node>"#
-                .to_string(),
-        })),
-    });
-
-    // @step When both stream attempts complete without inject_summary
-    let partial = extract_partial_dag_nodes(&session.messages);
-    assert!(!partial.is_empty(), "Should have partial dag-nodes");
-
-    // @step Then the engine should extract partial dag-node blocks from recent messages
-    // @step And assemble them into a complete DAG
-    let assembled = partial.join("\n\n");
-    assert!(assembled.contains("Architecture"));
-    assert!(assembled.contains("Recent"));
-
-    // @step And force-inject the assembled DAG into the session
-    force_inject_fallback_dag(&mut session, &compaction_flag, &assembled);
-
-    // @step And clear the compaction_in_progress flag
-    assert!(!compaction_flag.load(Ordering::Relaxed));
+</dag-node>"#;
+    let nodes = codelet_core::compaction::parse_dag_nodes(partial, None);
+    assert!(!nodes.is_empty(), "Should have partial dag-nodes");
+    assert!(partial.contains("Architecture"));
+    assert!(partial.contains("Recent"));
+    let mut fixture = Fixture::new(26)?;
+    let before = fixture.snapshot()?;
+    fixture.handler(Arc::new(move |_, _| {
+        Box::pin(async move { Ok(partial.to_owned()) })
+    }));
+    let output = Output::default();
+    let error = fixture
+        .run(&output)
+        .await
+        .err()
+        .ok_or("missing persisted turn 51 cannot be force-installed")?;
+    assert!(matches!(error,CompactionFailure::Commit(reason) if reason.contains("not covered")));
+    fixture.assert_memory_preserved(&before)?;
+    assert!(!fixture.busy.load(Ordering::Acquire));
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        0
+    );
+    // A complete, evidence-backed candidate still succeeds; rejection does not disable compaction.
+    let complete=format!("{partial}\n<dag-node depth=\"D0\" turns=\"51-51\" label=\"Last original\">last retained evidence</dag-node>");
+    let mut admitted = Fixture::new(26)?;
+    let expected = complete.clone();
+    admitted.handler(Arc::new(move |_, _| {
+        let complete = complete.clone();
+        Box::pin(async move { Ok(complete) })
+    }));
+    let output = Output::default();
+    admitted.run(&output).await?;
+    assert_eq!(
+        codelet_core::persistence::load_session(admitted.id)?
+            .compaction
+            .ok_or("committed summary missing")?
+            .summary,
+        expected
+    );
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        1
+    );
+    Ok(())
 }
 
 // ========================================
 // Scenario: Force-inject with minimal fallback DAG when no partial nodes exist
 // ========================================
 
-#[test]
-fn test_force_inject_with_minimal_fallback() {
-    // @step Given a session in compaction mode where the agent produces no dag-node blocks at all
-    let mut session = create_test_session();
-    add_conversation_turns(&mut session, 20);
-    session.token_tracker.input_tokens = 50_000;
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-
-    // @step When both stream attempts complete without inject_summary
-    let partial = extract_partial_dag_nodes(&session.messages);
-    assert!(partial.is_empty(), "No partial nodes exist");
-
-    // @step Then the engine should create a minimal fallback DAG with a D1 node
-    let last_turn = session.messages.len().saturating_sub(1);
-    // CMPCT-047: the test's own reference node uses the SHARED helper
-    // (the same primitive the watchdog now routes through) so the test
-    // file cannot format a private <dag-node> template inline either.
-    // total_turns = message count ⇒ the node's `turns="0-(count-1)"`
-    // matches the watchdog's 0..last_turn range.
-    let fallback = codelet_cli::compaction_dag::build_generic_fallback_dag_node(
-        "Auto-recovered: compaction timeout",
-        "Session was auto-compacted due to convergence timeout.",
-        session.messages.len() as u32,
+#[tokio::test]
+#[serial_test::serial]
+async fn missing_nodes_never_create_minimal_fallback_memory() -> TestResult {
+    let mut fixture = Fixture::new(20)?;
+    let before = fixture.snapshot()?;
+    let nodes = codelet_core::compaction::parse_dag_nodes("no DAG nodes", None);
+    assert!(nodes.is_empty(), "No partial nodes exist");
+    fixture.handler(Arc::new(|_, _| {
+        Box::pin(async { Ok("no DAG nodes".into()) })
+    }));
+    let output = Output::default();
+    assert!(matches!(
+        fixture.run(&output).await,
+        Err(CompactionFailure::Candidate(_))
+    ));
+    fixture.assert_memory_preserved(&before)?;
+    assert!(!serde_json::to_string(&fixture.session.messages)?.contains("Auto-recovered"));
+    assert!(!fixture.busy.load(Ordering::Acquire));
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        0
     );
-
-    // @step And the fallback D1 node should cover turns 0 through the last known turn
-    assert!(fallback.contains(&format!("turns=\"0-{last_turn}\"")));
-
-    // @step And the fallback label should indicate auto-recovery from compaction timeout
-    assert!(fallback.contains("Auto-recovered: compaction timeout"));
-
-    // @step And force-inject the fallback DAG into the session
-    force_inject_fallback_dag(&mut session, &compaction_flag, &fallback);
-
-    // Verify session has the DAG
-    let has_dag = session.messages.iter().any(|m| {
-        if let Message::User { content } = m {
-            if let UserContent::Text(t) = content.first() {
-                return t.text.contains("Auto-recovered");
-            }
-        }
-        false
-    });
-    assert!(has_dag, "Fallback DAG should be injected");
-    assert!(
-        !compaction_flag.load(Ordering::Relaxed),
-        "Flag should be cleared"
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionFailed { .. })),
+        1
     );
+    Ok(())
 }
 
 // ========================================
@@ -429,59 +410,49 @@ fn test_force_inject_with_minimal_fallback() {
 // compaction_dag helpers (CMPCT-047)
 // ========================================
 
-#[test]
-fn test_level_3_fallback_shape_is_built_from_shared_compaction_dag_helpers() {
-    // @step Given the agent-loop watchdog reaches Level-3 (two failed attempts, no inject_summary)
-    // Source-shape guard: the watchdog's Level-3 fallback must be built
-    // by the shared compaction_dag helpers — read the agent-loop source
-    // via a path relative to the repo root (the established cross-crate
-    // source-shape pattern; the watchdog lives in codelet-agent-loop).
-    let manifest = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let repo_root = manifest
+#[tokio::test]
+#[serial_test::serial]
+async fn runtime_has_no_level_three_fallback_or_diagnostic_salvage() -> TestResult {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
-        .and_then(|p| p.parent())
-        .expect("repo root");
-    let agent_loop_src =
-        std::fs::read_to_string(repo_root.join("rust/agent-loop/src/agent_loop.rs"))
-            .unwrap_or_else(|e| panic!("failed to read agent_loop.rs: {e}"));
-
-    // @step When it assembles the fallback DAG
-    // @step Then the partial-node recovery joins extract_partial_dag_nodes output verbatim
-    // (the watchdog's partial source is the in-view agent's messages —
-    // extract_partial_dag_nodes on `inner_session.messages`)
-    let partial_at = agent_loop_src
-        .find("extract_partial_dag_nodes(")
-        .expect("CMPCT-047: the watchdog must recover partial nodes via extract_partial_dag_nodes");
-    let join_at = agent_loop_src
-        .find("partial_nodes.join(\"\\n\\n\")")
-        .expect("CMPCT-047: the partial-node recovery must join the output verbatim");
+        .ok_or("Rust workspace root")?;
+    let agent = std::fs::read_to_string(root.join("agent-loop/src/agent_loop.rs"))?;
+    let compactor = std::fs::read_to_string(root.join("cli/src/compactor_sub_agent.rs"))?;
+    for removed in [
+        "extract_partial_dag_nodes(",
+        "force_inject_fallback_dag(",
+        "build_generic_fallback_dag_node(",
+        "pin_fallback_dag(",
+    ] {
+        assert!(
+            !agent.contains(removed),
+            "removed fallback helper {removed} returned to the agent loop"
+        );
+        assert!(
+            !compactor.contains(removed),
+            "removed fallback helper {removed} returned to the compactor"
+        );
+    }
     assert!(
-        join_at > partial_at,
-        "CMPCT-047: the watchdog must join the recovered partial nodes (chars {partial_at}..{join_at})"
+        !agent.contains("r#\"<dag-node"),
+        "watchdog must not invent an inline generic DAG template"
     );
-
-    // @step And the generic auto-recovered node is built by build_generic_fallback_dag_node with the label "Auto-recovered: compaction timeout" and the body "Session was auto-compacted due to convergence timeout."
-    let helper_at = agent_loop_src
-        .find("codelet_cli::compaction_dag::build_generic_fallback_dag_node")
-        .expect("CMPCT-047: the watchdog's generic node must be built by the shared build_generic_fallback_dag_node");
-    let label_at = agent_loop_src
-        .find("\"Auto-recovered: compaction timeout\"")
-        .expect("CMPCT-047: the shared delegation must use the watchdog label");
-    let body_at = agent_loop_src
-        .find("Session was auto-compacted due to convergence timeout.")
-        .expect("CMPCT-047: the shared delegation must use the watchdog body");
-    assert!(
-        label_at > helper_at && (label_at - helper_at) < 400,
-        "CMPCT-047: the label must be an argument to the shared delegation (chars {helper_at}..{label_at})"
+    let mut fixture = Fixture::new(3)?;
+    let before = fixture.snapshot()?;
+    let diagnostic = fixture.dag();
+    fixture.handler(Arc::new(move |_, _| {
+        let diagnostic = diagnostic.clone();
+        Box::pin(async move { Err(format!("builder failed: {diagnostic}")) })
+    }));
+    let output = Output::default();
+    assert!(matches!(
+        fixture.run(&output).await,
+        Err(CompactionFailure::Builder(_))
+    ));
+    fixture.assert_memory_preserved(&before)?;
+    assert_eq!(
+        output.count(|event| matches!(event, StreamEvent::CompactionComplete(_))),
+        0
     );
-    assert!(
-        body_at > helper_at && (body_at - helper_at) < 600,
-        "CMPCT-047: the body must be an argument to the shared delegation (chars {helper_at}..{body_at})"
-    );
-
-    // @step And the watchdog does not format its own dag-node template inline
-    assert!(
-        !agent_loop_src.contains("r#\"<dag-node"),
-        "CMPCT-047: the watchdog must NOT format its own <dag-node> template inline"
-    );
+    Ok(())
 }

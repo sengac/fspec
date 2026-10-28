@@ -2,10 +2,10 @@
 //! Primary feature: spec/features/prov159-live-clients.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 #[path = "prov159_support/socket.rs"]
-mod socket;
+pub mod socket;
 
 use codelet_providers::codex::codex_auth::delete_codex_auth;
 use codelet_providers::codex::refreshing_client::RefreshingCodexClient;
@@ -72,17 +72,11 @@ async fn scenario_a4_existing_clients_cannot_retain_logged_out_account() -> Test
     }
     bounded(socket.send()).await??;
     {
-        let headers = socket
-            .headers
-            .lock()
-            .expect("header capture lock is available");
+        let headers = socket.headers.lock().map_err(|error| error.to_string())?;
         assert_eq!(headers[0]["authorization"], "Bearer access-A");
         assert_eq!(headers[0]["chatgpt-account-id"], "A");
         assert_eq!(headers[0]["originator"], "rust");
-        let messages = socket
-            .messages
-            .lock()
-            .expect("message capture lock is available");
+        let messages = socket.messages.lock().map_err(|error| error.to_string())?;
         assert_eq!(messages[0]["type"], "response.create");
         assert!(messages[0].get("previous_response_id").is_none());
     }
@@ -101,12 +95,13 @@ async fn scenario_a4_existing_clients_cannot_retain_logged_out_account() -> Test
     for transport in ["http", "multipart", "sse"] {
         let error = bounded(send_http(&cached, &api.uri(), transport))
             .await?
-            .expect_err("an existing client must not retain account A after account B logged in");
+            .err()
+            .ok_or("an existing client must not retain account A after account B logged in")?;
         assert!(error.to_string().contains("sign in again"));
     }
     assert!(bounded(socket.send()).await?.is_err());
     assert_eq!(
-        socket.requests(),
+        socket.requests()?,
         1,
         "account A socket received a request after logout"
     );
@@ -114,17 +109,11 @@ async fn scenario_a4_existing_clients_cannot_retain_logged_out_account() -> Test
     fixture.seed("A")?;
     bounded(socket.send_reauthenticated()).await??;
     {
-        let headers = socket
-            .headers
-            .lock()
-            .expect("header capture lock is available");
+        let headers = socket.headers.lock().map_err(|error| error.to_string())?;
         assert_eq!(headers.len(), 2, "reauthentication reused a revoked socket");
         assert_ne!(headers[0]["session_id"], headers[1]["session_id"]);
         assert!(headers[1].get("x-codex-turn-state").is_none());
-        let messages = socket
-            .messages
-            .lock()
-            .expect("message capture lock is available");
+        let messages = socket.messages.lock().map_err(|error| error.to_string())?;
         assert!(
             messages[1].get("previous_response_id").is_none(),
             "reauthentication reused the revoked baseline"
@@ -150,7 +139,7 @@ async fn scenario_a4_existing_clients_cannot_retain_logged_out_account() -> Test
         "a prepared account A request crossed the handshake transition"
     );
     assert_eq!(
-        socket.requests(),
+        socket.requests()?,
         0,
         "revoked account A sent a WebSocket message"
     );
@@ -206,7 +195,7 @@ async fn scenario_a14_disk_credentials_follow_buffered_freshness() -> TestResult
             assert!(!provider.client().http_client().is_token_expired().await,
                 "a fresh persisted refresh must survive provider reconstruction even for opaque access tokens");
         }
-        assert_eq!(issuer.requests().len(), 1);
+        assert_eq!(issuer.requests()?.len(), 1);
         Ok::<_, Box<dyn std::error::Error>>(())
     }.await;
     match previous {

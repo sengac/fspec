@@ -1,9 +1,9 @@
 //! Feature: spec/features/ordered-chat-completion-tools.feature
 
 #[path = "support/bug262_chat.rs"]
-mod chat;
+pub mod chat;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 
 use codelet_cli::{interactive::StreamEvent, session::Session};
 use codelet_core::RigAgent;

@@ -7,10 +7,13 @@ use serde_json::Value;
 use std::sync::Arc;
 
 type Prepare =
-    dyn Fn(&[Message], u64) -> Result<PreparedSelectedRequest, RequestAdmissionError> + Send + Sync;
+    dyn Fn(&[Message], Option<u64>) -> Result<Vec<u8>, RequestAdmissionError> + Send + Sync;
 
 #[derive(Clone)]
-pub struct SelectedRequestPreparer(Arc<Prepare>);
+pub struct SelectedRequestPreparer {
+    serialize: Arc<Prepare>,
+    limits: AdmissionLimits,
+}
 
 impl std::fmt::Debug for SelectedRequestPreparer {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -54,37 +57,36 @@ impl SelectedRequestPreparer {
         template: CompletionRequest,
         limits: AdmissionLimits,
     ) -> Self {
-        Self(Arc::new(move |messages, generation| {
-            if generation == 0 {
-                return Err(RequestAdmissionError::Preparation(
-                    "a replacement requires an advancing generation".into(),
-                ));
-            }
-            let mut request = template.clone();
-            request.chat_history = rig::OneOrMany::many(messages.to_vec())
-                .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))?;
-            let bytes = model
-                .prepare_request_for_generation(request, generation)
-                .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))?;
-            let admitted = admit_complete_request(&bytes, limits)?;
-            let input_tokens = admitted.input_tokens();
-            let output_reservation = admitted.output_reservation();
-            Ok(PreparedSelectedRequest {
-                bytes,
-                input_tokens,
-                output_reservation,
-                generation,
-            })
-        }))
+        Self {
+            limits,
+            serialize: Arc::new(move |messages, generation| {
+                if generation == Some(0) {
+                    return Err(RequestAdmissionError::Preparation(
+                        "a replacement requires an advancing generation".into(),
+                    ));
+                }
+                let mut request = template.clone();
+                request.chat_history = rig::OneOrMany::many(messages.to_vec())
+                    .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))?;
+                match generation {
+                    Some(generation) => model.prepare_request_for_generation(request, generation),
+                    None => model.prepare_request(request),
+                }
+                .map_err(|error| RequestAdmissionError::Preparation(error.to_string()))
+            }),
+        }
     }
 
     pub fn map_history(
         self,
         transform: impl Fn(&[Message]) -> Vec<Message> + Send + Sync + 'static,
     ) -> Self {
-        Self(Arc::new(move |messages, generation| {
-            self.prepare(&transform(messages), generation)
-        }))
+        Self {
+            limits: self.limits,
+            serialize: Arc::new(move |messages, generation| {
+                (self.serialize)(&transform(messages), generation)
+            }),
+        }
     }
 
     pub fn prepare(
@@ -92,7 +94,21 @@ impl SelectedRequestPreparer {
         messages: &[Message],
         generation: u64,
     ) -> Result<PreparedSelectedRequest, RequestAdmissionError> {
-        self.0(messages, generation)
+        let bytes = (self.serialize)(messages, Some(generation))?;
+        let admitted = admit_complete_request(&bytes, self.limits)?;
+        Ok(PreparedSelectedRequest {
+            input_tokens: admitted.input_tokens(),
+            output_reservation: admitted.output_reservation(),
+            bytes,
+            generation,
+        })
+    }
+
+    pub fn validate_current_history(
+        &self,
+        messages: &[Message],
+    ) -> Result<(), RequestAdmissionError> {
+        (self.serialize)(messages, None).map(|_| ())
     }
 }
 

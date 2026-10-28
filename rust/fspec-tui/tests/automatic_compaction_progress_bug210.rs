@@ -1,7 +1,7 @@
 //! Feature: spec/features/automatic-compaction-progress.feature
 
 #[path = "bug210_progress/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_cli::interactive::output::StreamOutput;
 use codelet_rpc_types::SessionStatus;

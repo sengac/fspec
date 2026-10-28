@@ -10,11 +10,22 @@ fn persisted_suffix_overlap(
     incoming: &[Message],
     runtime_suffix: &[Message],
 ) -> Result<usize, RestoreError> {
-    let appended = incoming.strip_prefix(installed).ok_or_else(|| {
-        RestoreError::Conflict("cannot reconcile runtime suffix with rewritten replay".into())
-    })?;
+    let appended = incoming
+        .get(installed.len()..)
+        .filter(|_| {
+            codelet_cli::session::replay::same_replay_messages(
+                &incoming[..installed.len()],
+                installed,
+            )
+        })
+        .ok_or_else(|| {
+            RestoreError::Conflict("cannot reconcile runtime suffix with rewritten replay".into())
+        })?;
     let overlap = appended.len().min(runtime_suffix.len());
-    if appended[..overlap] != runtime_suffix[..overlap] {
+    if !codelet_cli::session::replay::same_replay_messages(
+        &appended[..overlap],
+        &runtime_suffix[..overlap],
+    ) {
         return Err(RestoreError::Conflict(
             "runtime suffix disagrees with newly persisted history".into(),
         ));
@@ -54,21 +65,13 @@ impl SessionManager {
                 {
                     return Err(RestoreError::Conflict("installed revision is newer".into()));
                 }
-                let prefix = inner
-                    .restored_replay
-                    .as_ref()
-                    .map_or(inner.messages.len(), |current| current.runtime_prefix_len);
-                let replaced_len = inner
-                    .restored_replay
-                    .as_ref()
-                    .map_or(0, |current| current.replay_len);
-                let end = prefix
-                    .checked_add(replaced_len)
-                    .filter(|end| *end <= inner.messages.len())
-                    .ok_or_else(|| {
-                        RestoreError::Conflict("installed replay range no longer exists".into())
-                    })?;
                 inner.block_compaction_inference("restoring authoritative session replay".into());
+                let (prefix, end) = match &inner.restored_replay {
+                    Some(current) => current
+                        .locate(&inner.messages, &model_replay.messages)
+                        .map_err(RestoreError::Conflict)?,
+                    None => (inner.messages.len(), inner.messages.len()),
+                };
                 let end = if end < inner.messages.len()
                     && inner
                         .restored_replay
@@ -83,6 +86,12 @@ impl SessionManager {
                 } else {
                     end
                 };
+                let installation = codelet_cli::session::replay::ReplayInstallation::new(
+                    manifest.revision,
+                    &inner.messages[..prefix],
+                    &model_replay.messages,
+                )
+                .map_err(RestoreError::Conflict)?;
                 inner
                     .preflight_compaction_restore(&manifest, &model_replay.envelopes)
                     .map_err(|error| RestoreError::Store(error.to_string()))?;
@@ -97,13 +106,8 @@ impl SessionManager {
                         .restore_provider_state(&model_replay.envelopes)
                         .map_err(|error| RestoreError::Store(error.to_string()))?;
                 }
-                let replay_len = model_replay.messages.len();
                 inner.messages.splice(prefix..end, model_replay.messages);
-                inner.restored_replay = Some(codelet_cli::session::replay::ReplayInstallation {
-                    revision: manifest.revision,
-                    runtime_prefix_len: prefix,
-                    replay_len,
-                });
+                inner.restored_replay = Some(installation);
                 Ok::<(), RestoreError>(())
             })
         })?;

@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 use std::{fs, sync::Arc};
 
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn completed(output: Vec<Value>) -> String {

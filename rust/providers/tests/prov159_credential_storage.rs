@@ -1,7 +1,7 @@
 //! Feature: spec/features/codex-oauth-login.feature
 //! Primary feature: spec/features/prov159-credential-storage.feature
 
-mod prov159_support;
+pub mod prov159_support;
 
 #[cfg(target_os = "macos")]
 #[path = "prov159_credential_storage/keyring.rs"]

@@ -133,6 +133,10 @@ async fn handle_connection(
     tracing::info!(client_id = %peer, "ws connection accepted");
 
     let mut bounded_reads = false;
+    #[allow(
+        clippy::result_large_err,
+        reason = "tungstenite requires an unboxed HTTP ErrorResponse in its handshake callback"
+    )]
     let ws = tokio_tungstenite::accept_hdr_async(
         stream,
         |request: &tokio_tungstenite::tungstenite::handshake::server::Request,

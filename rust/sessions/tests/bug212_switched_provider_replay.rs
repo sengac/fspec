@@ -3,7 +3,7 @@
 #[path = "../../core/tests/support/compaction_boundary.rs"]
 mod boundary;
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::*;
 use codelet_core::SessionManagerHandle;
@@ -160,9 +160,13 @@ async fn scenario_direct_restore_rejects_corrupt_owned_provider_checkpoints_befo
     let promoted = compaction_commit::commit_compaction(candidate, &model, |_, _| Ok(()))?;
     manifest = compaction_commit::publish_compaction(&promoted, |_| Ok(()))?;
     // @step And its retained replay contains a future checkpoint generation
-    append_message_with_metadata(&mut manifest, "assistant", "", [("codexContinuation".into(), serde_json::json!({
-        "version": 1, "generation": 2, "protocol": "full-current-dag", "model": model, "items": []
-    }))].into())?;
+    append_message_with_metadata(&mut manifest, "assistant", "", [
+        ("provider".into(), serde_json::json!("codex")),
+        ("message".into(), serde_json::json!({"role":"assistant","content":[]})),
+        ("codexContinuation".into(), serde_json::json!({
+            "version": 1, "generation": 2, "protocol": "full-current-dag", "model": model, "items": []
+        })),
+    ].into())?;
     let extension = inner
         .provider_session
         .extension::<CodexSession>("codex")

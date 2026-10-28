@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 
 #[path = "prov148.rs"]
 pub mod previous;
-pub use previous::{event, terminal, Server, TestResult};
+pub use previous::{event, Server, TestResult};
 
 #[derive(Clone)]
 pub struct ReadTool(pub Arc<Mutex<Vec<Value>>>);

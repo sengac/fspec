@@ -1,7 +1,7 @@
 //! Feature: spec/features/compactor-occupancy-runway.feature
 
 #[path = "support/bug210_completion_metrics.rs"]
-mod metrics;
+pub mod metrics;
 #[path = "support/bug229_runway.rs"]
 mod runway;
 

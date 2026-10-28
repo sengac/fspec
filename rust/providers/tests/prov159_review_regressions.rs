@@ -1,10 +1,10 @@
 //! Feature: spec/features/prov159-review-regressions.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 #[path = "prov159_support/socket.rs"]
-mod socket;
+pub mod socket;
 
 use codelet_providers::codex::codex_auth::{clear_codex_oauth, read_codex_auth, write_codex_auth};
 use network::{bounded, client, send};
@@ -97,7 +97,7 @@ async fn scenario_external_rotation_without_private_metadata() -> TestResult {
 #[serial]
 async fn scenario_identical_relogin_resets_socket_and_routing() -> TestResult {
     // @step Given a completed socket response for an authenticated account
-    let fixture = Fixture::new()?;
+    let _fixture = Fixture::new()?;
     write_codex_auth(&auth("A"))?;
     let socket = socket::SocketProbe::start().await?;
     bounded(socket.send()).await??;
@@ -106,25 +106,25 @@ async fn scenario_identical_relogin_resets_socket_and_routing() -> TestResult {
     write_codex_auth(&auth("A"))?;
     bounded(socket.send_reauthenticated()).await??;
     // @step Then a newly bound client opens a new socket without prior continuation state
-    let headers = socket
-        .headers
-        .lock()
-        .map_err(|_| "header capture poisoned")?;
-    assert_eq!(headers.len(), 2, "re-login reused the previous connection");
-    let messages = socket
-        .messages
-        .lock()
-        .map_err(|_| "message capture poisoned")?;
-    assert!(messages[1].get("previous_response_id").is_none());
-    // @step And account routing affinity is renewed without an intervening revoked request
-    assert_ne!(headers[0]["session_id"], headers[1]["session_id"]);
-    assert!(headers[1].get("x-codex-turn-state").is_none());
-    assert_ne!(
-        messages[0]["prompt_cache_key"],
-        messages[1]["prompt_cache_key"]
-    );
-    drop(messages);
-    drop(headers);
+    {
+        let headers = socket
+            .headers
+            .lock()
+            .map_err(|_| "header capture poisoned")?;
+        assert_eq!(headers.len(), 2, "re-login reused the previous connection");
+        let messages = socket
+            .messages
+            .lock()
+            .map_err(|_| "message capture poisoned")?;
+        assert!(messages[1].get("previous_response_id").is_none());
+        // @step And account routing affinity is renewed without an intervening revoked request
+        assert_ne!(headers[0]["session_id"], headers[1]["session_id"]);
+        assert!(headers[1].get("x-codex-turn-state").is_none());
+        assert_ne!(
+            messages[0]["prompt_cache_key"],
+            messages[1]["prompt_cache_key"]
+        );
+    }
 
     let socket = socket::SocketProbe::start().await?;
     bounded(socket.send_unrouted(false)).await??;

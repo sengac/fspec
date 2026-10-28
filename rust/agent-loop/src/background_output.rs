@@ -30,6 +30,8 @@ use codelet_rpc_types::{
 mod background_compaction;
 #[path = "background_recovery.rs"]
 mod background_recovery;
+#[path = "background_settlement.rs"]
+mod background_settlement;
 #[path = "response_attempt_checkpoint.rs"]
 mod response_attempt_checkpoint;
 use codelet_sessions::background_session::BackgroundSession;
@@ -99,28 +101,30 @@ impl LoopDetectionWiring {
 /// session's existing interrupt machinery cancels the in-flight provider
 /// stream, the degenerate tail is dropped from persisted content, and a
 /// corrective note is staged for the next turn.
+#[derive(Clone)]
 pub struct BackgroundOutput {
     pub(crate) session: Arc<BackgroundSession>,
-    journal: std::sync::Mutex<crate::stream_journal::StreamJournal>,
+    journal: Arc<std::sync::Mutex<crate::stream_journal::StreamJournal>>,
+    persistence_failed: Arc<std::sync::atomic::AtomicBool>,
     /// REFAC-007: Accumulated assistant content blocks for current turn
-    assistant_content: std::sync::Mutex<Vec<AssistantContent>>,
-    response_attempt: std::sync::Mutex<Option<ResponseAttemptCheckpoint>>,
+    assistant_content: Arc<std::sync::Mutex<Vec<AssistantContent>>>,
+    response_attempt: Arc<std::sync::Mutex<Option<ResponseAttemptCheckpoint>>>,
     /// REFAC-007: Current provider name for message envelope
     provider: String,
     /// HOOK-013: Track last tool call name+args for post_tool_use hooks
-    last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>,
+    last_tool_call: Arc<std::sync::Mutex<Option<(String, serde_json::Value)>>>,
     /// RIG-014: Streaming loop detector for the thinking channel.
-    thinking_loop_detector: std::sync::Mutex<StreamLoopDetector>,
+    thinking_loop_detector: Arc<std::sync::Mutex<StreamLoopDetector>>,
     /// RIG-014: Streaming loop detector for the text channel.
-    text_loop_detector: std::sync::Mutex<StreamLoopDetector>,
+    text_loop_detector: Arc<std::sync::Mutex<StreamLoopDetector>>,
     /// RIG-014: Shared warn→abort escalation policy across both channels.
-    loop_escalation_policy: std::sync::Mutex<LoopEscalationPolicy>,
+    loop_escalation_policy: Arc<std::sync::Mutex<LoopEscalationPolicy>>,
     /// RIG-014: Wall-clock instant of the last loop trigger (elapsed-time
     /// basis for the escalation policy).
-    loop_last_trigger_at: std::sync::Mutex<Option<std::time::Instant>>,
+    loop_last_trigger_at: Arc<std::sync::Mutex<Option<std::time::Instant>>>,
     /// RIG-014: True once a loop abort has fired this turn (prevents
     /// re-feeding deltas into the detectors after the stream is cancelled).
-    loop_abort_fired: std::sync::Mutex<bool>,
+    loop_abort_fired: Arc<std::sync::Mutex<bool>>,
     /// PROV-145: Per-turn loop-detection wiring (profile-resolved detector
     /// thresholds + the retry cap the agent loop reads after an abort).
     loop_wiring: LoopDetectionWiring,
@@ -137,19 +141,22 @@ impl BackgroundOutput {
         let loop_wiring = loop_wiring.unwrap_or_default();
         let detector = StreamLoopDetector::with_config(loop_wiring.detector_config());
         Self {
-            journal: std::sync::Mutex::new(crate::stream_journal::StreamJournal::new(session.id)),
-            session,
-            assistant_content: std::sync::Mutex::new(Vec::new()),
-            response_attempt: std::sync::Mutex::new(None),
-            provider,
-            last_tool_call: std::sync::Mutex::new(None),
-            thinking_loop_detector: std::sync::Mutex::new(detector.clone()),
-            text_loop_detector: std::sync::Mutex::new(detector),
-            loop_escalation_policy: std::sync::Mutex::new(LoopEscalationPolicy::new(
-                std::time::Duration::from_secs(RIG014_LOOP_ABORT_COOLDOWN_SECS),
+            persistence_failed: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            journal: Arc::new(std::sync::Mutex::new(
+                crate::stream_journal::StreamJournal::new(session.id),
             )),
-            loop_last_trigger_at: std::sync::Mutex::new(None),
-            loop_abort_fired: std::sync::Mutex::new(false),
+            session,
+            assistant_content: Arc::new(std::sync::Mutex::new(Vec::new())),
+            response_attempt: Arc::new(std::sync::Mutex::new(None)),
+            provider,
+            last_tool_call: Arc::new(std::sync::Mutex::new(None)),
+            thinking_loop_detector: Arc::new(std::sync::Mutex::new(detector.clone())),
+            text_loop_detector: Arc::new(std::sync::Mutex::new(detector)),
+            loop_escalation_policy: Arc::new(std::sync::Mutex::new(LoopEscalationPolicy::new(
+                std::time::Duration::from_secs(RIG014_LOOP_ABORT_COOLDOWN_SECS),
+            ))),
+            loop_last_trigger_at: Arc::new(std::sync::Mutex::new(None)),
+            loop_abort_fired: Arc::new(std::sync::Mutex::new(false)),
             loop_wiring,
         }
     }
@@ -348,6 +355,8 @@ impl BackgroundOutput {
     }
 
     fn report_persistence_failure(&self, error: &str) {
+        self.persistence_failed
+            .store(true, std::sync::atomic::Ordering::Release);
         tracing::error!(session_id = %self.session.id, error, "conversation persistence requires recovery");
         self.session.handle_output(StreamChunk::error(format!(
             "Conversation persistence requires recovery: {error}"
@@ -357,9 +366,27 @@ impl BackgroundOutput {
             .store(true, std::sync::atomic::Ordering::Release);
         self.session.interrupt_notify.notify_one();
     }
+
+    pub(crate) fn persistence_failed(&self) -> bool {
+        self.persistence_failed
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
 }
 
 impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
+    fn acknowledge_interruption(&self) {
+        self.session.handle_output(StreamChunk::user_notification(
+            "Interruption requested; settling durable outcomes.".into(),
+            NotificationSeverity::Info,
+        ));
+    }
+
+    fn settlement_emitter(
+        &self,
+    ) -> Result<Option<Arc<dyn codelet_cli::interactive::StreamOutput>>, String> {
+        self.owned_settlement_emitter().map(Some)
+    }
+
     fn emit_tool_cancellation(&self, result: codelet_cli::interactive::ToolResultEvent) {
         let admission = self
             .journal

@@ -1,6 +1,6 @@
 //! Feature: spec/features/codex-reconnect-stream-consistency.feature
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "fixtures/reconnect_consistency.rs"]
 mod support;
 

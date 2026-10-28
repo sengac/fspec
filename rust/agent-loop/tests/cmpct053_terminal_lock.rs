@@ -9,7 +9,7 @@ use serial_test::serial;
 use tokio::sync::mpsc;
 
 #[path = "support/terminal_recovery.rs"]
-mod support;
+pub mod support;
 use support::fixture;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

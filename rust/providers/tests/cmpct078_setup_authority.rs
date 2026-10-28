@@ -13,7 +13,7 @@ use std::sync::{
 };
 
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 

@@ -1,23 +1,25 @@
 //! Feature: spec/features/cold-resume-compaction-failure-gate.feature
 
 #[path = "cmpct083/application.rs"]
-mod application;
+pub mod application;
+#[path = "cmpct083/codex.rs"]
+pub mod codex;
 #[path = "cmpct083/custom.rs"]
-mod custom;
+pub mod custom;
 #[path = "cmpct083/fixture.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "cmpct083/negative.rs"]
-mod negative;
+pub mod negative;
 #[path = "cmpct083/negative_transport.rs"]
-mod negative_transport;
+pub mod negative_transport;
 #[path = "cmpct083/originals.rs"]
-mod originals;
+pub mod originals;
 #[path = "cmpct083/runtime.rs"]
-mod runtime;
+pub mod runtime;
 #[path = "cmpct083/transport.rs"]
-mod transport;
+pub mod transport;
 #[path = "cmpct083/zai.rs"]
-mod zai;
+pub mod zai;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]

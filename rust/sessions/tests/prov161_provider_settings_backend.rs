@@ -11,7 +11,7 @@ use serde_json::{json, Value};
 use serial_test::serial;
 
 #[path = "common/profile_rpc_helpers.rs"]
-mod helpers;
+pub mod helpers;
 
 fn runtime_definition() -> ProfileDefinition {
     ProfileDefinition {

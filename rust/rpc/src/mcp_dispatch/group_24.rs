@@ -45,11 +45,11 @@ pub(super) mod set_debug_enabled {
         let args: Args =
             serde_json::from_value(value).map_err(|e| InvokeError::Arguments(e.to_string()))?;
         let _ = &args;
-        let value = client
+        client
             .set_debug_enabled(tarpc::context::current(), args.session_id, args.enabled)
             .await
             .map_err(|e| InvokeError::Transport(e.to_string()))?;
-        serde_json::to_value(value).map_err(|e| InvokeError::Serialization(e.to_string()))
+        serde_json::to_value(()).map_err(|e| InvokeError::Serialization(e.to_string()))
     }
 }
 pub(super) mod toggle_debug {

@@ -10,7 +10,7 @@ use serde_json::json;
 use std::sync::{Arc, Mutex};
 
 #[path = "fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 type Final = rig::providers::openai::responses_api::streaming::StreamingCompletionResponse;

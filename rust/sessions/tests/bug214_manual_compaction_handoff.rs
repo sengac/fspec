@@ -1,5 +1,5 @@
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use std::sync::{atomic::Ordering, Arc, Mutex, PoisonError};
 use std::time::Duration;

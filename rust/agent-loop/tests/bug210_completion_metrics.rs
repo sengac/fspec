@@ -1,7 +1,7 @@
 //! Feature: spec/features/automatic-compaction-completion-metrics.feature
 
 #[path = "support/bug210_completion_metrics.rs"]
-mod support;
+pub mod support;
 
 #[path = "support/completion_observer.rs"]
 mod completion_observer;

@@ -1,3 +1,4 @@
+@done
 @BUG-272
 @cli
 @providers
@@ -54,3 +55,9 @@ Feature: Preserve Codex history after terminal provider errors
     Then the original call and checkpoint remain unchanged
     And replay fails explicitly before sending a request
     And no successful completion or invented tool outcome is published
+
+  Scenario: Network setup failure preserves completed work across cold resume
+    Given a Codex batch has completed a filesystem change and a genuine tool error
+    When the continuation connection closes before response headers arrive
+    Then the setup failure is explicit and every original call and outcome remains unchanged
+    And cold resume replays each real outcome exactly once without repeating side effects

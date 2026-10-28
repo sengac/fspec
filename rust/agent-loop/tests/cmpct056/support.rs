@@ -95,7 +95,11 @@ impl Fixture {
     pub fn start(&self) -> tokio::task::JoinHandle<Result<String, codelet_tools::ToolError>> {
         let tool = self.tool(&self.caller);
         let target = self.target.id.to_string();
+        let caller = self.caller.id;
+        let project = self.directory.path().to_path_buf();
         tokio::spawn(async move {
+            let _admission = codelet_tools::tool_admission::register_auxiliary(caller, project)
+                .expect("trusted synthetic compaction caller");
             tool.call(GenerateCompactionArgs {
                 session_id: Some(target),
             })

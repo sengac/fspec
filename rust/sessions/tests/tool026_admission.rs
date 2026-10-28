@@ -4,7 +4,7 @@ mod auxiliary;
 #[path = "tool026_admission/delegation.rs"]
 mod delegation;
 #[path = "bug231_support/mod.rs"]
-mod fixture;
+pub mod fixture;
 #[path = "tool026_admission/parser_properties.rs"]
 mod parser_properties;
 #[path = "tool026_admission/provider_execution.rs"]

@@ -53,20 +53,29 @@ where
     let mut input_observation = codelet_core::compaction::InputUsageObservation::default();
     loop {
         if is_interrupted.load(Acquire) {
+            output.acknowledge_interruption();
             let queued = input_queue
                 .as_mut()
                 .map(|queue| queue.dequeue_all())
                 .unwrap_or_default();
-            output.emit_interrupted(&queued);
             record_tool_cancellations(
                 session,
                 &mut state.tool_calls_buffer,
                 output,
                 CancellationReason::UserInterruption,
-            )?;
+            )
+            .await?;
             state.finish_history(session, session_id)?;
             set_tool_progress_callback(session_id, None);
-            output.emit_done_with_stop_reason(None);
+            super::super::interruption::publish_settlement(
+                output,
+                vec![
+                    super::super::output::StreamEvent::Interrupted(queued),
+                    super::super::output::StreamEvent::Done(None),
+                ],
+                false,
+            )
+            .await?;
             return Ok(GeminiContinuationResult::Finished {
                 display: state.display,
             });
@@ -91,7 +100,8 @@ where
                     &mut state.tool_calls_buffer,
                     output,
                     CancellationReason::Unspecified,
-                )?;
+                )
+                .await?;
             }
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::ToolCall(tool_call),
@@ -132,7 +142,8 @@ where
                         &mut state.tool_calls_buffer,
                         output,
                         CancellationReason::AcceptedCompletion,
-                    )?;
+                    )
+                    .await?;
                     state.finish_history(session, session_id)?;
                     apply_finish_with_summary(session, session_id, &summary, output);
                     set_tool_progress_callback(session_id, None);

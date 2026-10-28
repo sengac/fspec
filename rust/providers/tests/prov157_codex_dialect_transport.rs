@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 
 #[path = "fixtures/prov151.rs"]
 pub mod fixture;
+use fixture::previous::terminal;
 use fixture::*;
 
 #[derive(Clone)]

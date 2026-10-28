@@ -21,16 +21,14 @@ const DEADLINE: Duration = Duration::from_secs(5);
 const DAG: &str = "<system-reminder><!-- type:compaction-dag -->committed DAG</system-reminder>";
 
 fn response(id: &str, tools: bool) -> Value {
-    let mut response = json!({"type":"response.completed","response":{"id":id,"status":"completed","output":[
-        {"type":"message","id":format!("msg_{id}"),"role":"assistant","content":[{"type":"output_text","text":"Hello"}]},
-        {"type":"reasoning","id":format!("reasoning_{id}"),"summary":[{"type":"summary_text","text":"Plan"}]}
-    ],"usage":{"input_tokens":12,"output_tokens":8,"total_tokens":20}}});
+    let mut output = vec![
+        json!({"type":"message","id":format!("msg_{id}"),"role":"assistant","content":[{"type":"output_text","text":"Hello"}]}),
+        json!({"type":"reasoning","id":format!("reasoning_{id}"),"summary":[{"type":"summary_text","text":"Plan"}]}),
+    ];
     if tools {
-        response["response"]["output"].as_array_mut().expect("fixture output array").push(
-            json!({"type":"function_call","id":"fc_test","call_id":"call_test","name":"inspect","arguments":"{}","status":"completed"}),
-        );
+        output.push(json!({"type":"function_call","id":"fc_test","call_id":"call_test","name":"inspect","arguments":"{}","status":"completed"}));
     }
-    response
+    json!({"type":"response.completed","response":{"id":id,"status":"completed","output":output,"usage":{"input_tokens":12,"output_tokens":8,"total_tokens":20}}})
 }
 
 async fn setup(

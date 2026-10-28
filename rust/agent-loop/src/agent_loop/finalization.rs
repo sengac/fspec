@@ -14,6 +14,12 @@ pub(super) async fn settle_turn_result(
     state: &mut LoopState,
     output: &BackgroundOutput,
 ) {
+    if output.persistence_failed() {
+        state.compaction_retry_input = None;
+        let _ = session.take_pending_loop_abort_note();
+        session.set_status(SessionStatus::Interrupted);
+        return;
+    }
     if let Err(error) = result {
         let recovery = if builder_retry_failed {
             Ok(false)
@@ -74,6 +80,9 @@ pub(super) fn schedule_loop_retry(
     output: &BackgroundOutput,
     state: &mut LoopState,
 ) {
+    if output.persistence_failed() {
+        return;
+    }
     if session.has_pending_loop_abort_note() {
         let loop_abort_retry_cap = output.loop_wiring().max_retries as usize;
         if state.loop_abort_retry_count < loop_abort_retry_cap {

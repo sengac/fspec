@@ -2,8 +2,8 @@
 //! Feature: spec/features/prov159-lifecycle-regressions.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::auth_lifecycle::{cancel_login, LoginAttempt};
 use codelet_providers::codex::codex_auth::{delete_codex_auth, read_codex_auth, write_codex_auth};

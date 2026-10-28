@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-27T08:07:32.096Z",
+    "lastUpdated": "2026-10-28T05:21:19.841Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 274,
+    "BUG": 279,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -98,7 +98,8 @@
     "LAYA": 9,
     "AUDIT": 2,
     "RLCD": 4,
-    "MENU": 11
+    "MENU": 11,
+    "CLA": 1
   },
   "states": {
     "backlog": [
@@ -257,16 +258,12 @@
     "testing": [
       "AGENT-014",
       "AGENT-017",
-      "PROV-094",
-      "BUG-271",
-      "BUG-272"
+      "PROV-094"
     ],
     "implementing": [
       "AUDIT-002"
     ],
-    "validating": [
-      "BUG-274"
-    ],
+    "validating": [],
     "done": [
       "AGENT-018",
       "AGENT-020",
@@ -1894,7 +1891,16 @@
       "PROV-162",
       "CONT-011",
       "BUG-270",
-      "BUG-273"
+      "BUG-273",
+      "BUG-276",
+      "BUG-277",
+      "BUG-275",
+      "CLA-001",
+      "BUG-271",
+      "BUG-272",
+      "BUG-274",
+      "BUG-278",
+      "BUG-279"
     ],
     "blocked": [
       "QUERY-001",
@@ -251205,9 +251211,9 @@
       "id": "BUG-271",
       "title": "Isolate unreadable session manifests so legacy or corrupt history cannot block new sessions",
       "type": "bug",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2026-10-26T22:00:30.775Z",
-      "updatedAt": "2026-10-26T22:15:07.938Z",
+      "updatedAt": "2026-10-28T02:45:30.076Z",
       "description": "P1: Historical unreadable session manifests globally block session store initialization, agent/model selection flow and new sessions. Remote log reports EOF at line 1 column 0 for b8c05474-d2ef-4bb9-83f6-899278219946.json on Linux. Source-confirmed global scan failure and misleading missing-model decline; remote file contents and old/new versions unknown. User authorized implementation after attaching research. Preserve source bytes and unknown-reference safety, isolate individual unreadable entries with visible diagnostics, keep healthy/new sessions usable and targeted restore errors strict. See attached bug271-manifest-research.md and recorded rules/examples.",
       "children": [],
       "stateHistory": [
@@ -251218,6 +251224,21 @@
         {
           "state": "testing",
           "timestamp": "2026-10-26T22:07:00.828Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T01:18:27.319Z",
+          "reason": "Resolved mandatory feature/test-file gate without removing acceptance: unchanged checked-creation scenario now has its own feature/mapping, original spec and mappings attached for recovery. Existing implementation remains intact. Fresh isolated validation will cover all 13 acceptance scenarios; investigating the pre-existing PROV-101 fixture failure before proceeding to validating."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T01:51:30.993Z",
+          "reason": "All 13 acceptance scenarios pass under approved FSPEC_USER_DIR/XDG isolation: core 7, checked creation 1, both-transport UI 5. PROV-101 ENOENT fixture pollution diagnosed and fixed by store reset; full control 3/3, assertions unchanged. All 21 trace chains now have single/current bounded mappings, original feature/coverage attached. Actual default/fixture builds, check, four Clippy -D warnings groups and 120 final tests/35 targets pass. Evidence attached; global tags retain 522 unrelated pre-existing failures."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T02:42:00.754Z",
+          "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
         }
       ],
       "relatesTo": [
@@ -251379,11 +251400,25 @@
           "text": "Executable core RED captured in /tmp/bug271-core-red.log: seven real filesystem tests ran, three preservation/legacy/store-error controls passed and four isolation/strict-target/cold-repair scenarios failed at the existing global manifest scan. This is behavioral failure, not a compiler error. Beginning minimal core repair after updating test coverage mappings.",
           "deleted": false,
           "createdAt": "2026-10-26T22:15:07.938Z"
+        },
+        {
+          "id": 9,
+          "text": "2026-10-28 bounded reassessment: current core, checked creation and both RPC/TUI transports already implement the repair; no replay, cleanup or durable-promotion semantics need relaxing. Workflow transition rejected session-storage-diagnostics because it maps two test files. Split its checked-creation scenario unchanged into checked-session-creation.feature (same BUG-271 tag and same sessions test); retain five transport/UI scenarios in the original. Original six-scenario feature and coverage are attached for recovery. Core coverage also contains duplicate stale line ranges: preserve its original attached JSON, then reconcile to the same seven scenarios and current sources. This changes organization/traceability only, removes no acceptance requirement, and makes no remote-schema or affected-session-repair claim.",
+          "deleted": false,
+          "createdAt": "2026-10-28T01:09:00.190Z"
         }
       ],
-      "nextNoteId": 9,
+      "nextNoteId": 10,
       "attachments": [
-        "spec/attachments/BUG-271/bug271-manifest-research.md"
+        "spec/attachments/BUG-271/bug271-manifest-research.md",
+        "spec/attachments/BUG-271/bug271-coverage-before-reconciliation.json",
+        "spec/attachments/BUG-271/bug271-session-storage-before-split.feature",
+        "spec/attachments/BUG-271/bug271-session-storage-coverage-before-split.json",
+        "spec/attachments/BUG-271/bug271-272-274-safety-and-history.md",
+        "spec/attachments/BUG-271/bug271-acdd-completion.md",
+        "spec/attachments/BUG-271/bug271-272-274-final-recovery.json",
+        "spec/attachments/BUG-271/bug271-272-274-recovery-gates.log",
+        "spec/attachments/BUG-271/bug271-272-274-final-recovery.md"
       ],
       "estimate": 5
     },
@@ -251391,13 +251426,20 @@
       "id": "BUG-272",
       "title": "Terminal API error cleanup deletes accepted tool outcomes and breaks Codex replay",
       "type": "bug",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2026-10-26T22:19:01.671Z",
-      "updatedAt": "2026-10-27T08:07:32.091Z",
-      "description": "Report describes server_is_overloaded followed by 'Removed the failed tool call from context' and, on the next user message, 'Codex replay has no recorded outcome for call call_f4188cdf891546a4a81c9ad7c65a01c2'. Investigate generic terminal-error tail stripping versus Codex committed lineage and outcome replay; preserve valid completed calls and recover safely without repeating side effects. Research-only intake; no implementation requested.",
+      "updatedAt": "2026-10-28T02:45:30.848Z",
+      "description": "FIX REQUIRED: terminal provider error cleanup removes accepted calls/results from active history while Codex retains committed call ancestry, making the next turn fail with MissingOutcome. Existing overload incident is now corroborated by the 2026-10-27 network-setup failure: original session d56fde15-6c2d-463d-aefd-7ec6e1fdbac5 positions 554/555 contain the successful call/result for call_c324aa98a5e44ca39cfdb63dc71a0608 despite the subsequent replay refusal. Complete the existing RED-first implementation and preserve genuine outcomes without repeating side effects, fabricating outputs or weakening replay guards. Retain current testing state and existing feature/tests. Attached follow-up evidence and game plan replace the earlier research-only intent.",
       "children": [],
       "attachments": [
-        "spec/attachments/BUG-272/BUG-272-api-error-replay-research.md"
+        "spec/attachments/BUG-272/BUG-272-api-error-replay-research.md",
+        "spec/attachments/BUG-272/bug272-replay-followup-fix-plan.md",
+        "spec/attachments/BUG-272/bug271-272-274-validation-results.json",
+        "spec/attachments/BUG-272/bug272-durable-control-coverage-before-fixture-update.json",
+        "spec/attachments/BUG-272/bug272-post-clean-consolidated-red.log",
+        "spec/attachments/BUG-272/bug272-final-acceptance.log",
+        "spec/attachments/BUG-272/bug272-acdd-completion.md",
+        "spec/attachments/BUG-272/bug271-272-274-final-recovery.md"
       ],
       "stateHistory": [
         {
@@ -251407,6 +251449,21 @@
         {
           "state": "testing",
           "timestamp": "2026-10-26T22:50:28.709Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T01:07:15.781Z",
+          "reason": "Consolidated per workflow gate: single feature/single test file, six scenarios mapped. Valid admitted filesystem fixture RED in /tmp/bug272-post-clean-consolidated-red.log: 1 passed (missing outcome), 5 failed (history removal or false success). Network scenario asserts both real writes and genuine results before the failing propagation assertion. No production edits yet."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T01:52:24.116Z",
+          "reason": "Admitted causal RED 1/5 before minimal guard, final fresh GREEN 6/6. All 120 final scoped tests across 35 targets pass, including real setup/cold resume, replay/checkpoint, genuine errors, missing-outcome refusal, legacy 15 controls, accepted/interruption batches, selected overflow and strict durable no-substitute controls. Exact failed/superseded checks, all build/check/four Clippy -D warnings groups and coverage evidence attached. No prior validation queue is resumed; only this bounded task's current acceptance/regression selection is claimed."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T02:42:11.943Z",
+          "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
         }
       ],
       "userStory": {
@@ -251462,9 +251519,19 @@
           "text": "Integration: protect the shared CLI/NAPI streaming terminal-error arm before legacy BUG-170/BUG-185 tail surgery when the active provider owns Codex checkpoint ancestry. Keep earlier recovery and explicit final error behavior. Exercise real streaming consumption against scripted HTTP transport and temp filesystem stores; retain replay guards.",
           "deleted": false,
           "createdAt": "2026-10-26T22:49:38.196Z"
+        },
+        {
+          "id": 1,
+          "text": "2026-10-28 validation rationale: valid consolidated RED was 1 pass/5 fail after fixing the fixture to provide NONE plus registered auxiliary admission; initial attribution-failure runs are not accepted as causal RED. Minimal production change excludes active Codex sessions from legacy tail surgery, retaining explicit Err and all earlier recovery. Adjacent docs now describe this boundary. Requested durable no-substitute regression controls initially failed before reaching their intended behavior because their fixture had no data directory, durable manifest/originals or selected model. Seed real temporary persistence and select the offline test model, serialize the global-state tests, retain every original assertion and additionally compare durable manifest bytes; do not alter compaction production logic or add fallback. BUG-273 index controls require the existing FSPEC_INDEX_DIAGNOSTIC_ROOT setup, not source changes. Scoped permission was granted to triage the OAuth fixture's subprocess-local temporary CODEX_HOME/mock keyring only; never repurpose agent HOME/CODEX_HOME or touch live credentials.",
+          "deleted": false,
+          "createdAt": "2026-10-28T01:30:27.097Z"
         }
       ],
-      "nextNoteId": 1
+      "nextNoteId": 2,
+      "relatesTo": [
+        "BUG-275"
+      ],
+      "estimate": 5
     },
     "BUG-273": {
       "id": "BUG-273",
@@ -251587,16 +251654,19 @@
         "spec/attachments/BUG-273/bug273-final-validation.md",
         "spec/attachments/BUG-273/bug273-final-results.json",
         "spec/attachments/BUG-273/bug273-closure.json"
+      ],
+      "relatesTo": [
+        "BUG-277"
       ]
     },
     "BUG-274": {
       "id": "BUG-274",
-      "title": "Restore manifest diagnostics required by default RPC and Fspec builds",
+      "title": "Verify existing manifest diagnostics and default RPC/Fspec build integration",
       "type": "bug",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-10-27T07:23:43.907Z",
-      "updatedAt": "2026-10-27T07:44:59.191Z",
-      "description": "The staged RPC/UI diagnostics call a missing core session_manifest_issues API. Add real non-draining per-manifest diagnostics and isolate unreadable historical entries without weakening targeted reads or cleanup; validate actual default RPC/CLI/Fspec binary and supported fixture features. Correct BUG-273 validation scope documentation.",
+      "updatedAt": "2026-10-28T02:45:31.618Z",
+      "description": "The real public persistence::session_manifest_issues facade and default RPC consumer now exist. Verify stable non-draining damaged-manifest diagnostics, strict target reads and unknown-reference cleanup, and actual default RPC/CLI/Fspec binary plus rpc/test-fixture and fspec/test-stub-provider builds and warnings-denied Clippy. Preserve original missing-API intake in architecture notes and the accurate historical BUG-273 six-library validation scope; add current clarification without rewriting past results. Live default-daemon API snapshots were twice empty and identical: availability evidence only, not damaged-fixture proof or live-history repair.",
       "children": [],
       "stateHistory": [
         {
@@ -251614,6 +251684,11 @@
         {
           "state": "validating",
           "timestamp": "2026-10-27T07:44:59.191Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T02:42:21.996Z",
+          "reason": "Recovered final verification: original 120 passing tests/35 targets and 21 acceptance scenarios independently reconstructed from exact receipts; fresh five-feature syntax/tag/coverage gates and single current bounded trace chains pass. Relevant sources predate completed validation, no builds/tests duplicated, actual user config hash unchanged. Session uses codex/gpt-6.1-sol and is Idle. Terminal session compaction was rejected for checkpoint lineage mismatch; no compaction promoted or recovery file pending, committed provider-state digest/prefix valid. This live compaction failure remains unresolved and is not a successful compaction or live repair claim. Global 522 unrelated tag failures and original OAuth timing limitation remain recorded. Existing attachments and fresh recovery receipt retain evidence; no unrelated card changes."
         }
       ],
       "userStory": {
@@ -251657,10 +251732,722 @@
           "text": "Existing staged BUG-271 RPC/UI calls predate BUG-273 and reference an absent core API. Prior six-library check/Clippy omitted RPC and the final binary. Supply one shared read-only manifest discovery path for session loading and diagnostics; keep target errors and unknown-reference cleanup strict. Preserve user staging and existing UI/RPC edits. Validate default binary, RPC test-fixture and Fspec test-stub-provider features.",
           "deleted": false,
           "createdAt": "2026-10-27T07:26:25.386Z"
+        },
+        {
+          "id": 1,
+          "text": "2026-10-28 bounded reassessment: persistence::session_manifest_issues is already public in rust/core/src/persistence/mod.rs:44 and implemented by manifest_discovery.rs; default RPC calls it at rust/rpc/src/lib.rs:1328. The original missing-API diagnosis describes historical intake, not the current tree. Preserve those notes; closure now requires fresh facade, actual default RPC/CLI/Fspec binary and supported fixture build/Clippy evidence, plus shared strict-target/cleanup controls. No stub, replacement API, remote-schema claim or live-history repair is warranted.",
+          "deleted": false,
+          "createdAt": "2026-10-28T01:03:09.447Z"
+        },
+        {
+          "id": 2,
+          "text": "Recoverable original intake title: Restore manifest diagnostics required by default RPC and Fspec builds. Original description: The staged RPC/UI diagnostics call a missing core session_manifest_issues API. Add real non-draining per-manifest diagnostics and isolate unreadable historical entries without weakening targeted reads or cleanup; validate actual default RPC/CLI/Fspec binary and supported fixture features. Correct BUG-273 validation scope documentation. Current clarification: spec/attachments/BUG-273/bug273-final-validation.md accurately reports the historical six-library check/Clippy scope (core/tools/providers/cli/sessions/agent-loop); it does not claim RPC or final binary validation. Do not rewrite those past results. This card supplies new actual RPC/final-binary and fixture evidence separately. Controller live API snapshots twice returned [] without errors; that proves current API availability only.",
+          "deleted": false,
+          "createdAt": "2026-10-28T01:18:51.818Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 3,
+      "attachments": [
+        "spec/attachments/BUG-274/bug274-acdd-completion.md",
+        "spec/attachments/BUG-274/bug271-272-274-final-recovery.md"
+      ]
+    },
+    "BUG-275": {
+      "id": "BUG-275",
+      "title": "Make Escape acknowledgement independent of expensive cancellation persistence",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-27T09:58:40.174Z",
+      "updatedAt": "2026-10-27T23:09:05.296Z",
+      "description": "FIX REQUIRED: isolated debug profiling at e486b5bf measured interrupt RPC acknowledgement in 5.2 ms but approximately 3.80 seconds more before Idle. record_tool_cancellations runs before emit_interrupted and synchronously persists an assistant message plus synthetic tool outcome; samples show two global-index rewrites dominated by unbuffered writes and some store-lock contention. This cancellation gate was added by 2699693b; full-index rewriting predates it. Separate prompt visible cancellation acknowledgement from safe durable settlement, optimize index publication without weakening integrity, and preserve exactly-once outcomes. See attached evidence and ACDD implementation plan. Related worker cancellation and prompt-admission races have separate cards.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T10:03:07.057Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T12:32:23.754Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T12:41:34.990Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T13:00:00.223Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T13:05:45.877Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T13:08:29.365Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T13:26:16.208Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T13:43:57.561Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Escape acknowledgement is not delayed by persistence; safe durable settlement still gates the next turn and successful completion.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.174Z"
+        },
+        {
+          "id": 1,
+          "text": "Cancellation preserves real completed outcomes and records unresolved tool outcomes truthfully exactly once, including crash/reopen and persistence failures.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.290Z"
+        },
+        {
+          "id": 2,
+          "text": "Index publication uses bounded buffered writes while retaining compatible layout, synchronization, atomic promotion and integrity checks.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.409Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Hold cancellation persistence at a barrier, press Escape, and observe acknowledgement before release while a new inference turn remains inadmissible.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.529Z"
+        },
+        {
+          "id": 1,
+          "text": "Cancel an executing tool with a large synthetic index; settle and cold reopen to find one original assistant call and one truthful outcome without per-entry unbuffered writes.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.651Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implement the attached ACDD game plan. Preserve settlement ownership; moving work to spawn_blocking or setting Idle early is not sufficient. Coordinate shared stream-loop changes with BUG-272/276/277.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:18.773Z"
+        },
+        {
+          "id": 1,
+          "text": "Suggested execution order: complete BUG-272 replay preservation, fix BUG-276 lost startup interrupts, implement BUG-277 worker cancellation, then finalize BUG-275 settlement/index optimization and joint profiling. These are related fixes, not artificial blocking dependencies; parallel work requires explicit file ownership.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:04:46.528Z"
+        },
+        {
+          "id": 2,
+          "text": "Nonterminal interruption acknowledgement must bypass message/journal settlement. Required synthetic outcomes and final Interrupted/Done publication run through one awaited owned emitter sharing the original journal, assistant buffer and response checkpoint. A session-owned async settlement gate remains held by the actual blocking worker even if the outer task is abandoned; admission awaits it and IdleOnDrop cannot advertise Idle/Done while it is held. Persistence failure leaves Interrupted and suppresses automatic recovery inference. Index writes use a bounded 64KiB buffer with explicit flush, cancellation checks before sync/promotion, and unchanged compatible format, atomic promotion and directory-sync boundaries.",
+          "deleted": false,
+          "createdAt": "2026-10-27T13:18:35.014Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/BUG-275/bug275-cancellation-fix-plan.md",
+        "spec/attachments/BUG-275/bug275-acdd-evidence.md"
+      ],
+      "relatesTo": [
+        "BUG-272",
+        "BUG-276",
+        "BUG-277"
+      ],
+      "userStory": {
+        "role": "session owner",
+        "action": "see interruption acknowledgement immediately while durable settlement remains safe",
+        "benefit": "I can stop work without losing truthful outcomes or admitting overlapping turns"
+      },
+      "estimate": 8
+    },
+    "BUG-276": {
+      "id": "BUG-276",
+      "title": "Preserve Escape interruption received during prompt persistence and startup",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-27T09:58:53.608Z",
+      "updatedAt": "2026-10-27T23:09:09.753Z",
+      "description": "FIX REQUIRED: admit_prompt persists user input synchronously and then calls reset_interrupt, discarding Escape received while persistence is blocked. An isolated copied-store run accepted input at 09:43:02 UTC, acknowledged interrupt at 09:43:26 in 15.2 ms, then finished recovery at 09:46:19 and invoked the model and SessionSearch despite cancellation. The reset ordering predates 2699693b; slower persistence enlarges the race. Preserve per-turn cancellation ownership/epochs through queued input, hooks, persistence and inference admission. Never dispatch inference after cancellation of that input; a genuinely new user input may start a new turn. The full scan was induced by the copied store's absent verification certificate, not proof of repeated live-store scans. Attachments contain evidence and a deterministic ACDD plan.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T10:03:39.231Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T10:34:48.844Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T10:50:27.651Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T10:55:08.441Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T10:57:47.154Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T11:22:58.667Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T11:34:28.317Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T11:41:56.417Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T11:47:26.124Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T11:47:45.655Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T11:50:43.576Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T11:59:10.356Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T11:59:32.088Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "An input interrupted during queueing, hooks, persistence or startup never reaches provider inference or tool dispatch after that cancellation.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.346Z"
+        },
+        {
+          "id": 1,
+          "text": "A genuinely new user input may start normally, but it cannot clear cancellation ownership for an earlier queued or executing input.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.466Z"
+        },
+        {
+          "id": 2,
+          "text": "Cancellation preserves durable original input and truthful terminal state across persistence failure and cold resume without claiming successful completion.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.584Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "While a submitted prompt waits for storage recovery, the user presses Escape; when storage recovers the assistant does not answer or execute any tool for that prompt.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.700Z"
+        },
+        {
+          "id": 1,
+          "text": "After cancelling a blocked prompt, the user submits a new prompt; only the new prompt runs once and the cancelled prompt stays cancelled.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.816Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Reuse interruption epochs and define ownership for PromptInput, supervisor input, manual compaction and retries. Test deterministic admission barriers, not a huge recovery scan. Review the post-persistence reset in agent_loop/prompt.rs and the pre-queue reset in BackgroundSession::send_input.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:39.934Z"
         }
       ],
       "nextNoteId": 1,
-      "estimate": 3
+      "attachments": [
+        "spec/attachments/BUG-276/bug276-startup-interruption-fix-plan.md",
+        "spec/attachments/BUG-276/bug276-acdd-evidence.md"
+      ],
+      "userStory": {
+        "role": "session owner",
+        "action": "cancel submitted input throughout startup",
+        "benefit": "cancelled work never reaches inference or tools"
+      },
+      "relatesTo": [
+        "BUG-275"
+      ],
+      "estimate": 8
+    },
+    "BUG-277": {
+      "id": "BUG-277",
+      "title": "Stop cancelled SessionSearch workers and bound shared-storage lock occupancy",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-27T09:59:08.090Z",
+      "updatedAt": "2026-10-27T23:09:16.252Z",
+      "description": "FIX REQUIRED: e486b5bf offloads SessionSearch to spawn_blocking, but dropping the tool future leaves the blocking closure running. An isolated debug sample at 09:47:40 UTC still shows the cancelled worker loading full histories after its session became Idle at 09:47:34. Subsequent cancellation profiling shows search/persistence contention on the global message-store mutex. Add cooperative cancellation in the actual search/message-reading loops, bounded lock/read batches and safe lease release; reject stale publication and stop abandoned work. Preserve search semantics, hook denial and BUG-273 async responsiveness. Do not equate offloading with cancellation or claim old full-history search costs are new. Attachments include measured evidence and the ACDD game plan.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T10:03:59.389Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T11:19:57.740Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T11:34:52.926Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T12:05:54.218Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-27T12:07:06.912Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T12:14:02.123Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T12:32:12.913Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-27T13:37:26.446Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Cancelling or abandoning an active SessionSearch invocation stops its actual worker at a bounded checkpoint and releases storage ownership without publishing a stale success.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:59.502Z"
+        },
+        {
+          "id": 1,
+          "text": "Search uses bounded storage-lock occupancy so cancellation and unrelated session reads/writes can progress without waiting for a complete large-history scan.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:59.618Z"
+        },
+        {
+          "id": 2,
+          "text": "Uncancelled search semantics, limits, trimming, originals integrity, hook denial and single-worker async responsiveness remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:59.738Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "The user cancels a search through a large history; background scanning stops rather than continuing after the session becomes idle, and another session can save its result.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:59.855Z"
+        },
+        {
+          "id": 1,
+          "text": "A tool invocation is abandoned while its search worker is running; the worker releases storage and never publishes an old result into the next turn.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:03:59.973Z"
+        },
+        {
+          "id": 2,
+          "text": "After I cancel an initial history read, a later history listing still includes every healthy session without a restart, and healthy files are never reported as persistently unreadable.",
+          "deleted": false,
+          "createdAt": "2026-10-27T12:06:04.324Z"
+        },
+        {
+          "id": 3,
+          "text": "A history read encountering a transient operating-system interruption still returns the complete result, but an actual user cancellation stops it instead of being retried forever.",
+          "deleted": false,
+          "createdAt": "2026-10-27T12:06:15.171Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add invocation-scoped cooperative cancellation and a drop guard to the spawn_blocking path; bound inner read batches and lease waits, not only outer session iteration. Retain BUG-273 offloading and generation/integrity validation. Follow the attached RED-first plan.",
+          "deleted": false,
+          "createdAt": "2026-10-27T10:04:00.090Z"
+        },
+        {
+          "id": 1,
+          "text": "Actual Rig ToolServer executes tools in a service task after a request caller drops. Extend the existing tool trait with an opt-in cancel_on_abandon policy (default false), enabled only for read-only SessionSearch. Select cancellation of the invocation reply channel before polling an opted-in queued call and during its execution, so the search drop guard reaches the blocking worker. Keep default mutating-tool execution and genuine errors intact; cover direct/server abandonment, a queued abandoned search, and a non-opted-in counter/latch control. No global interrupt flag or universal tool abort.",
+          "deleted": false,
+          "createdAt": "2026-10-27T12:03:55.567Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/BUG-277/bug277-search-worker-cancellation-fix-plan.md",
+        "spec/attachments/BUG-277/bug277-acdd-evidence.md"
+      ],
+      "userStory": {
+        "role": "session owner",
+        "action": "cancel or abandon history searches without leaving workers behind",
+        "benefit": "unrelated history access and settlement can progress safely"
+      },
+      "relatesTo": [
+        "BUG-275",
+        "BUG-273"
+      ],
+      "estimate": 8
+    },
+    "CLA-001": {
+      "id": "CLA-001",
+      "title": "Eliminate warnings across the complete Rust Clippy matrix",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2026-10-27T19:43:28.820Z",
+      "updatedAt": "2026-10-28T00:37:20.178Z",
+      "description": "User requires zero warnings/errors for full workspace/all-targets Clippy, supported feature modes and separately maintained patched rig-core. Preserve existing behavior, tests, lint levels and unrelated unpublished changes. Record platform/feature/toolchain limitations explicitly. No commits, deployment, daemon restart or project-cache deletion. Operational lint-maintenance task: existing compiler/lint gates are the red/green checks; add focused runtime regressions for behavior-affecting changes.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-27T19:44:15.267Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T19:47:10.797Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T23:00:59.006Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-27T23:12:02.144Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-27T23:17:53.105Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T00:37:20.178Z"
+        }
+      ],
+      "userStory": {
+        "role": "Fspec maintainer",
+        "action": "verify every supported Rust target and feature mode without warnings",
+        "benefit": "compiler diagnostics cannot hide behind scoped checks"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Zero compiler and Clippy diagnostics with -D warnings across the complete supported target/feature matrix, without blanket suppression or target removal.",
+          "deleted": false,
+          "createdAt": "2026-10-27T19:44:15.532Z"
+        },
+        {
+          "id": 1,
+          "text": "Preserve tests, behavior and existing unpublished changes; validate lint repairs with focused regressions where behavior can change.",
+          "deleted": false,
+          "createdAt": "2026-10-27T19:44:15.667Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Default workspace all-targets gate includes actual fspec/RPC/CLI/TUI/NAPI and all available tests/examples; any warning is a failure.",
+          "deleted": false,
+          "createdAt": "2026-10-27T19:44:15.796Z"
+        },
+        {
+          "id": 1,
+          "text": "Full-runtime NAPI and noop modes are checked separately so noop cannot conceal native binding tests.",
+          "deleted": false,
+          "createdAt": "2026-10-27T19:44:15.919Z"
+        },
+        {
+          "id": 2,
+          "text": "Patched rig-core is checked separately; host-unavailable platform checks are reported, never claimed passed.",
+          "deleted": false,
+          "createdAt": "2026-10-27T19:44:16.042Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 8,
+      "attachments": [
+        "spec/attachments/CLA-001/validation.md"
+      ]
+    },
+    "BUG-278": {
+      "id": "BUG-278",
+      "title": "Advance valid Codex checkpoint lineage during durable compaction",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T02:57:48.546Z",
+      "updatedAt": "2026-10-28T04:17:51.996Z",
+      "description": "Valid selected codex/gpt-6.1-sol native session ba15d5a4 failed terminal compaction with generation must advance with a selected model. Durable transcript records compaction_failed; no compaction promoted, committed provider checkpoint generation 1 and prefix verify. Fix first/successive compaction and cold restore through real RED-first fixtures while preserving strict invalid-lineage refusal. Failed live history stays read-only; prior BUG-271/272/274 remain done. See attached issue documentation.",
+      "children": [],
+      "userStory": {
+        "role": "Codex session owner",
+        "action": "compact a valid selected session with durable checkpoint lineage",
+        "benefit": "long work continues safely without losing genuine outcomes or reporting false completion"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T02:58:16.418Z",
+          "reason": "Distinct authorized compaction follow-up; board inspected and no matching open bug, prior three cards remain done."
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T03:07:30.615Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T03:12:34.297Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T03:23:47.665Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T03:23:48.273Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T03:28:08.426Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T03:41:17.689Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T04:15:57.473Z",
+          "reason": "Feature-first causal RED and binding RED followed by implementation; 105 scoped top-level tests pass, production checks, default/fixture builds and all named Clippy -D warnings targets pass. Feature/tag/coverage and owned-format gates pass. Registered final Markdown/JSON receipts document 522 unrelated existing global tag failures, OAuth/Windows limitations, unchanged config/prior work and read-only historical session evidence."
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Valid first and successive selected-Codex compactions must promote real admitted DAG/checkpoint boundaries with advancing compatible lineage, exact selected model identity and successful publication.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:16.550Z"
+        },
+        {
+          "id": 1,
+          "text": "Cold restore and continuation must preserve original history, genuine call/outcome pairs and exactly-once effects across each successful boundary.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:16.681Z"
+        },
+        {
+          "id": 2,
+          "text": "Invalid or stale checkpoint lineage, changed model, missing evidence and candidate mutation must fail explicitly without promotion, fabricated outcomes, fallback, ancestry reset or history truncation.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:16.807Z"
+        },
+        {
+          "id": 3,
+          "text": "Publication failure and lost acknowledgement must block ordinary inference until exact durable-identity reconciliation.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:16.935Z"
+        },
+        {
+          "id": 4,
+          "text": "Use deterministic isolated RED-before-production fixtures, complete traceability and final scoped build/test/Clippy evidence; preserve failed native-session evidence and completed BUG-271/272/274.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.067Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A valid selected codex/gpt-6.1-sol session has durable originals and provider checkpoint generation 1 but no compaction generation; its first real admitted compaction must succeed rather than reject generation advancement.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.194Z"
+        },
+        {
+          "id": 1,
+          "text": "After first and second successful compactions, cold restoration uses the exact committed DAG and checkpoint and the next provider request retains genuine outcomes without repeating tool effects.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.319Z"
+        },
+        {
+          "id": 2,
+          "text": "A deliberately stale or incompatible lineage candidate fails before publication, preserves original manifest/history bytes and leaves inference safely blocked.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.445Z"
+        },
+        {
+          "id": 3,
+          "text": "A promoted boundary whose publication failed accepts reconciliation only for its exact durable identity.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.570Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Separate authorized follow-up to completed BUG-271/272/274. Discover daemon by lsof/cwd; preserve ba15d5a4 history as read-only evidence. Source error originates in providers/codex/history_generation.rs::prepare_generation; investigate selected provider checkpoint versus durable compaction generation before choosing a fix. Existing BUG-212 strict refusal is a safety control, not permission to weaken assertions.",
+          "deleted": false,
+          "createdAt": "2026-10-28T02:58:17.695Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/BUG-278/fspec-codex-compaction-issue.md",
+        "spec/attachments/BUG-278/bug278-causal-evidence.md",
+        "spec/attachments/BUG-278/bug278-final-validation.md",
+        "spec/attachments/BUG-278/bug278-final-validation.json",
+        "spec/attachments/BUG-278/bug278-controller-verification.json"
+      ],
+      "estimate": 8
+    },
+    "BUG-279": {
+      "id": "BUG-279",
+      "title": "Align native Codex device-code login with official JSON protocol",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T04:26:06.762Z",
+      "updatedAt": "2026-10-28T05:21:19.841Z",
+      "description": "Roland reports an error choosing Sign in with device code. Investigate and fix built-in native start/poll/exchange compatibility against pinned official Codex 6ba3a84680236c621b93e0b8dc140687a37f41fc using isolated loopback real production/RPC/TUI fixtures and causal executed RED. PROV-030 is broader login UX unification and PROV-094 is scripted codex.rhai parity, not this native flow. Log causality is unconfirmed; no real authentication or credential changes authorized.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-279/codex-native-device-oauth-issue.md",
+        "spec/attachments/BUG-279/bug279-final-evidence.md",
+        "spec/attachments/BUG-279/bug279-final-evidence.json",
+        "spec/attachments/BUG-279/bug279-controller-verification.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T04:27:22.199Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T04:31:54.438Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T04:53:46.485Z",
+          "reason": "Resolved the held transition's one-feature/one-test-file requirement by decomposing the already-specified seven criteria into provider protocol (five tests) and native settings (two tests), preserving exact scenarios and causal RED. red-provider-corrected and red-native-executed both compiled and failed behaviorally on unchanged production, including HTTP500 reaching exchange, independent string parser failure, actual native row/RPC 415 and leaked settings body. Earlier setup/compilation failures are excluded."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T04:57:26.835Z",
+          "reason": "Production fix is limited to native codex_device_auth.rs and device_poll.rs. GREEN provider acceptance 5/5, preserved legacy device controls 11/11, and actual native settings/RPC acceptance 2/2. Complete test/implementation traceability linked across the two new features and updated legacy scenarios; serialized relevant auth regressions and final builds/checks/Clippy are underway with private baseline guards and source snapshots."
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T05:18:24.134Z",
+          "reason": "Completed feature-first ACDD and corrected causal RED before production. Pinned official protocol comparison implemented narrowly in two native provider files. Final validation: 44 distinct top-level tests pass, affected library check, default/test-stub-provider builds and scoped Clippy -D warnings pass; owned formatting, current coverage and new feature/tag gates pass. Registered and verified issue plus final Markdown/JSON command/hash receipts. Preserved real private credential/config baselines, historical manifest and all 1790 pre-existing work-unit records; no real login/deployment. Existing 522 global tag-invalid files and unconfirmed exact live error remain explicit limitations."
+        }
+      ],
+      "userStory": {
+        "role": "Codex user",
+        "action": "sign in through the native device-code flow using the supported protocol",
+        "benefit": "I can authorize safely or receive a clear redacted error without changing existing credentials"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The native settings device flow must use the pinned official JSON start and poll protocol and deviceauth callback token exchange without changing browser OAuth.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.075Z"
+        },
+        {
+          "id": 1,
+          "text": "Accept official user_code/usercode aliases, trimmed string or missing intervals, retaining numeric compatibility; malformed responses fail without revealing secrets.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.201Z"
+        },
+        {
+          "id": 2,
+          "text": "Only successful HTTP polling responses can authorize exchange; HTTP403/404 remain bounded pending and other failures are explicit and redacted.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.323Z"
+        },
+        {
+          "id": 3,
+          "text": "Timeout, cancellation, stale attempts, failed exchange and missing account identity must not replace existing credentials; lifecycle and keyring isolation remain intact.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.443Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Choosing Codex device login reaches a real loopback server requiring JSON; official string interval and alias responses reach waiting, poll and successful synthetic credential persistence through embedded RPC/TUI.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.562Z"
+        },
+        {
+          "id": 1,
+          "text": "Empty-body HTTP403 then HTTP404 polling stays pending until a successful authorization response; the JSON request carries both original device ID and user code.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.681Z"
+        },
+        {
+          "id": 2,
+          "text": "HTTP500 carrying success-shaped token data never authorizes exchange; malformed JSON, invalid intervals and terminal error values fail safely.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.801Z"
+        },
+        {
+          "id": 3,
+          "text": "A shared operation deadline or cancellation during start/poll/exchange leaves seeded synthetic credentials unchanged and no late success appears.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:46.924Z"
+        },
+        {
+          "id": 4,
+          "text": "A start HTTP404 with a secret-bearing response produces a clear settings error without the body and allows a fresh successful retry.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:47.042Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@agent: Do available logs establish the exact live error, and should the existing operation budget change?",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:47.178Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No matching device-auth failure category was found; live causality is unconfirmed. Preserve the existing shared 300-second lifecycle budget; use synthetic loopback fixtures for proven protocol defects."
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Native TUI Headless action uses embedded RPC and the existing device_session LoginAttempt owner. Align JSON start/poll and callback exchange with pinned official Codex 6ba3a84680236c621b93e0b8dc140687a37f41fc; retain shared timeout, cancellation, account-ID extraction and credential commit checks. HTTP403/404 are bounded pending, never authorization. Sanitize failure paths; no response body or codes in errors/logs. Numeric interval compatibility remains intentional. All fixtures use loopback HTTP, synthetic credentials and mock keyring; no real login or broader auth refactor.",
+          "deleted": false,
+          "createdAt": "2026-10-28T04:29:47.420Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 5
     }
   }
 }

@@ -3,7 +3,7 @@
 #[path = "fixtures/attempt_events.rs"]
 mod attempt_events;
 #[path = "fixtures/prov160.rs"]
-mod fixture;
+pub mod fixture;
 
 use codelet_providers::codex::{
     history::CodexHistory,

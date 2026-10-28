@@ -8,7 +8,7 @@ use serde_json::json;
 use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod fixture;
+pub mod fixture;
 
 struct Output {
     events: Mutex<Vec<StreamEvent>>,

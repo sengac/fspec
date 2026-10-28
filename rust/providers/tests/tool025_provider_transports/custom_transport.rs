@@ -83,9 +83,7 @@ pub(super) async fn final_custom_provider_requests_retain_the_attribution_contra
             .as_array()
             .is_some_and(|required| required.contains(&json!("patch"))));
         assert_eq!(
-            schema["properties"]
-                .as_object()
-                .map(|properties| properties.len()),
+            schema["properties"].as_object().map(serde_json::Map::len),
             Some(2)
         );
         // @step And representative strict business argument schemas remain valid

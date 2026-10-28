@@ -54,6 +54,12 @@ pub(super) fn select(
             validate(checkpoint)?;
         }
         if let Some(commit) = value.get("_committedCompaction") {
+            super::compaction::committed_checkpoint(
+                commit["generation"]
+                    .as_u64()
+                    .ok_or(CheckpointError::Missing)?,
+                &value,
+            )?;
             let checkpoint = checkpoint
                 .as_ref()
                 .and_then(Option::as_ref)
@@ -62,7 +68,14 @@ pub(super) fn select(
                 || value["_synthetic"] != true
                 || value["_compactionSummary"] != true
                 || commit["version"].as_u64() != Some(1)
-                || commit["generation"].as_u64() != Some(checkpoint.generation)
+                || commit
+                    .get("providerGeneration")
+                    .unwrap_or(&commit["generation"])
+                    .as_u64()
+                    != Some(checkpoint.generation)
+                || commit["generation"]
+                    .as_u64()
+                    .is_none_or(|generation| generation == 0 || generation > checkpoint.generation)
                 || checkpoint.generation == 0
                 || checkpoint.model.as_ref().is_none_or(String::is_empty)
                 || !checkpoint.items.is_empty()

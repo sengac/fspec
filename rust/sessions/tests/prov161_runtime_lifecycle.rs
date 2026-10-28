@@ -7,7 +7,7 @@ use codelet_sessions::{model_resolution, SessionManager};
 use fixtures::{Fixture, TestResult};
 
 #[path = "fixtures/prov161_runtime.rs"]
-mod fixtures;
+pub mod fixtures;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[serial_test::serial]

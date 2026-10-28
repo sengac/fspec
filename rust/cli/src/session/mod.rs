@@ -7,6 +7,7 @@
 
 pub mod compaction;
 pub mod context_gathering; // CLI-016: Context gathering with AGENTS.md discovery
+mod durable_summary;
 mod preservation;
 mod provider;
 mod recovery_view;
@@ -44,6 +45,7 @@ pub struct Session {
     /// Uses rig::message::Message directly for rig integration (CLI-008)
     pub messages: Vec<rig::message::Message>,
     pub restored_replay: Option<replay::ReplayInstallation>,
+    pub(crate) durable_summary: Option<durable_summary::DurableSummary>,
     pub provider_session: codelet_providers::session::ProviderSession,
     pub(crate) compaction_inference_block: Option<String>,
     pub(crate) pending_compaction_commit:
@@ -149,6 +151,7 @@ impl Session {
             compaction_operation: None,
             pending_compaction_commit: None,
             restored_replay: None,
+            durable_summary: None,
             compaction_inference_block: None,
             provider_session: codelet_providers::session::ProviderSession::for_provider(
                 provider_manager.current_provider_name(),

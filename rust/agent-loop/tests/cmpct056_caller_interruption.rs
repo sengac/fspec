@@ -1,5 +1,5 @@
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use std::time::Duration;
 use support::{assert_clean, assert_no_completion, snapshot, Fixture, Server};
@@ -13,8 +13,18 @@ async fn scenario_caller_interruption_cancels_cross_target_generation() {
     let before = snapshot(&fixture.target).await;
     let mut events = fixture.target.subscribe_to_stream();
     let mut operation = fixture.start();
-    tokio::time::timeout(Duration::from_secs(3), server.arrived.wait())
-        .await
+    let arrival = tokio::time::timeout(Duration::from_secs(3), async {
+        tokio::select! {
+            _ = server.arrived.wait() => Ok(()),
+            result = &mut operation => Err(format!("operation exited before builder barrier: {result:?}")),
+        }
+    }).await;
+    if arrival.is_err() {
+        operation.abort();
+        let _ = (&mut operation).await;
+    }
+    arrival
+        .expect("builder barrier deadline")
         .expect("builder owns captured target");
     // @step When the requesting caller is interrupted without aborting its task
     fixture.caller.interrupt();

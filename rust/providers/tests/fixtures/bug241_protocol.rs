@@ -40,6 +40,10 @@ pub async fn consume(
         }
         socket_task = Some(tokio::spawn(async move {
             let (stream, _) = listener.accept().await?;
+            #[allow(
+                clippy::result_large_err,
+                reason = "tungstenite requires an unboxed HTTP ErrorResponse in its handshake callback"
+            )]
             let mut socket = accept_hdr_async(
                 stream,
                 move |_: &http::Request<()>, mut response: http::Response<()>| {

@@ -38,6 +38,15 @@ impl<'output, Output: StreamOutput> ProgressiveOutput<'output, Output> {
 }
 
 impl<Output: StreamOutput> StreamOutput for ProgressiveOutput<'_, Output> {
+    fn acknowledge_interruption(&self) {
+        self.output.acknowledge_interruption();
+    }
+
+    fn settlement_emitter(&self) -> Result<Option<Arc<dyn StreamOutput>>, String> {
+        self.complete_text();
+        self.output.settlement_emitter()
+    }
+
     fn emit_tool_cancellation(&self, result: super::output::ToolResultEvent) {
         self.complete_text();
         self.output.emit_tool_cancellation(result);

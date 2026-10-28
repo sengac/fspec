@@ -40,8 +40,11 @@ pub fn create_handler(
     compaction_trimming: Arc<AtomicBool>,
 ) -> SessionSearchHandler {
     Arc::new(move |action: SessionSearchAction, session_id: Uuid| {
+        if let Some(cancelled) = cancelled("search.start") {
+            return cancelled;
+        }
         let is_trimming = compaction_trimming.load(Ordering::Relaxed);
-        match action {
+        let result = match action {
             SessionSearchAction::Originals { request } => {
                 persistence::originals::retrieve_originals(request).into()
             }
@@ -86,8 +89,17 @@ pub fn create_handler(
                 end_turn,
                 is_trimming,
             ),
-        }
+        };
+        cancelled("search.publish").unwrap_or(result)
     })
+}
+
+fn cancelled(boundary: &'static str) -> Option<SessionSearchResult> {
+    codelet_common::read_work::checkpoint(boundary)
+        .err()
+        .map(|error| SessionSearchResult::Error {
+            message: error.to_string(),
+        })
 }
 
 // ============================================================================
@@ -113,6 +125,7 @@ fn handle_recent(project_path: &Path, count: Option<usize>) -> SessionSearchResu
 
     let summaries: Vec<SessionSummary> = sorted
         .iter()
+        .take_while(|_| cancelled("search.recent").is_none())
         .map(|s| {
             // Load messages to get first/last user message previews
             let (first_user, last_user) = get_user_message_previews(s);
@@ -215,6 +228,9 @@ fn handle_search(
     let mut total_matches = 0;
 
     for session in &filtered_sessions {
+        if let Some(cancelled) = cancelled("search.session") {
+            return cancelled;
+        }
         if total_matches >= max_matches {
             break;
         }
@@ -232,6 +248,9 @@ fn handle_search(
         let mut trimmer = ConditionalTrimmer::new(compaction_trimming);
 
         for (turn_index, msg) in messages.iter().enumerate() {
+            if let Some(cancelled) = cancelled("search.message") {
+                return cancelled;
+            }
             if total_matches >= max_matches {
                 break;
             }
@@ -363,6 +382,9 @@ fn handle_show(
     let mut trimmer = ConditionalTrimmer::new(compaction_trimming);
 
     for (turn_index, msg) in messages.iter().enumerate() {
+        if let Some(cancelled) = cancelled("search.message") {
+            return cancelled;
+        }
         // Resolve blob content, then apply conditional trimming
         let raw_content = resolve_message_content(msg);
         let mut content = trimmer.process(&msg.role, &raw_content, &msg.metadata);
@@ -475,6 +497,9 @@ fn extract_work_unit_id(session: &codelet_core::persistence::SessionManifest) ->
 /// blob refs in `msg.blob_refs`. Used by both SessionSearch and AgentManager
 /// handlers to resolve stored message content for display/search.
 pub fn resolve_message_content(msg: &StoredMessage) -> String {
+    if cancelled("search.blob").is_some() {
+        return String::new();
+    }
     // If the content is a blob reference, try to resolve it
     if is_blob_reference(&msg.content) {
         if let Some(hash) = codelet_core::persistence::extract_blob_hash(&msg.content) {
@@ -488,6 +513,9 @@ pub fn resolve_message_content(msg: &StoredMessage) -> String {
     if !msg.blob_refs.is_empty() {
         let mut parts = vec![msg.content.clone()];
         for blob_ref in &msg.blob_refs {
+            if cancelled("search.blob").is_some() {
+                break;
+            }
             if let Ok(blob_data) = persistence::get_blob(blob_ref) {
                 parts.push(String::from_utf8_lossy(&blob_data).to_string());
             }
@@ -651,15 +679,22 @@ fn build_context_turns(
     // Collect all turn indices that should be included
     let mut included: std::collections::BTreeSet<usize> = std::collections::BTreeSet::new();
     for &idx in &match_indices {
+        if cancelled("search.context").is_some() {
+            return Vec::new();
+        }
         let start = idx.saturating_sub(context_turns);
         let end = (idx + context_turns).min(messages.len().saturating_sub(1));
         for i in start..=end {
+            if cancelled("search.context").is_some() {
+                return Vec::new();
+            }
             included.insert(i);
         }
     }
 
     included
         .iter()
+        .take_while(|_| cancelled("search.context").is_none())
         .filter_map(|&i| {
             messages.get(i).map(|msg| {
                 let content = resolve_message_content(msg);
@@ -1633,17 +1668,13 @@ mod tests {
     // @step Then it includes "start_turn" as an optional integer parameter
     // @step And it includes "end_turn" as an optional integer parameter
     // @step And both parameters mention they apply to show and search actions
-    #[test]
-    fn test_tool_definition_includes_turn_range_params() {
+    #[tokio::test]
+    async fn test_tool_definition_includes_turn_range_params() {
         use codelet_tools::session_search::SessionSearchTool;
         use uuid::Uuid;
 
         let tool = SessionSearchTool::new(Uuid::nil());
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let def = rt.block_on(async { rig::tool::Tool::definition(&tool, String::new()).await });
+        let def = rig::tool::Tool::definition(&tool, String::new()).await;
 
         let params = &def.parameters;
         let props = params.get("properties").unwrap();
@@ -1655,8 +1686,8 @@ mod tests {
         assert!(start_turn.get("type").is_some());
         let desc = start_turn.get("description").unwrap().as_str().unwrap();
         assert!(
-            desc.contains("turn"),
-            "start_turn description should mention turn"
+            desc.contains("Inclusive 0-based") && desc.contains("show/search/originals"),
+            "start_turn description should document inclusive positions for every supported action"
         );
 
         // Check end_turn exists
@@ -1664,8 +1695,8 @@ mod tests {
         assert!(end_turn.get("type").is_some());
         let desc = end_turn.get("description").unwrap().as_str().unwrap();
         assert!(
-            desc.contains("turn"),
-            "end_turn description should mention turn"
+            desc.contains("Inclusive 0-based") && desc.contains("show/search/originals"),
+            "end_turn description should document inclusive positions for every supported action"
         );
     }
 }

@@ -14,6 +14,7 @@ pub mod file_lock;
 pub mod fspec_config;
 pub mod image_dimensions;
 pub mod logging;
+pub mod read_work;
 pub mod token_estimator;
 pub mod tool_usage;
 pub mod types;

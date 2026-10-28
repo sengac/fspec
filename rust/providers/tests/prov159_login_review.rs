@@ -5,8 +5,8 @@
 #[path = "prov159_support/login_review.rs"]
 mod login_review;
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::auth_lifecycle::{cancel_login, LoginAttempt};
 use codelet_providers::codex::codex_auth::read_codex_auth;
@@ -130,7 +130,7 @@ async fn scenario_cancellation_completes_pending_device_poll() -> TestResult {
         // @step And no credentials are persisted and no subsequent polling or token exchange occurs
         assert!(read_codex_auth()?.and_then(|auth| auth.tokens).is_none());
         poll.release.add_permits(1);
-        assert_eq!(poll.requests().len(), 1);
+        assert_eq!(poll.requests()?.len(), 1);
         assert_no_exchange(&issuer).await?;
         // @step And a cancelled split device session cannot be completed again
         assert!(bounded(complete_device_login("device")).await?.is_err());

@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/streamed-response-attempt-rollback.feature"]
 
 #[path = "../../providers/tests/fixtures/prov148.rs"]
-mod transport;
+pub mod transport;
 
 use codelet_cli::interactive::{run_agent_stream, StreamEvent, StreamOutput};
 use codelet_cli::session::Session;

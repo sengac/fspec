@@ -34,6 +34,7 @@ fn unterminated_tail(path: &Path) -> Result<Option<(u64, Vec<u8>)>, FramingError
     let mut cursor = length;
     let mut start = 0;
     while cursor > 0 {
+        codelet_common::read_work::checkpoint("history.tail")?;
         let block_start = cursor.saturating_sub(8192);
         file.seek(SeekFrom::Start(block_start))?;
         let mut block = vec![0; (cursor - block_start) as usize];
@@ -49,7 +50,7 @@ fn unterminated_tail(path: &Path) -> Result<Option<(u64, Vec<u8>)>, FramingError
     }
     file.seek(SeekFrom::Start(start))?;
     let mut tail = Vec::new();
-    file.read_to_end(&mut tail)?;
+    codelet_common::read_work::read_to_end(&mut file, &mut tail, "history.tail.bytes")?;
     Ok(Some((start, tail)))
 }
 

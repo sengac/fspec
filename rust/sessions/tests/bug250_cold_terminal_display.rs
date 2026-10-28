@@ -1,7 +1,7 @@
 #![doc = "Feature: spec/features/cold-transcript-terminal-replay.feature"]
 
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_agent_loop::BackgroundOutput;
 use codelet_cli::interactive::{StreamEvent, StreamOutput};

@@ -2,7 +2,7 @@
 //! Primary feature: spec/features/prov159-oauth-logout.feature
 
 #[path = "../../providers/tests/prov159_support/mod.rs"]
-mod prov159_support;
+pub mod prov159_support;
 
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend};
@@ -22,7 +22,7 @@ async fn scenario_a1_local_logout_clears_every_source_and_preserves_api_key() ->
     fixture.seed("A")?;
     #[cfg(target_os = "macos")]
     fixture
-        .keychain()
+        .keychain()?
         .set_password(&serde_json::to_string(&prov159_support::auth("A"))?)?;
     let project = codelet_test_helpers::setup_temp_directory()?;
     std::fs::create_dir_all(project.path().join("spec"))?;

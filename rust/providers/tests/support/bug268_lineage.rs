@@ -19,7 +19,7 @@ pub type Model = codelet_providers::copilot::CopilotCompletionModel;
 pub async fn server() -> MockServer {
     let server = MockServer::start().await;
     Mock::given(method("POST")).respond_with(|request: &wiremock::Request| {
-        let body: Value = request.body_json().expect("synthetic request is JSON");
+        let Ok(body): Result<Value, _> = request.body_json() else { return ResponseTemplate::new(400).set_body_string("synthetic request must be valid JSON") };
         let prompt = body["input"].as_array().and_then(|items| items.last())
             .map(|item| item["content"].to_string()).unwrap_or_default();
         let failed = prompt.contains("failure");

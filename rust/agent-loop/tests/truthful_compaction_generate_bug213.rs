@@ -1,7 +1,7 @@
 //! Feature: spec/features/truthful-generated-compaction-activity.feature
 
 #[path = "cmpct056/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_tools::{GenerateCompactionArgs, GenerateCompactionTool};
 use rig::tool::Tool;

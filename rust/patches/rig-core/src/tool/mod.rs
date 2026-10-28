@@ -109,6 +109,10 @@ pub trait Tool: Sized + WasmCompatSend + WasmCompatSync {
     /// The name of the tool. This name should be unique.
     const NAME: &'static str;
 
+    fn cancel_on_abandon(&self) -> bool {
+        false
+    }
+
     /// The error type of the tool.
     type Error: std::error::Error + WasmCompatSend + WasmCompatSync + 'static;
     /// The arguments type of the tool.
@@ -168,12 +172,19 @@ pub trait ToolEmbedding: Tool {
 pub trait ToolDyn: WasmCompatSend + WasmCompatSync {
     fn name(&self) -> String;
 
+    fn cancel_on_abandon(&self) -> bool {
+        false
+    }
+
     fn definition<'a>(&'a self, prompt: String) -> WasmBoxedFuture<'a, ToolDefinition>;
 
     fn call<'a>(&'a self, args: String) -> WasmBoxedFuture<'a, Result<String, ToolError>>;
 }
 
 impl<T: Tool> ToolDyn for T {
+    fn cancel_on_abandon(&self) -> bool {
+        <Self as Tool>::cancel_on_abandon(self)
+    }
     fn name(&self) -> String {
         self.name()
     }
@@ -392,6 +403,12 @@ pub(crate) enum ToolType {
 }
 
 impl ToolType {
+    pub(crate) fn cancel_on_abandon(&self) -> bool {
+        match self {
+            Self::Simple(tool) => tool.cancel_on_abandon(),
+            Self::Embedding(tool) => tool.cancel_on_abandon(),
+        }
+    }
     pub fn name(&self) -> String {
         match self {
             ToolType::Simple(tool) => tool.name(),

@@ -1,7 +1,7 @@
 //! Feature: spec/features/truthful-compaction-activity.feature
 
 #[path = "bug210_progress/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_cli::interactive::output::StreamOutput;
 use codelet_rpc_types::{CommittedContextSnapshot, ContextFillInfo, StreamChunk, TokenTracker};

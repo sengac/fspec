@@ -110,7 +110,11 @@ pub fn screen(app: &mut App) -> String {
     let area = Rect::new(0, 0, 80, 24);
     let mut buffer = Buffer::empty(area);
     app.render(area, &mut buffer);
-    buffer.content().iter().map(|cell| cell.symbol()).collect()
+    buffer
+        .content()
+        .iter()
+        .map(ratatui::buffer::Cell::symbol)
+        .collect()
 }
 
 pub fn pages(app: &mut App) -> String {

@@ -1,7 +1,7 @@
 //! Feature: spec/features/custom-stream-settlement.feature
 
 #[path = "bug227/fixture.rs"]
-mod fixture;
+pub mod fixture;
 
 use fixture::{frames, rig_stream, Server, TestResult};
 use futures::StreamExt;

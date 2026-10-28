@@ -2,7 +2,7 @@
 //! Primary feature: spec/features/prov159-provider-deletion.feature
 
 #[path = "../../providers/tests/prov159_support/mod.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_providers::codex::codex_auth::read_codex_auth;
@@ -25,7 +25,7 @@ fn scenario_a3_provider_deletion_preserves_shared_document_fields() -> TestResul
     {
         use keyring::credential::CredentialApi;
         fixture
-            .keychain()
+            .keychain()?
             .set_password(&serde_json::to_string(&support::auth("A"))?)?;
     }
     let manager = SessionManager::new();

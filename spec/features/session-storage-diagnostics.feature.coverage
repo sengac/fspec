@@ -1,46 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "Checked creation distinguishes declines from application failures",
-      "testMappings": [
-        {
-          "file": "rust/sessions/tests/bug271_checked_creation.rs",
-          "lines": "19-49",
-          "implMappings": [
-            {
-              "file": "rust/sessions/src/handle_creation.rs",
-              "lines": [
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Startup warnings are visible without a session",
       "testMappings": [
         {
@@ -224,8 +184,7 @@
                 56,
                 57,
                 58,
-                59,
-                60
+                59
               ]
             }
           ]
@@ -287,9 +246,7 @@
                 23,
                 24,
                 25,
-                26,
-                27,
-                28
+                26
               ]
             }
           ]
@@ -298,20 +255,19 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/tests/bug271_checked_creation.rs",
       "rust/fspec-tui/tests/bug271_session_storage_diagnostics.rs"
     ],
     "implFiles": [
-      "rust/sessions/src/handle_creation.rs",
       "rust/fspec-tui/src/app/session_storage.rs",
       "rust/fspec-tui/src/app/dispatch_reconnect.rs",
       "rust/fspec-tui/src/app/session_creation_tasks.rs",
-      "rust/fspec-tui/src/app/session_creation.rs"
+      "rust/fspec-tui/src/app/session_creation.rs",
+      "rust/sessions/src/handle_creation.rs"
     ],
-    "totalLinesCovered": 376
+    "totalLinesCovered": 318
   }
 }

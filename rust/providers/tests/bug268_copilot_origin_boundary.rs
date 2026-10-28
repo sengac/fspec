@@ -3,7 +3,7 @@
 #[path = "../../agent-loop/tests/support/bug268_environment.rs"]
 mod environment;
 #[path = "support/bug268_lineage.rs"]
-mod support;
+pub mod support;
 
 use codelet_providers::{
     copilot::{

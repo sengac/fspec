@@ -2,8 +2,8 @@
 //! Primary feature: spec/features/prov159-refresh-races.feature
 
 #[path = "prov159_support/network.rs"]
-mod network;
-mod prov159_support;
+pub mod network;
+pub mod prov159_support;
 
 use codelet_providers::codex::codex_auth::{delete_codex_auth, read_codex_auth};
 use network::{bounded, client, send, RefreshServer};
@@ -45,7 +45,7 @@ async fn scenario_a5_independent_clients_coordinate_rotation() -> TestResult {
     pending.1 .1?;
     // @step Then the issuer receives only one exchange of refresh token R0
     assert_eq!(
-        issuer.requests().len(),
+        issuer.requests()?.len(),
         1,
         "independent clients must share rotation ownership"
     );

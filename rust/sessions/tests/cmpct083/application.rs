@@ -9,6 +9,9 @@ use serde_json::json;
 
 pub async fn cycle(fixture: &Fixture, row: &str, cycle: usize, suffix: bool) -> TestResult {
     let mut inner = fixture.background.inner.lock().await;
+    if row == "codex" {
+        super::codex::retain_legacy_checkpoint(fixture.background.id)?;
+    }
     let queue = register_generate_compaction_handler(
         fixture.background.id,
         &inner,
@@ -20,6 +23,24 @@ pub async fn cycle(fixture: &Fixture, row: &str, cycle: usize, suffix: bool) -> 
     let candidate = fixture::dag(manifest.messages.len(), cycle)?;
     if suffix {
         fixture::append_suffix(manifest.id)?;
+        inner.messages.extend([
+            rig::message::Message::Assistant {
+                id: None,
+                content: rig::OneOrMany::one(
+                    rig::message::AssistantContent::tool_call_with_call_id(
+                        "call_after_snapshot",
+                        "call_after_snapshot".into(),
+                        "lookup",
+                        json!({"path":"src/deep.rs"}),
+                    ),
+                ),
+            },
+            rig::message::Message::tool_result_with_call_id(
+                "call_after_snapshot",
+                Some("call_after_snapshot".into()),
+                fixture::SUFFIX,
+            ),
+        ]);
     }
     let server = super::transport::submission(row, &candidate).await;
     let output = runtime::Output::production(
@@ -32,7 +53,7 @@ pub async fn cycle(fixture: &Fixture, row: &str, cycle: usize, suffix: bool) -> 
             &mut inner,
             manifest.id,
             &output,
-            Some(json!({"stub_tool_call":{"id":format!("summary-call-{cycle}"),"name":"inject_summary","arguments":{"content":candidate}}})),
+            Some(json!({"stub_tool_call":{"id":format!("summary-call-{cycle}"),"name":"inject_summary","arguments":{"content":candidate,"work_unit_id":"NONE"}}})),
         ).await?;
     } else {
         runtime::send_inner(
@@ -57,6 +78,7 @@ pub async fn cycle(fixture: &Fixture, row: &str, cycle: usize, suffix: bool) -> 
     codelet_cli::interactive_helpers::validate_no_orphan_tool_calls(&inner.messages)
         .map_err(|errors| errors.join("; "))?;
     let checkpoints = if row == "codex" {
+        super::codex::retain_legacy_checkpoint(fixture.background.id)?;
         let streamed = load_session(manifest.id)?;
         let checkpoints = get_session_messages_full(&streamed)?
             .into_iter()

@@ -5,7 +5,7 @@ use serde_json::{json, Value};
 use std::sync::{Arc, Mutex};
 
 #[path = "fixtures/bug241_protocol.rs"]
-mod fixture;
+pub mod fixture;
 use fixture::TestResult;
 
 fn buffering() -> Value {

@@ -1,9 +1,9 @@
 //! Feature: spec/features/provider-runtime-physical-requests.feature
 
 #[path = "support/prov161_gated_sse.rs"]
-mod gated_sse;
+pub mod gated_sse;
 #[path = "support/prov161_runtime.rs"]
-mod support;
+pub mod support;
 
 use codelet_cli::interactive::StreamEvent;
 use codelet_cli::interactive_helpers::prompt_provider;

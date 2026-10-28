@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 #[tokio::test]
 #[serial]
-async fn test_tool_definition_name_and_schema() {
+async fn test_tool_definition_name_and_schema() -> Result<(), Box<dyn std::error::Error>> {
     // @step Given the InjectSummaryTool is compiled as part of the codelet-tools crate
     let tool = InjectSummaryTool::new(Uuid::new_v4());
     // @step When the tool definition is requested
@@ -18,7 +18,7 @@ async fn test_tool_definition_name_and_schema() {
     );
     let required = definition.parameters["required"]
         .as_array()
-        .expect("required schema parameters must be an array");
+        .ok_or("required schema parameters must be an array")?;
     assert!(required
         .iter()
         .any(|value| value.as_str() == Some("content")));
@@ -26,11 +26,12 @@ async fn test_tool_definition_name_and_schema() {
     assert!(definition.description.contains("DAG summary"));
     assert!(definition.description.contains("builder turns"));
     assert!(definition.description.contains("compaction"));
+    Ok(())
 }
 
 #[tokio::test]
 #[serial]
-async fn test_successful_dispatch_to_handler() {
+async fn test_successful_dispatch_to_handler() -> Result<(), Box<dyn std::error::Error>> {
     clear_all_inject_summary_handlers();
     let session_id = Uuid::new_v4();
     let called = Arc::new(AtomicBool::new(false));
@@ -55,18 +56,18 @@ async fn test_successful_dispatch_to_handler() {
     // @step Then the handler receives the session_id and content string
     assert!(called.load(Ordering::SeqCst));
     // @step And the tool returns a queued summary estimate without a remaining request budget
-    let output = output.expect("registered handler must queue the summary");
-    let result: serde_json::Value =
-        serde_json::from_str(&output).expect("queued summary result must contain valid JSON");
+    let output = output?;
+    let result: serde_json::Value = serde_json::from_str(&output)?;
     assert_eq!(result["injected_tokens"], 1250);
     assert_eq!(result["status"], "queued");
     assert!(result.get("remaining_budget").is_none());
     clear_all_inject_summary_handlers();
+    Ok(())
 }
 
 #[tokio::test]
 #[serial]
-async fn test_no_handler_returns_error() {
+async fn test_no_handler_returns_error() -> Result<(), Box<dyn std::error::Error>> {
     clear_all_inject_summary_handlers();
     // @step Given no InjectSummaryHandler is registered for the session
     let session_id = Uuid::new_v4();
@@ -77,17 +78,20 @@ async fn test_no_handler_returns_error() {
         })
         .await;
     // @step Then the tool returns a ToolError with message containing "not configured"
-    let error = result.expect_err("an unregistered session must reject summary injection");
+    let error = result
+        .err()
+        .ok_or("an unregistered session must reject summary injection")?;
     let message = error.to_string();
     assert!(message.contains("not configured"), "{message}");
     // @step And the error message includes the session UUID
     assert!(message.contains(&session_id.to_string()), "{message}");
     clear_all_inject_summary_handlers();
+    Ok(())
 }
 
 #[tokio::test]
 #[serial]
-async fn test_concurrent_sessions_isolated() {
+async fn test_concurrent_sessions_isolated() -> Result<(), Box<dyn std::error::Error>> {
     clear_all_inject_summary_handlers();
     // @step Given Session A and Session B each have a registered InjectSummaryHandler
     let session_a = Uuid::new_v4();
@@ -121,21 +125,20 @@ async fn test_concurrent_sessions_isolated() {
         .call(InjectSummaryArgs {
             content: "content".into(),
         })
-        .await
-        .expect("session A's registered handler must queue its summary");
+        .await?;
     // @step Then only Session A's handler is invoked
     assert!(a_called.load(Ordering::SeqCst));
-    let result: serde_json::Value =
-        serde_json::from_str(&output).expect("session A's queued result must contain valid JSON");
+    let result: serde_json::Value = serde_json::from_str(&output)?;
     assert_eq!(result["injected_tokens"], 100);
     // @step And Session B's handler is not affected
     assert!(!b_called.load(Ordering::SeqCst));
     clear_all_inject_summary_handlers();
+    Ok(())
 }
 
 #[tokio::test]
 #[serial]
-async fn test_handler_removal_with_none() {
+async fn test_handler_removal_with_none() -> Result<(), Box<dyn std::error::Error>> {
     clear_all_inject_summary_handlers();
     let session_id = Uuid::new_v4();
     // @step Given a session with a registered InjectSummaryHandler
@@ -161,11 +164,12 @@ async fn test_handler_removal_with_none() {
         .await
         .is_err());
     clear_all_inject_summary_handlers();
+    Ok(())
 }
 
 #[tokio::test]
 #[serial]
-async fn test_tool_constructed_with_session_id() {
+async fn test_tool_constructed_with_session_id() -> Result<(), Box<dyn std::error::Error>> {
     clear_all_inject_summary_handlers();
     let session_id = Uuid::new_v4();
     let received_id = Arc::new(RwLock::new(None::<Uuid>));
@@ -176,7 +180,7 @@ async fn test_tool_constructed_with_session_id() {
         Some(Arc::new(move |received, _| {
             *received_id_clone
                 .write()
-                .expect("captured session ID lock must be writable") = Some(received);
+                .map_err(|error| error.to_string())? = Some(received);
             Ok(InjectSummaryResult {
                 injected_tokens: 300,
                 remaining_budget: 195000,
@@ -189,21 +193,18 @@ async fn test_tool_constructed_with_session_id() {
         .call(InjectSummaryArgs {
             content: "test content".into(),
         })
-        .await
-        .expect("tool must dispatch to its session's registered handler");
+        .await?;
     // @step Then the tool looks up the handler using its stored session_id
     assert_eq!(
-        *received_id
-            .read()
-            .expect("captured session ID lock must be readable"),
+        *received_id.read().map_err(|error| error.to_string())?,
         Some(session_id)
     );
     // @step And the correct per-session handler is dispatched
-    let result: serde_json::Value = serde_json::from_str(&output)
-        .expect("queued session-specific result must contain valid JSON");
+    let result: serde_json::Value = serde_json::from_str(&output)?;
     assert_eq!(result["injected_tokens"], 300);
     assert_eq!(result["status"], "queued");
     clear_all_inject_summary_handlers();
+    Ok(())
 }
 
 #[test]

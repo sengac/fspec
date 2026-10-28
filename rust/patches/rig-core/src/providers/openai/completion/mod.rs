@@ -912,10 +912,10 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
                 // analysis ahead of its final answer. Captures vLLM's
                 // `reasoning` field and (via the serde alias) Z.AI/GLM's
                 // `reasoning_content` field.
-                if let Some(reasoning_text) = reasoning {
-                    if !reasoning_text.is_empty() {
-                        out.push(completion::AssistantContent::reasoning(reasoning_text));
-                    }
+                if let Some(reasoning_text) = reasoning
+                    && !reasoning_text.is_empty()
+                {
+                    out.push(completion::AssistantContent::reasoning(reasoning_text));
                 }
 
                 out.extend(content.iter().filter_map(|c| {
@@ -1645,7 +1645,7 @@ mod prov_081_tests {
                 "logprobs": null,
                 "finish_reason": "stop"
             }],
-            "usage": null
+            "usage": {"prompt_tokens":10,"completion_tokens":2,"total_tokens":12}
         });
 
         let raw: CompletionResponse =
@@ -1693,7 +1693,7 @@ mod prov_081_tests {
                 "logprobs": null,
                 "finish_reason": "stop"
             }],
-            "usage": null
+            "usage": {"prompt_tokens":10,"completion_tokens":2,"total_tokens":12}
         });
 
         let raw: CompletionResponse =
@@ -1736,7 +1736,7 @@ mod prov_081_tests {
                 "logprobs": null,
                 "finish_reason": "stop"
             }],
-            "usage": null
+            "usage": {"prompt_tokens":10,"completion_tokens":2,"total_tokens":12}
         });
 
         // @step When the provider decodes the response
@@ -1777,13 +1777,13 @@ mod prov_081_tests {
         );
 
         // @step And the serialized body does not contain a "chat_template_kwargs.enable_thinking" key path
-        if let Some(chat_template_kwargs) = obj.get("chat_template_kwargs") {
-            if let Some(ctk) = chat_template_kwargs.as_object() {
-                assert!(
-                    !ctk.contains_key("enable_thinking"),
-                    "request body must NOT carry `chat_template_kwargs.enable_thinking` (Qwen3 template-level kill-switch). Body: {body}"
-                );
-            }
+        if let Some(chat_template_kwargs) = obj.get("chat_template_kwargs")
+            && let Some(template_options) = chat_template_kwargs.as_object()
+        {
+            assert!(
+                !template_options.contains_key("enable_thinking"),
+                "request body must NOT carry `chat_template_kwargs.enable_thinking` (Qwen3 template-level kill-switch). Body: {body}"
+            );
         }
     }
 
@@ -1796,6 +1796,7 @@ mod prov_081_tests {
         // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning":"Let me analyse..."}}]}
         let sse = concat!(
             "data: {\"choices\":[{\"delta\":{\"reasoning\":\"Let me analyse...\"}}]}\n\n",
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":2,\"total_tokens\":12}}\n\n",
             "data: [DONE]\n\n",
         );
 
@@ -1838,6 +1839,7 @@ mod prov_081_tests {
         // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"thinking..."}}]}
         let sse = concat!(
             "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"thinking...\"}}]}\n\n",
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":2,\"total_tokens\":12}}\n\n",
             "data: [DONE]\n\n",
         );
 
@@ -1877,6 +1879,7 @@ mod prov_081_tests {
         // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"B","reasoning":"A"}}]}
         let sse = concat!(
             "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"B\",\"reasoning\":\"A\"}}]}\n\n",
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":2,\"total_tokens\":12}}\n\n",
             "data: [DONE]\n\n",
         );
 
@@ -1923,6 +1926,7 @@ mod prov_081_tests {
         // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"content":"hello"}}]}
         let sse = concat!(
             "data: {\"choices\":[{\"delta\":{\"content\":\"hello\"}}]}\n\n",
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":2,\"total_tokens\":12}}\n\n",
             "data: [DONE]\n\n",
         );
 

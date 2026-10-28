@@ -40,6 +40,32 @@ impl Session {
                 .is_some_and(|alias| provider == alias || provider == format!("{alias}/{model}"))
     }
 
+    pub(super) fn validate_current_compaction_history(
+        &self,
+        manifest: &SessionManifest,
+        source: &CompactionSource,
+    ) -> Result<(), String> {
+        if self.current_provider_name() != "codex" {
+            return Ok(());
+        }
+        let selected = self
+            .selected_preparer
+            .as_ref()
+            .ok_or("missing selected history validator")?;
+        if selected.provider != self.current_provider_name()
+            || selected.model != self.current_model_id()
+            || selected.selection != self.provider_manager().selected_model_string()
+        {
+            return Err("selected history validator identity changed".into());
+        }
+        let reminders = super::preservation::retained_reminders(self, source)?;
+        let messages = super::compaction::replay_messages(manifest, &reminders)?;
+        selected
+            .preparer
+            .validate_current_history(&messages)
+            .map_err(|error| error.to_string())
+    }
+
     pub fn install_selected_preparer(&mut self, preparer: SelectedRequestPreparer) {
         self.selected_preparer = Some(SelectedPreparation {
             provider: self.current_provider_name().to_owned(),

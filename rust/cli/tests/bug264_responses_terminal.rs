@@ -1,11 +1,11 @@
 //! Feature: spec/features/responses-terminal-semantics.feature
 
 #[path = "support/bug262_chat.rs"]
-mod chat;
+pub mod chat;
 #[path = "support/bug264_responses.rs"]
 mod responses;
 #[path = "support/prov161_runtime.rs"]
-mod runtime;
+pub mod runtime;
 
 use responses::{consume, event, queued_tools, run_done, terminal, usage};
 use runtime::TestResult;

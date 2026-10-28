@@ -80,14 +80,15 @@ pub async fn native_sequence(model: &str, responses: bool) -> TestResult {
     let outcome = runtime::run(RigAgent::new(agent, 8), &mut session, session_id, &output).await;
     codelet_tools::set_continue_armed(session_id, false);
     outcome?;
-    let chunks = output.0.lock().map_err(|error| error.to_string())?;
-    assert!(chunks.iter().any(|event|matches!(event,StreamEvent::ToolResult(result) if result.content.contains("local tool evidence") && (result.id=="item-native" || result.id=="call-native"))));
-    assert!(chunks.iter().any(
+    {
+        let chunks = output.0.lock().map_err(|error| error.to_string())?;
+        assert!(chunks.iter().any(|event|matches!(event,StreamEvent::ToolResult(result) if result.content.contains("local tool evidence") && (result.id=="item-native" || result.id=="call-native"))));
+        assert!(chunks.iter().any(
         |event| matches!(event,StreamEvent::Status(text) if text.contains("done: copilot complete"))
     ));
-    assert!(!chunks.iter().any(|event|matches!(event,StreamEvent::ToolResult(result) if result.content.contains("invalid work_unit_id"))));
-    assert_eq!(chunks.iter().filter(|event|matches!(event, StreamEvent::ContinueState(state) if state.reason == codelet_cli::interactive::ContinueStateReason::NudgeConsumed)).count(), 1);
-    drop(chunks);
+        assert!(!chunks.iter().any(|event|matches!(event,StreamEvent::ToolResult(result) if result.content.contains("invalid work_unit_id"))));
+        assert_eq!(chunks.iter().filter(|event|matches!(event, StreamEvent::ContinueState(state) if state.reason == codelet_cli::interactive::ContinueStateReason::NudgeConsumed)).count(), 1);
+    }
     assert_eq!(session.continue_nudges_used, 0);
     let manifest = codelet_core::persistence::load_session(session_id)?;
     assert_eq!(manifest.token_usage.cumulative_billed_input, 36);

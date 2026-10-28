@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "Cancelled cold discovery never hides healthy sessions",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug277_search_integrity.rs",
+          "lines": "18-86",
+          "implMappings": [
+            {
+              "file": "rust/core/src/persistence/manifest_discovery.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transient operating system interruptions preserve successful reads",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug277_search_integrity.rs",
+          "lines": "136-181",
+          "implMappings": [
+            {
+              "file": "rust/common/src/read_work.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/agent-loop/tests/bug277_search_integrity.rs"
+    ],
+    "implFiles": [
+      "rust/core/src/persistence/manifest_discovery.rs",
+      "rust/common/src/read_work.rs"
+    ],
+    "totalLinesCovered": 173
+  }
+}

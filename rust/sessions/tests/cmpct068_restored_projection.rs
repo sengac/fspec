@@ -3,7 +3,7 @@
 #[path = "../../core/tests/support/compaction_boundary.rs"]
 mod boundary;
 #[path = "cmpct060/support.rs"]
-mod support;
+pub mod support;
 
 use codelet_core::persistence::compaction_commit::{commit_compaction, publish_compaction};
 use codelet_core::persistence::*;

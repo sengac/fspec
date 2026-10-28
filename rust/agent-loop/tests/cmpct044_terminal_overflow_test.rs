@@ -163,7 +163,7 @@ async fn background_terminal_overflow_compacts_via_the_same_entry_point() {
 
     // @step Then the compactor recovery entry point runs for that session
     assert!(
-        recovered,
+        recovered.is_ok_and(|recovered| recovered),
         "the terminal overflow must route to the compactor recovery entry point"
     );
 
@@ -259,7 +259,7 @@ async fn terminal_overflow_without_compactable_turns_does_not_compact() {
     // @step Then no compaction is triggered because there are no compactable turns
     // No compaction ran — the gate (PROV-010) held.
     assert!(
-        !recovered,
+        matches!(recovered, Ok(false)),
         "overflow without compactable turns must NOT trigger compaction"
     );
     let tracker = session.inner.lock().await.token_tracker.input_tokens;
@@ -383,7 +383,7 @@ async fn terminal_non_overflow_error_does_not_compact() {
     .await;
 
     assert!(
-        !recovered,
+        matches!(recovered, Ok(false)),
         "a non-overflow terminal error must follow the existing terminal handling"
     );
     let messages = session.inner.lock().await.messages.len();
