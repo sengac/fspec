@@ -83,7 +83,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "94-130",
+          "lines": "95-131",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/transport/mod.rs",
@@ -161,7 +161,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "133-168",
+          "lines": "135-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mod.rs",
@@ -275,18 +275,18 @@
                 107,
                 108,
                 109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
               ]
             }
           ]
@@ -298,7 +298,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_trait.rs",
-          "lines": "169-228",
+          "lines": "173-235",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mod.rs",
@@ -412,18 +412,18 @@
                 107,
                 108,
                 109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
               ]
             }
           ]
@@ -442,6 +442,6 @@
       "rust/fspec-tui/src/transport/mod.rs",
       "rust/fspec-tui/src/components/mod.rs"
     ],
-    "totalLinesCovered": 570
+    "totalLinesCovered": 572
   }
 }

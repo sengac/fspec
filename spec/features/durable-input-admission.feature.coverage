@@ -1,0 +1,128 @@
+{
+  "scenarios": [
+    {
+      "name": "Untouched accepted history remains eligible for selected compaction",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/historical.rs",
+          "lines": "12-34",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Six supervisor inputs canceled before admission remain audit only",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/cancellation.rs",
+          "lines": "7-40",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Two supervisor inputs submitted during interruption remain audit only",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/cancellation.rs",
+          "lines": "42-75",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cancellation during a prompt hook preserves audit without conversation membership",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/cancellation.rs",
+          "lines": "77-104",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cancellation during original persistence preserves audit without conversation membership",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/boundaries.rs",
+          "lines": "8-63",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cancellation while awaiting the runtime lock does not admit the input",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/boundaries.rs",
+          "lines": "65-98",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Interrupted execution cannot revoke an already admitted input",
+      "testMappings": []
+    },
+    {
+      "name": "Provider setup and pre-prompt compaction failure cannot split admitted history",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/setup_failure.rs",
+          "lines": "8-63",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Submission identity survives retries images and identical prompt text",
+      "testMappings": []
+    },
+    {
+      "name": "Durability acknowledgment loss never grants unresolved execution authority",
+      "testMappings": []
+    },
+    {
+      "name": "Process death preserves input disposition without replaying effects",
+      "testMappings": []
+    },
+    {
+      "name": "Cancellation and cold continuation survive successive automatic compactions",
+      "testMappings": []
+    },
+    {
+      "name": "Legacy divergent histories and altered ancestry remain fail closed",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/historical.rs",
+          "lines": "36-114",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Process death after queue acknowledgment retains the pending submission",
+      "testMappings": [
+        {
+          "file": "rust/agent-loop/tests/bug284/pending_crash.rs",
+          "lines": "19-90",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 9,
+    "coveragePercent": 64,
+    "testFiles": [
+      "rust/agent-loop/tests/bug284/historical.rs",
+      "rust/agent-loop/tests/bug284/cancellation.rs",
+      "rust/agent-loop/tests/bug284/boundaries.rs",
+      "rust/agent-loop/tests/bug284/setup_failure.rs",
+      "rust/agent-loop/tests/bug284/pending_crash.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 416
+  }
+}

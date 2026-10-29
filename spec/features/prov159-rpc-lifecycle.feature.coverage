@@ -77,32 +77,37 @@
               ]
             },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/interaction.rs",
               "lines": [
-                860,
-                861,
-                862,
-                863,
-                864,
-                865,
-                892,
-                893,
-                894,
-                895,
-                896,
-                897,
-                898,
-                899,
-                900,
-                901,
-                902,
-                903,
-                904,
-                905,
-                906,
-                907,
-                908,
-                909
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/provider_auth.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
               ]
             }
           ]
@@ -179,7 +184,8 @@
       "rust/providers/src/codex/auth_lifecycle.rs",
       "rust/providers/src/codex/oauth_callback.rs",
       "rust/fspec-tui/src/transport/oauth_context.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/embedded/interaction.rs",
+      "rust/fspec-tui/src/transport/embedded/provider_auth.rs",
       "rust/providers/src/codex/codex_oauth_server.rs"
     ],
     "totalLinesCovered": 297

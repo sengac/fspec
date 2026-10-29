@@ -21,13 +21,13 @@
               ]
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/conversation.rs",
               "lines": [
-                1051,
-                1052,
-                1053,
-                1054,
-                1055
+                98,
+                99,
+                100,
+                101,
+                102
               ]
             }
           ]
@@ -44,7 +44,7 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/transport/focus_events.rs",
-      "rust/fspec-tui/src/transport/websocket.rs"
+      "rust/fspec-tui/src/transport/websocket/conversation.rs"
     ],
     "totalLinesCovered": 70
   }

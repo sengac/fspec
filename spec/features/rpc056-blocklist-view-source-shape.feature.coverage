@@ -285,33 +285,38 @@
           "lines": "98-117",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/providers_sessions.rs",
               "lines": [
-                378,
-                379,
-                380,
-                381,
-                382,
-                383,
-                384,
-                385,
-                1404,
-                1405,
-                1406,
-                1407,
-                1408,
-                1409,
-                1410,
-                1411,
-                1412,
-                1413,
-                1414,
-                1415,
-                1416,
-                1417,
-                1418,
-                1419,
-                1420
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/health_checkpoints.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
               ]
             }
           ]
@@ -326,21 +331,21 @@
           "lines": "121-141",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/session_history.rs",
               "lines": [
-                528,
-                529,
-                530,
-                531,
-                532,
-                533,
-                534,
-                535,
-                536,
-                537,
-                538,
-                539,
-                540
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
               ]
             }
           ]
@@ -355,30 +360,30 @@
           "lines": "145-176",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                578,
-                579,
-                580,
-                581,
-                582,
-                583,
-                584,
-                585
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
               ]
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/profiles_control.rs",
               "lines": [
-                942,
-                943,
-                944,
-                945,
-                946,
-                947,
-                948,
-                949,
-                950
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
               ]
             }
           ]
@@ -1074,10 +1079,11 @@
     "implFiles": [
       "rust/rpc-types/src/lib.rs",
       "rust/core/src/session_manager_handle.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/rpc/src/service_declaration/providers_sessions.rs",
+      "rust/rpc/src/service_implementation/health_checkpoints.rs",
+      "rust/fspec-tui/src/transport/backend/session_history.rs",
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+      "rust/fspec-tui/src/transport/websocket/profiles_control.rs",
       "rust/fspec-tui/src/views/blocklist/mod.rs",
       "rust/fspec-tui/src/views/navigator.rs",
       "rust/fspec-tui/src/app/dispatch_blocklist.rs"

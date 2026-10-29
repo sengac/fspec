@@ -14,13 +14,14 @@ use codelet_rpc_types::SessionId;
 #[test]
 fn action_enum_gains_navigator_slice_variants() {
     // @step Given the Action enum in rust/fspec-tui/src/components/mod.rs
-    let source = common::read_to_string_or_panic(
+    let source = codelet_test_helpers::source_composition::read_source(
         &common::workspace_root()
             .join("fspec-tui")
             .join("src")
             .join("components")
             .join("mod.rs"),
-    );
+    )
+    .expect("resolve Action enum source");
     // @step Then it contains the variant EnterWorkUnit(String)
     assert!(source.contains("EnterWorkUnit(String)"));
     let _ = Action::EnterWorkUnit("AUTH-001".to_string());

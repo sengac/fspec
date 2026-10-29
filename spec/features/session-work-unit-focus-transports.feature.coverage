@@ -35,34 +35,6 @@
               ]
             },
             {
-              "file": "rust/rpc/src/lib.rs",
-              "lines": [
-                1913,
-                1914,
-                1915,
-                1916,
-                1917,
-                1918,
-                1919,
-                1920,
-                1921,
-                1922,
-                1923,
-                1924,
-                1925,
-                1926,
-                1927,
-                1928,
-                1929,
-                1930,
-                1931,
-                1932,
-                1933,
-                1934,
-                1935
-              ]
-            },
-            {
               "file": "rust/rpc-types/src/work_unit_focus.rs",
               "lines": [
                 1,
@@ -111,6 +83,34 @@
                 147,
                 239
               ]
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/session_control.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
             }
           ]
         }
@@ -126,10 +126,10 @@
     ],
     "implFiles": [
       "rust/rpc-server/src/focus_fanout.rs",
-      "rust/rpc/src/lib.rs",
       "rust/rpc-types/src/work_unit_focus.rs",
       "rust/rpc-embedded/src/lib.rs",
-      "rust/rpc-server/src/server.rs"
+      "rust/rpc-server/src/server.rs",
+      "rust/rpc/src/service_implementation/session_control.rs"
     ],
     "totalLinesCovered": 236
   }

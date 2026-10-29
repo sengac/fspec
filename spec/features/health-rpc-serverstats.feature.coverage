@@ -190,17 +190,17 @@
           "lines": "125-156",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/supervisor_handle.rs",
               "lines": [
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
               ]
             }
           ]
@@ -331,7 +331,7 @@
     "implFiles": [
       "rust/rpc/src/lib.rs",
       "rust/rpc-types/src/lib.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/transport/websocket/supervisor_handle.rs",
       "rust/rpc-server/src/server.rs"
     ],
     "totalLinesCovered": 448

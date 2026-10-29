@@ -30,6 +30,42 @@ const DEFAULT_CONTEXT_WINDOW: usize = 128_000;
 /// For local servers, use OPENAI_MAX_OUTPUT_TOKENS to match your model's actual limit
 const DEFAULT_MAX_OUTPUT_TOKENS: usize = 4096;
 
+/// Anti-ramble sampling settings applied to LOCAL endpoints only
+/// (i.e. when `OPENAI_BASE_URL` is set — Ollama, vLLM, LM Studio, LocalAI,
+/// llama.cpp, or any other OpenAI-compatible local server). Cloud OpenAI
+/// requests are left untouched.
+///
+/// | Setting            | Value |
+/// | ------------------ | ----- |
+/// | Temperature        | 0.7   |
+/// | Top P              | 0.80  |
+/// | Top K              | 20    |
+/// | Min P              | 0.0   |
+/// | Presence penalty   | 1.5   |
+/// | Repetition penalty | 1.0   |
+///
+/// `top_k` / `min_p` are sent as flat OpenAI-compatible fields. Servers that
+/// ignore unknown fields (OpenAI cloud, vLLM defaults) simply drop them, so
+/// the same body is safe on every local server that accepts OpenAI chat
+/// requests.
+const ANTI_RAMBLE_TEMPERATURE: f64 = 0.7;
+const ANTI_RAMBLE_TOP_P: f64 = 0.8;
+const ANTI_RAMBLE_TOP_K: u32 = 20;
+const ANTI_RAMBLE_MIN_P: f64 = 0.0;
+const ANTI_RAMBLE_PRESENCE_PENALTY: f64 = 1.5;
+const ANTI_RAMBLE_REPETITION_PENALTY: f64 = 1.0;
+
+/// Build the anti-ramble sampling body for local endpoints.
+fn anti_ramble_additional_params() -> serde_json::Value {
+    serde_json::json!({
+        "top_p": ANTI_RAMBLE_TOP_P,
+        "top_k": ANTI_RAMBLE_TOP_K,
+        "min_p": ANTI_RAMBLE_MIN_P,
+        "presence_penalty": ANTI_RAMBLE_PRESENCE_PENALTY,
+        "repetition_penalty": ANTI_RAMBLE_REPETITION_PENALTY,
+    })
+}
+
 /// Context window size constant (for backwards compatibility)
 pub const CONTEXT_WINDOW: usize = DEFAULT_CONTEXT_WINDOW;
 
@@ -415,6 +451,15 @@ impl OpenAIProvider {
             agent_builder = agent_builder.preamble(&effective_preamble);
         }
 
+        // Anti-ramble sampling for local endpoints (Ollama / vLLM / LM Studio /
+        // LocalAI / any OpenAI-compatible local server). Cloud OpenAI keeps
+        // provider defaults so behaviour there is unchanged.
+        if self.is_local_endpoint() {
+            agent_builder = agent_builder
+                .temperature(ANTI_RAMBLE_TEMPERATURE)
+                .additional_params(anti_ramble_additional_params());
+        }
+
         agent_builder.build()
     }
 
@@ -502,6 +547,14 @@ impl LlmProvider for OpenAIProvider {
 
         if let Some(preamble_text) = preamble {
             builder = builder.preamble(preamble_text);
+        }
+
+        // Anti-ramble sampling for local endpoints — same values as the
+        // agent path (see `create_rig_agent`).
+        if self.is_local_endpoint() {
+            builder = builder
+                .temperature(ANTI_RAMBLE_TEMPERATURE)
+                .additional_params(anti_ramble_additional_params());
         }
 
         // Send request and get response

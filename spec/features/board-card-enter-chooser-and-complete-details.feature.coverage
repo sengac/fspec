@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "Board Enter opens a modal chooser and Escape preserves context",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/chooser.rs",
+          "lines": "7-58",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Default agent choice uses the captured card and earliest associated agent",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/chooser.rs",
+          "lines": "60-94",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unassociated agent choice retains normal isolated and cancel behavior",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/chooser.rs",
+          "lines": "96-161",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Mux Enter overlays the chooser without replacing the grid",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/chooser.rs",
+          "lines": "163-209",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Empty board Enter does not offer card actions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/chooser.rs",
+          "lines": "211-230",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Full canonical details agree across embedded and WebSocket backends",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/loading.rs",
+          "lines": "8-115",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Missing and malformed canonical cards show errors without losing the chooser",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/loading.rs",
+          "lines": "117-160",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reopening the same card rejects stale success and error completions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/loading.rs",
+          "lines": "162-213",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Dismissed requests cannot resurrect dialogs or replace another card",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/loading.rs",
+          "lines": "215-252",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unicode details wrap scroll and retain focus on resize",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/details.rs",
+          "lines": "9-48",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Linked card cycles support back history and missing targets retain context",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/details.rs",
+          "lines": "50-90",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Attachments retain exact paths and unavailable viewer failures retain details",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/attachments.rs",
+          "lines": "35-154",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Missing directory and rejected attachment paths show contextual errors",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/attachments.rs",
+          "lines": "156-189",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Display sanitization preserves original identifiers and attachment actions",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/attachments.rs",
+          "lines": "191-224",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Details consume modal shortcuts and paste without changing underlying state",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/details.rs",
+          "lines": "92-203",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Resized details use current mouse geometry and reveal keyboard focus",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/details.rs",
+          "lines": "205-262",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Footer and help describe card choices and details controls",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024/details.rs",
+          "lines": "264-287",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 17,
+    "coveredScenarios": 17,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board024/chooser.rs",
+      "rust/fspec-tui/tests/board024/loading.rs",
+      "rust/fspec-tui/tests/board024/details.rs",
+      "rust/fspec-tui/tests/board024/attachments.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 925
+  }
+}

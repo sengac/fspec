@@ -292,23 +292,23 @@
           "lines": "664-730",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                660,
-                661,
-                662,
-                663,
-                664,
-                665,
-                666,
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
               ]
             }
           ]
@@ -328,7 +328,7 @@
       "rust/fspec-tui/src/app/dispatch_provider_settings_oauth.rs",
       "rust/fspec-tui/src/views/provider_settings/oauth_confirm.rs",
       "rust/rpc/src/oauth_disconnect.rs",
-      "rust/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/embedded/focus_supervision.rs"
     ],
     "totalLinesCovered": 581
   }

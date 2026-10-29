@@ -4,8 +4,8 @@
       "name": "/provider slash command opens ProviderSettingsView",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "78-116",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/lifecycle.rs",
+          "lines": "5-45",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -48,8 +48,8 @@
       "name": "/providers (plural) is NOT a slash command",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "467-498",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/lifecycle.rs",
+          "lines": "72-101",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
@@ -145,8 +145,8 @@
       "name": "Re-opening /provider resets the view to a clean List mode",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "539-572",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/lifecycle.rs",
+          "lines": "103-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -189,8 +189,8 @@
       "name": "Esc returns from ProviderSettingsView to AgentView",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "124-153",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/lifecycle.rs",
+          "lines": "47-70",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -246,8 +246,8 @@
       "name": "Saving an API key fires backend.set_provider_credentials and refreshes the list",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "155-214",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/credentials.rs",
+          "lines": "5-60",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -353,8 +353,8 @@
       "name": "Pressing t inside Detail::Summary runs a connection test",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "216-259",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/status.rs",
+          "lines": "5-47",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -415,8 +415,8 @@
       "name": "Backend test_provider_connection error surfaces inline as ✗",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "261-312",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/status.rs",
+          "lines": "49-96",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -492,8 +492,8 @@
       "name": "Pressing r inside Detail::Summary refreshes the model cache",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "314-374",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/status.rs",
+          "lines": "98-154",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -549,8 +549,8 @@
       "name": "d on a configured row opens ConfirmDialog before the backend is called",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "574-610",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/credentials.rs",
+          "lines": "116-148",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/list.rs",
@@ -586,8 +586,8 @@
       "name": "Enter on ConfirmDialog Primary fires backend.delete_provider_credentials",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "376-430",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/credentials.rs",
+          "lines": "62-114",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -623,8 +623,8 @@
       "name": "Esc on ConfirmDialog cancels without backend round-trip",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "612-644",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/credentials.rs",
+          "lines": "150-179",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -690,8 +690,8 @@
       "name": "Backend list_provider_credentials error logs via tracing only",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-          "lines": "432-498",
+          "file": "rust/fspec-tui/tests/provider_dispatch_rpc054/status.rs",
+          "lines": "156-219",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -786,7 +786,9 @@
     "coveredScenarios": 12,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/provider_settings_dispatch_rpc054.rs"
+      "rust/fspec-tui/tests/provider_dispatch_rpc054/lifecycle.rs",
+      "rust/fspec-tui/tests/provider_dispatch_rpc054/credentials.rs",
+      "rust/fspec-tui/tests/provider_dispatch_rpc054/status.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_provider_settings.rs",
@@ -794,6 +796,6 @@
       "rust/fspec-tui/src/views/provider_settings/list.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs"
     ],
-    "totalLinesCovered": 1132
+    "totalLinesCovered": 1097
   }
 }

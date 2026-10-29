@@ -28,7 +28,8 @@ fn fspec_backend_trait_surface_exposes_5_rpc_methods_and_3_broadcast_subscriptio
         .join("src")
         .join("transport")
         .join("mod.rs");
-    let raw = common::read_to_string_or_panic(&path);
+    let raw = codelet_test_helpers::source_composition::read_source(&path)
+        .expect("resolve FspecBackend source");
     let src = common::strip_rust_comments(&raw);
 
     // @step When I inspect the public trait declaration
@@ -141,7 +142,10 @@ fn priority_enum_has_the_exact_repr_u32_discriminants_from_rpc_002_doc_09() {
         .join("src")
         .join("components")
         .join("mod.rs");
-    let src = common::strip_rust_comments(&common::read_to_string_or_panic(&path));
+    let src = common::strip_rust_comments(
+        &codelet_test_helpers::source_composition::read_source(&path)
+            .expect("resolve Priority enum source"),
+    );
     assert!(
         src.contains("#[repr(u32)]"),
         "Priority enum must be #[repr(u32)] (RPC-002 doc 09 §A.1)"
@@ -179,7 +183,10 @@ fn component_trait_surface_exposes_documented_methods_and_defaults() {
         .join("src")
         .join("components")
         .join("mod.rs");
-    let src = common::strip_rust_comments(&common::read_to_string_or_panic(&path));
+    let src = common::strip_rust_comments(
+        &codelet_test_helpers::source_composition::read_source(&path)
+            .expect("resolve Component trait source"),
+    );
 
     // @step When I inspect the trait declaration
     // @step Then the trait is bounded Send (no Sync)

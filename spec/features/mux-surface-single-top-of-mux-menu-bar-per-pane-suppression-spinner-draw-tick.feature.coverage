@@ -600,31 +600,31 @@
           "lines": "659-691",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
                 117,
                 118,
                 119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139
+                120
               ]
             }
           ]
@@ -1193,32 +1193,32 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
-          "lines": "1208-1252",
+          "lines": "1341-1392",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
               "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
                 36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56
+                37
               ]
             }
           ]
@@ -1562,7 +1562,7 @@
       "rust/fspec-tui/src/views/multiplex/render.rs",
       "rust/fspec-tui/src/views/multiplex/menu_keys.rs",
       "rust/fspec-tui/src/app/dispatch_menu_mux.rs",
-      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/fspec-tui/src/views/navigator_mux_routing.rs",
       "rust/fspec-tui/src/views/multiplex/menu_state.rs",
       "rust/fspec-tui/src/app/dispatch_menu.rs",
       "rust/fspec-tui/src/views/multiplex/menu_mouse.rs",
@@ -1570,6 +1570,6 @@
       "rust/fspec-tui/src/views/navigator_menu_bar.rs",
       "rust/fspec-tui/src/views/multiplex/window.rs"
     ],
-    "totalLinesCovered": 2269
+    "totalLinesCovered": 2276
   }
 }

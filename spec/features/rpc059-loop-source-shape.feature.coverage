@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "34-65",
+          "lines": "37-66",
           "implMappings": [
             {
               "file": "rust/rpc-types/src/lib.rs",
@@ -39,7 +39,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "66-104",
+          "lines": "69-105",
           "implMappings": [
             {
               "file": "rust/core/src/session_manager_handle.rs",
@@ -90,7 +90,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "105-129",
+          "lines": "108-130",
           "implMappings": [
             {
               "file": "rust/core/src/session_manager_handle.rs",
@@ -119,26 +119,26 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
-          "lines": "130-162",
+          "lines": "133-163",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/providers_sessions.rs",
               "lines": [
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432,
-                433,
-                434,
-                435
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
               ]
             }
           ]
@@ -153,34 +153,38 @@
           "lines": "163-194",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/session_context.rs",
               "lines": [
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/backend/session_history.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
               ]
             }
           ]
@@ -195,34 +199,34 @@
           "lines": "195-232",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                663,
-                664,
-                665,
-                666,
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675,
-                676,
-                677,
-                678,
-                679,
-                680,
-                681,
-                682,
-                683,
-                684,
-                685,
-                686,
-                687,
-                688
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
               ]
             }
           ]
@@ -644,12 +648,13 @@
     "implFiles": [
       "rust/rpc-types/src/lib.rs",
       "rust/core/src/session_manager_handle.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc/src/service_declaration/providers_sessions.rs",
+      "rust/fspec-tui/src/transport/backend/session_context.rs",
+      "rust/fspec-tui/src/transport/backend/session_history.rs",
+      "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
       "rust/fspec-tui/src/app/loop_parser.rs",
       "rust/fspec-tui/src/app/dispatch_slash_loop.rs"
     ],
-    "totalLinesCovered": 762
+    "totalLinesCovered": 753
   }
 }

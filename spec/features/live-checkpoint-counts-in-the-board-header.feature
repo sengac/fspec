@@ -47,10 +47,15 @@ Feature: Live checkpoint counts in the board header
     Then app.board_store().checkpoint_counts() returns CheckpointCounts { manual: 1, auto: 0 }
     And bootstrap spawns exactly 9 subscriber tasks with the git-state stream replacing the checkpoint-changed stream (no separate checkpoint-changed subscriber remains; RPC-434 adds session_removed; RPC-437 adds session_cleared)
 
-  Scenario: Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore
-    Given an App wired to an EmbeddedFspecBackend whose SharedFspecService has with_cwd on a temp git repo with no checkpoints, bootstrapped so the BoardStore holds CheckpointCounts { manual: 0, auto: 0 }
-    When a manual ghost-checkpoint ref is written into the repo while the App is running
-    Then the App's git-state subscriber folds the frame and app.board_store().checkpoint_counts() returns CheckpointCounts { manual: 1, auto: 0 } without any TUI restart
+  Scenario Outline: Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore
+    Given an App wired to an EmbeddedFspecBackend whose SharedFspecService has with_cwd on a temp git repo with <initial_manual> manual and <initial_auto> auto checkpoints, bootstrapped so the BoardStore holds CheckpointCounts { manual: <initial_manual>, auto: <initial_auto> }
+    When a manual ghost-checkpoint ref is <mutation> the repo while the App is running
+    Then the App's git-state subscriber folds the frame and app.board_store().checkpoint_counts() returns CheckpointCounts { manual: <final_manual>, auto: <final_auto> } without any TUI restart
+
+    Examples:
+      | initial_manual | initial_auto | mutation     | final_manual | final_auto |
+      | 0              | 0            | written into | 1            | 0          |
+      | 1              | 1            | deleted from | 0            | 1          |
 
   Scenario: WebSocket transport degrades gracefully when the git-state push is not forwarded
     Given an App wired to a WebSocketFspecBackend (remote transport, git-state push not forwarded), bootstrapped so the BoardStore holds the bootstrap CheckpointCounts { manual: 1, auto: 1 }

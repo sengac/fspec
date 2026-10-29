@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-10-28T10:21:40.939Z",
+    "lastUpdated": "2026-10-28T22:34:53.995Z",
     "version": "1.0.0"
   },
   "migrationHistory": [
@@ -26,7 +26,7 @@
     "BLOCK": 12,
     "BRIDGE": 21,
     "BROWSE": 2,
-    "BUG": 282,
+    "BUG": 284,
     "CACHE": 1,
     "CLEAN": 8,
     "CLI": 15,
@@ -68,7 +68,7 @@
     "PAUSE": 1,
     "PERF": 2,
     "PROV": 162,
-    "REFAC": 18,
+    "REFAC": 20,
     "REMIND": 17,
     "RES": 22,
     "REVIEW": 1,
@@ -92,7 +92,7 @@
     "VIZ": 4,
     "WATCH": 24,
     "UPD": 4,
-    "BOARD": 23,
+    "BOARD": 24,
     "MUX": 9,
     "WT": 12,
     "LAYA": 9,
@@ -258,12 +258,15 @@
     "testing": [
       "AGENT-014",
       "AGENT-017",
-      "PROV-094"
+      "PROV-094",
+      "BOARD-024",
+      "BUG-284",
+      "REFAC-020"
     ],
-    "implementing": [
-      "AUDIT-002"
+    "implementing": [],
+    "validating": [
+      "REFAC-019"
     ],
-    "validating": [],
     "done": [
       "AGENT-018",
       "AGENT-020",
@@ -1903,7 +1906,8 @@
       "BUG-279",
       "BUG-282",
       "BUG-280",
-      "BUG-281"
+      "BUG-281",
+      "BUG-283"
     ],
     "blocked": [
       "QUERY-001",
@@ -233858,154 +233862,7 @@
         "spec/attachments/AUDIT-001/laya_results.json.gz",
         "spec/attachments/AUDIT-001/qmap.json.gz",
         "spec/attachments/AUDIT-001/records.jsonl.gz"
-      ],
-      "relatesTo": [
-        "AUDIT-002"
       ]
-    },
-    "AUDIT-002": {
-      "id": "AUDIT-002",
-      "title": "Remediate coverage-mapping audit findings (dead mappings, divergent links, hygiene)",
-      "type": "story",
-      "status": "implementing",
-      "createdAt": "2026-09-22T00:44:36.569Z",
-      "updatedAt": "2026-09-22T08:15:36.482Z",
-      "description": "Fix the issues found by the 2026-09-22 coverage audit (process card: AUDIT-001). Three priority bands, full data in attachments: P0 migrate-or-delete dead mappings (~7,225 records: 3,730 impl + 3,495 test refs to files deleted in the TS->Rust migration, plus 761 impl + 293 test line refs past EOF); P1 re-link the 553 laya-divergent + 55 unverifiable mappings — dominant pattern is whole-file blob mappings (e.g. delete-scenario-rust-port maps lines 1-282 for all 5 scenarios; top file: rust/tools/src/facade/wrapper.rs with 21/63 divergent); P2 hygiene: 552 scenarios with no test mapping, 297 test mappings without impl links, 345 impl blocks >300 lines, 78 scattered line sets. Work order suggestion: P1 first (live files, highest signal, machine-readable fixlist.json attached), then P0 triage per-feature (migrate to Rust paths where a port exists, archive where dead), then P2. Verify each band with the coverage show/audit and validation commands after re-linking.",
-      "epic": "coverage-audit",
-      "children": [],
-      "attachments": [
-        "spec/attachments/AUDIT-002/AUDIT_FINDINGS.md",
-        "spec/attachments/AUDIT-002/fixlist.json.gz",
-        "spec/attachments/AUDIT-002/problems.json.gz",
-        "spec/attachments/AUDIT-002/AUDIT_PROCESS.md",
-        "spec/attachments/AUDIT-002/per_qid.json.gz",
-        "spec/attachments/AUDIT-002/ast-research-wrapper-divergent-mappings.md"
-      ],
-      "userStory": {
-        "role": "fspec maintainer",
-        "action": "remediate the coverage mappings the audit flagged (dead paths, blob/divergent links, unlinked scenarios)",
-        "benefit": "show-coverage and audit reports reflect the Rust codebase and trust their coverage gates"
-      },
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2026-09-22T00:49:02.790Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2026-09-22T05:21:15.303Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2026-09-22T07:01:25.847Z"
-        }
-      ],
-      "rules": [
-        {
-          "id": 0,
-          "text": "Work in priority order: P1 divergent/unverifiable re-links (live files, fixlist.json) first, then P0 dead-path migration/retirement (problems.json), then P2 hygiene",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:49:09.677Z"
-        },
-        {
-          "id": 1,
-          "text": "P1 re-links must point at the specific function(s) that implement the scenario — whole-file blob mappings (all scenarios → the same large line range) are forbidden; every impl mapping must be a tight per-function range",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:49:14.613Z"
-        },
-        {
-          "id": 2,
-          "text": "P0: a coverage file whose mappings are all dead gets either fresh Rust mappings (when a port exists) or is retired/archived — no coverage file may keep referencing deleted files",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:49:19.571Z"
-        },
-        {
-          "id": 3,
-          "text": "After each remediation band, the project's coverage validation must pass: structural audit shows zero file-missing / beyond-EOF defects for the touched features, and no impl mapping exceeds 300 lines",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:49:34.805Z"
-        }
-      ],
-      "nextRuleId": 4,
-      "examples": [
-        {
-          "id": 0,
-          "text": "delete-scenario-rust-port: all 5 scenarios currently map lines 1-282 of rust/fspec-core/src/commands/delete_scenario.rs; after the fix each scenario maps only its own function's line range (e.g. 'Dispatcher reports a missing scenario name' → the error-branch lines of run())",
-          "deleted": true,
-          "createdAt": "2026-09-22T00:49:53.805Z",
-          "deletedAt": "2026-09-22T00:50:04.577Z"
-        },
-        {
-          "id": 1,
-          "text": "Maintainer opens fixlist.json, sees rust/tools/src/facade/wrapper.rs at the top with 21 divergent scenarios; re-links those 21 scenarios to the specific functions they exercise, then confirms the feature's audit verdict flips from divergent to aligned on re-audit",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:50:14.273Z"
-        },
-        {
-          "id": 2,
-          "text": "Maintainer runs the structural audit after P0 work and sees the dead-file count for migrated features drop to zero — each previously-dead feature now either maps to its Rust port or is retired from the coverage set",
-          "deleted": false,
-          "createdAt": "2026-09-22T00:50:24.761Z"
-        }
-      ],
-      "nextExampleId": 3,
-      "architectureNotes": [
-        {
-          "id": 0,
-          "text": "Source of truth for remediation: spec/attachments/AUDIT-002/fixlist.json (P1, 608 items grouped by impl file), problems.json.gz (P0/P2, 8,999 records). Re-link via the coverage link command (featureName + scenario + implFile/implLines + testFile/testLines); validate with show-coverage + audit-coverage + the project validation checks after each band.",
-          "deleted": true,
-          "createdAt": "2026-09-22T00:50:56.650Z",
-          "deletedAt": "2026-09-22T01:10:49.188Z"
-        },
-        {
-          "id": 1,
-          "text": "Source of truth for remediation: attachments fixlist.json.gz (P1, 608 items grouped by impl file — decompress with gunzip) and problems.json.gz (P0/P2, 8,999 records). Re-link each scenario via the coverage link command (featureName + scenario + implFile/implLines + testFile/testLines); validate with show-coverage + audit-coverage + the project validation checks after each band.",
-          "deleted": false,
-          "createdAt": "2026-09-22T01:10:58.301Z"
-        },
-        {
-          "id": 2,
-          "text": "Progress 2026-09-22: P1 top-5 blob commands re-linked to tight per-function ranges (show-coverage 27 scenarios, show-epic 16, tag-stats 13, query-orphans 10, reverse 18 = 84 scenarios; all impl mappings now single-function ranges, none >300 lines; structural audit-coverage clean for all 5). COV-056 (@deprecated exemption) done in parallel: commit 54a24a7a. Two pre-existing @step text mismatches fixed in tests (show_coverage.rs summary-order step, reverse.rs status-empty-body steps). Remaining: fixlist P1 items 64-608 (isolated-session-file-operations/wrapper.rs 21 div, answer-question, query-metrics, add-capability, etc.), P0 dead-path migration (5865 legacy src/ records), P2 hygiene.",
-          "deleted": false,
-          "createdAt": "2026-09-22T03:36:00.509Z"
-        },
-        {
-          "id": 3,
-          "text": "Progress 2026-09-22 (band 2): wrapper.rs P1 top-21 done — isolated-session-file-operations (23/23 scenarios now mapped to new Rust integration test rust/sessions/tests/iso001_isolated_session_file_operations.rs + tight per-tool call ranges; dead TS test mapping removed; audit-coverage clean). Tests exposed a real production gap: base Read/Write/Edit tools never emitted the BLOCK-006 block notification — fixed via new gateway helper validate_and_resolve_path_with_block_notification (wrapper.rs 813-824) used by read.rs/write.rs/edit.rs call() + the facade wrapper Write/Edit arms. Fixed stale step in feature (traversal path is ../../../src/main.ts from worktree root). require-session-id 5 divergent scenarios re-linked (test_* fn ranges + with_cwd 944-966 / with_isolation 805-932). Also fixed pre-existing format-sensitive wt004 shape assertion (whitespace-tolerant shim check). 23/23 + 13/13 green, clippy clean. Remaining: fixlist P1 items beyond wrapper.rs (modellimits 8, compaction 7, query-metrics 7, add-capability 6, codex.rs 6, cli recovery_compaction 6, restore_checkpoint 6, ...), P0 dead-path migration, P2 hygiene.",
-          "deleted": false,
-          "createdAt": "2026-09-22T06:45:50.001Z"
-        },
-        {
-          "id": 4,
-          "text": "Progress 2026-09-22 (band 2 committed, 078e018b): BLOCK-006 production fix — base Read/Write/Edit tools now emit the isolation block notification via validate_and_resolve_path_with_block_notification (read/write/edit call() + facade wrapper Write/Edit arms). New E2E iso001 test (23/23, no mocks) + wt004 13/13; isolated-session-file-operations 23/23 and require-session-id 13/13 coverage re-linked, audit-coverage clean (59/59, 73/73). AUDIT-002 acceptance tests landed: coverage-mapping-remediation.rs (2/2 green, clippy clean) mapping both scenarios of coverage-mapping-remediation.feature; link-coverage 100% (2/2). Remaining: P1 fixlist beyond wrapper.rs (modellimits 8, compaction 7, query-metrics 7, add-capability 6, codex.rs 6, cli recovery_compaction 6, restore_checkpoint 6, ...), P0 dead-path migration, P2 hygiene.",
-          "deleted": false,
-          "createdAt": "2026-09-22T07:05:45.646Z"
-        },
-        {
-          "id": 5,
-          "text": "Progress 2026-09-22 (band 3 committed, 4d0038d4): P1 fixlist top-11 beyond wrapper.rs done — 82 divergent/unverifiable scenarios across 11 impl files (answer-question 8, model-limits 8, query-metrics 7, add-capability 6, astgrep_refactor 6, codex facades 11, recovery_compaction 6, restore_checkpoint 7, show-foundation 6, show-foundation-event-storm 6 + 1 lower-layer conflict) re-linked from whole-file blobs to per-function ranges (none >300 lines); removed 1 dead mapping to deleted compaction_retry.rs; audit-coverage clean for all 17 touched features. Fixed 3 pre-existing @step mismatches (ast-code-refactor multi-match pattern, unify-compaction lifecycle Then/And drift, preserve-partial stale cumulative-billed step vs shipped TOKEN-001) + 1 stale test line range (restore-checkpoint reject-empty-name 265-284). P1 progress: 166/298 fixlist items re-linked (133 items / 11 files done in band 1-3; wrapper.rs 21 done in band 2). Remaining P1: 232 items across 281 files; then P0 dead-path migration, P2 hygiene.",
-          "deleted": false,
-          "createdAt": "2026-09-22T07:19:40.599Z"
-        },
-        {
-          "id": 6,
-          "text": "Progress 2026-09-22 (band 4, uncommitted): cleaned 2 thinking-model features that carried dead napi mappings from before the napi session_manager restructure — claude-opus-4-6-adaptive-thinking: removed 10 dead impl refs to rust/napi/src/session_manager.rs (file no longer exists; the behavior lives in rust/tools/src/facade/thinking_config.rs request_config_for_model + rust/napi/src/thinking_config.rs) and re-linked 'Opus/Sonnet 4.6 uses adaptive thinking automatically' to facade 48-69,253-260; legacy-compaction-cleanup: @deprecated added (CMPCT-013 done) and removed 2 dead impl refs (session_manager.rs line-16 blob, persistence/types.rs 1-50). All 6 touched features audit-coverage clean (0 missing files, 0 beyond-EOF, no >300-line blobs). P1 remaining: 232 fixlist items across 281 files; then P0 dead-path migration, P2 hygiene.",
-          "deleted": true,
-          "createdAt": "2026-09-22T08:12:12.940Z",
-          "deletedAt": "2026-09-22T08:15:31.428Z"
-        },
-        {
-          "id": 7,
-          "text": "Progress 2026-09-22 (band 4 committed, 88cbb7dd): P1 band 4 — add-dependency-rust-port (13), delete-features-rust-port (5), delete-scenario-rust-port (5), remove-capability-rust-port (7) re-linked from whole-file blobs to per-function ranges; claude-opus-4-6-adaptive-thinking 10 dead session_manager.rs refs removed + 2 scenarios re-linked to facade 48-69,253-260; legacy-compaction-cleanup @deprecated + @wip removed + 2 dead impl refs removed. All 7 touched features audit-coverage clean. P1 progress: ~196/298 fixlist items re-linked. Remaining P1: ~200 items across ~280 files; then P0 dead-path migration (5,865 legacy src/ records), P2 hygiene.",
-          "deleted": false,
-          "createdAt": "2026-09-22T08:15:36.482Z"
-        }
-      ],
-      "nextNoteId": 8,
-      "relatesTo": [
-        "AUDIT-001"
-      ],
-      "estimate": 13
     },
     "COV-056": {
       "id": "COV-056",
@@ -252776,6 +252633,765 @@
         }
       ],
       "nextNoteId": 4
+    },
+    "BUG-283": {
+      "id": "BUG-283",
+      "title": "Auxiliary views return to stale or empty agent instead of their navigation origin",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-10-28T12:11:25.589Z",
+      "updatedAt": "2026-10-28T13:34:47.179Z",
+      "description": "Opening Providers and other auxiliary views from different surfaces, especially after previously opening them from Agent view, then pressing Escape returns to an empty or stale Agent view rather than the surface most recently left. Investigate shared Navigator open/close routing, capture research, and specify origin-preserving return behavior for Board, Agent, and Mux entry paths.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T12:22:17.685Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T12:42:56.381Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T12:52:25.997Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T13:01:08.667Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T13:10:20.748Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T13:14:00.389Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-10-28T13:33:46.145Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-283/navigation-return-research.md",
+        "spec/attachments/BUG-283/red.log",
+        "spec/attachments/BUG-283/implementation-findings.md",
+        "spec/attachments/BUG-283/validation-evidence.md",
+        "spec/attachments/BUG-283/raw-validation-receipts.tar.gz",
+        "spec/attachments/BUG-283/done-verification.json",
+        "spec/attachments/BUG-283/validation-hashes.sha256",
+        "spec/attachments/BUG-283/quality-review-size-evidence.md",
+        "spec/attachments/BUG-283/quality-review-size-receipts.tar.gz",
+        "spec/attachments/BUG-283/quality-review-size-done.json",
+        "spec/attachments/BUG-283/quality-review-size-hashes.sha256"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Closing a full-screen auxiliary view must restore the surface that most recently opened the excursion (Board, Agent, or Mux), preserving its context rather than choosing a hard-coded Agent or Board destination; reopening from another surface must replace the previous origin.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:24:21.467Z"
+        },
+        {
+          "id": 1,
+          "text": "Switching between Providers and Models must preserve the original excursion caller across repeated Tab switches. Local Escape behavior for filters, details, forms, confirmations, and Mux pane dismissal must remain unchanged; restoring the caller must not create a session.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:24:29.809Z"
+        },
+        {
+          "id": 2,
+          "text": "Files, Checkpoints and Blocklist full-screen dismissal must use the same live-caller routing as Providers and Models. Pane-local Files/Checkpoints Escape in Mux continues to remove only the focused pane. Unrelated dialogs and the board Enter chooser are outside this change.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:35:40.866Z"
+        },
+        {
+          "id": 3,
+          "text": "Repeated auxiliary opens cannot overwrite the excursion origin with an auxiliary screen. Close actions for inactive screens are ignored. A missing recorded origin safely returns to Board; explicitly navigating to Board or Agent ends the old excursion. Persisted mux enabled and pre-mux-view preferences are not caller evidence.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:35:51.216Z"
+        },
+        {
+          "id": 4,
+          "text": "Navigation restoration itself performs no session creation, resume, assignment or model write. Explicit model commitment retains the existing RPC-022/PROV-118/MODEL-006 contract: with a session update that session; without one persist the default and perform the already-specified explicit creation retry. Agent-origin close/commit still returns to Agent, now with an explicit Agent precondition in existing regressions.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:35:58.810Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "On Board with no agent sessions, open Settings > Providers (or press P), then Escape from the root list: return to the same Board column/card selection without creating a session, rather than showing an empty Agent.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:24:38.618Z"
+        },
+        {
+          "id": 1,
+          "text": "Visit Providers from Agent A and close it, return to Board, then open Providers again and press Escape: return to Board, not the previously visited Agent A.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:24:47.290Z"
+        },
+        {
+          "id": 2,
+          "text": "From a Mux layout with a known focused pane, open Providers, Tab to Models and back repeatedly, then Escape: restore the same Mux layout and focused pane instead of a single Agent view.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:24:53.455Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent A has a work-unit assignment, draft and scrolled transcript: open and Escape from Providers, Models and Blocklist, retaining identity, assignment, draft and scroll; do not call create, resume, assignment or model-write backends for dismissal.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:06.591Z"
+        },
+        {
+          "id": 4,
+          "text": "From Board, Agent or Mux, Tab between Providers and Models repeatedly and commit a model for an existing session: return to that original view and update only the explicitly targeted session model. Closing without commit performs no model change. Choosing a default without a session keeps the existing explicit default-and-create retry behavior.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:13.382Z"
+        },
+        {
+          "id": 5,
+          "text": "Full-screen Files, Checkpoints and Blocklist opened from each supported caller return to that caller; provider filters/details/forms/confirmations and model filtering consume Escape locally, while Files/Checkpoints Escape within Mux still closes only its pane.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:20.797Z"
+        },
+        {
+          "id": 6,
+          "text": "Repeatedly opening Providers during one excursion still returns to its original caller. Closing a different or already-dismissed screen has no effect. Closing an auxiliary screen with no recorded caller returns safely to Board; leaving an excursion explicitly and starting another uses the new caller, even when the saved mux preference remains enabled.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:28.271Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "userStory": {
+        "role": "fspec TUI user",
+        "action": "return from auxiliary screens to the view I most recently left",
+        "benefit": "my board selection, agent context and multiplex layout remain intact without unexpected session changes"
+      },
+      "estimate": 5
+    },
+    "BOARD-024": {
+      "id": "BOARD-024",
+      "title": "Choose agent entry or scrollable complete card details on Enter",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2026-10-28T12:34:47.329Z",
+      "updatedAt": "2026-10-28T21:45:05.476Z",
+      "description": "Board and mux Enter opens a modal chooser defaulting to Open in agent, or full canonical card details with scrollable wrapped text, linked-card history and selectable attachments. Preserve existing BUG-280/281/282 session entry semantics and BUG-283-owned navigation files. Authorized task: /tmp/fspec-board-enter-task.md.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BOARD-024/board024-requirements-design.md",
+        "spec/attachments/BOARD-024/board024-refactor-proposal.md",
+        "spec/attachments/BOARD-024/board024-discovery-evidence.md",
+        "spec/attachments/BOARD-024/ast-research-board024-enter-and-event-routing.md",
+        "spec/attachments/BOARD-024/board024-red.log",
+        "spec/attachments/BOARD-024/board024-red-reviewed.log",
+        "spec/attachments/BOARD-024/board024-red-final.log",
+        "spec/attachments/BOARD-024/board024-rustfmt-check.log",
+        "spec/attachments/BOARD-024/board024-coordination-and-red-supplement.md",
+        "spec/attachments/BOARD-024/board024-narrow-integration-proposal.md",
+        "spec/attachments/BOARD-024/board024-red-mux-review.log",
+        "spec/attachments/BOARD-024/board024-supervisor-mux-review.md",
+        "spec/attachments/BOARD-024/board024-final-red.log",
+        "spec/attachments/BOARD-024/board024-final-handoff.md",
+        "spec/attachments/BOARD-024/board024-final-sources.sha256",
+        "spec/attachments/BOARD-024/board024-final-evidence.sha256",
+        "spec/attachments/BOARD-024/refac019-compaction-blocker-handoff.md",
+        "spec/attachments/BOARD-024/board024-corrected-causal-red.log",
+        "spec/attachments/BOARD-024/board024-additive-backend-causal-red-verified.log",
+        "spec/attachments/BOARD-024/board024-corrected-causal-red-final.log",
+        "spec/attachments/BOARD-024/board024-envelope-viewer-test-correction-receipt.md",
+        "spec/attachments/BOARD-024/board024-corrected-test-receipt.md",
+        "spec/attachments/BOARD-024/refac019-board024-current-evidence.md",
+        "spec/attachments/BOARD-024/board024-independent-audit-response.md",
+        "spec/attachments/BOARD-024/board024-selection-harness-red.log",
+        "spec/attachments/BOARD-024/board024-selection-harness-green-verified.log",
+        "spec/attachments/BOARD-024/board024-selection-harness-clippy-final.log",
+        "spec/attachments/BOARD-024/board024-independent-audit-causal-red.log",
+        "spec/attachments/BOARD-024/refac019-authority-correction.md"
+      ],
+      "userStory": {
+        "role": "developer using the kanban board",
+        "action": "choose agent entry or inspect complete card details on Enter",
+        "benefit": "inspect linked context and attachments without changing sessions"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T12:35:51.975Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T12:49:36.597Z",
+          "reason": "Feature and tags validated; actual AST discovery output now attached. Proceed only with user-authorized current-API RED tests, retaining production/refactor approval pause. No skip flags or gate bypass."
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Board and Mux Enter show a modal chooser defaulting to existing intent-safe agent entry; cancellation and detail browsing preserve the origin, selection, sessions and mux layout.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:01.859Z"
+        },
+        {
+          "id": 1,
+          "text": "Details read all canonical stored card fields through shared embedded/WebSocket transport, wrap Unicode and support arrows, pages, endpoints, wheel scrolling and resize-stable focus.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:02.031Z"
+        },
+        {
+          "id": 2,
+          "text": "Selectable linked cards maintain back history and attachments reuse exact-path viewing; loading, missing targets and failures stay visible without losing details; modal keys never leak.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:02.206Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Board Enter opens chooser; unknown keys and arrows do not move the board; Escape cancels unchanged and Enter on the default option performs existing agent entry.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:30.714Z"
+        },
+        {
+          "id": 1,
+          "text": "Mux Board Enter shows the same chooser; browsing or cancelling keeps pane focus/layout and Open in agent preserves existing mux entry semantics.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:30.888Z"
+        },
+        {
+          "id": 2,
+          "text": "Full details include a canonical long Unicode description plus relationships, example mapping, history and attachments omitted by WorkUnitInfo; both embedded and WebSocket provide identical data.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:31.067Z"
+        },
+        {
+          "id": 3,
+          "text": "Details wrap and scroll by arrows/pages/endpoints/wheel at narrow sizes and retain selection when resized.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:31.241Z"
+        },
+        {
+          "id": 4,
+          "text": "Tab selects linked cards and attachments; following a link then Escape restores parent scroll/focus; attachments open by exact path without closing details, and missing targets/viewer failures stay visible.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:36:31.423Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Approve the preparatory oversized-module refactor described in board024-refactor-proposal.md, or explicitly authorize minimal wiring additions to existing oversized files? Current decision requires a proposal, not permission to edit.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:39:39.139Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Current disposition from the user is NO authorization for broader refactoring or additions to oversized production files. Require refactor proposal remains in force. The follow-up explicitly authorizes executable acceptance specs and meaningful current-API Board/Mux behavioral RED tests only. Production integration remains paused until a later explicit decision approves a concrete refactor or a minimal-wiring exception. This records the known scope decision, not approval of either production option."
+        },
+        {
+          "id": 1,
+          "text": "@human: Confirm BUG-283 coordination clearance for the single try_dispatch_card_dialog(action) capability-chain addition in app/dispatch_capability.rs. User currently requires waiting for coordination.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:39:44.574Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Resolved by parent coordination update: BUG-283 owns navigator.rs, its auxiliary routing/helper and its own specs/tests. BOARD-024 owns only the single try_dispatch_card_dialog(action) branch in app/dispatch_capability.rs and independent dialog modules/specs/tests. This grants no broader refactor or oversized-file exception."
+        }
+      ],
+      "nextQuestionId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Coordination resolved by parent on 2026-10-28: BOARD-024 owns one try_dispatch_card_dialog(action) branch in dispatch_capability.rs and independent dialogs/specs/tests; BUG-283 owns navigator.rs auxiliary routing/helper and own specs/tests. Production remains paused pending unresolved refactor/oversized-file decision. User explicitly authorizes executable Gherkin plus current-API Board/Mux behavioral RED tests; do not bypass workflow gates. Preserve original evidence and append supplemental receipts.",
+          "deleted": false,
+          "createdAt": "2026-10-28T12:42:20.210Z"
+        },
+        {
+          "id": 1,
+          "text": "Independent work complete before approval handoff: formatted/validated BOARD-024 feature has 17 scenarios, each linked 1:1 to current-API behavioral tests in board024_enter_chooser target. Final safely scoped ci-test/debug0 offline jobs2 run compiles: 1 passed, 16 failed (15 missing chooser, 1 missing footer hint). Deeper canonical/race/attachment assertions are prepared but blocked behind chooser, not independently proven failures. Raw RED/format receipts and coordination supplement attached. Canonical state remains testing; no production implementation or Done claim. Only unresolved production decision: approve the six-file integration-only oversized-file exception in board024-narrow-integration-proposal.md, or authorize separately tracked preparatory refactor design. Shared dispatch branch coordination is resolved.",
+          "deleted": false,
+          "createdAt": "2026-10-28T13:19:11.041Z"
+        },
+        {
+          "id": 2,
+          "text": "Supervisor Mux review addressed in test-only changes: post-confirmation assertion now compares orientation/splits/panes/enabled only and separately requires intentional live focus change to earliest associated agent. Cancellation still preserves full config/focus. Supported coverage report already verified all 17 actual scenarios (no placeholder); affected line ranges relinked without duplicates. Rerun compiles: 1 pass,16 causal entry/footer failures, exit101. New supplemental Markdown and raw log attached. Post-confirmation and deeper assertions remain unreached, not claimed exercised. Production paused; refactor/oversized-file decision unresolved.",
+          "deleted": false,
+          "createdAt": "2026-10-28T13:22:24.802Z"
+        }
+      ],
+      "nextNoteId": 3
+    },
+    "REFAC-019": {
+      "id": "REFAC-019",
+      "title": "Decompose board dialog integration surfaces while preserving API and wire contracts",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2026-10-28T18:54:52.250Z",
+      "updatedAt": "2026-10-28T22:15:43.413Z",
+      "description": "User approved proper preparatory refactor for BOARD-024. Split oversized components Action surface, mux events, FspecBackend trait and embedded/WS delegates, and RPC service declaration/state/handlers into honest under-300-line whole-item composition modules. Preserve public APIs, method/wire ordering, default methods/object safety; update build schema input hashing and MCP service parsing honestly. Preserve Done BUG-283 checkout and all existing work. No restart/install/commit/security changes.",
+      "children": [
+        "REFAC-020"
+      ],
+      "attachments": [
+        "spec/attachments/REFAC-019/refac019-design-acceptance.md",
+        "spec/attachments/REFAC-019/ast-research-refac019-composition.md",
+        "spec/attachments/REFAC-019/refac019-baseline-red.log",
+        "spec/attachments/REFAC-019/refac019-cfg-red.log",
+        "spec/attachments/REFAC-019/refac019-helper-green-contract-red.log",
+        "spec/attachments/REFAC-019/refac019-contract-capture.log",
+        "spec/attachments/REFAC-019/refac019-frozen-contracts.sha256",
+        "spec/attachments/REFAC-019/refac019-behavior-before.log",
+        "spec/attachments/REFAC-019/refac019-compaction-blocker-handoff.md",
+        "spec/attachments/REFAC-019/refac019-native-contracts.log",
+        "spec/attachments/REFAC-019/refac019-native-behavior-final.log",
+        "spec/attachments/REFAC-019/refac019-native-check.log",
+        "spec/attachments/REFAC-019/refac019-native-clippy.log",
+        "spec/attachments/REFAC-019/refac019-native-format.log",
+        "spec/attachments/REFAC-019/refac019-native-behavior.log",
+        "spec/attachments/REFAC-019/refac019-native-shapes.log",
+        "spec/attachments/REFAC-019/refac019-native-extra-shapes.log",
+        "spec/attachments/REFAC-019/refac019-native-adapter-final.log",
+        "spec/attachments/REFAC-019/refac019-parent-mapping-receipt.md",
+        "spec/attachments/REFAC-019/refac019-footer-proof.log",
+        "spec/attachments/REFAC-019/refac019-native-mapping-before-rpc-receipt.md",
+        "spec/attachments/REFAC-019/refac019-native-mapping-rpc-onward-receipt.md",
+        "spec/attachments/REFAC-019/refac019-native-mapping-rpc027-receipt.md",
+        "spec/attachments/REFAC-019/refac019-bug181-lineage-correction.md",
+        "spec/attachments/REFAC-019/refac019-native-additional-before-rpc-receipt.md",
+        "spec/attachments/REFAC-019/refac019-closure-settled.json",
+        "spec/attachments/REFAC-019/refac019-bug181-outline-green.log",
+        "spec/attachments/REFAC-019/refac019-tooling-proposal-review.md",
+        "spec/attachments/REFAC-019/refac019-scoped-coverage-tooling-proposal.md",
+        "spec/attachments/REFAC-019/refac019-board024-current-evidence.md",
+        "spec/attachments/REFAC-019/refac019-authority-correction.md",
+        "spec/attachments/REFAC-019/refac019-safe30-native-receipt.md",
+        "spec/attachments/REFAC-019/refac019-rpc057-native-semantic-completion.md",
+        "spec/attachments/REFAC-019/refac019-semantic-gate-correction-receipt.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T18:55:46.233Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T19:05:55.460Z",
+          "reason": "Previously rejected before mutation solely for missing architectural notes; actual whole-item/root-hygiene and source/hash architecture note is now recorded. Feature and tags validated; AST review attached."
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-10-28T19:23:54.465Z",
+          "reason": "Six executable acceptance scenarios are mapped across three feature files, each with exactly one test file. Ordered contracts and behavioral baseline are frozen; module-size and nested-schema fingerprint checks remain RED."
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-10-28T20:11:20.579Z"
+        }
+      ],
+      "userStory": {
+        "role": "maintainer of native board and RPC integration",
+        "action": "decompose oversized integration modules without changing public or wire contracts",
+        "benefit": "extend board dialogs safely in maintainable modules while preserving existing clients"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "All touched source modules stay below 300 lines through meaningful decomposition while public names, signatures, defaults, object safety, Action and wire ordering, and existing embedded/WS behavior remain unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-28T18:55:57.848Z"
+        }
+      ],
+      "nextRuleId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Existing consumers compile against unchanged Action and FspecBackend imports and defaults, and the ordered RPC declaration and implementation contracts match their frozen baseline after extraction.",
+          "deleted": false,
+          "createdAt": "2026-10-28T19:01:55.732Z"
+        },
+        {
+          "id": 1,
+          "text": "Editing a reachable service declaration input changes the schema fingerprint and participates in Cargo rerun tracking, while MCP mappings equal the actual resolved service methods exactly.",
+          "deleted": false,
+          "createdAt": "2026-10-28T19:01:55.894Z"
+        },
+        {
+          "id": 2,
+          "text": "All decomposed source modules remain under 300 lines and the existing embedded/WebSocket, mux, session-entry and modal regression behavior remains unchanged.",
+          "deleted": false,
+          "createdAt": "2026-10-28T19:01:56.058Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use contiguous domain-labelled accumulator macro stages that emit complete Action/trait/annotated impl items in their original logical modules before derive/async_trait/tarpc expansion. Preserve all original member tokens/order, defaults, public generated types and super paths. Use ordinary whole-item includes for inherent helpers. A restricted syn-based test resolver follows actual literal includes and actual macro chains, rejects lossy/disconnected/cyclic expansion and preserves raw source formatting for existing shape checks. Pin independent baseline token contracts before moves. Hash and rerun-track reachable RPC/rpc-types declaration inputs, resolving MCP expected methods from real composition. All touched maintained sources below 300 lines; no compression, protocol redesign, BUG-283 edits or running-daemon mutation.",
+          "deleted": false,
+          "createdAt": "2026-10-28T19:05:49.070Z"
+        },
+        {
+          "id": 1,
+          "text": "Contract baseline is frozen before production moves: six ordered surface snapshots plus SHA256 manifest; 11 existing regression targets pass 145 tests. Added adversarial cfg/cfg_attr/allow attribute fixtures first, observed resolver false-positive RED, then fail-closed handling for include/definition/entry attrs; ordinary cfg items remain unchanged. Helper now passes. Root contract specification retains four scenarios; nested-schema and malformed-chain scenarios moved unchanged to their own feature files with supported mapping updates, preserving one-feature/one-test-file lineage across three specs.",
+          "deleted": false,
+          "createdAt": "2026-10-28T19:22:42.742Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 8
+    },
+    "BUG-284": {
+      "id": "BUG-284",
+      "title": "Keep canceled input audit receipts out of the admitted Codex conversation",
+      "type": "bug",
+      "status": "testing",
+      "createdAt": "2026-10-28T20:49:09.963Z",
+      "updatedAt": "2026-10-28T22:34:53.995Z",
+      "description": "Authorized full ACDD repair of proven cancellation/admission divergence. Preserve every submission as durable recovery evidence while runtime, cold replay and compaction share one admitted ordered conversation. Strict provider/DAG guards remain. CLI streaming-loop decomposition approval is pending; prepare specifications and causal RED without production edits or an indirect handoff bypass. No original-history mutation, install, restart, commit or push. Candidate verification is not deployed/live repair.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-284/investigation-plan.md",
+        "spec/attachments/BUG-284/analysis.md",
+        "spec/attachments/BUG-284/reproduction.md",
+        "spec/attachments/BUG-284/prior-fix-audit.md",
+        "spec/attachments/BUG-284/supervisor-path-audit.md",
+        "spec/attachments/BUG-284/timeline.md",
+        "spec/attachments/BUG-284/earlier-failure-analysis.md",
+        "spec/attachments/BUG-284/production-replay.log",
+        "spec/attachments/BUG-284/replay_production.rs",
+        "spec/attachments/BUG-284/replay_lineage.py",
+        "spec/attachments/BUG-284/replay-source.sha256",
+        "spec/attachments/BUG-284/unmatched-input-metadata.json",
+        "spec/attachments/BUG-284/cancellation-timing.json",
+        "spec/attachments/BUG-284/evidence-verification.json",
+        "spec/attachments/BUG-284/runtime-provenance.md",
+        "spec/attachments/BUG-284/final-analysis.md",
+        "spec/attachments/BUG-284/attachment-hashes.sha256",
+        "spec/attachments/BUG-284/repair-design-review.md",
+        "spec/attachments/BUG-284/repair-fixtures-review.md",
+        "spec/attachments/BUG-284/repair-approval-block.md",
+        "spec/attachments/BUG-284/repair-design.md",
+        "spec/attachments/BUG-284/repair-plan-audit.md",
+        "spec/attachments/BUG-284/4d8eedb6-projected-fixture.json",
+        "spec/attachments/BUG-284/7b41d57c-projected-fixture.json",
+        "spec/attachments/BUG-284/7c55a508-projected-fixture.json",
+        "spec/attachments/BUG-284/c09c6649-projected-fixture.json",
+        "spec/attachments/BUG-284/cli-split-proposal.md",
+        "spec/attachments/BUG-284/repair-test-plan-audit.md",
+        "spec/attachments/BUG-284/extraction-verification.json",
+        "spec/attachments/BUG-284/admission-red-evidence.md",
+        "spec/attachments/BUG-284/red-reviewed.log",
+        "spec/attachments/BUG-284/admission-red-receipts.tar.gz",
+        "spec/attachments/BUG-284/repair-independent-review.md",
+        "spec/attachments/BUG-284/admission-red-hashes.sha256",
+        "spec/attachments/BUG-284/final-preparation-review.md",
+        "spec/attachments/BUG-284/admission-final-receipts.tar.gz",
+        "spec/attachments/BUG-284/admission-final-hashes.sha256",
+        "spec/attachments/BUG-284/approved-ingress-review.md",
+        "spec/attachments/BUG-284/approved-mechanical-review.md",
+        "spec/attachments/BUG-284/approved-continuation-record.md",
+        "spec/attachments/BUG-284/shared-ingress-release.md",
+        "spec/attachments/BUG-284/mechanical-candidate01-review.md",
+        "spec/attachments/BUG-284/acdd-layout-review.md",
+        "spec/attachments/BUG-284/mechanical-extraction-review.md",
+        "spec/attachments/BUG-284/mechanical-extraction-receipts.tar.gz"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T20:54:42.832Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T21:20:40.478Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T21:44:40.487Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T21:45:46.576Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Preserve every submitted input as an audit/recovery record while keeping the provider conversation, cold restore and compaction replay on the same explicitly admitted ordered history.",
+          "deleted": false,
+          "createdAt": "2026-10-28T20:55:01.379Z"
+        },
+        {
+          "id": 1,
+          "text": "Strict checkpoint lineage rejection must remain effective for altered assistant content, tool invocation, tool outcome, missing evidence and DAG ancestry; diagnosis does not authorize a bypass or history deletion.",
+          "deleted": false,
+          "createdAt": "2026-10-28T20:55:04.694Z"
+        },
+        {
+          "id": 2,
+          "text": "Do not claim live repair until the exact loaded executable is identified and repeated realistic compaction, restore and continuation succeed without repeated effects.",
+          "deleted": false,
+          "createdAt": "2026-10-28T20:55:07.351Z"
+        },
+        {
+          "id": 3,
+          "text": "Admission is a durable monotone commitment under cancellation ownership: Pending becomes Cancelled or Admitted; cancellation after admission stops execution but cannot remove or requeue the admitted input. The exact original is installed in runtime before dispatch ownership is released.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:17:38.188Z"
+        },
+        {
+          "id": 4,
+          "text": "A submission has one immutable UUID/content/origin identity retained before queue acknowledgment. Identical text with distinct UUIDs is legitimate; same-UUID retries are idempotent and conflicting identity, unknown state versions or contradictory membership refuse inference.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:17:42.045Z"
+        },
+        {
+          "id": 5,
+          "text": "Lost acknowledgment after manifest promotion must settle the same receipt under ownership; unresolved authority blocks inference. Process recovery restores admitted originals once and never auto-executes Pending or Cancelled submissions or assumes remote completion.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:17:46.311Z"
+        },
+        {
+          "id": 6,
+          "text": "Legacy divergent sessions remain fail-closed with actionable evidence-preserving recovery diagnostics. No text-prefix filtering, guessed disposition, silent historical migration, original deletion, checkpoint relaxation or tool replay is permitted.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:17:51.390Z"
+        },
+        {
+          "id": 7,
+          "text": "Before subsequent inference, cancellation or failure after admission must have truthful durable model-visible disposition bound to the immutable input and attempt identity; UI-only events are insufficient. Uncertain dispatch after crash blocks automatic continuation until explicit evidence-preserving recovery; it never grants permission to repeat an old action.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:44:45.360Z"
+        },
+        {
+          "id": 8,
+          "text": "Receipt originals and blob evidence remain recoverable through garbage collection and failed promotion, including recovery-spool ownership. Fork or merge cannot turn Pending, Cancelled or unresolved execution evidence into new execution rights. External acknowledgment/idempotency limitations must be explicit; no expansion into concurrent RPC ownership is authorized.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:44:51.537Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Preserved session 4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61 has six supervisor originals persisted just after cancellation but absent from its provider checkpoint. Actual CodexHistory replay rejects; a cloned diagnostic request omitting only those six accepts.",
+          "deleted": false,
+          "createdAt": "2026-10-28T20:55:11.611Z"
+        },
+        {
+          "id": 1,
+          "text": "Preserved session 7b41d57c-d7aa-47f3-b2c7-b689012703c4 has two such supervisor originals. Actual CodexHistory replay rejects; omitting those two only in an isolated diagnostic clone accepts; changed tool outcomes remain rejected.",
+          "deleted": false,
+          "createdAt": "2026-10-28T20:55:16.674Z"
+        },
+        {
+          "id": 2,
+          "text": "Six supervisor submissions queued before interruption, or two arriving during interruption, are each retained once but absent from runtime and Codex selected-history replay; genuine later user input remains admitted and compaction does not fail lineage.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:17:57.810Z"
+        },
+        {
+          "id": 3,
+          "text": "Cancellation while prompt hooks run, while the original is being retained, or while the runtime lock is held produces a recoverable canceled receipt and no actionable canceled instruction; a later fresh prompt may run once.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:18:01.497Z"
+        },
+        {
+          "id": 4,
+          "text": "Cancellation after durable admission, provider construction failure or pre-prompt compaction failure preserves the accepted instruction exactly once across runtime and cold restore without silently retrying its effects.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:18:05.120Z"
+        },
+        {
+          "id": 5,
+          "text": "After parallel tools complete once, two automatic compactions separated by cancellation, cold restore and fresh continuation retain exact tool receipts, valid provider generations and the same admitted conversation; no command runs again.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:18:10.546Z"
+        },
+        {
+          "id": 6,
+          "text": "A lost durability acknowledgment or process death never loses the original or grants inference from an unresolved receipt. Reopening restores admitted inputs once, keeps canceled or pending inputs audit-only, and preserves image payloads and duplicate-text distinct submissions.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:18:16.513Z"
+        },
+        {
+          "id": 7,
+          "text": "All four sanitized failed-history derivatives still refuse their original divergent lineage; altering assistant content, invocation, outcome, missing evidence or DAG ancestry remains rejected. Inspecting a clone never mutates failed historical evidence or makes a provider request.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:18:20.894Z"
+        },
+        {
+          "id": 8,
+          "text": "An admitted command is canceled before the provider sends anything. A later genuine instruction sees authoritative cancellation evidence, not an unexplained unfinished command; after compaction and restore the canceled command still executes zero times. If dispatch may already have occurred, continuation stays blocked until explicit recovery instead of blindly retrying it.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:45:06.517Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "userStory": {
+        "role": "agent operator",
+        "action": "cancel submitted work without losing its recovery evidence or corrupting the admitted conversation",
+        "benefit": "compaction and cold continuation preserve strict history and never repeat completed effects"
+      },
+      "estimate": 13,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Production repair is paused at an explicit approval boundary: no approval to decompose rust/cli/src/interactive/stream_loop.rs or indirectly replace/bypass its prompt handoff. The attached cli-split-proposal.md identifies exact files, source regions and preserved semantic boundaries. Only specification, focused tests and evidence are being prepared; remain Testing, not Implementing/Done. Five acceptance scenarios remain unmapped and full selected-provider queue/automatic-compaction/crash verification is not yet complete.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:31:59.497Z"
+        },
+        {
+          "id": 1,
+          "text": "Independent review accepted and acceptance strengthened: durable model-visible cancellation/failure evidence and explicit recovery for uncertain dispatch are required before later inference; receipt/spool/blob GC and fork/merge cannot grant execution rights. The external acknowledgment/idempotency promise is not yet satisfied: synchronous ingress needs an explicit awaited acknowledgment bridge, ordinary-input errors are discarded in rust/sessions/src/handle_impl.rs and RPC interaction/mcp dispatch, and caller IDs are absent in rust/rpc-types/src/lib.rs. No edits to those concurrently owned interfaces are authorized; exact additional scope must be coordinated separately from the pending CLI decomposition approval. Current RED proves divergence/pre-dequeue loss, not repaired admission or full acceptance.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:45:38.148Z"
+        },
+        {
+          "id": 2,
+          "text": "Mechanical preservation review is attached as approved-mechanical-review.md. Preserve actual original ordering: retry assignment awaits construction of the replacement stream before dropping the old stream; only specific interruption/accepted-done branches explicitly drop before settlement. Do not add blanket drop-before-retry. Retry reset sets, per-chunk flush skipping and post-loop error handling differ by branch. Verify the stable extracted snapshot before admission edits. The attached approved-ingress-review.md lists exact shared interface coordination targets; those files remain untouched pending ownership coordination.",
+          "deleted": false,
+          "createdAt": "2026-10-28T22:14:01.223Z"
+        },
+        {
+          "id": 3,
+          "text": "Shared ownership hold is released for the exact 13 targets in approved-ingress-review.md. Parent confirmed no REFAC020 overlap and BOARD production not started. Read shared-ingress-release.md and frozen /tmp/refac019-pre-bug284-shared-boundary/manifest.json before shared edits. All 13 hashes matched at release verification. Preserve method order/payloads and original refactor evidence; track intentional BUG284 Result/error semantics separately with affected-caller tests. Return stable hashes/results for BOARD handoff. All other ownership and permission boundaries remain.",
+          "deleted": false,
+          "createdAt": "2026-10-28T22:23:57.384Z"
+        },
+        {
+          "id": 4,
+          "text": "Independent candidate-01 static review found no functional mismatch across all 22 extracted files; see mechanical-candidate01-review.md and its exact hash manifest. Compile/regression evidence remains required before semantic changes. The attached acdd-layout-review.md verifies the minimal five-feature split and supported scoped staging; no split-feature command exists, and generate-coverage has no feature filter. Preserve every mapped step and all five missing acceptance obligations. Shared 13-file ownership release is recorded in shared-ingress-release.md.",
+          "deleted": false,
+          "createdAt": "2026-10-28T22:27:24.210Z"
+        },
+        {
+          "id": 5,
+          "text": "Human explicitly approved the focused stream_loop decomposition at 2026-10-28 22:01:24 UTC; see approved-continuation-record.md. Earlier denial remains historical evidence. Mechanical extraction is now under independent verification before any admission semantics. Normal Testing->Implementing attempt encountered literal multi-test-file coverage gate for Rust integration helper modules; no skip or status bypass applied. Remaining tests and genuine single-target facade mappings must resolve that gate normally.",
+          "deleted": false,
+          "createdAt": "2026-10-28T22:32:13.798Z"
+        },
+        {
+          "id": 6,
+          "text": "Acceptance review: messages::durability::observe is thread-local; install post-rename acknowledgment-loss injection inside the actual blocking persistence worker, not around its async caller. Assert ManifestCommitError::Promoted at manifest.directory, retained identity and no duplicate on local retry; manifest.rename covers pre-promotion refusal. Crash phase mailbox must be synced before child kill. Repeated compaction proof must use queued fresh inputs and automatic compaction, since existing Harness::fresh and Harness::compact bypass those boundaries. Existing BUG-282 EstablishedDag negative is the true committed-DAG guard; the BUG-284 ordinary-user mutation alone is not. These clarify existing acceptance obligations, not new scope.",
+          "deleted": false,
+          "createdAt": "2026-10-28T22:34:08.527Z"
+        }
+      ],
+      "nextNoteId": 7
+    },
+    "REFAC-020": {
+      "id": "REFAC-020",
+      "title": "Preserve coverage lineage with precise row selection and scoped generation",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2026-10-28T21:36:37.024Z",
+      "updatedAt": "2026-10-28T22:30:52.380Z",
+      "description": "Authorized bounded prerequisite for REFAC-019 and BOARD-024: stale-protected duplicate-row selection, shared transaction locking, lossless feature-scoped generation and truthful previews, native/CLI parity, bounded source decomposition. One-time validated local CLI migration only; no install, restart, commits, security or failed-history changes.",
+      "parent": "REFAC-019",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-10-28T21:50:41.272Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-10-28T21:53:40.872Z"
+        }
+      ],
+      "userStory": {
+        "role": "maintainer preserving scenario coverage lineage",
+        "action": "select one mapping occurrence and reconcile one feature with fresh-state protection",
+        "benefit": "relocate coverage without losing duplicate lineage, unknown metadata or unrelated files"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Indexed implementation linking and unlinking require a paired canonical scenario hash and exact testFile; invalid or stale selection leaves bytes unchanged, retains normal file/step validation, and never changes unselected duplicate behavior.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:50:58.970Z"
+        },
+        {
+          "id": 1,
+          "text": "Selected feature generation preserves unknown fields, order and every mapping occurrence, affects only the exact target, and blocks all changes on invalid/unreadable metadata or mapped scenario removal; preview reports the same plan without writes.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:03.099Z"
+        },
+        {
+          "id": 2,
+          "text": "Participating indexed and legacy link/unlink and global/selected generation hold the same stable cross-process sidecar transaction lock across read/check/write; selected operations compare fresh hashes within that transaction.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:07.668Z"
+        },
+        {
+          "id": 3,
+          "text": "Native dispatcher and CLI share existing core run entrypoints. Explicit mappingJson readback exposes indices and canonical hashes without changing legacy JSON output. Scope excludes scenario/create/delete writers and old daemon; prohibit nonparticipant writes during pinned exclusive migration.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:11.822Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Two rows use tests/thing.rs but retain distinct lineage. Read ordered indices/hash, add src/second.rs only to row 1, and remove one obsolete occurrence without merging duplicates or changing row 0.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:16.455Z"
+        },
+        {
+          "id": 1,
+          "text": "A maintainer submits stale/malformed hashes, wrong files, out-of-bounds or unpaired indices and incompatible modes; every request fails without byte changes. A valid selection still rejects missing implementation files and story test files lacking matching steps.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:19.973Z"
+        },
+        {
+          "id": 2,
+          "text": "Generating only thing adds its new scenario while an unrelated missing sidecar remains missing and another feature's drifted mapped lineage is byte-identical; unknown fields and duplicate arrays survive. Missing, ambiguous and invalid feature names never trigger a global scan.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:24.225Z"
+        },
+        {
+          "id": 3,
+          "text": "A selected feature has a new scenario plus an obsolete mapped scenario or corrupt/unreadable existing metadata. Preview reports a blocked plan, apply fails, and neither partial additions nor recreation occurs.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:28.253Z"
+        },
+        {
+          "id": 4,
+          "text": "Preview and apply report identical addition/removal plans for unchanged inputs, but preview leaves every directory entry and file byte unchanged. A no-op apply preserves original sidecar formatting bytes.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:32.846Z"
+        },
+        {
+          "id": 5,
+          "text": "Two processes start with the same scenario hash: one selected update succeeds and the other fails stale. Legacy link/unlink and both generator modes wait behind an externally held transaction lock, reread the latest committed bytes after release and preserve intervening mappings.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:51:37.414Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Approved /tmp/refac020-core-plan.md: preserve four shared core run entrypoints; extract honest private modules under 300 lines before maintenance; use raw JSON, canonical whole-scenario SHA256 and stable fs2 per-sidecar transaction locks across participating link/unlink/global and selected generation. Exact indexed implementation-only selection requires paired hash plus exact testFile; explicit mappingJson readback preserves legacy JSON. Selected generation plans additions/removals losslessly before any write and blocks corrupt metadata or mapped removal. Scenario/create/delete/report-to-sidecar writers and the old daemon are nonparticipants; prohibit their concurrent writes during pinned exclusive migration. Native Example Mapping and Gherkin precede tests; parent owns Cargo causal RED and production approval, review and migration. CLI worker owns front-door integration; no business duplication, installs, restarts, security/history changes or commits.",
+          "deleted": false,
+          "createdAt": "2026-10-28T21:52:50.788Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/REFAC-020/ast-research-coverage-transactions.md",
+        "spec/attachments/REFAC-020/core-red-targets-ready.md",
+        "spec/attachments/REFAC-020/refac020-core-plan.md",
+        "spec/attachments/REFAC-020/core-proof-gaps-red-ready.md",
+        "spec/attachments/REFAC-020/refac020-compiled-red-and-bootstrap-blocker.md",
+        "spec/attachments/REFAC-020/refac020-cli-causal-red.log",
+        "spec/attachments/REFAC-020/refac020-core-causal-red.log"
+      ],
+      "estimate": 8
     }
   }
 }

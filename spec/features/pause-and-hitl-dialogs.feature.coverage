@@ -283,8 +283,8 @@
       "name": "Backend.get_hitl_request error during the chunk-driven probe sets no slot",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "301-344",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053/errors_and_source_shape.rs",
+          "lines": "6-48",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
@@ -348,8 +348,8 @@
       "name": "Backend.send_hitl_response error on Esc-cancel still clears the slot and emits no scrollback notice",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "346-379",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053/errors_and_source_shape.rs",
+          "lines": "51-83",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
@@ -384,8 +384,8 @@
       "name": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
-          "lines": "385-426",
+          "file": "rust/fspec-tui/tests/pause_hitl_rpc053/errors_and_source_shape.rs",
+          "lines": "90-132",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
@@ -686,12 +686,13 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/pause_hitl_rpc053.rs"
+      "rust/fspec-tui/tests/pause_hitl_rpc053.rs",
+      "rust/fspec-tui/tests/pause_hitl_rpc053/errors_and_source_shape.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch_pause_hitl.rs",
       "rust/fspec-tui/src/app/dispatch_hitl_prompt.rs"
     ],
-    "totalLinesCovered": 831
+    "totalLinesCovered": 830
   }
 }

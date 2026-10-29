@@ -245,25 +245,30 @@
           "lines": "108-121",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/action_runtime.rs",
               "lines": [
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/components/action_board.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
               ]
             }
           ]
@@ -275,7 +280,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
-          "lines": "123-146",
+          "lines": "125-147",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
@@ -538,7 +543,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
-          "lines": "148-189",
+          "lines": "150-190",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent.rs",
@@ -636,9 +641,10 @@
       "rust/fspec-tui/src/views/agent/multiline_input.rs",
       "rust/fspec-tui/src/views/agent/scrollback.rs",
       "rust/fspec-tui/src/views/agent.rs",
-      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/components/action_runtime.rs",
+      "rust/fspec-tui/src/components/action_board.rs",
       "src/tui/components/MultiLineInput.tsx"
     ],
-    "totalLinesCovered": 641
+    "totalLinesCovered": 639
   }
 }

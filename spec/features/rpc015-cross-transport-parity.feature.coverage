@@ -8,14 +8,14 @@
           "lines": "63-75",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
               "lines": [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
               ]
             }
           ]
@@ -30,15 +30,15 @@
           "lines": "78-94",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/provider_sessions.rs",
               "lines": [
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
               ]
             }
           ]
@@ -79,8 +79,8 @@
       "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs",
+      "rust/fspec-tui/src/transport/websocket/provider_sessions.rs",
       "rust/napi/src/git.rs"
     ],
     "totalLinesCovered": 74

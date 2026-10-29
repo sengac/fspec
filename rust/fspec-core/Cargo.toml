@@ -46,6 +46,7 @@ tracing.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 serial_test.workspace = true
+codelet-test-helpers.workspace = true
 # UPD-002: tests/upd002_update_engine.rs serves a mock GitHub API on
 # 127.0.0.1:0 (axum is a workspace dependency).
 axum.workspace = true

@@ -23,6 +23,9 @@ use crate::views::{
     ProviderSettingsView,
 };
 
+#[path = "navigator_auxiliary.rs"]
+mod auxiliary;
+
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ViewMode {
@@ -30,18 +33,18 @@ pub enum ViewMode {
     Board,
     Agent,
     /// RPC-054: ProviderSettingsView entered via the `/provider` slash
-    /// command. Returns to `Agent` on Esc.
+    /// command or settings menu. Returns to its caller on Esc.
     ProviderSettings,
     /// RPC-056: BlocklistView entered via the `/blocklist` slash
-    /// command. Returns to `Agent` on Esc.
+    /// command. Returns to its caller on Esc.
     Blocklist,
     /// RPC-337: full-screen ModelSelectorView entered via `/model`
     /// (`OpenModelSelectorView`) or ProviderSettings Tab
-    /// (`SwitchToModels`). Returns to `Agent` on Esc or after a model
+    /// (`SwitchToModels`). Returns to the excursion caller on Esc or after a model
     /// is committed.
     ModelSelector,
     /// RPC-356: dual-pane ChangedFilesView entered from the board via
-    /// the `F` key (`OpenChangedFilesView`). Returns to `Board` on Esc
+    /// the `F` key (`OpenChangedFilesView`). Returns to its caller on Esc
     /// or `CloseChangedFilesView`.
     ChangedFiles,
     /// RPC-364: three-pane CheckpointsView entered via the board `C` key.
@@ -73,6 +76,7 @@ pub struct Navigator {
     /// focus + divider drag state).
     pub mux: MultiplexLayout,
     pub active_view: ViewMode,
+    auxiliary_origin: Option<ViewMode>,
     pub action_tx: Option<UnboundedSender<Action>>,
     /// MENU-004 R-TICK: the cached "menu bar animating" gate (see
     /// `navigator_menu_bar.rs`) — recomputed by `render_with_stores`.
@@ -91,6 +95,7 @@ impl Navigator {
             checkpoints: CheckpointsView::new(),
             mux: MultiplexLayout::new(),
             active_view: ViewMode::Board,
+            auxiliary_origin: None,
             action_tx: Some(action_tx),
             menu_bar_animating: false,
         }
@@ -165,6 +170,9 @@ impl Navigator {
     /// dialog overlays BoardView; the view switch is deferred to
     /// `handle_create_session_submitted` on confirm.
     pub fn apply_action(&mut self, action: &Action) {
+        if self.apply_auxiliary_action(action) {
+            return;
+        }
         match action {
             Action::EnterWorkUnit(_) | Action::OpenAgentView(Some(_)) => {
                 self.active_view = ViewMode::Agent;
@@ -179,38 +187,6 @@ impl Navigator {
                 // applies the same rule first; this arm re-runs per
                 // action, so it needs the identical guard).
                 self.apply_back_to_board();
-            }
-            Action::OpenProviderSettingsView => {
-                self.active_view = ViewMode::ProviderSettings;
-            }
-            Action::CloseProviderSettingsView => self.active_view = ViewMode::Agent,
-            Action::OpenBlocklistView => self.active_view = ViewMode::Blocklist,
-            Action::CloseBlocklistView => self.active_view = ViewMode::Agent,
-            // RPC-337: model selector mode-view flips.
-            Action::OpenModelSelectorView => {
-                self.active_view = ViewMode::ModelSelector;
-            }
-            // Committing a model OR explicit close both return to Agent.
-            Action::CloseModelSelectorView | Action::ModelSelected(..)
-                if self.active_view == ViewMode::ModelSelector =>
-            {
-                tracing::info!(
-                    target: "model_select",
-                    "[MODEL-SELECT] navigator apply_action: closing ModelSelector view -> Agent"
-                );
-                self.active_view = ViewMode::Agent;
-            }
-            // RPC-356: changed-files mode-view flips.
-            Action::OpenChangedFilesView => {
-                self.active_view = ViewMode::ChangedFiles;
-            }
-            Action::CloseChangedFilesView if self.active_view == ViewMode::ChangedFiles => {
-                self.active_view = ViewMode::Board;
-            }
-            // RPC-364: checkpoints mode-view flips.
-            Action::OpenCheckpointsView => self.active_view = ViewMode::Checkpoints,
-            Action::CloseCheckpointsView if self.active_view == ViewMode::Checkpoints => {
-                self.active_view = ViewMode::Board;
             }
             // BUG-183: mux pane-close — the focused Files / Checkpoints
             // pane was dismissed with Esc (the close fires ONLY in
@@ -235,6 +211,9 @@ impl Navigator {
                 self.mux.set_focus(agent_idx);
             }
             _ => {}
+        }
+        if !self.active_view.is_auxiliary() {
+            self.auxiliary_origin = None;
         }
     }
 }

@@ -59,6 +59,8 @@ arc-swap = "1.7"
 uuid = { workspace = true }
 
 [dev-dependencies]
+codelet-test-helpers = { workspace = true }
+syn = { version = "2", features = ["full"] }
 # RPC-362: checkpoint transport integration tests build real temp git repos.
 tempfile = { workspace = true }
 serde_json = { workspace = true }

@@ -31,7 +31,7 @@ fn core_work_units() -> std::path::PathBuf {
 }
 
 fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+    codelet_test_helpers::source_composition::read_source(path).expect("resolve source shape")
 }
 
 fn read_stripped(rel: &str) -> String {

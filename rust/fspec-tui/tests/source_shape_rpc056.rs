@@ -13,6 +13,8 @@
 use std::fs;
 use std::path::PathBuf;
 
+use codelet_test_helpers::source_composition::read_source;
+
 fn workspace_root() -> PathBuf {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     crate_dir
@@ -108,7 +110,7 @@ fn stub_exposes_blocklist_list_call_counter() {
 fn fspec_service_declares_blocklist_list() {
     // @step Given the file rust/rpc/src/lib.rs is compiled
     let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
+    let source = read_source(&path).expect("read rpc/src/lib.rs");
 
     // @step Then it declares an async fn named "blocklist_list" with return type Vec<BlocklistRuleInfo>
     assert!(
@@ -131,7 +133,7 @@ fn fspec_service_declares_blocklist_list() {
 fn fspec_backend_declares_blocklist_list() {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
     let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let source = read_source(&path).expect("read transport/mod.rs");
 
     // @step Then it declares an async fn named "blocklist_list" on the FspecBackend trait returning Result<Vec<BlocklistRuleInfo>>
     assert!(
@@ -153,11 +155,10 @@ fn fspec_backend_declares_blocklist_list() {
 #[test]
 fn both_transports_implement_blocklist_list() {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
+        .expect("read transport/embedded.rs");
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
+        read_source(&workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
             .expect("read transport/websocket.rs");
 
     // @step Then each file contains an impl of "blocklist_list" that calls the corresponding tarpc client method

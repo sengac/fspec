@@ -13,6 +13,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+use codelet_test_helpers::source_composition::read_source;
 use std::fs;
 use std::path::PathBuf;
 
@@ -33,43 +34,7 @@ fn normalise(source: &str) -> String {
         .join(" ")
 }
 
-/// Scenario: ScheduledJob wire type is exported from codelet-rpc-types
-#[test]
-fn rpc_types_exports_scheduled_job_wire_type() {
-    // @step Given the file rust/rpc-types/src/lib.rs is compiled
-    let path = workspace_root().join("rust/rpc-types/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc-types/src/lib.rs");
-    let normalised = normalise(&source);
-
-    // @step Then it declares a public struct named "ScheduledJob"
-    assert!(
-        source.contains("pub struct ScheduledJob"),
-        "rpc-types/src/lib.rs should declare pub struct ScheduledJob"
-    );
-
-    // @step And ScheduledJob has fields named name, cron, timezone, job_type, status
-    // @step And ScheduledJob has fields named created_at, last_run_at, last_run_status
-    // @step And ScheduledJob has fields named role, prompt, command, overlap_policy
-    for field in [
-        "pub name:",
-        "pub cron:",
-        "pub timezone:",
-        "pub job_type:",
-        "pub status:",
-        "pub created_at:",
-        "pub last_run_at:",
-        "pub last_run_status:",
-        "pub role:",
-        "pub prompt:",
-        "pub command:",
-        "pub overlap_policy:",
-    ] {
-        assert!(
-            normalised.contains(field),
-            "ScheduledJob should declare field {field:?}"
-        );
-    }
-}
+include!("source_shape_rpc058/scheduled_job.rs");
 
 /// Scenario: SessionManagerHandle declares the five new schedule methods
 #[test]
@@ -156,7 +121,7 @@ fn stub_exposes_per_call_counters_for_schedule() {
 fn fspec_service_declares_schedule_methods() {
     // @step Given the file rust/rpc/src/lib.rs is compiled
     let path = workspace_root().join("rust/rpc/src/lib.rs");
-    let source = fs::read_to_string(&path).expect("read rpc/src/lib.rs");
+    let source = read_source(&path).expect("resolve rpc/src/lib.rs");
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "schedule_add" with return type Result<ScheduledJob, String>
@@ -194,7 +159,7 @@ fn fspec_service_declares_schedule_methods() {
 fn fspec_backend_declares_schedule_methods() {
     // @step Given the file rust/fspec-tui/src/transport/mod.rs is compiled
     let path = workspace_root().join("rust/fspec-tui/src/transport/mod.rs");
-    let source = fs::read_to_string(&path).expect("read transport/mod.rs");
+    let source = read_source(&path).expect("resolve transport/mod.rs");
     let normalised = normalise(&source);
 
     // @step Then it declares an async fn named "schedule_add" on the FspecBackend trait returning Result<ScheduledJob>
@@ -231,12 +196,11 @@ fn fspec_backend_declares_schedule_methods() {
 #[test]
 fn both_transports_implement_schedule_methods() {
     // @step Given the files rust/fspec-tui/src/transport/embedded.rs and rust/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
-            .expect("read transport/embedded.rs");
+    let embedded = read_source(&workspace_root().join("rust/fspec-tui/src/transport/embedded.rs"))
+        .expect("resolve transport/embedded.rs");
     let websocket =
-        fs::read_to_string(workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
-            .expect("read transport/websocket.rs");
+        read_source(&workspace_root().join("rust/fspec-tui/src/transport/websocket.rs"))
+            .expect("resolve transport/websocket.rs");
 
     // @step Then each file contains an impl of "schedule_add" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "schedule_list" that calls the corresponding tarpc client method

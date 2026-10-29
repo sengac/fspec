@@ -57,6 +57,9 @@ fn open_model_selector_view_flips_active_view() {
 fn close_model_selector_view_returns_to_agent() {
     // @step Given I am in the model selector mode-view
     let (mut nav, _rx) = fresh();
+    nav.apply_action(&Action::OpenAgentView(Some(
+        codelet_rpc_types::SessionId::new("s-1"),
+    )));
     nav.apply_action(&Action::OpenModelSelectorView);
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
 
@@ -73,6 +76,9 @@ fn close_model_selector_view_returns_to_agent() {
 fn model_selected_returns_to_agent_view() {
     // @step Given the model selector is open with an active session
     let (mut nav, _rx) = fresh();
+    nav.apply_action(&Action::OpenAgentView(Some(
+        codelet_rpc_types::SessionId::new("s-1"),
+    )));
     nav.apply_action(&Action::OpenModelSelectorView);
     assert_eq!(nav.active_view, ViewMode::ModelSelector);
 

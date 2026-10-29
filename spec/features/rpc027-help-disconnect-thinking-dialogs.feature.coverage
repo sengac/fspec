@@ -995,8 +995,8 @@
       "name": "ThinkingLevelDialog renders with the yellow accent and inner-title body",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "250-268",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "10-26",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -1219,8 +1219,8 @@
       "name": "ThinkingLevelDialog highlights the current level with the inverse style",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "269-308",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "29-74",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -1443,8 +1443,8 @@
       "name": "ThinkingLevelDialog footer documents the four key bindings",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "309-330",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "77-108",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -1667,8 +1667,8 @@
       "name": "Pressing D in ThinkingLevelDialog emits Action::SetThinkingLevelDefault and keeps the dialog open",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "331-367",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "111-145",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -1692,8 +1692,8 @@
       "name": "Pressing uppercase D in ThinkingLevelDialog behaves identically to lowercase d",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "368-391",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "148-169",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/thinking_level_dialog.rs",
@@ -1717,53 +1717,53 @@
       "name": "SetThinkingLevelDefault is wired through the backend trait stack",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
-          "lines": "392-426",
+          "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs",
+          "lines": "172-230",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/core.rs",
               "lines": [
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
               ]
             }
           ]
@@ -1776,14 +1776,15 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs"
+      "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "rust/fspec-tui/tests/rpc027_dialog_parity_bcd/thinking_level.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/components/help_dialog.rs",
       "rust/fspec-tui/src/components/disconnect_dialog.rs",
       "rust/fspec-tui/src/components/thinking_level_dialog.rs",
-      "rust/fspec-tui/src/transport/mod.rs"
+      "rust/fspec-tui/src/transport/backend/core.rs"
     ],
-    "totalLinesCovered": 1927
+    "totalLinesCovered": 1961
   }
 }

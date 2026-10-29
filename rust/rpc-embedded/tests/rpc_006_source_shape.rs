@@ -26,7 +26,10 @@ use source_helpers::{
 #[test]
 fn scenario_default_fixture_is_unreachable_from_production_code() {
     // @step Given the rust/rpc crate after the watcher lift
-    let rpc_lib = read_to_string_or_panic(&workspace_root().join("rpc").join("src").join("lib.rs"));
+    let rpc_lib = codelet_test_helpers::source_composition::read_source(
+        &workspace_root().join("rpc").join("src").join("lib.rs"),
+    )
+    .expect("resolve shared service source");
     let code = strip_rust_comments(&rpc_lib);
     let lines: Vec<&str> = code.lines().collect();
 

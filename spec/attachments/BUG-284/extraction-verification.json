@@ -1,0 +1,90 @@
+[
+  {
+    "session_id": "4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61",
+    "prior_projected": 765,
+    "current_projected": 613,
+    "unmodified_rejection": {
+      "prior_projected_index": 490,
+      "expected_type": "message",
+      "actual_type": "message",
+      "expected_role": "user",
+      "actual_role": "user",
+      "error": "assistant, tool result or DAG ancestry"
+    },
+    "equality_matrix_preserved": true,
+    "canonical_outcome_substitutions_in_counterfactual": 0,
+    "unmatched_user_omissions_in_counterfactual": [
+      "evidence_item_0766",
+      "evidence_item_0767",
+      "evidence_item_0768",
+      "evidence_item_0769",
+      "evidence_item_0770",
+      "evidence_item_0771"
+    ],
+    "counterfactual_passes_python_only": true
+  },
+  {
+    "session_id": "7b41d57c-d7aa-47f3-b2c7-b689012703c4",
+    "prior_projected": 453,
+    "current_projected": 326,
+    "unmodified_rejection": {
+      "prior_projected_index": 425,
+      "expected_type": "message",
+      "actual_type": "message",
+      "expected_role": "user",
+      "actual_role": "user",
+      "error": "assistant, tool result or DAG ancestry"
+    },
+    "equality_matrix_preserved": true,
+    "canonical_outcome_substitutions_in_counterfactual": 0,
+    "unmatched_user_omissions_in_counterfactual": [
+      "evidence_item_0454",
+      "evidence_item_0455"
+    ],
+    "counterfactual_passes_python_only": true
+  },
+  {
+    "session_id": "7c55a508-ff74-4a68-895f-c01e9bdbb03c",
+    "prior_projected": 840,
+    "current_projected": 681,
+    "unmodified_rejection": {
+      "prior_projected_index": 3,
+      "expected_type": "function_call_output",
+      "actual_type": "function_call_output",
+      "expected_role": null,
+      "actual_role": null,
+      "error": "assistant, tool result or DAG ancestry"
+    },
+    "equality_matrix_preserved": true,
+    "canonical_outcome_substitutions_in_counterfactual": 233,
+    "unmatched_user_omissions_in_counterfactual": [
+      "evidence_item_1045",
+      "evidence_item_1046",
+      "evidence_item_1047",
+      "evidence_item_1048",
+      "evidence_item_1049",
+      "evidence_item_1050",
+      "evidence_item_1051",
+      "evidence_item_1052",
+      "evidence_item_1053"
+    ],
+    "counterfactual_passes_python_only": true
+  },
+  {
+    "session_id": "c09c6649-9724-42d6-8aa7-005a885b8d27",
+    "prior_projected": 740,
+    "current_projected": 566,
+    "unmodified_rejection": {
+      "prior_projected_index": 3,
+      "expected_type": "function_call_output",
+      "actual_type": "function_call_output",
+      "expected_role": null,
+      "actual_role": null,
+      "error": "assistant, tool result or DAG ancestry"
+    },
+    "equality_matrix_preserved": true,
+    "canonical_outcome_substitutions_in_counterfactual": 165,
+    "unmatched_user_omissions_in_counterfactual": [],
+    "counterfactual_passes_python_only": true
+  }
+]

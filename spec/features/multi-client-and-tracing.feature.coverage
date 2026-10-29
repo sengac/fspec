@@ -130,8 +130,8 @@
       "name": "Tracing spans carry client_id on per-connection handler tasks",
       "testMappings": [
         {
-          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
-          "lines": "182-322",
+          "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011/tracing.rs",
+          "lines": "5-152",
           "implMappings": [
             {
               "file": "rust/rpc-server/src/server.rs",
@@ -180,12 +180,13 @@
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs"
+      "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+      "rust/rpc-server/tests/multi_client_and_tracing_rpc011/tracing.rs"
     ],
     "implFiles": [
       "rust/rpc-server/src/server.rs",
       "rust/rpc/src/lib.rs"
     ],
-    "totalLinesCovered": 399
+    "totalLinesCovered": 406
   }
 }

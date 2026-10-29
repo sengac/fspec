@@ -8,29 +8,29 @@
           "lines": "78-127",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/shared_construction.rs",
               "lines": [
-                828,
-                829,
-                830,
-                831,
-                832,
-                833,
-                834,
-                835,
-                836,
-                837,
-                838,
-                839,
-                840,
-                841,
-                842,
-                843,
-                844,
-                845,
-                846,
-                847,
-                848
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
               ]
             }
           ]
@@ -46,7 +46,7 @@
       "rust/fspec-tui/tests/bug187_git_state_capture_off_async_pool.rs"
     ],
     "implFiles": [
-      "rust/rpc/src/lib.rs"
+      "rust/rpc/src/shared_construction.rs"
     ],
     "totalLinesCovered": 71
   }

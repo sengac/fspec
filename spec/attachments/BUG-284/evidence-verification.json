@@ -1,0 +1,60 @@
+[
+  {
+    "source": "/home/rquast/.fspec/sessions/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61.json",
+    "copy": "/tmp/compaction-investigation/private/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/manifest.json",
+    "sha256": "d1bb831c780e8b533b193df1fd75be65da6b7bf00e33764e732753742b0ac23c",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "/home/rquast/.fspec/provider-state/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/09f5e17591e1ece5507c30b8b346f10e5f976190ff57b48c1fc4ca5d216cf42b.json",
+    "copy": "/tmp/compaction-investigation/private/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/09f5e17591e1ece5507c30b8b346f10e5f976190ff57b48c1fc4ca5d216cf42b.json",
+    "sha256": "09f5e17591e1ece5507c30b8b346f10e5f976190ff57b48c1fc4ca5d216cf42b",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "/home/rquast/.fspec/provider-state/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/080641d5114a8cbf5d62fac53ddc68d3c8e14a0528df5eb718f7c6dbd39a7dc2.json",
+    "copy": "/tmp/compaction-investigation/private/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/080641d5114a8cbf5d62fac53ddc68d3c8e14a0528df5eb718f7c6dbd39a7dc2.json",
+    "sha256": "080641d5114a8cbf5d62fac53ddc68d3c8e14a0528df5eb718f7c6dbd39a7dc2",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "/home/rquast/.fspec/sessions/7b41d57c-d7aa-47f3-b2c7-b689012703c4.json",
+    "copy": "/tmp/compaction-investigation/private/7b41d57c-d7aa-47f3-b2c7-b689012703c4/manifest.json",
+    "sha256": "a45cc3687aff7333da7c6d65550085ba2677f74a57bc94a122f5b913bd4c2d0c",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "/home/rquast/.fspec/provider-state/7b41d57c-d7aa-47f3-b2c7-b689012703c4/096a184cd6fc9e02e2d289625918c132fdd313f67e04cb9e1b2ada8d86247f31.json",
+    "copy": "/tmp/compaction-investigation/private/7b41d57c-d7aa-47f3-b2c7-b689012703c4/096a184cd6fc9e02e2d289625918c132fdd313f67e04cb9e1b2ada8d86247f31.json",
+    "sha256": "096a184cd6fc9e02e2d289625918c132fdd313f67e04cb9e1b2ada8d86247f31",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "/home/rquast/.fspec/provider-state/7b41d57c-d7aa-47f3-b2c7-b689012703c4/808ccce1d8e7f94fb003ab4ba1fc3efdf5dd776628bafd1bbfab0fe16095df11.json",
+    "copy": "/tmp/compaction-investigation/private/7b41d57c-d7aa-47f3-b2c7-b689012703c4/808ccce1d8e7f94fb003ab4ba1fc3efdf5dd776628bafd1bbfab0fe16095df11.json",
+    "sha256": "808ccce1d8e7f94fb003ab4ba1fc3efdf5dd776628bafd1bbfab0fe16095df11",
+    "copy_matches": true,
+    "source_matches": true
+  },
+  {
+    "source": "selected immutable records from messages/messages.jsonl",
+    "copy": "/tmp/compaction-investigation/private/4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61/originals.jsonl",
+    "sha256": "5822b24ee48741f5bf29c1f448c0d96796b729b025d250138475f66b66f8185f",
+    "records": 593,
+    "copy_matches": true,
+    "source_matches": null
+  },
+  {
+    "source": "selected immutable records from messages/messages.jsonl",
+    "copy": "/tmp/compaction-investigation/private/7b41d57c-d7aa-47f3-b2c7-b689012703c4/originals.jsonl",
+    "sha256": "92ad04251f978ed16905b2273c5d46e2debfbfa40bb21c457b1ff30215f3d35f",
+    "records": 314,
+    "copy_matches": true,
+    "source_matches": null
+  }
+]

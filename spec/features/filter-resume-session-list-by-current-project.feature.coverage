@@ -105,8 +105,8 @@
             {
               "file": "rust/fspec-tui/src/transport/mod.rs",
               "lines": [
-                71,
-                72
+                83,
+                84
               ]
             }
           ]

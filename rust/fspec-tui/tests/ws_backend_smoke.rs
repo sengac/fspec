@@ -109,7 +109,8 @@ fn websocket_backend_connect_uses_tokio_tungstenite_connect_async_directly() {
     );
 
     // @step When I inspect the body of `WebSocketFspecBackend::connect`
-    let src = fs::read_to_string(&manifest_dir).expect("read websocket.rs");
+    let src = codelet_test_helpers::source_composition::read_source(&manifest_dir)
+        .expect("read websocket.rs");
 
     // @step Then it calls `tokio_tungstenite::connect_async(url)` directly
     assert!(
@@ -142,11 +143,7 @@ fn websocket_backend_connect_uses_tokio_tungstenite_connect_async_directly() {
     // @step And no envelope, bincode, or framing code lives in rust/fspec-tui/src/transport/
     let transport_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/transport");
     let mut violations: Vec<String> = Vec::new();
-    for entry in fs::read_dir(&transport_dir).expect("read transport/") {
-        let path = entry.expect("dir entry").path();
-        if path.extension().and_then(|e| e.to_str()) != Some("rs") {
-            continue;
-        }
+    for path in common::collect_rs_files(&transport_dir) {
         let body = fs::read_to_string(&path).expect("read transport rs file");
         let stripped = strip_rust_comments(&body);
         for needle in [

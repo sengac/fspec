@@ -17,7 +17,7 @@ fn src_dir() -> std::path::PathBuf {
 
 fn read_raw(rel: &str) -> String {
     let path = src_dir().join(rel);
-    common::read_to_string_or_panic(&path)
+    codelet_test_helpers::source_composition::read_source(&path).expect("resolve source shape")
 }
 
 fn read_stripped(rel: &str) -> String {

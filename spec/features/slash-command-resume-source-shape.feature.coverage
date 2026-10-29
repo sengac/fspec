@@ -30,18 +30,18 @@
           "lines": "96-106",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
               "lines": [
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408,
-                409,
-                410
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
               ]
             }
           ]
@@ -94,7 +94,7 @@
     ],
     "implFiles": [
       "rust/fspec-tui/src/app/dispatch.rs",
-      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/components/action_agent_navigation.rs",
       "rust/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 95

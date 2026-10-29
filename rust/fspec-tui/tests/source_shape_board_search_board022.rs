@@ -16,7 +16,7 @@ fn workspace_codelet_dir() -> std::path::PathBuf {
 }
 
 fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+    codelet_test_helpers::source_composition::read_source(path).expect("resolve source shape")
 }
 
 /// Scenario: the work-unit search dialog component module exists with the documented surface

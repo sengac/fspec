@@ -141,7 +141,8 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
 fn action_enum_declares_session_resume_complete_variant() {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-049 lands
     let path = fspec_tui_src().join("components").join("mod.rs");
-    let body = read_raw(&path);
+    let body = codelet_test_helpers::source_composition::read_source(&path)
+        .expect("resolve components/mod.rs");
 
     // @step Then the file declares "SessionResumeComplete(" as an Action variant
     assert!(

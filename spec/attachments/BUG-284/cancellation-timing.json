@@ -1,0 +1,35 @@
+[
+  {
+    "session_id": "4d8eedb6-fe1d-43cb-9aa9-70252fb8cd61",
+    "timestamp": "2026-10-28T13:23:43.240094001Z",
+    "record_id": "00000000000000001777-6dc08082-6479-4b7b-8393-8488e658cbaa-00000000000000000040.json",
+    "event_kind": "terminal",
+    "event_fields": {
+      "kind": "terminal",
+      "outcome": "user_cancelled"
+    },
+    "sha256": "511e169878e535efd3279f681e45575953497909e83cda101f70ccaf91df5aa1"
+  },
+  {
+    "session_id": "7b41d57c-d7aa-47f3-b2c7-b689012703c4",
+    "timestamp": "2026-10-28T20:15:05.015408760Z",
+    "record_id": "00000000000000000832-28db961f-4d92-4437-aee7-f7e84b162326-00000000000000000832.json",
+    "event_kind": "tool_outcome_unknown",
+    "event_fields": {
+      "kind": "tool_outcome_unknown",
+      "id": "fc_0ef72c934f3c0eee016ae257c1831081919afad7cf0f05b534"
+    },
+    "sha256": "3d6bda8aaeaa182d019af73c08ba7314854d39aac463c29ad5a64e59e70b7ab2"
+  },
+  {
+    "session_id": "7b41d57c-d7aa-47f3-b2c7-b689012703c4",
+    "timestamp": "2026-10-28T20:15:05.027928808Z",
+    "record_id": "00000000000000000833-28db961f-4d92-4437-aee7-f7e84b162326-00000000000000000833.json",
+    "event_kind": "terminal",
+    "event_fields": {
+      "kind": "terminal",
+      "outcome": "user_cancelled"
+    },
+    "sha256": "42a55f4e04178f4c77e0573a0f0c46dec33b1d095502521aa80fb2652587331a"
+  }
+]

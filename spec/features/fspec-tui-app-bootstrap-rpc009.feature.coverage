@@ -474,8 +474,8 @@
       "name": "Action enum gains seven new variants while existing variants are preserved",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
-          "lines": "265-293",
+          "file": "rust/fspec-tui/tests/app_bootstrap_rpc009/action_shape.rs",
+          "lines": "2-33",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/components/mod.rs",
@@ -506,16 +506,16 @@
                 107,
                 108,
                 109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
               ]
             }
           ]
@@ -528,13 +528,14 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/app_bootstrap_rpc009.rs"
+      "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "rust/fspec-tui/tests/app_bootstrap_rpc009/action_shape.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/app.rs",
       "rust/fspec-tui/src/views/root.rs",
       "rust/fspec-tui/src/components/mod.rs"
     ],
-    "totalLinesCovered": 589
+    "totalLinesCovered": 592
   }
 }

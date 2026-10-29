@@ -4,8 +4,8 @@
       "name": "codelet_common::file_lock is lifted out of schedule_handler.rs",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "31-82",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
+          "lines": "2-54",
           "implMappings": [
             {
               "file": "rust/common/src/file_lock.rs",
@@ -150,8 +150,8 @@
       "name": "codelet_core::work_units_write module exists and stays under 300 LoC",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "83-136",
+          "file": "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
+          "lines": "57-114",
           "implMappings": [
             {
               "file": "rust/core/src/work_units_write.rs",
@@ -300,17 +300,17 @@
           "lines": "137-162",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/workspace.rs",
               "lines": [
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
               ]
             }
           ]
@@ -325,22 +325,22 @@
           "lines": "163-192",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/core.rs",
               "lines": [
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
               ]
             }
           ]
@@ -355,24 +355,24 @@
           "lines": "193-226",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
               "lines": [
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
               ]
             }
           ]
@@ -384,7 +384,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "227-253",
+          "lines": "131-157",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch.rs",
@@ -427,7 +427,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
-          "lines": "254-282",
+          "lines": "158-186",
           "implMappings": [
             {
               "file": "rust/napi/src/work_units_watcher.rs",
@@ -512,19 +512,19 @@
     "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
+      "rust/fspec-tui/tests/source_shape_rpc017/shared_helpers.rs",
       "rust/fspec-tui/tests/source_shape_rpc017.rs"
     ],
     "implFiles": [
       "rust/common/src/file_lock.rs",
       "rust/core/src/work_units_write.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc/src/service_declaration/workspace.rs",
+      "rust/fspec-tui/src/transport/backend/core.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs",
       "rust/fspec-tui/src/app/dispatch.rs",
       "rust/napi/src/work_units_watcher.rs",
-      "src/commands/prioritize-work-unit.ts",
       "rust/fspec-tui/src/views/board.rs"
     ],
-    "totalLinesCovered": 766
+    "totalLinesCovered": 673
   }
 }

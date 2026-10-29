@@ -117,6 +117,31 @@
           "lines": "248-290",
           "implMappings": [
             {
+              "file": "rust/fspec-tui/src/transport/backend/session_history.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        },
+        {
+          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
+          "lines": "248-290",
+          "implMappings": [
+            {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 283,
@@ -139,31 +164,6 @@
                 300,
                 301,
                 302
-              ]
-            }
-          ]
-        },
-        {
-          "file": "rust/fspec-tui/tests/compaction_reduction_display_contract_rpc420.rs",
-          "lines": "248-290",
-          "implMappings": [
-            {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
-              "lines": [
-                463,
-                464,
-                465,
-                466,
-                467,
-                468,
-                469,
-                470,
-                471,
-                472,
-                473,
-                474,
-                475,
-                476
               ]
             }
           ]
@@ -275,7 +275,7 @@
       "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
       "rust/fspec-tui/src/views/agent/header_build.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/transport/backend/session_history.rs",
       "rust/core/src/session_manager_handle.rs",
       "rust/cli/src/interactive_helpers.rs"
     ],

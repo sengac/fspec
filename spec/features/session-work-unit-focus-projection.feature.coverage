@@ -120,22 +120,6 @@
               ]
             },
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
-              "lines": [
-                585,
-                598,
-                607
-              ]
-            },
-            {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
-              "lines": [
-                1020,
-                1036,
-                1053
-              ]
-            },
-            {
               "file": "rust/fspec-tui/src/transport/focus_events.rs",
               "lines": [
                 17,
@@ -143,6 +127,22 @@
                 25,
                 26,
                 30
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+              "lines": [
+                171,
+                184,
+                193
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/conversation.rs",
+              "lines": [
+                67,
+                83,
+                100
               ]
             }
           ]
@@ -245,9 +245,9 @@
       "rust/fspec-tui/src/app/dispatch_work_unit_binding.rs",
       "rust/fspec-tui/src/app/bootstrap_focus.rs",
       "rust/fspec-tui/src/app/dispatch_session_lifecycle.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs",
       "rust/fspec-tui/src/transport/focus_events.rs",
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+      "rust/fspec-tui/src/transport/websocket/conversation.rs",
       "rust/fspec-tui/src/app/session_creation.rs"
     ],
     "totalLinesCovered": 298

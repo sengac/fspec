@@ -2,41 +2,381 @@
   "scenarios": [
     {
       "name": "Escape cancels pending pre-prompt compaction through the embedded transport",
-      "testMappings": [{
-        "file": "rust/fspec-tui/tests/escape_compaction_bug214.rs",
-        "lines": "10-34",
-        "implMappings": [
-          {"file": "rust/cli/src/compaction_cancellation.rs", "lines": [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46]},
-          {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,234,235,236,237,238,239,240,241,242,243,244]},
-          {"file": "rust/cli/src/interactive/stream_loop.rs", "lines": [231,232,233,234,329,330,331,332,333,334,335,336,337,338,339,340,341]},
-          {"file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs", "lines": [39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]},
-          {"file": "rust/fspec-tui/src/transport/embedded.rs", "lines": [98,99,100,101]},
-          {"file": "rust/sessions/src/background_session.rs", "lines": [1695,1696,1697,1698,1699,1700,1701,1702,1703]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/escape_compaction_bug214.rs",
+          "lines": "10-34",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_cancellation.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            },
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                231,
+                232,
+                233,
+                234,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1695,
+                1696,
+                1697,
+                1698,
+                1699,
+                1700,
+                1701,
+                1702,
+                1703
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Escape cancels pending pre-prompt compaction through the WebSocket transport",
-      "testMappings": [{
-        "file": "rust/fspec-tui/tests/escape_compaction_bug214.rs",
-        "lines": "36-60",
-        "implMappings": [
-          {"file": "rust/cli/src/compaction_cancellation.rs", "lines": [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46]},
-          {"file": "rust/cli/src/compactor_sub_agent.rs", "lines": [105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,234,235,236,237,238,239,240,241,242,243,244]},
-          {"file": "rust/cli/src/interactive/stream_loop.rs", "lines": [231,232,233,234,329,330,331,332,333,334,335,336,337,338,339,340,341]},
-          {"file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs", "lines": [39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]},
-          {"file": "rust/fspec-tui/src/transport/websocket.rs", "lines": [250,251,252,253,254,255]},
-          {"file": "rust/sessions/src/background_session.rs", "lines": [1695,1696,1697,1698,1699,1700,1701,1702,1703]}
-        ]
-      }]
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/escape_compaction_bug214.rs",
+          "lines": "36-60",
+          "implMappings": [
+            {
+              "file": "rust/cli/src/compaction_cancellation.rs",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            },
+            {
+              "file": "rust/cli/src/compactor_sub_agent.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            },
+            {
+              "file": "rust/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                231,
+                232,
+                233,
+                234,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            },
+            {
+              "file": "rust/sessions/src/background_session.rs",
+              "lines": [
+                1695,
+                1696,
+                1697,
+                1698,
+                1699,
+                1700,
+                1701,
+                1702,
+                1703
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/supervisor_handle.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 2,
     "coveredScenarios": 2,
     "coveragePercent": 100,
-    "testFiles": ["rust/fspec-tui/tests/escape_compaction_bug214.rs"],
-    "implFiles": ["rust/cli/src/compaction_cancellation.rs", "rust/cli/src/compactor_sub_agent.rs", "rust/cli/src/interactive/stream_loop.rs", "rust/fspec-tui/src/app/dispatch_esc_cascade.rs", "rust/fspec-tui/src/transport/embedded.rs", "rust/fspec-tui/src/transport/websocket.rs", "rust/sessions/src/background_session.rs"],
+    "testFiles": [
+      "rust/fspec-tui/tests/escape_compaction_bug214.rs"
+    ],
+    "implFiles": [
+      "rust/cli/src/compaction_cancellation.rs",
+      "rust/cli/src/compactor_sub_agent.rs",
+      "rust/cli/src/interactive/stream_loop.rs",
+      "rust/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "rust/sessions/src/background_session.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs",
+      "rust/fspec-tui/src/transport/websocket/supervisor_handle.rs"
+    ],
     "totalLinesCovered": 328
   }
 }

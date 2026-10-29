@@ -178,10 +178,10 @@
               ]
             },
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/shared_construction.rs",
               "lines": [
-                835,
-                914
+                22,
+                101
               ]
             }
           ]
@@ -204,7 +204,7 @@
       "rust/sessions/src/activity_focus.rs",
       "rust/sessions/src/background_session.rs",
       "rust/core/src/work_unit_subscription.rs",
-      "rust/rpc/src/lib.rs"
+      "rust/rpc/src/shared_construction.rs"
     ],
     "totalLinesCovered": 281
   }

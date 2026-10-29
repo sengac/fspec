@@ -17,11 +17,11 @@ fn fspec_tui_src() -> std::path::PathBuf {
 }
 
 fn read_raw(path: &std::path::Path) -> String {
-    common::read_to_string_or_panic(path)
+    codelet_test_helpers::source_composition::read_source(path).expect("resolve source shape")
 }
 
 fn count_lines(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+    common::read_to_string_or_panic(path).lines().count()
 }
 
 /// Scenario: New view files exist with the required shape and forbidden imports absent
@@ -143,7 +143,7 @@ fn old_popup_files_removed_and_identifiers_gone() {
     let mut files: Vec<std::path::PathBuf> = Vec::new();
     walk(&src, &mut files);
     for path in &files {
-        let body = read_raw(path);
+        let body = common::read_to_string_or_panic(path);
         for needle in ["ResumePicker", "SearchPalette"] {
             if body.contains(needle) {
                 violations.push(format!("{} contains {}", path.display(), needle));

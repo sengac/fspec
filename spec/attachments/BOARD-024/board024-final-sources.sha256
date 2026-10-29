@@ -1,0 +1,9 @@
+f46c4fa7a52dd419ff9e83d0dad3c4294298a2661e4b7d396765088f1a2cf364  rust/fspec-tui/tests/board024/attachments.rs
+efdef3b20d2231aa51ca9ac5b2e7275783989c7072ef063c288c72abda1e7f96  rust/fspec-tui/tests/board024/canonical.rs
+196eafd3d374c0a175cf884ca59bbe9232f27644acd5e4f85b4324a853f22e97  rust/fspec-tui/tests/board024/chooser.rs
+cc0addd571969df4706d00fa89ef1f3ce74fd58c2c7b4d1c0cf2c349abda7195  rust/fspec-tui/tests/board024/details.rs
+8f46408952114e12d85ed37eea29f7e8251ffb2bf9a8579a54a494f035a05d6c  rust/fspec-tui/tests/board024_enter_chooser.rs
+a9667bcb6b4366aebf5ecaa107ca9b3e2724de88ae09ea64017f30c4c49042fd  rust/fspec-tui/tests/board024/loading.rs
+0ebc8149c90c71dbe803d773623f05088aecaa62919011ece97c151ceae13d1a  rust/fspec-tui/tests/board024/support.rs
+9d41c13e38e8e580b836c9f1194b58d4fe82bd5fe2bcae50f2bf5a3101995563  spec/features/board-card-enter-chooser-and-complete-details.feature
+e84863ead9d20fc5183442c6351ae9194f396be1803767b9c8d3885375761b25  spec/features/board-card-enter-chooser-and-complete-details.feature.coverage

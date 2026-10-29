@@ -4,8 +4,8 @@
       "name": "Manual checkpoint creation publishes incremented counts on the checkpoint-changed push",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "474-491",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/watcher_updates.rs",
+          "lines": "41-59",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
@@ -395,8 +395,8 @@
       "name": "Auto-checkpoint creation publishes incremented counts on the checkpoint-changed push",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "499-520",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/watcher_updates.rs",
+          "lines": "66-88",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
@@ -786,8 +786,8 @@
       "name": "Checkpoint delete publishes decremented counts on the checkpoint-changed push",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "528-549",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/watcher_updates.rs",
+          "lines": "95-117",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
@@ -1212,38 +1212,38 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "176-209",
+          "lines": "164-198",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
               "lines": [
-                1076,
-                1077,
-                1078,
-                1079,
-                1080,
-                1081,
-                1082
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
               ]
             }
           ]
         },
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "406-440",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/polling_and_surface.rs",
+          "lines": "147-182",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/shared_construction.rs",
               "lines": [
-                819,
-                820,
-                821,
-                822,
-                823,
-                824,
-                825,
-                826,
-                827
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
               ]
             }
           ]
@@ -1254,8 +1254,8 @@
       "name": "Opening and closing the Checkpoints view re-polls the checkpoint counts",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "262-305",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/polling_and_surface.rs",
+          "lines": "1-45",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
@@ -1277,8 +1277,8 @@
       "name": "RefreshCheckpointCounts re-reads the counts and updates the BoardStore",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "313-340",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/polling_and_surface.rs",
+          "lines": "52-80",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
@@ -1304,8 +1304,8 @@
       "name": "Watcher degrades to an empty GitState when the watched directory is not a git repository",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "557-580",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/watcher_updates.rs",
+          "lines": "124-148",
           "implMappings": [
             {
               "file": "rust/core/src/git_state.rs",
@@ -1408,29 +1408,29 @@
           "lines": "205-241",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/worktrees_jobs.rs",
               "lines": [
-                996,
-                997,
-                998,
-                999,
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005,
-                1006,
-                1007,
-                1008,
-                1009,
-                1010,
-                1011,
-                1012,
-                1013,
-                1014,
-                1015,
-                1016
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
               ]
             }
           ]
@@ -1441,28 +1441,28 @@
       "name": "FspecBackend exposes a transport-agnostic git-state push surface",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
-          "lines": "335-383",
+          "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts/polling_and_surface.rs",
+          "lines": "87-140",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/worktrees_jobs.rs",
               "lines": [
-                1000,
-                1001,
-                1002,
-                1003,
-                1004,
-                1005,
-                1006,
-                1007,
-                1008,
-                1009,
-                1010,
-                1011,
-                1012,
-                1013,
-                1014,
-                1015
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
               ]
             }
           ]
@@ -1475,17 +1475,19 @@
     "coveredScenarios": 10,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs"
+      "rust/fspec-tui/tests/bug181_live_checkpoint_counts/watcher_updates.rs",
+      "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
+      "rust/fspec-tui/tests/bug181_live_checkpoint_counts/polling_and_surface.rs"
     ],
     "implFiles": [
       "rust/core/src/git_state.rs",
       "rust/fspec-tui/src/app/bootstrap_git_state.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/rpc/src/lib.rs",
+      "rust/fspec-tui/src/transport/embedded/worktrees_scheduling.rs",
+      "rust/rpc/src/shared_construction.rs",
       "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
       "rust/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
-      "rust/fspec-tui/src/transport/mod.rs"
+      "rust/fspec-tui/src/transport/backend/worktrees_jobs.rs"
     ],
-    "totalLinesCovered": 1651
+    "totalLinesCovered": 1664
   }
 }

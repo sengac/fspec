@@ -19,7 +19,7 @@ fn read_raw(path: &std::path::Path) -> String {
 }
 
 fn count_lines_path(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+    common::read_to_string_or_panic(path).lines().count()
 }
 
 /// Scenario: codelet workspace declares tui-textarea as a dep
@@ -107,7 +107,10 @@ fn agent_view_orchestrator_now_wires_the_new_widgets() {
 #[test]
 fn action_enum_gains_four_navigation_variants() {
     // @step Given rust/fspec-tui/src/components/mod.rs after RPC-019 lands
-    let body = read_raw(&fspec_tui_src().join("components").join("mod.rs"));
+    let body = codelet_test_helpers::source_composition::read_source(
+        &fspec_tui_src().join("components").join("mod.rs"),
+    )
+    .expect("resolve Action enum source");
     // @step Then the file contains the substring "HistoryPrev"
     assert!(body.contains("HistoryPrev"));
     // @step And the file contains the substring "HistoryNext"

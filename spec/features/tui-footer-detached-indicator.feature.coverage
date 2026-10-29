@@ -8,28 +8,6 @@
           "lines": "38-71",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
-              "lines": [
-                1248,
-                1249,
-                1250,
-                1251,
-                1252,
-                1253,
-                1254,
-                1255,
-                1256,
-                1257,
-                1258,
-                1259,
-                1260,
-                1261,
-                1262,
-                1263,
-                1264
-              ]
-            },
-            {
               "file": "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 98,
@@ -50,6 +28,28 @@
                 113,
                 114,
                 115
+              ]
+            },
+            {
+              "file": "rust/rpc/src/service_implementation/interaction_sessions.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
               ]
             }
           ]
@@ -99,8 +99,8 @@
       "rust/fspec-tui/tests/wt002_footer_detached_indicator.rs"
     ],
     "implFiles": [
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs"
+      "rust/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "rust/rpc/src/service_implementation/interaction_sessions.rs"
     ],
     "totalLinesCovered": 115
   }

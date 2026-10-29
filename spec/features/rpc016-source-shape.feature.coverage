@@ -75,23 +75,23 @@
           "lines": "73-98",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/action_runtime.rs",
               "lines": [
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
               ]
             }
           ]
@@ -1138,7 +1138,7 @@
     "implFiles": [
       "rust/rpc-types/src/lib.rs",
       "rust/core/src/work_units.rs",
-      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/components/action_runtime.rs",
       "rust/fspec-tui/src/store/board_viewport.rs",
       "rust/fspec-tui/src/views/board/viewport.rs",
       "rust/fspec-tui/src/views/board.rs"

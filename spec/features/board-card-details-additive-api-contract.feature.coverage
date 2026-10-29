@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    {
+      "name": "Canonical detail API appends exactly one method without changing frozen prefixes",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/board024_additive_api_contract.rs",
+          "lines": "13-80",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/board024_additive_api_contract.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 68
+  }
+}

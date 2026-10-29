@@ -84,7 +84,8 @@ fn create_session_dialog_component_exists() {
 fn action_enum_gains_rpc060_variants() {
     // @step Given the file rust/fspec-tui/src/components/mod.rs is compiled
     let path = workspace_root().join("rust/fspec-tui/src/components/mod.rs");
-    let source = fs::read_to_string(&path).expect("read components/mod.rs");
+    let source = codelet_test_helpers::source_composition::read_source(&path)
+        .expect("read components/mod.rs");
 
     // @step Then it declares Action::OpenCreateSessionDialog
     assert!(

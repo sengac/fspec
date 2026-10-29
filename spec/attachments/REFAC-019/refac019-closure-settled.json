@@ -1,0 +1,2544 @@
+{
+  "status": "pending",
+  "captured_at_utc": "2026-10-28T21:15:33.929264+00:00",
+  "read_only": true,
+  "workers_may_still_be_writing": true,
+  "summary": {
+    "original_implementation_entries": 160,
+    "implementation_entries_passed": 144,
+    "moved_test_identities": 100,
+    "moved_test_identities_found": 100,
+    "moved_tests_fully_mapped": 93,
+    "moved_tests_location_multiplicity_passed": 93,
+    "inherited_unmapped_test_identities": [
+      "wire_types_live_in_rpc_types_lib_rs"
+    ],
+    "expected_mapping_occurrences": 389,
+    "matched_occurrences": 349,
+    "protected_hashes": 22,
+    "frozen_contract_snapshots": 6,
+    "additional_refactor_invalidity": 26,
+    "rpc027_subset_passed": true,
+    "pending_findings": 80
+  },
+  "errors": [],
+  "remaining_implementation_audit_indices": [
+    16,
+    49,
+    68,
+    69,
+    79,
+    80,
+    81,
+    96,
+    97,
+    98,
+    116,
+    117,
+    121,
+    122,
+    149,
+    158
+  ],
+  "remaining_moved_test_functions": [
+    "every_new_method_appears_on_session_manager_handle_trait",
+    "every_new_method_appears_on_fspec_service_tarpc_trait",
+    "every_new_method_appears_on_fspec_backend_trait",
+    "embedded_backend_implements_every_new_method",
+    "websocket_backend_implements_every_new_method",
+    "status_update_envelope_variant_exists"
+  ],
+  "pending": [
+    {
+      "feature": "spec/features/live-checkpoint-counts-in-the-board-header.feature",
+      "scenario": "Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore",
+      "old_test": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs:176-209",
+      "required_file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
+      "required_functions": [],
+      "audit160": [
+        16
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/live-checkpoint-counts-in-the-board-header.feature",
+      "scenario": "Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/mux-surface-single-top-of-mux-menu-bar-per-pane-suppression-spinner-draw-tick.feature",
+      "scenario": "Clicking outside the dropdown closes it while the click still lands on the pane",
+      "old_test": "rust/fspec-tui/tests/menu004_mux_surface.rs:1208-1252",
+      "required_file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+      "required_functions": [
+        {
+          "name": "scenario_clicking_a_chip_activates_that_session",
+          "lines": "1214-1242"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
+          "lines": "17-37",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/mux-surface-single-top-of-mux-menu-bar-per-pane-suppression-spinner-draw-tick.feature",
+      "scenario": "Clicking outside the dropdown closes it while the click still lands on the pane",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc011-regression-invariants.feature",
+      "scenario": "WebSocketFspecBackend::connect signature is unchanged",
+      "old_test": "rust/rpc-server/tests/regression_invariants_rpc011.rs:74-104",
+      "required_file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
+      "required_functions": [
+        {
+          "name": "websocketfspecbackend_connect_signature_is_unchanged",
+          "lines": "78-104"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/transport/websocket.rs",
+          "lines": "60-64",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
+          "lines": "1-7",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc011-regression-invariants.feature",
+      "scenario": "WebSocketFspecBackend::connect signature is unchanged",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc012-action-variants.feature",
+      "scenario": "Action enum gains four new variants for the navigator slice",
+      "old_test": "rust/fspec-tui/tests/action_variants_rpc012.rs:15-43",
+      "required_file": "rust/fspec-tui/tests/action_variants_rpc012.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_navigator_slice_variants",
+          "lines": "14-41"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/components/action_runtime.rs",
+          "lines": "18-59",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc012-action-variants.feature",
+      "scenario": "Action enum gains four new variants for the navigator slice",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecService trait gains the checkpoint_counts RPC method",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:125-135",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/rpc/src/service_declaration/workspace.rs",
+          "lines": "19-22",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecService trait gains the checkpoint_counts RPC method",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecBackend trait gains the checkpoint_counts method",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:138-153",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/transport/backend/core.rs",
+          "lines": "17-22",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecBackend trait gains the checkpoint_counts method",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "Action enum gains CheckpointCountsLoaded variant",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:156-167",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [
+        {
+          "name": "fspec_service_trait_gains_the_checkpoint_counts_rpc_method",
+          "lines": "156-166"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/components/action_runtime.rs",
+          "lines": "49-59",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "Action enum gains CheckpointCountsLoaded variant",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "FspecService trait gains the move_work_unit_up / _down RPC methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc017.rs:137-162",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/rpc/src/service_declaration/workspace.rs",
+          "lines": "26-34",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "FspecService trait gains the move_work_unit_up / _down RPC methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "Action::ReorderUp / ReorderDown handlers are no longer no-ops",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc017.rs:227-253",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "Action::ReorderUp / ReorderDown handlers are no longer no-ops",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "NAPI exports for move_work_unit_up / _down delegate to the shared helper",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc017.rs:254-282",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "NAPI exports for move_work_unit_up / _down delegate to the shared helper",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "New and modified agent modules stay under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc018.rs:176-210",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "required_functions": [
+        {
+          "name": "new_agent_widget_modules_exist_as_separate_files",
+          "lines": "210-225"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "New and modified agent modules stay under 300 lines",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Action enum gains four navigation variants",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:108-121",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_four_navigation_variants",
+          "lines": "107-122"
+        }
+      ],
+      "audit160": [
+        49
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Action enum gains four navigation variants",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:123-146",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "every_file_under_views_agent_stays_under_300_lines",
+          "lines": "125-147"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:148-189",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "views_do_not_directly_import_forbidden_crates",
+          "lines": "150-190"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "AgentView orchestrator owns the new popup fields",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc020.rs:131-142",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "required_functions": [
+        {
+          "name": "file_search_popup_module_exists_with_documented_surface",
+          "lines": "102-114"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "AgentView orchestrator owns the new popup fields",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc020.rs:159-180",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_three_new_variants",
+          "lines": "132-142"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc020.rs:278-298",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "SessionManagerHandle trait gains the new methods with default impls",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:110-142",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_trait_gains_new_methods_with_default_impls",
+          "lines": "68-98"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "SessionManagerHandle trait gains the new methods with default impls",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "FspecBackend trait declares the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:142-159",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_trait_declares_five_new_methods",
+          "lines": "101-115"
+        }
+      ],
+      "audit160": [
+        68
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "FspecBackend trait declares the five new methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "Both transports implement the five new FspecBackend methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:159-187",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "both_transports_implement_five_new_backend_methods",
+          "lines": "118-143"
+        }
+      ],
+      "audit160": [
+        69
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "Both transports implement the five new FspecBackend methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "Cross-transport-parity for persistence_search_history",
+      "old_test": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs:276-323",
+      "required_file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "required_functions": [
+        {
+          "name": "cross_transport_parity_for_persistence_search_history",
+          "lines": "224-268"
+        }
+      ],
+      "audit160": [
+        79
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "Cross-transport-parity for persistence_search_history",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
+      "old_test": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs:325-349",
+      "required_file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "required_functions": [],
+      "audit160": [
+        80
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc026-cross-transport-parity.feature",
+      "scenario": "persistence_delete_session round-trips identically across both transports",
+      "old_test": "rust/fspec-tui/tests/rpc026_cross_transport_parity.rs:1-300",
+      "required_file": "rust/fspec-tui/tests/rpc026_cross_transport_parity.rs",
+      "required_functions": [
+        {
+          "name": "embedded_and_websocket_list_sessions_byte_identical",
+          "lines": "52-84"
+        },
+        {
+          "name": "embedded_and_websocket_search_history_byte_identical",
+          "lines": "87-126"
+        },
+        {
+          "name": "embedded_and_websocket_delete_session_byte_identical",
+          "lines": "129-197"
+        },
+        {
+          "name": "core_delete_session_lifts_napi_implementation",
+          "lines": "200-246"
+        }
+      ],
+      "audit160": [
+        81
+      ],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/rpc/src/lib.rs",
+          "lines": "1-62",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/rpc/src/service_declaration/finish.rs",
+          "lines": "3-8",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/rpc/src/service_declaration/workspace.rs",
+          "lines": "5-171",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/rpc/src/service_declaration/providers_sessions.rs",
+          "lines": "5-224",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/rpc/src/service_declaration/supervision_credentials.rs",
+          "lines": "5-247",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc026-cross-transport-parity.feature",
+      "scenario": "persistence_delete_session round-trips identically across both transports",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "SlashCommandAction enum contains no Providers variant",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:262-299",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "SlashCommandAction enum contains no Providers variant",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:299-322",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "ProviderSettingsView does NOT import Block / Borders",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:118-138",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [
+        {
+          "name": "provider_settings_view_does_not_import_block_or_borders",
+          "lines": "73-90"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "ProviderSettingsView does NOT import Block / Borders",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "render() starts with Clear and uses the 4-constraint Layout",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:141-167",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [
+        {
+          "name": "render_starts_with_clear_and_uses_4_constraint_layout",
+          "lines": "93-117"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "render() starts with Clear and uses the 4-constraint Layout",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "SessionManagerHandle declares set_debug_directory",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc055.rs:25-50",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_declares_set_debug_directory",
+          "lines": "27-52"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "SessionManagerHandle declares set_debug_directory",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "FspecBackend declares the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc057.rs:238-278",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_declares_merge_worktree_methods",
+          "lines": "41-80"
+        }
+      ],
+      "audit160": [
+        96
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "FspecBackend declares the five new methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc057.rs:281-320",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "required_functions": [],
+      "audit160": [
+        97,
+        98
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "MergeConfirmDialog module exists with the documented entry points",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc057.rs:303-348",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "MergeConfirmDialog module exists with the documented entry points",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "/merge-worktree slash command wiring lives in dispatch_merge_worktree.rs",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc057.rs:371-395",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "/merge-worktree slash command wiring lives in dispatch_merge_worktree.rs",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc058.rs:240-285",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "required_functions": [],
+      "audit160": [
+        116,
+        117
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "RegisteredLoop wire type is exported from codelet-rpc-types",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:34-65",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "rpc_types_exports_registered_loop_wire_type",
+          "lines": "37-66"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "RegisteredLoop wire type is exported from codelet-rpc-types",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "SessionManagerHandle declares the three new loop methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:66-104",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_declares_loop_methods",
+          "lines": "69-105"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "SessionManagerHandle declares the three new loop methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "StubSessionManagerHandle exposes per-call counters for all three loop methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:105-129",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "stub_exposes_per_call_counters_for_loop",
+          "lines": "108-130"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "StubSessionManagerHandle exposes per-call counters for all three loop methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecService declares the three new RPC methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:130-162",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "fspec_service_declares_loop_methods",
+          "lines": "133-163"
+        }
+      ],
+      "audit160": [
+        121
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecService declares the three new RPC methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecBackend declares the three new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:163-194",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_declares_loop_methods",
+          "lines": "166-195"
+        }
+      ],
+      "audit160": [
+        122
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecBackend declares the three new methods",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/slash-command-detach-source-shape.feature",
+      "scenario": "components::Action declares the new RPC-050 variants",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc050.rs:139-162",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
+      "required_functions": [],
+      "audit160": [
+        149
+      ],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/components/action_agent_navigation.rs",
+          "lines": "106-124",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/slash-command-detach-source-shape.feature",
+      "scenario": "components::Action declares the new RPC-050 variants",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    },
+    {
+      "feature": "spec/features/widen-sessionmanagerhandle-fspecservice-both-backends-stub-with-cross-transport-parity-tests.feature",
+      "scenario": "every new method has a tarpc service peer and a FspecBackend trait peer",
+      "old_test": "rust/fspec-tui/tests/rpc037_cross_transport_parity.rs:1111-1238",
+      "required_file": "rust/fspec-tui/tests/rpc037_cross_transport_parity/source_contracts.rs",
+      "required_functions": [
+        {
+          "name": "every_new_method_appears_on_session_manager_handle_trait",
+          "lines": "73-86"
+        },
+        {
+          "name": "every_new_method_appears_on_fspec_service_tarpc_trait",
+          "lines": "88-111"
+        },
+        {
+          "name": "every_new_method_appears_on_fspec_backend_trait",
+          "lines": "113-132"
+        },
+        {
+          "name": "embedded_backend_implements_every_new_method",
+          "lines": "134-154"
+        },
+        {
+          "name": "websocket_backend_implements_every_new_method",
+          "lines": "156-176"
+        },
+        {
+          "name": "status_update_envelope_variant_exists",
+          "lines": "178-190"
+        }
+      ],
+      "audit160": [
+        158
+      ],
+      "candidate_mappings": 0
+    },
+    {
+      "feature": "spec/features/widen-sessionmanagerhandle-fspecservice-both-backends-stub-with-cross-transport-parity-tests.feature",
+      "scenario": "every new method has a tarpc service peer and a FspecBackend trait peer",
+      "kind": "unmatched_or_staged_mapping_occurrences",
+      "occurrences": 1
+    }
+  ],
+  "additional_refactor_invalidity": [
+    {
+      "feature": "spec/features/mux-surface-single-top-of-mux-menu-bar-per-pane-suppression-spinner-draw-tick.feature",
+      "scenario": "Clicking outside the dropdown closes it while the click still lands on the pane",
+      "old_test": "rust/fspec-tui/tests/menu004_mux_surface.rs:1208-1252",
+      "required_file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+      "required_functions": [
+        {
+          "name": "scenario_clicking_a_chip_activates_that_session",
+          "lines": "1214-1242"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/views/navigator_mux_routing.rs",
+          "lines": "17-37",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+          "original_lines": "36-56"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc011-regression-invariants.feature",
+      "scenario": "WebSocketFspecBackend::connect signature is unchanged",
+      "old_test": "rust/rpc-server/tests/regression_invariants_rpc011.rs:74-104",
+      "required_file": "rust/rpc-server/tests/regression_invariants_rpc011.rs",
+      "required_functions": [
+        {
+          "name": "websocketfspecbackend_connect_signature_is_unchanged",
+          "lines": "78-104"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/transport/websocket.rs",
+          "lines": "60-64",
+          "occurrences": 1
+        },
+        {
+          "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
+          "lines": "1-7",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/fspec-tui/src/transport/websocket.rs",
+          "original_lines": "60-72"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc012-action-variants.feature",
+      "scenario": "Action enum gains four new variants for the navigator slice",
+      "old_test": "rust/fspec-tui/tests/action_variants_rpc012.rs:15-43",
+      "required_file": "rust/fspec-tui/tests/action_variants_rpc012.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_navigator_slice_variants",
+          "lines": "14-41"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/components/action_runtime.rs",
+          "lines": "18-59",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/fspec-tui/src/components/mod.rs",
+          "original_lines": "139-180"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecService trait gains the checkpoint_counts RPC method",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:125-135",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/rpc/src/service_declaration/workspace.rs",
+          "lines": "19-22",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/rpc/src/lib.rs",
+          "original_lines": "83-86"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecBackend trait gains the checkpoint_counts method",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:138-153",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/transport/backend/core.rs",
+          "lines": "17-22",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/fspec-tui/src/transport/mod.rs",
+          "original_lines": "88-93"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "Action enum gains CheckpointCountsLoaded variant",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc015.rs:156-167",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "required_functions": [
+        {
+          "name": "fspec_service_trait_gains_the_checkpoint_counts_rpc_method",
+          "lines": "156-166"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/fspec-tui/src/components/action_runtime.rs",
+          "lines": "49-59",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/fspec-tui/src/components/mod.rs",
+          "original_lines": "170-180"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "FspecService trait gains the move_work_unit_up / _down RPC methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc017.rs:137-162",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "required_functions": [],
+      "audit160": [],
+      "candidate_mappings": 1,
+      "missing_impl": [
+        {
+          "file": "rust/rpc/src/service_declaration/workspace.rs",
+          "lines": "26-34",
+          "occurrences": 1
+        }
+      ],
+      "kind": "in_bounds_source_provenance_drift",
+      "newly_shifted_implementation": [
+        {
+          "original_file": "rust/rpc/src/lib.rs",
+          "original_lines": "90-98"
+        }
+      ]
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "New and modified agent modules stay under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc018.rs:176-210",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "required_functions": [
+        {
+          "name": "new_agent_widget_modules_exist_as_separate_files",
+          "lines": "210-225"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Action enum gains four navigation variants",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:108-121",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_four_navigation_variants",
+          "lines": "107-122"
+        }
+      ],
+      "audit160": [
+        49
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:123-146",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "every_file_under_views_agent_stays_under_300_lines",
+          "lines": "125-147"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc019.rs:148-189",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "required_functions": [
+        {
+          "name": "views_do_not_directly_import_forbidden_crates",
+          "lines": "150-190"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "AgentView orchestrator owns the new popup fields",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc020.rs:131-142",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "required_functions": [
+        {
+          "name": "file_search_popup_module_exists_with_documented_surface",
+          "lines": "102-114"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Every file under views/agent/ and views/agent.rs stays under 300 lines",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc020.rs:159-180",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "required_functions": [
+        {
+          "name": "action_enum_gains_three_new_variants",
+          "lines": "132-142"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "SessionManagerHandle trait gains the new methods with default impls",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:110-142",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_trait_gains_new_methods_with_default_impls",
+          "lines": "68-98"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "FspecBackend trait declares the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:142-159",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_trait_declares_five_new_methods",
+          "lines": "101-115"
+        }
+      ],
+      "audit160": [
+        68
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "Both transports implement the five new FspecBackend methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc022.rs:159-187",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "required_functions": [
+        {
+          "name": "both_transports_implement_five_new_backend_methods",
+          "lines": "118-143"
+        }
+      ],
+      "audit160": [
+        69
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "Cross-transport-parity for persistence_search_history",
+      "old_test": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs:276-323",
+      "required_file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "required_functions": [
+        {
+          "name": "cross_transport_parity_for_persistence_search_history",
+          "lines": "224-268"
+        }
+      ],
+      "audit160": [
+        79
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "ProviderSettingsView does NOT import Block / Borders",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:118-138",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [
+        {
+          "name": "provider_settings_view_does_not_import_block_or_borders",
+          "lines": "73-90"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "render() starts with Clear and uses the 4-constraint Layout",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc054.rs:141-167",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "required_functions": [
+        {
+          "name": "render_starts_with_clear_and_uses_4_constraint_layout",
+          "lines": "93-117"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "SessionManagerHandle declares set_debug_directory",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc055.rs:25-50",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_declares_set_debug_directory",
+          "lines": "27-52"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "FspecBackend declares the five new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc057.rs:238-278",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_declares_merge_worktree_methods",
+          "lines": "41-80"
+        }
+      ],
+      "audit160": [
+        96
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "RegisteredLoop wire type is exported from codelet-rpc-types",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:34-65",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "rpc_types_exports_registered_loop_wire_type",
+          "lines": "37-66"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "SessionManagerHandle declares the three new loop methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:66-104",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "session_manager_handle_declares_loop_methods",
+          "lines": "69-105"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "StubSessionManagerHandle exposes per-call counters for all three loop methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:105-129",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "stub_exposes_per_call_counters_for_loop",
+          "lines": "108-130"
+        }
+      ],
+      "audit160": [],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecService declares the three new RPC methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:130-162",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "fspec_service_declares_loop_methods",
+          "lines": "133-163"
+        }
+      ],
+      "audit160": [
+        121
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "FspecBackend declares the three new methods",
+      "old_test": "rust/fspec-tui/tests/source_shape_rpc059.rs:163-194",
+      "required_file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "required_functions": [
+        {
+          "name": "fspec_backend_declares_loop_methods",
+          "lines": "166-195"
+        }
+      ],
+      "audit160": [
+        122
+      ],
+      "candidate_mappings": 0,
+      "kind": "root_test_span_shift_after_refactor"
+    }
+  ],
+  "inherited_range_differences": [
+    {
+      "feature": "spec/features/auto-reconnect-supervisor.feature",
+      "scenario": "Auto-reconnect backoff schedule",
+      "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+      "lines": "57-129"
+    },
+    {
+      "feature": "spec/features/auto-reconnect-supervisor.feature",
+      "scenario": "Auto-reconnect happy path",
+      "file": "rust/fspec-tui/tests/auto_reconnect_slice2_rpc011.rs",
+      "lines": "131-200"
+    },
+    {
+      "feature": "spec/features/custom-model-rpc-cross-transport-parity.feature",
+      "scenario": "RPC methods are a silent no-op without an attached SessionManagerHandle",
+      "file": "rust/fspec-tui/tests/rpc347_cross_transport_parity.rs",
+      "lines": "129-154"
+    },
+    {
+      "feature": "spec/features/disconnect-dialog-cr1-baseline.feature",
+      "scenario": "WebSocketFspecBackend surfaces WS disconnect as Action::Disconnected",
+      "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+      "lines": "84-153"
+    },
+    {
+      "feature": "spec/features/disconnect-dialog-cr1-baseline.feature",
+      "scenario": "Pressing r in DisconnectDialog triggers a manual reconnect that resets backoff",
+      "file": "rust/fspec-tui/tests/disconnect_dialog_slice1_rpc011.rs",
+      "lines": "296-362"
+    },
+    {
+      "feature": "spec/features/dual-transport-parity.feature",
+      "scenario": "Both transports produce semantically identical results for the same call",
+      "file": "rust/rpc-server/tests/parity.rs",
+      "lines": "20-51"
+    },
+    {
+      "feature": "spec/features/dual-transport-parity.feature",
+      "scenario": "Both transport calls reach the same shared service implementation",
+      "file": "rust/rpc-server/tests/parity.rs",
+      "lines": "53-86"
+    },
+    {
+      "feature": "spec/features/filter-resume-session-list-by-current-project.feature",
+      "scenario": "Cross-transport parity for both embedded and WebSocket backends",
+      "file": "rust/fspec-tui/tests/resume_session_project_filter_rpc427.rs",
+      "lines": "205-241"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "App bootstrap calls backend.list_work_units() and seeds the left pane",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "41-60"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "App bootstrap calls backend.create_session(None) and seeds the active session",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "62-77"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "App bootstrap spawns three subscriber tasks via tokio::spawn on the host runtime",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "79-109"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "work_units broadcast event becomes an Action::WorkUnitsLoaded on the action bus",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "111-138"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "chunks broadcast events for the active session become Action::ChunkReceived",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "140-156"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "chunks broadcast events for an OTHER session do NOT become Action::ChunkReceived",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "158-172"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "Action::InputSubmitted dispatches backend.send_input and is forwarded to compositor.update",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "174-193"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "Action::Interrupt dispatches backend.interrupt",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "195-213"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "Action::FocusNext mutates RootView's focused_pane field",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "215-231"
+    },
+    {
+      "feature": "spec/features/fspec-tui-app-bootstrap-rpc009.feature",
+      "scenario": "Subscriber tasks honour RecvError::Lagged by logging at debug and continuing",
+      "file": "rust/fspec-tui/tests/app_bootstrap_rpc009.rs",
+      "lines": "233-263"
+    },
+    {
+      "feature": "spec/features/fspec-tui-ws-backend.feature",
+      "scenario": "WebSocketFspecBackend.connect uses tokio_tungstenite::connect_async directly",
+      "file": "rust/fspec-tui/tests/ws_backend_smoke.rs",
+      "lines": "100-159"
+    },
+    {
+      "feature": "spec/features/gitstate-capture-on-the-production-service-wiring-runs-off-the-async-pool.feature",
+      "scenario": "A checkpoint written from another terminal produces a counted capture on the production wiring",
+      "file": "rust/fspec-tui/tests/bug187_git_state_capture_off_async_pool.rs",
+      "lines": "78-127"
+    },
+    {
+      "feature": "spec/features/health-rpc-serverstats.feature",
+      "scenario": "FspecBackend trait gains health on both transports",
+      "file": "rust/rpc-server/tests/health_rpc_serverstats_rpc011.rs",
+      "lines": "125-156"
+    },
+    {
+      "feature": "spec/features/live-checkpoint-counts-in-the-board-header.feature",
+      "scenario": "Embedded transport delivers a live checkpoint-count frame end-to-end into the BoardStore",
+      "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
+      "lines": "176-209"
+    },
+    {
+      "feature": "spec/features/live-checkpoint-counts-in-the-board-header.feature",
+      "scenario": "WebSocket transport degrades gracefully when the git-state push is not forwarded",
+      "file": "rust/fspec-tui/tests/bug181_live_checkpoint_counts.rs",
+      "lines": "205-241"
+    },
+    {
+      "feature": "spec/features/menu-bar-click-away-de-select-and-no-stale-chip-highlight.feature",
+      "scenario": "Mux: clicking a pane clears the bar highlight",
+      "file": "rust/fspec-tui/tests/bug197_click_away_de_select.rs",
+      "lines": "576-614"
+    },
+    {
+      "feature": "spec/features/menu-dropdown-row-click-must-execute-the-entry-click-away-must-close-de-select-the-bar.feature",
+      "scenario": "Clicking away in mux closes the dropdown and de-selects the bar",
+      "file": "rust/fspec-tui/tests/bug196_menu_dropdown_row_click.rs",
+      "lines": "582-635"
+    },
+    {
+      "feature": "spec/features/multi-client-and-tracing.feature",
+      "scenario": "Broadcast capacities are explicit and tuned",
+      "file": "rust/rpc-server/tests/multi_client_and_tracing_rpc011.rs",
+      "lines": "133-168"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "multi-line paste into the focused agent pane is inserted into the composer",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "123-160"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "paste while the board pane is focused is ignored",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "166-194"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "paste after click-to-focus lands in the newly focused session's composer",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "201-236"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "paste never mutates the ghost draft of an unfocused agent pane",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "242-277"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "paste while the focused session is compacting is suppressed",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "283-318"
+    },
+    {
+      "feature": "spec/features/mux-agent-input-paste-drop-routing.feature",
+      "scenario": "a terminal file drop delivered as a bracketed paste inserts the path verbatim",
+      "file": "rust/fspec-tui/tests/mux_agent_input_paste_bug179.rs",
+      "lines": "362-394"
+    },
+    {
+      "feature": "spec/features/mux-surface-single-top-of-mux-menu-bar-per-pane-suppression-spinner-draw-tick.feature",
+      "scenario": "A character key while the bar is focused dismisses it and types into the focused pane input",
+      "file": "rust/fspec-tui/tests/menu004_mux_surface.rs",
+      "lines": "659-691"
+    },
+    {
+      "feature": "spec/features/provider-config-profile-dispatch.feature",
+      "scenario": "Saving a new openai profile writes and refreshes the list",
+      "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+      "lines": "87-131"
+    },
+    {
+      "feature": "spec/features/provider-config-profile-dispatch.feature",
+      "scenario": "Editing an existing profile dispatches SaveProfile and repaints the row",
+      "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+      "lines": "134-167"
+    },
+    {
+      "feature": "spec/features/provider-config-profile-dispatch.feature",
+      "scenario": "Confirming a profile deletion removes it and refreshes the list",
+      "file": "rust/fspec-tui/tests/provider_settings_profile_dispatch_prov109.rs",
+      "lines": "169-212"
+    },
+    {
+      "feature": "spec/features/provider-settings-oauth-disconnect.feature",
+      "scenario": "OAuth backend methods are napi-direct on embedded and no-op on websocket",
+      "file": "rust/fspec-tui/tests/provider_settings_oauth_disconnect_prov112.rs",
+      "lines": "664-730"
+    },
+    {
+      "feature": "spec/features/rpc-006-source-shape-invariants.feature",
+      "scenario": "default_fixture is unreachable from production code",
+      "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "lines": "24-57"
+    },
+    {
+      "feature": "spec/features/rpc-006-source-shape-invariants.feature",
+      "scenario": "Embedded transport reuses the host tokio runtime Handle for any fan-out it spawns",
+      "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "lines": "59-94"
+    },
+    {
+      "feature": "spec/features/rpc-006-source-shape-invariants.feature",
+      "scenario": "Shared service crate codelet-rpc may depend on codelet-core but not on codelet-napi",
+      "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "lines": "96-130"
+    },
+    {
+      "feature": "spec/features/rpc-006-source-shape-invariants.feature",
+      "scenario": "rpc-server binary still binds 127.0.0.1 loopback only after the watcher integration",
+      "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "lines": "132-161"
+    },
+    {
+      "feature": "spec/features/rpc-006-source-shape-invariants.feature",
+      "scenario": "Embedded push path contains no bincode encode call",
+      "file": "rust/rpc-embedded/tests/rpc_006_source_shape.rs",
+      "lines": "201-225"
+    },
+    {
+      "feature": "spec/features/rpc-062-mcp-injection-source-shape.feature",
+      "scenario": "session_manager.rs calls init_mcp_session in both create paths",
+      "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
+      "lines": "146-189"
+    },
+    {
+      "feature": "spec/features/rpc-062-mcp-injection-source-shape.feature",
+      "scenario": "session_manager.rs calls cleanup_mcp_session in destroy_session",
+      "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
+      "lines": "195-220"
+    },
+    {
+      "feature": "spec/features/rpc-062-mcp-injection-source-shape.feature",
+      "scenario": "SessionManagerHooks trait declares spawn_agent_loop with the mcp_injection_rx parameter",
+      "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
+      "lines": "226-261"
+    },
+    {
+      "feature": "spec/features/rpc015-cross-transport-parity.feature",
+      "scenario": "EmbeddedFspecBackend::checkpoint_counts delegates through the shared service",
+      "file": "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs",
+      "lines": "63-75"
+    },
+    {
+      "feature": "spec/features/rpc015-cross-transport-parity.feature",
+      "scenario": "WebSocketFspecBackend::checkpoint_counts crosses tarpc cleanly",
+      "file": "rust/fspec-tui/tests/checkpoint_counts_rpc015.rs",
+      "lines": "78-94"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "Header widget modules exist as separate files",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "41-53"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "New and modified board modules stay under 300 lines",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "56-99"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "CheckpointCounts shared type lives in rpc-types",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "102-122"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecService trait gains the checkpoint_counts RPC method",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "125-135"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "FspecBackend trait gains the checkpoint_counts method",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "138-153"
+    },
+    {
+      "feature": "spec/features/rpc015-source-shape.feature",
+      "scenario": "Views still avoid encapsulated transport crates and host runtime construction",
+      "file": "rust/fspec-tui/tests/source_shape_rpc015.rs",
+      "lines": "219-249"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "WorkUnitInfo gains the last_state_change_at field",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "42-52"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "codelet_core::work_units reads stateHistory into last_state_change_at",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "55-70"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "Action enum gains the four new viewport variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "73-98"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "BoardStore declares the scroll_offsets field and viewport methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "101-146"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "Viewport painter module exists as a separate file",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "149-159"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "New and modified board modules stay under 300 lines",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "162-194"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "RPC-013 / RPC-014 / RPC-015 invariants preserved",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "197-223"
+    },
+    {
+      "feature": "spec/features/rpc016-source-shape.feature",
+      "scenario": "Views still avoid encapsulated transport crates and host runtime construction",
+      "file": "rust/fspec-tui/tests/source_shape_rpc016.rs",
+      "lines": "226-260"
+    },
+    {
+      "feature": "spec/features/rpc017-cross-transport-parity.feature",
+      "scenario": "EmbeddedFspecBackend.move_work_unit_up persists through the shared helper",
+      "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
+      "lines": "81-103"
+    },
+    {
+      "feature": "spec/features/rpc017-cross-transport-parity.feature",
+      "scenario": "WebSocketFspecBackend.move_work_unit_down crosses tarpc cleanly",
+      "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
+      "lines": "104-128"
+    },
+    {
+      "feature": "spec/features/rpc017-cross-transport-parity.feature",
+      "scenario": "Both transports return Err for done-column targets",
+      "file": "rust/fspec-tui/tests/move_work_unit_rpc017.rs",
+      "lines": "129-162"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "FspecService trait gains the move_work_unit_up / _down RPC methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "137-162"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "FspecBackend trait gains the move_work_unit_up / _down methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "163-192"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "Both transports implement the new FspecBackend methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "193-226"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "Action::ReorderUp / ReorderDown handlers are no longer no-ops",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "227-253"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "NAPI exports for move_work_unit_up / _down delegate to the shared helper",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "254-282"
+    },
+    {
+      "feature": "spec/features/rpc017-source-shape.feature",
+      "scenario": "Views do not directly import codelet_core / napi / tarpc",
+      "file": "rust/fspec-tui/tests/source_shape_rpc017.rs",
+      "lines": "331-368"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "EmbeddedFspecBackend::get_workspace_info delegates through the shared service",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "84-103"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "WebSocketFspecBackend::get_workspace_info crosses tarpc cleanly",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "106-126"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "Both transports return identical WorkspaceInfo for the same SharedFspecService",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "129-152"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "get_workspace_info returns the process cwd with no branch when no cwd was attached",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "155-170"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "get_workspace_info returns git_branch = None when cwd is not a git repository",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "173-196"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "get_model_info returns safe defaults when no session manager is attached",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "199-219"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "get_thinking_level returns ThinkingLevel::Off when no session manager is attached",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "222-238"
+    },
+    {
+      "feature": "spec/features/rpc018-cross-transport-parity.feature",
+      "scenario": "get_model_info / get_thinking_level cross tarpc cleanly with safe defaults",
+      "file": "rust/fspec-tui/tests/agent_chrome_parity_rpc018.rs",
+      "lines": "241-269"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "New shared types live in rpc-types",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "50-74"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "FspecService trait gains three new RPC methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "77-101"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "SessionManagerHandle trait gains get_model_info / get_thinking_level with default impls",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "104-126"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "FspecBackend trait declares the three new methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "129-138"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "Both transports implement the three new FspecBackend methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "141-161"
+    },
+    {
+      "feature": "spec/features/rpc018-source-shape.feature",
+      "scenario": "New agent widget modules exist as separate files",
+      "file": "rust/fspec-tui/tests/source_shape_rpc018.rs",
+      "lines": "164-173"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "codelet workspace declares tui-textarea as a dep",
+      "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "lines": "33-43"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "codelet-fspec-tui declares tui-textarea as a dep",
+      "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "lines": "45-55"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "New MultiLineInput module exists with the documented surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "lines": "57-75"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "New ScrollbackList module exists with the documented surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "lines": "77-93"
+    },
+    {
+      "feature": "spec/features/rpc019-source-shape.feature",
+      "scenario": "Existing TS AgentView input + scrollback files are untouched",
+      "file": "rust/fspec-tui/tests/source_shape_rpc019.rs",
+      "lines": "191-203"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "FspecBackend trait declares the search_files method",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "68-73"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Both transports implement the search_files FspecBackend method",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "77-85"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "New slash_commands module exists with the documented surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "89-103"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "New SlashCommandPopup module exists with the documented surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "107-115"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "New FileSearchPopup module exists with the documented surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "119-127"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Action enum gains three new variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "146-155"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "Views do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "184-223"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "SlashCommandAction enum contains no Providers variant",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "241-275"
+    },
+    {
+      "feature": "spec/features/rpc020-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "file": "rust/fspec-tui/tests/source_shape_rpc020.rs",
+      "lines": "278-298"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "list_providers returns empty Vec when no session manager is attached (embedded)",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "82-96"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "Both transports return identical providers for the same SharedFspecService",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "119-148"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "set_session_model returns Ok when no session manager is attached (embedded)",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "150-170"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "get_session_role returns None when no session manager is attached (embedded)",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "240-257"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "get_session_role crosses tarpc cleanly with safe default",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "259-281"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "set_session_role returns Ok when no session manager is attached (embedded)",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "283-305"
+    },
+    {
+      "feature": "spec/features/rpc022-cross-transport-parity.feature",
+      "scenario": "set_session_role crosses tarpc cleanly with safe default",
+      "file": "rust/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+      "lines": "307-328"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "New modal dialog modules and dispatch helper exist",
+      "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "lines": "187-202"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "New RPC-022 modules stay under 300 lines",
+      "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "lines": "219-248"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "Priority enum gains a Foreground variant numbered 900",
+      "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "lines": "237-250"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "Action enum gains the new RPC-022 variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "lines": "250-271"
+    },
+    {
+      "feature": "spec/features/rpc022-source-shape.feature",
+      "scenario": "New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite",
+      "file": "rust/fspec-tui/tests/source_shape_rpc022.rs",
+      "lines": "306-351"
+    },
+    {
+      "feature": "spec/features/rpc023-source-shape.feature",
+      "scenario": "Action enum gains the three new variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc023.rs",
+      "lines": "166-185"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "EmbeddedFspecBackend.persistence_add_history persists into the lifted core store via FspecServiceImpl",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "115-135"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "EmbeddedFspecBackend.persistence_get_history returns the texts of the most recent entries newest-first",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "137-162"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "EmbeddedFspecBackend.persistence_search_history returns HistoryMatch values with text, session_id, and ISO timestamp",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "164-204"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "WebSocketFspecBackend round-trips persistence_add_history over tarpc to the same core store",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "206-232"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "Cross-transport-parity for persistence_get_history",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "234-274"
+    },
+    {
+      "feature": "spec/features/rpc025-rpc-methods.feature",
+      "scenario": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
+      "file": "rust/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+      "lines": "325-349"
+    },
+    {
+      "feature": "spec/features/rpc027-help-disconnect-thinking-dialogs.feature",
+      "scenario": "HelpDialog renders with the cyan accent and inner-title body",
+      "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "lines": "90-134"
+    },
+    {
+      "feature": "spec/features/rpc027-help-disconnect-thinking-dialogs.feature",
+      "scenario": "HelpDialog body lists every RPC-009 keybinding",
+      "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "lines": "135-159"
+    },
+    {
+      "feature": "spec/features/rpc027-help-disconnect-thinking-dialogs.feature",
+      "scenario": "HelpDialog no longer imports tui_popup",
+      "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "lines": "160-189"
+    },
+    {
+      "feature": "spec/features/rpc027-help-disconnect-thinking-dialogs.feature",
+      "scenario": "DisconnectDialog renders with the red accent and the \"Disconnected\" inner title",
+      "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "lines": "190-220"
+    },
+    {
+      "feature": "spec/features/rpc027-help-disconnect-thinking-dialogs.feature",
+      "scenario": "DisconnectDialog updates the body inline on Action::Reconnecting(N)",
+      "file": "rust/fspec-tui/tests/rpc027_dialog_parity_bcd.rs",
+      "lines": "221-245"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "SlashCommandAction enum contains no Providers variant",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "262-299"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "dispatch_slash_commands.rs has no Providers arm",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "299-322"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "ProviderSettingsView imports the canonical full-screen helpers",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "85-115"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "Every file under views/provider_settings/ stays under 300 lines",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "170-189"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "components/mod.rs declares the new ConfirmDeleteProviderCredentials action",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "192-216"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "ProviderSettingsView declares filter + filter_mode fields",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "219-228"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "List mode key dispatcher routes \"/\" to enter filter mode",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "231-244"
+    },
+    {
+      "feature": "spec/features/rpc054-provider-settings-source-shape.feature",
+      "scenario": "Esc-cascade clears filter before closing the view",
+      "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "lines": "247-264"
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "FspecService declares set_debug_directory",
+      "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "lines": "53-69"
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "FspecBackend declares set_debug_directory",
+      "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "lines": "72-83"
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "Both transports implement set_debug_directory",
+      "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "lines": "86-114"
+    },
+    {
+      "feature": "spec/features/rpc055-slash-debug-source-shape.feature",
+      "scenario": "/debug slash command wiring lives in dispatch_slash_debug.rs",
+      "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
+      "lines": "117-134"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket blocklist_list both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc056_cross_transport_parity.rs",
+      "lines": "97-131"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "BlocklistRuleInfo is exported from codelet-rpc-types",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "26-50"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "SessionManagerHandle declares blocklist_list",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "54-72"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "StubSessionManagerHandle exposes a blocklist_list call counter",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "76-94"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "FspecService declares blocklist_list",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "98-117"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "FspecBackend declares blocklist_list",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "121-141"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "Both transports implement blocklist_list",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "145-176"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "BlocklistView module exists with the documented entry points",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "180-209"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "Navigator exposes a ViewMode::Blocklist variant",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "213-225"
+    },
+    {
+      "feature": "spec/features/rpc056-blocklist-view-source-shape.feature",
+      "scenario": "/blocklist slash command wiring lives in dispatch_blocklist.rs",
+      "file": "rust/fspec-tui/tests/source_shape_rpc056.rs",
+      "lines": "229-258"
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "lines": "281-320"
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "MergeConfirmDialog module exists with the documented entry points",
+      "file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "lines": "303-348"
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "/merge-worktree slash command wiring lives in dispatch_merge_worktree.rs",
+      "file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "lines": "371-395"
+    },
+    {
+      "feature": "spec/features/rpc057-merge-worktree-source-shape.feature",
+      "scenario": "MergeStrategy and MergeStatus use derive(Default) with default variant attribute (RPC-057 retro 2026-05-27)",
+      "file": "rust/fspec-tui/tests/source_shape_rpc057.rs",
+      "lines": "418-520"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket schedule_list both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+      "lines": "132-170"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket schedule_pause both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+      "lines": "177-210"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket schedule_resume both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+      "lines": "217-249"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket schedule_remove both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc058_cross_transport_parity.rs",
+      "lines": "256-283"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "SessionManagerHandle declares the five new schedule methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "78-125"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "StubSessionManagerHandle exposes per-call counters for all five schedule methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "128-159"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "FspecService declares the five new RPC methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "162-197"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "FspecBackend declares the five new methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "200-237"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "Both transports implement the five new methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "240-285"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "schedule_parser module exists with the documented entry points",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "288-318"
+    },
+    {
+      "feature": "spec/features/rpc058-schedule-source-shape.feature",
+      "scenario": "/schedule slash command wiring lives in dispatch_slash_schedule.rs",
+      "file": "rust/fspec-tui/tests/source_shape_rpc058.rs",
+      "lines": "321-352"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket loop_add both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+      "lines": "80-114"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket loop_cancel both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+      "lines": "115-150"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket loop_list both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+      "lines": "151-193"
+    },
+    {
+      "feature": "spec/features/rpc059-loop-source-shape.feature",
+      "scenario": "/loop slash command wiring lives in dispatch_slash_loop.rs",
+      "file": "rust/fspec-tui/tests/source_shape_rpc059.rs",
+      "lines": "263-290"
+    },
+    {
+      "feature": "spec/features/rpc061-cross-transport-parity.feature",
+      "scenario": "Embedded and WebSocket add_supervisor both reach the stub",
+      "file": "rust/fspec-tui/tests/rpc061_cross_transport_parity.rs",
+      "lines": "82-115"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "SessionManagerHandle trait declares all five supervisor methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "80-111"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "FspecService trait declares all five supervisor methods",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "114-145"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "FspecBackend trait gains the five supervisor forwarders",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "250-281"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "components/mod.rs Action enum gains the two RPC-061 variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "197-213"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "SessionHeader gains a subordinate_label field",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "284-295"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "SessionFooter gains a supervisor_pending_count field",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "298-309"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "dispatch_supervisor_links.rs has the documented helper surface",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "148-174"
+    },
+    {
+      "feature": "spec/features/rpc061-source-shape.feature",
+      "scenario": "app/dispatch.rs catch-all routes through try_dispatch_supervisor_links",
+      "file": "rust/fspec-tui/tests/source_shape_rpc061.rs",
+      "lines": "177-194"
+    },
+    {
+      "feature": "spec/features/session-events-tui-cleared-consumption.feature",
+      "scenario": "A session cleared from another client resets its local tab live (no poll)",
+      "file": "rust/fspec-tui/tests/rpc437_session_cleared_tui_consumption.rs",
+      "lines": "114-189"
+    },
+    {
+      "feature": "spec/features/session-events-tui-consumption.feature",
+      "scenario": "Starting the TUI against a daemon with open sessions seeds a tab for each of them",
+      "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+      "lines": "90-134"
+    },
+    {
+      "feature": "spec/features/session-events-tui-consumption.feature",
+      "scenario": "A remote session creation adds a tab live (no poll)",
+      "file": "rust/fspec-tui/tests/rpc434_session_events_tui_consumption.rs",
+      "lines": "141-180"
+    },
+    {
+      "feature": "spec/features/session-focus-recovery-snapshots.feature",
+      "scenario": "Live recovery snapshots deliver explicit cleared activity",
+      "file": "rust/fspec-tui/tests/bug230_recovery_snapshots.rs",
+      "lines": "33-89"
+    },
+    {
+      "feature": "spec/features/session-status-focus-reconciliation.feature",
+      "scenario": "Watcher replacement and lag recovery retain reconciliation",
+      "file": "rust/sessions/tests/bug231_status_focus.rs",
+      "lines": "274-293"
+    },
+    {
+      "feature": "spec/features/slash-command-detach-cross-transport-parity.feature",
+      "scenario": "set_work_unit_context and get_work_unit_context round-trip identically across both transports",
+      "file": "rust/fspec-tui/tests/rpc050_cross_transport_parity.rs",
+      "lines": "70-138"
+    },
+    {
+      "feature": "spec/features/slash-command-detach-source-shape.feature",
+      "scenario": "No codelet_napi reference and the 300-LoC ceiling holds",
+      "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
+      "lines": "84-136"
+    },
+    {
+      "feature": "spec/features/slash-command-detach-source-shape.feature",
+      "scenario": "components::Action declares the new RPC-050 variants",
+      "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
+      "lines": "139-162"
+    },
+    {
+      "feature": "spec/features/slash-command-detach-source-shape.feature",
+      "scenario": "dispatch_work_unit_binding.rs declares the new RPC-050 helpers",
+      "file": "rust/fspec-tui/tests/source_shape_rpc050.rs",
+      "lines": "165-194"
+    },
+    {
+      "feature": "spec/features/slash-command-resume-source-shape.feature",
+      "scenario": "No codelet_napi reference and the 300-LoC ceiling holds",
+      "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
+      "lines": "57-93"
+    },
+    {
+      "feature": "spec/features/slash-command-resume-source-shape.feature",
+      "scenario": "components::Action declares the SessionResumeComplete variant",
+      "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
+      "lines": "96-106"
+    },
+    {
+      "feature": "spec/features/slash-command-resume-source-shape.feature",
+      "scenario": "dispatch_resume_search_views declares the handle_session_resume_complete helper",
+      "file": "rust/fspec-tui/tests/source_shape_rpc049.rs",
+      "lines": "109-119"
+    },
+    {
+      "feature": "spec/features/stream-per-item-progress-idx-total-for-checkpoint-enumeration-into-the-shared-loadingdialog-counter-row.feature",
+      "scenario": "A transport that does not forward progress degrades to spinner plus stage label",
+      "file": "rust/fspec-tui/tests/tui109_checkpoints_progress.rs",
+      "lines": "540-572"
+    }
+  ],
+  "approved_assertion_changes": [
+    {
+      "function": "thinking_level_dialog_footer_documents_the_four_key_bindings",
+      "approved_footer_proof": true,
+      "removed_or_changed": 0,
+      "added": 3
+    }
+  ],
+  "protected_changes": [],
+  "frozen_contract_changes": [],
+  "unstable_inputs": [],
+  "limits": [
+    "Source/mapping audit only; does not compile, run tests, write sidecars, or change status.",
+    "Pending findings during active native writes are transient until a settled rerun.",
+    "Historical partial test ranges are reported separately, not silently repaired.",
+    "Original duplicate mapping occurrences are consumed separately; no set deduplication."
+  ]
+}

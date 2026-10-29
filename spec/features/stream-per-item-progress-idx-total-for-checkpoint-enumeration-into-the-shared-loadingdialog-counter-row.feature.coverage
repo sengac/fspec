@@ -123,16 +123,16 @@
           "lines": "540-572",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/worktrees_jobs.rs",
               "lines": [
-                963,
-                964,
-                965,
-                966,
-                967,
-                968,
-                969,
-                970
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
               ]
             }
           ]
@@ -160,5 +160,20 @@
         }
       ]
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/tui109_checkpoints_progress.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/app/dispatch_checkpoints.rs",
+      "rust/rpc/src/checkpoints.rs",
+      "rust/fspec-tui/src/transport/backend/worktrees_jobs.rs",
+      "rust/git/src/ghost_commit.rs"
+    ],
+    "totalLinesCovered": 313
+  }
 }

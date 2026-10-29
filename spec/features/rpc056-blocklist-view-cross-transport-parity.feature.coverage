@@ -8,21 +8,21 @@
           "lines": "97-131",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                580,
-                581,
-                582
+                166,
+                167,
+                168
               ]
             },
             {
-              "file": "rust/fspec-tui/src/transport/websocket.rs",
+              "file": "rust/fspec-tui/src/transport/websocket/profiles_control.rs",
               "lines": [
-                944,
-                945,
-                946,
-                947,
-                948
+                148,
+                149,
+                150,
+                151,
+                152
               ]
             }
           ]
@@ -38,8 +38,8 @@
       "rust/fspec-tui/tests/rpc056_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs",
-      "rust/fspec-tui/src/transport/websocket.rs"
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
+      "rust/fspec-tui/src/transport/websocket/profiles_control.rs"
     ],
     "totalLinesCovered": 43
   }

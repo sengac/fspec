@@ -10,7 +10,6 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::fs;
 use std::path::PathBuf;
 
 fn workspace_root() -> PathBuf {
@@ -23,7 +22,8 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read_source(path: &PathBuf) -> String {
-    fs::read_to_string(path).unwrap_or_else(|_| panic!("read {}", path.display()))
+    codelet_test_helpers::source_composition::read_source(path)
+        .unwrap_or_else(|_| panic!("read {}", path.display()))
 }
 
 /// Scenario: codelet-rpc-types exposes IncomingMessageInput

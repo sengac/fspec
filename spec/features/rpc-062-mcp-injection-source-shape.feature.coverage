@@ -110,8 +110,8 @@
       "name": "codelet-napi agent_loop consumes mcp_injection_rx inside its select! loop",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "267-291",
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "5-28",
           "implMappings": [
             {
               "file": "rust/napi/src/agent_loop.rs",
@@ -128,8 +128,8 @@
       "name": "No MCP injection methods leak into the RPC surface across handle, service, and backend traits",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "297-343",
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "34-100",
           "implMappings": [
             {
               "file": "rust/core/src/session_manager_handle.rs",
@@ -145,8 +145,8 @@
       "name": "codelet-sessions has no transitive napi dependency after the RPC-062 audit",
       "testMappings": [
         {
-          "file": "rust/sessions/tests/mcp_injection_source_shape.rs",
-          "lines": "349-422",
+          "file": "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs",
+          "lines": "106-190",
           "implMappings": [
             {
               "file": "rust/sessions/Cargo.toml",
@@ -181,7 +181,8 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/sessions/tests/mcp_injection_source_shape.rs"
+      "rust/sessions/tests/mcp_injection_source_shape.rs",
+      "rust/sessions/tests/mcp_injection_source_shape/consumer_and_surface.rs"
     ],
     "implFiles": [
       "rust/sessions/src/session_manager.rs",
@@ -189,6 +190,6 @@
       "rust/core/src/session_manager_handle.rs",
       "rust/sessions/Cargo.toml"
     ],
-    "totalLinesCovered": 345
+    "totalLinesCovered": 375
   }
 }

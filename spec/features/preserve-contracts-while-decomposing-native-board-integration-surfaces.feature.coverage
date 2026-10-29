@@ -1,0 +1,223 @@
+{
+  "scenarios": [
+    {
+      "name": "Ordered public and implementation contracts retain their baseline",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "98-139",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/components/mod.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backend consumers retain object safety and existing defaults",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "179-221",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Decomposed integration source remains below the module ceiling",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "223-251",
+          "implMappings": [
+            {
+              "file": "rust/fspec-tui/src/views/navigator_mux_events.rs",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MCP mappings equal the resolved service methods exactly",
+      "testMappings": [
+        {
+          "file": "rust/fspec-tui/tests/refac019_contracts.rs",
+          "lines": "253-291",
+          "implMappings": [
+            {
+              "file": "rust/rpc/src/lib.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "rust/fspec-tui/tests/refac019_contracts.rs"
+    ],
+    "implFiles": [
+      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/transport/mod.rs",
+      "rust/fspec-tui/src/views/navigator_mux_events.rs",
+      "rust/rpc/src/lib.rs"
+    ],
+    "totalLinesCovered": 293
+  }
+}

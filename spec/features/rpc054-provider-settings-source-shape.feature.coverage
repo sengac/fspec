@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
-          "lines": "262-299",
+          "lines": "214-251",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/agent/slash_commands.rs",
@@ -69,7 +69,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
-          "lines": "299-322",
+          "lines": "251-274",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
@@ -92,8 +92,8 @@
       "name": "The ProviderSettingsView module exists at the expected path",
       "testMappings": [
         {
-          "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
-          "lines": "58-83",
+          "file": "rust/fspec-tui/tests/source_shape_rpc054/provider_surface.rs",
+          "lines": "25-53",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -188,7 +188,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
-          "lines": "118-138",
+          "lines": "73-90",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -217,7 +217,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc054.rs",
-          "lines": "141-167",
+          "lines": "93-117",
           "implMappings": [
             {
               "file": "rust/fspec-tui/src/views/provider_settings/mod.rs",
@@ -540,25 +540,25 @@
           "lines": "192-216",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/components/mod.rs",
+              "file": "rust/fspec-tui/src/components/action_prompts.rs",
               "lines": [
-                649,
-                650,
-                651,
-                652,
-                653,
-                654,
-                655,
-                656,
-                657,
-                658,
-                659,
-                660,
-                661,
-                662,
-                663,
-                664,
-                665
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
               ]
             }
           ]
@@ -663,15 +663,16 @@
     "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
-      "rust/fspec-tui/tests/source_shape_rpc054.rs"
+      "rust/fspec-tui/tests/source_shape_rpc054.rs",
+      "rust/fspec-tui/tests/source_shape_rpc054/provider_surface.rs"
     ],
     "implFiles": [
       "rust/fspec-tui/src/views/agent/slash_commands.rs",
       "rust/fspec-tui/src/app/dispatch_slash_commands.rs",
       "rust/fspec-tui/src/views/provider_settings/mod.rs",
-      "rust/fspec-tui/src/components/mod.rs",
+      "rust/fspec-tui/src/components/action_prompts.rs",
       "rust/fspec-tui/src/views/provider_settings/list.rs"
     ],
-    "totalLinesCovered": 735
+    "totalLinesCovered": 733
   }
 }

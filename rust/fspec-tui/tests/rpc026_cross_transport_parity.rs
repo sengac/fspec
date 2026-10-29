@@ -28,7 +28,7 @@ static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());
 
 fn setup_parity_temp_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
     let guard = DATA_DIR_MUTEX.lock().expect("DATA_DIR_MUTEX");
-    let temp = tempfile::tempdir().expect("tempdir");
+    let temp = codelet_test_helpers::setup_temp_directory().expect("tempdir");
     codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
     (guard, temp)
 }
@@ -125,76 +125,10 @@ async fn embedded_and_websocket_search_history_byte_identical() {
     assert_eq!(embedded_out.len(), 2);
 }
 
-/// Scenario: persistence_delete_session round-trips identically across both transports
-#[tokio::test]
-async fn embedded_and_websocket_delete_session_byte_identical() {
-    // @step Given a SharedFspecService with sessions ["s-1", "s-2", "s-3"]
-    let (_guard, temp) = setup_parity_temp_dir();
-    let cwd = temp.path().to_path_buf();
-    let service = service_for(&cwd);
-    // Seed three on-disk manifests so codelet_core::persistence::delete_session
-    // has something to remove.
-    let sessions_dir = temp.path().join("sessions");
-    fs::create_dir_all(&sessions_dir).expect("mkdir sessions/");
-    let s1 = uuid::Uuid::parse_str("11111111-1111-1111-1111-111111111111").unwrap();
-    let s2 = uuid::Uuid::parse_str("22222222-2222-2222-2222-222222222222").unwrap();
-    let s3 = uuid::Uuid::parse_str("33333333-3333-3333-3333-333333333333").unwrap();
-    for id in [s1, s2, s3] {
-        fs::write(
-            sessions_dir.join(format!("{id}.json")),
-            format!(r#"{{"id":"{id}"}}"#),
-        )
-        .expect("seed manifest");
-    }
-    assert!(sessions_dir.join(format!("{s2}.json")).exists());
+#[path = "rpc026_cross_transport_parity/fixture.rs"]
+mod deletion_fixture;
 
-    let embedded: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
-        tokio::runtime::Handle::current(),
-        service.clone(),
-    ));
-    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", service)
-        .await
-        .expect("bind_and_serve");
-    let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> =
-        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
-
-    // @step When the test calls EmbeddedFspecBackend.persistence_delete_session("s-2")
-    embedded
-        .persistence_delete_session(SessionId::new(s2.to_string()))
-        .await
-        .expect("embedded delete");
-    // @step And then calls EmbeddedFspecBackend.list_sessions()
-    let embedded_after = embedded
-        .list_sessions(String::new())
-        .await
-        .expect("embedded list");
-    // @step Then the result equals ["s-1", "s-3"]
-    // (On-disk: s-2 manifest is removed.)
-    assert!(!sessions_dir.join(format!("{s2}.json")).exists());
-    // (Sanity-check the list_sessions surface returned without error; SharedFspecService's
-    // list_sessions reads from the same data dir.)
-    let _ = embedded_after;
-
-    // @step When the test calls WebSocketFspecBackend.persistence_delete_session("s-2")
-    // (We exercise the WebSocket transport with s-1 to keep s-3 alive as a control.)
-    websocket
-        .persistence_delete_session(SessionId::new(s1.to_string()))
-        .await
-        .expect("ws delete");
-    // @step And then calls WebSocketFspecBackend.list_sessions()
-    let websocket_after = websocket
-        .list_sessions(String::new())
-        .await
-        .expect("ws list");
-    // @step Then the result equals ["s-1", "s-3"]
-    // (On-disk: s-1 manifest is removed by the WebSocket round-trip.)
-    assert!(!sessions_dir.join(format!("{s1}.json")).exists());
-    let _ = websocket_after;
-    // @step And both transports produced byte-identical SessionInfo lists
-    // s-3 must still exist after both deletions.
-    assert!(sessions_dir.join(format!("{s3}.json")).exists());
-}
+include!("rpc026_cross_transport_parity/deletion_parity.rs");
 
 /// Scenario: codelet_core::persistence::delete_session lifts the NAPI implementation
 #[test]

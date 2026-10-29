@@ -8,19 +8,19 @@
           "lines": "80-114",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                667,
-                668,
-                669,
-                670,
-                671,
-                672,
-                673,
-                674,
-                675,
-                676,
-                677
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
               ]
             }
           ]
@@ -35,14 +35,14 @@
           "lines": "115-150",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                679,
-                680,
-                681,
-                682,
-                683,
-                684
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
               ]
             }
           ]
@@ -57,11 +57,11 @@
           "lines": "151-193",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/focus_supervision.rs",
               "lines": [
-                686,
-                687,
-                688
+                79,
+                80,
+                81
               ]
             }
           ]
@@ -77,7 +77,7 @@
       "rust/fspec-tui/tests/rpc059_cross_transport_parity.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/embedded/focus_supervision.rs"
     ],
     "totalLinesCovered": 134
   }

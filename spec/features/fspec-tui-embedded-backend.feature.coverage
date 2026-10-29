@@ -78,25 +78,29 @@
                 66,
                 67,
                 68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
                 82,
-                83,
-                84,
-                85,
-                86,
-                87
+                83
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/embedded/sessions.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
               ]
             }
           ]
@@ -112,8 +116,9 @@
       "rust/fspec-tui/tests/embedded_backend_smoke.rs"
     ],
     "implFiles": [
-      "rust/fspec-tui/src/transport/embedded.rs"
+      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/fspec-tui/src/transport/embedded/sessions.rs"
     ],
-    "totalLinesCovered": 141
+    "totalLinesCovered": 140
   }
 }

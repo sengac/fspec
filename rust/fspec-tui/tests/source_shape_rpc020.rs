@@ -15,59 +15,31 @@ fn fspec_tui_src() -> std::path::PathBuf {
 }
 
 fn read_raw(path: &std::path::Path) -> String {
+    if [
+        "fspec-tui/src/components/mod.rs",
+        "fspec-tui/src/transport/mod.rs",
+        "fspec-tui/src/transport/embedded.rs",
+        "fspec-tui/src/transport/websocket.rs",
+        "fspec-tui/src/views/navigator_mux_events.rs",
+        "rpc/src/lib.rs",
+    ]
+    .iter()
+    .any(|entry| path.ends_with(entry))
+    {
+        return codelet_test_helpers::source_composition::read_source(path)
+            .expect("resolve composed source entrypoint");
+    }
     common::read_to_string_or_panic(path)
 }
 
 fn count_lines_path(path: &std::path::Path) -> usize {
-    read_raw(path).lines().count()
+    std::fs::read_to_string(path)
+        .expect("read physical source for line count")
+        .lines()
+        .count()
 }
 
-/// Scenario: codelet_core::file_search helper module exists with the documented surface
-#[test]
-fn codelet_core_file_search_helper_exists_with_documented_surface() {
-    // @step Given rust/core/src/file_search.rs after RPC-020 lands
-    let path = workspace_codelet_dir()
-        .join("core")
-        .join("src")
-        .join("file_search.rs");
-    // @step Then the file exists
-    assert!(path.is_file(), "{} must exist", path.display());
-    let body = read_raw(&path);
-    // @step And the file contains the substring "pub fn search"
-    assert!(body.contains("pub fn search"));
-}
-
-/// Scenario: codelet_core::lib re-exports the new file_search module
-#[test]
-fn codelet_core_lib_re_exports_file_search() {
-    // @step Given rust/core/src/lib.rs after RPC-020 lands
-    let body = read_raw(
-        &workspace_codelet_dir()
-            .join("core")
-            .join("src")
-            .join("lib.rs"),
-    );
-    // @step Then the file contains the substring "pub mod file_search"
-    assert!(body.contains("pub mod file_search"));
-}
-
-/// Scenario: FspecService trait gains the search_files RPC method
-#[test]
-fn fspec_service_trait_gains_search_files_rpc_method() {
-    // @step Given rust/rpc/src/lib.rs after RPC-020 lands
-    let body = read_raw(
-        &workspace_codelet_dir()
-            .join("rpc")
-            .join("src")
-            .join("lib.rs"),
-    );
-    // @step Then the file contains the substring "async fn search_files"
-    assert!(body.contains("async fn search_files"));
-    // @step And the file contains the substring "prefix: String"
-    assert!(body.contains("prefix: String"));
-    // @step And the file contains the substring "limit: u32"
-    assert!(body.contains("limit: u32"));
-}
+include!("source_shape_rpc020/search_service.rs");
 
 /// Scenario: FspecBackend trait declares the search_files method
 #[test]
@@ -217,7 +189,7 @@ fn views_do_not_directly_import_forbidden_crates() {
     // @step When a test scans every *.rs file
     let mut violations: Vec<String> = Vec::new();
     for path in &files {
-        let body = read_raw(path);
+        let body = std::fs::read_to_string(path).expect("read physical view source");
         // @step Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
         for needle in [
             "codelet_core::",

@@ -202,7 +202,7 @@ Feature: Mux surface — single top-of-mux menu bar, per-pane suppression, spinn
     Then the Checkpoints pane is focused
 
   Scenario: Clicking outside the dropdown closes it while the click still lands on the pane
-    Given the mux 'Actions' dropdown is open
+    Given the mux 'Kanban' dropdown is open
     When I click the Files pane (outside the dropdown panel and off the bar items)
     Then the dropdown closes AND the Files pane is focused (the click lands on the same event)
 

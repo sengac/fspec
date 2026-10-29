@@ -81,15 +81,19 @@
                 61,
                 62,
                 63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72
+                64
+              ]
+            },
+            {
+              "file": "rust/fspec-tui/src/transport/websocket/construction.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
               ]
             }
           ]
@@ -239,8 +243,9 @@
     "implFiles": [
       "rust/rpc-server/src/server.rs",
       "rust/fspec-tui/src/transport/websocket.rs",
+      "rust/fspec-tui/src/transport/websocket/construction.rs",
       "rust/rpc-server/src/lib.rs"
     ],
-    "totalLinesCovered": 371
+    "totalLinesCovered": 370
   }
 }

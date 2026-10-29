@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "rust/fspec-tui/tests/source_shape_rpc055.rs",
-          "lines": "25-50",
+          "lines": "27-52",
           "implMappings": [
             {
               "file": "rust/core/src/session_manager_handle.rs",
@@ -33,11 +33,11 @@
           "lines": "53-69",
           "implMappings": [
             {
-              "file": "rust/rpc/src/lib.rs",
+              "file": "rust/rpc/src/service_declaration/providers_sessions.rs",
               "lines": [
-                296,
-                297,
-                298
+                64,
+                65,
+                66
               ]
             }
           ]
@@ -52,14 +52,14 @@
           "lines": "72-83",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/mod.rs",
+              "file": "rust/fspec-tui/src/transport/backend/models.rs",
               "lines": [
-                406,
-                407,
-                408,
-                409,
-                410,
-                411
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
               ]
             }
           ]
@@ -74,14 +74,14 @@
           "lines": "86-114",
           "implMappings": [
             {
-              "file": "rust/fspec-tui/src/transport/embedded.rs",
+              "file": "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
               "lines": [
-                439,
-                440,
-                441,
-                442,
-                443,
-                444
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
               ]
             }
           ]
@@ -182,9 +182,9 @@
     ],
     "implFiles": [
       "rust/core/src/session_manager_handle.rs",
-      "rust/rpc/src/lib.rs",
-      "rust/fspec-tui/src/transport/mod.rs",
-      "rust/fspec-tui/src/transport/embedded.rs",
+      "rust/rpc/src/service_declaration/providers_sessions.rs",
+      "rust/fspec-tui/src/transport/backend/models.rs",
+      "rust/fspec-tui/src/transport/embedded/session_state_transcripts.rs",
       "rust/fspec-tui/src/app/dispatch_slash_debug.rs"
     ],
     "totalLinesCovered": 194
